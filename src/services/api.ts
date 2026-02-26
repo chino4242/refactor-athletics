@@ -632,7 +632,7 @@ export const calculateRank = async (
     const userLevelNum = currentLevelIndex + 1;
     const xpEarned = userLevelNum > 0 ? userLevelNum * 50 : 0;
 
-    await supabase.from('history').insert({
+    await supabase.from('workouts').insert({
         user_id: userId,
         exercise_id: exerciseId,
         timestamp: ts,
@@ -642,6 +642,7 @@ export const calculateRank = async (
         level: userLevelNum,
         xp: xpEarned,
         rank_name: rankName,
+        sets: null
     });
 
     return {
