@@ -231,6 +231,8 @@ export default function HabitSettings({ isOpen, onClose, userProfile, onUpdate }
                                 { id: 'habit_creatine', label: 'Supplements' },
                                 { id: 'habit_no_alcohol', label: 'No Alcohol' },
                                 { id: 'habit_no_vice', label: 'No Vice' },
+                                { id: 'habit_sugar', label: 'Avoid Sugar' },
+                                { id: 'habit_fasting', label: 'Fasting' },
                                 { id: 'habit_journaling', label: 'Journaling' },
                                 { id: 'habit_weigh_in', label: 'Weigh In' },
                             ].map(habit => (
