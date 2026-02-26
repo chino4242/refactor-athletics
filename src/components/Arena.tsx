@@ -17,7 +17,13 @@ interface ArenaProps {
 export default function Arena({ userId }: ArenaProps) {
     const toast = useToast();
     const { currentTheme } = useTheme();
+    const [isMounted, setIsMounted] = useState(false);
     const [view, setView] = useState<'active' | 'history'>('active');
+
+    // Wait for client-side hydration
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
     const [activeDuels, setActiveDuels] = useState<DuelResponse[]>([]);
     const [historyDuels, setHistoryDuels] = useState<DuelResponse[]>([]);
     const [isChallengeModalOpen, setIsChallengeModalOpen] = useState(false);
@@ -39,12 +45,16 @@ export default function Arena({ userId }: ArenaProps) {
 
             {/* 🟢 THEME BANNER (Reused) */}
             <div className="w-full relative bg-zinc-900 rounded-2xl overflow-hidden shadow-2xl border border-zinc-800">
-                <img
-                    src={`/themes/${currentTheme}/banner.png`}
-                    alt="Theme Banner"
-                    className="w-full h-auto block opacity-80"
-                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                />
+                {isMounted ? (
+                    <img
+                        src={`/themes/${currentTheme}/banner.png`}
+                        alt="Theme Banner"
+                        className="w-full h-auto block opacity-80"
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                ) : (
+                    <div className="w-full h-48 md:h-96 bg-zinc-900 animate-pulse" />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent"></div>
 
                 {/* Overlay Text for Arena */}

@@ -26,6 +26,12 @@ interface TrackPageProps {
 
 export default function TrackPage({ userId, bodyweight, initialProfile, initialStats, onLogComplete }: TrackPageProps) {
     const { currentTheme } = useTheme();
+    const [isMounted, setIsMounted] = useState(false);
+
+    // Wait for client-side hydration
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     // --- STATE ---
     const [currentLevel, setCurrentLevel] = useState<number>(() => {
@@ -291,12 +297,16 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
 
             {/* 🟢 THEME BANNER */}
             <div className="w-full relative bg-zinc-900 rounded-2xl overflow-hidden shadow-2xl border border-zinc-800">
-                <img
-                    src={`/themes/${currentTheme}/banner.png`}
-                    alt="Theme Banner"
-                    className="w-full h-auto block object-cover max-h-48 md:max-h-96"
-                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                />
+                {isMounted ? (
+                    <img
+                        src={`/themes/${currentTheme}/banner.png`}
+                        alt="Theme Banner"
+                        className="w-full h-auto block object-cover max-h-48 md:max-h-96"
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                ) : (
+                    <div className="w-full h-48 md:h-96 bg-zinc-900 animate-pulse" />
+                )}
                 <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-zinc-950 to-transparent"></div>
 
                 {/* 🟢 TESTING TIMER OVERLAY */}

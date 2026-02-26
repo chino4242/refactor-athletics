@@ -32,6 +32,12 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
     const [exerciseId, setExerciseId] = useState<string>('');
     const [resultValue, setResultValue] = useState<number>(0);
     const { currentTheme } = useTheme();
+    const [isMounted, setIsMounted] = useState(false);
+
+    // Wait for client-side hydration
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     // Time Inputs
     const [minutes, setMinutes] = useState<number>(0);
@@ -348,12 +354,16 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
             <section className="w-full md:w-1/2 bg-zinc-800/50 rounded-2xl border border-zinc-700/50 shadow-xl backdrop-blur-sm overflow-hidden">
                 {!hideBanner && (
                     <div className="w-full relative bg-zinc-900 rounded-t-2xl overflow-hidden">
-                        <img
-                            src={`/themes/${currentTheme}/banner.png`}
-                            alt="Banner"
-                            className="w-full h-auto block"
-                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                        />
+                        {isMounted ? (
+                            <img
+                                src={`/themes/${currentTheme}/banner.png`}
+                                alt="Banner"
+                                className="w-full h-auto block"
+                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                            />
+                        ) : (
+                            <div className="w-full h-32 bg-zinc-900 animate-pulse" />
+                        )}
                         <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-zinc-900/100 to-transparent"></div>
                     </div>
                 )}
