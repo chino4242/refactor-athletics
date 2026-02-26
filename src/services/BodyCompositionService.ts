@@ -1,4 +1,5 @@
 import { createClient } from '@/utils/supabase/client';
+import { logBodyMeasurementAction } from '@/app/actions';
 
 export interface BodyCompositionEntry {
     date: string;
@@ -15,16 +16,8 @@ export const BodyCompositionService = {
     getHistory: async (userId: string): Promise<BodyCompositionEntry[]> => {
         const supabase = createClient();
         const { data, error } = await supabase
-            .from('history')
+            .from('body_measurements')
             .select('*')
-            .in('exercise_id', [
-                'habit_weigh_in',
-                'habit_measure_waist',
-                'habit_measure_arms',
-                'habit_measure_legs',
-                'habit_measure_chest',
-                'habit_measure_shoulders'
-            ])
             .eq('user_id', userId)
             .order('timestamp', { ascending: true });
 
@@ -33,31 +26,19 @@ export const BodyCompositionService = {
             return [];
         }
 
-        const grouped: Record<string, BodyCompositionEntry> = {};
-        for (const row of data) {
-            const date = row.date;
-            if (!grouped[date]) {
-                grouped[date] = { date };
-            }
-
-            const val = Number(row.raw_value);
-            switch (row.exercise_id) {
-                case 'habit_weigh_in': grouped[date].weight = val; break;
-                case 'habit_measure_waist': grouped[date].waist = val; break;
-                case 'habit_measure_arms': grouped[date].arms = val; break;
-                case 'habit_measure_legs': grouped[date].legs = val; break;
-                case 'habit_measure_chest': grouped[date].chest = val; break;
-                case 'habit_measure_shoulders': grouped[date].shoulders = val; break;
-            }
-        }
-
-        return Object.values(grouped).sort((a, b) => a.date.localeCompare(b.date));
+        return data.map(row => ({
+            date: row.date,
+            weight: row.weight,
+            waist: row.waist,
+            arms: row.arms,
+            chest: row.chest,
+            legs: row.legs,
+            shoulders: row.shoulders
+        }));
     },
 
     logMeasurements: async (userId: string, date: string, measurements: Partial<BodyCompositionEntry>): Promise<void> => {
-        // In the new architecture, BodyCompositionModal also calls handleLog() directly.
-        // So we don't need to double-log here! 
-        // Returning seamlessly.
-        return Promise.resolve();
+        const { date: _, ...measurementData } = measurements;
+        await logBodyMeasurementAction(userId, measurementData);
     }
 };

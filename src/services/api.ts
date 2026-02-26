@@ -110,45 +110,102 @@ export const deleteHistoryItem = async (userId: string, timestamp: number): Prom
 
 export const getHistory = async (userId: string): Promise<HistoryItem[]> => {
     const supabase = createClient();
-    const { data, error } = await supabase
-        .from('history')
-        .select('*')
-        .eq('user_id', userId)
-        .order('timestamp', { ascending: true });
+    
+    // Query all tables in parallel
+    const [workouts, nutrition, habits, measurements] = await Promise.all([
+        supabase.from('workouts').select('*').eq('user_id', userId).order('timestamp', { ascending: true }),
+        supabase.from('nutrition_logs').select('*').eq('user_id', userId).order('timestamp', { ascending: true }),
+        supabase.from('habit_logs').select('*').eq('user_id', userId).order('timestamp', { ascending: true }),
+        supabase.from('body_measurements').select('*').eq('user_id', userId).order('timestamp', { ascending: true })
+    ]);
 
-    if (error) {
-        console.error("Error fetching history:", error);
-        return [];
-    }
-    return data as HistoryItem[];
+    // Combine and normalize to HistoryItem format
+    const combined: HistoryItem[] = [
+        ...(workouts.data || []).map(w => ({
+            id: w.id,
+            user_id: w.user_id,
+            exercise_id: w.exercise_id,
+            timestamp: w.timestamp,
+            date: w.date,
+            value: w.value,
+            raw_value: w.raw_value,
+            rank_name: w.rank_name,
+            level: w.level,
+            xp: w.xp,
+            details: w.sets,
+            created_at: w.created_at
+        })),
+        ...(nutrition.data || []).map(n => ({
+            id: n.id,
+            user_id: n.user_id,
+            exercise_id: `macro_${n.macro_type}`,
+            timestamp: n.timestamp,
+            date: n.date,
+            value: n.label || n.macro_type,
+            raw_value: n.amount,
+            rank_name: null,
+            level: 0,
+            xp: n.xp,
+            details: null,
+            created_at: n.created_at
+        })),
+        ...(habits.data || []).map(h => ({
+            id: h.id,
+            user_id: h.user_id,
+            exercise_id: h.habit_id,
+            timestamp: h.timestamp,
+            date: h.date,
+            value: String(h.value),
+            raw_value: h.value,
+            rank_name: null,
+            level: 0,
+            xp: h.xp,
+            details: null,
+            created_at: h.created_at
+        })),
+        ...(measurements.data || []).map(m => ({
+            id: m.id,
+            user_id: m.user_id,
+            exercise_id: 'body_measurement',
+            timestamp: m.timestamp,
+            date: m.date,
+            value: 'Body Measurement',
+            raw_value: m.weight || 0,
+            rank_name: null,
+            level: 0,
+            xp: m.xp,
+            details: { weight: m.weight, waist: m.waist, arms: m.arms, chest: m.chest, legs: m.legs, shoulders: m.shoulders },
+            created_at: m.created_at
+        }))
+    ];
+
+    return combined.sort((a, b) => a.timestamp - b.timestamp);
 };
 
 export const getHabitProgress = async (userId: string, startTs: number): Promise<any> => {
     const supabase = createClient();
-    const { data, error } = await supabase
-        .from('history')
-        .select('*')
-        .eq('user_id', userId)
-        .gte('timestamp', startTs);
-
-    if (error) {
-        console.error("Error fetching progress:", error);
-        return { totals: {} };
-    }
+    
+    // Query nutrition and habits tables
+    const [nutrition, habits] = await Promise.all([
+        supabase.from('nutrition_logs').select('*').eq('user_id', userId).gte('timestamp', startTs),
+        supabase.from('habit_logs').select('*').eq('user_id', userId).gte('timestamp', startTs)
+    ]);
 
     const totals: Record<string, number> = {};
-    for (const item of data) {
-        const key = item.exercise_id;
-        totals[key] = (totals[key] || 0) + Number(item.raw_value || 1);
-
-        // Accumulate macros
-        if (key === 'calories') totals['macro_calories'] = (totals['macro_calories'] || 0) + Number(item.raw_value);
-        if (key === 'protein') totals['macro_protein'] = (totals['macro_protein'] || 0) + Number(item.raw_value);
-        if (key === 'carbs') totals['macro_carbs'] = (totals['macro_carbs'] || 0) + Number(item.raw_value);
-        if (key === 'fat') totals['macro_fat'] = (totals['macro_fat'] || 0) + Number(item.raw_value);
+    
+    // Sum nutrition logs
+    for (const item of nutrition.data || []) {
+        const key = `macro_${item.macro_type}`;
+        totals[key] = (totals[key] || 0) + Number(item.amount);
+    }
+    
+    // Sum habit logs
+    for (const item of habits.data || []) {
+        const key = item.habit_id;
+        totals[key] = (totals[key] || 0) + Number(item.value);
     }
 
-    return { totals };
+    return { totals, status: 'success' };
 };
 
 export const getWeeklyProgress = async (userId: string, startTs: number): Promise<any> => {
