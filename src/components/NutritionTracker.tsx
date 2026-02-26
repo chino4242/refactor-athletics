@@ -335,11 +335,13 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
             </div>
 
             {/* PROGRESS BARS */}
-            {renderBar(viewMode === 'daily' ? 'Calories' : 'Weekly Cals', 'macro_calories', targets.calories, 'text-green-500', 'kcal')}
-            {renderBar('Carbs', 'macro_carbs', targets.carbs, 'text-orange-500', 'g')}
-            {renderBar('Fat', 'macro_fat', targets.fat, 'text-yellow-500', 'g')}
-            {renderBar('Protein', 'macro_protein', targets.protein, 'text-blue-500', 'g')}
-            {renderBar('Water', 'habit_water', targets.water || 100, 'text-cyan-500', 'oz')}
+            <div key={JSON.stringify(totals)}>
+                {renderBar(viewMode === 'daily' ? 'Calories' : 'Weekly Cals', 'macro_calories', targets.calories, 'text-green-500', 'kcal')}
+                {renderBar('Carbs', 'macro_carbs', targets.carbs, 'text-orange-500', 'g')}
+                {renderBar('Fat', 'macro_fat', targets.fat, 'text-yellow-500', 'g')}
+                {renderBar('Protein', 'macro_protein', targets.protein, 'text-blue-500', 'g')}
+                {renderBar('Water', 'habit_water', targets.water || 100, 'text-cyan-500', 'oz')}
+            </div>
 
             <MacroLogModal
                 isOpen={showLogModal}
