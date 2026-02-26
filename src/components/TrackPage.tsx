@@ -1,10 +1,13 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import DailyQuest from './DailyQuest';
 import LevelUpOverlay from './LevelUpOverlay';
 import CareerXpBar from './profile/CareerXpBar';
+import ProgressMetrics from './ProgressMetrics';
+import BodyCompSummary from './BodyCompSummary';
 import { getHabitProgress } from '../services/api';
+import { BodyCompositionService } from '../services/BodyCompositionService';
 import type { UserStats, UserProfileData } from '@/types';
 import { useTheme } from '@/context/ThemeContext';
 import { THEMES } from '@/data/themes';
@@ -25,8 +28,6 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
     const { currentTheme } = useTheme();
 
     // --- STATE ---
-    // Level Up Tracking & Stats
-    // 🟢 CHANGED: Initialize from localStorage to persist across navigation
     const [currentLevel, setCurrentLevel] = useState<number>(() => {
         if (typeof window !== 'undefined') {
             const cached = localStorage.getItem('cached_player_level');
@@ -36,6 +37,8 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
     });
     const [showLevelUp, setShowLevelUp] = useState<number | null>(null);
     const [stats, setStats] = useState<UserStats | null>(null);
+    const [bodyCompHistory, setBodyCompHistory] = useState<any[]>([]);
+    const [showBodyCompModal, setShowBodyCompModal] = useState(false);
 
     // Challenges
     // const [activeChallenge, setActiveChallenge] = useState<Challenge | null>(null);
@@ -55,6 +58,65 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
         setCurrentLevel(newLevel);
         localStorage.setItem('cached_player_level', newLevel.toString());
     }, [initialStats]);
+
+    // Load body composition history
+    useEffect(() => {
+        if (userId) {
+            BodyCompositionService.getHistory(userId).then(setBodyCompHistory);
+        }
+    }, [userId]);
+
+    // Calculate refactor score
+    const refactorScore = useMemo(() => {
+        if (bodyCompHistory.length < 2) return { score: 0, status: '⚖️ No Data', color: 'text-zinc-400' };
+
+        const baseline = bodyCompHistory[0];
+        const current = bodyCompHistory[bodyCompHistory.length - 1];
+        let score = 0;
+
+        const goals = initialProfile?.body_composition_goals || {};
+        const metrics = ['waist', 'arms', 'legs', 'chest', 'shoulders', 'weight'];
+
+        metrics.forEach(metric => {
+            const goal = goals[metric];
+            const baseVal = baseline[metric];
+            const currVal = current[metric];
+
+            if (baseVal !== undefined && currVal !== undefined && goal) {
+                const delta = Number(currVal) - Number(baseVal);
+
+                if (goal.toLowerCase() === 'shrink') {
+                    score -= delta;
+                } else if (goal.toLowerCase() === 'grow') {
+                    score += delta;
+                }
+            }
+        });
+
+        const roundedScore = Math.round(score * 10) / 10;
+
+        let status = '⚖️ Maintaining';
+        let color = 'text-zinc-400';
+        
+        if (roundedScore > 10) {
+            status = '🔥 Crushing It';
+            color = 'text-emerald-400';
+        } else if (roundedScore > 5) {
+            status = '🎯 On Track';
+            color = 'text-emerald-400';
+        } else if (roundedScore > 0) {
+            status = '✓ Progressing';
+            color = 'text-green-400';
+        } else if (roundedScore < -5) {
+            status = '🚨 Off Track';
+            color = 'text-rose-400';
+        } else if (roundedScore < 0) {
+            status = '⚠️ Slipping';
+            color = 'text-yellow-400';
+        }
+
+        return { score: roundedScore, status, color };
+    }, [bodyCompHistory, initialProfile]);
 
     // --- RETRO CHECK LOGIC ---
     const [retroMissing, setRetroMissing] = useState<string[]>([]);
@@ -247,6 +309,13 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
                 progressGradient={THEMES[currentTheme]?.progressGradient}
             />
 
+            {/* 🟢 PROGRESS METRICS */}
+            <ProgressMetrics 
+                stats={initialStats}
+                profile={initialProfile}
+                bodyCompHistory={bodyCompHistory}
+            />
+
             {/* 🟢 LEVEL UP OVERLAY - ALWAYS VISIBLE ON TOP */}
             {showLevelUp && (
                 <LevelUpOverlay
@@ -254,16 +323,6 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
                     onClose={() => setShowLevelUp(null)}
                 />
             )}
-
-            {/* 🟢 CUSTOM CHALLENGE SECTION - MOVED TO DAILY QUEST */}
-
-            {/* 🟢 SPRINT REVIEW CARD */}
-            {/* <SprintReviewCard
-                status={sprintStatus}
-                onStart={() => setShowSprintWizard(true)}
-            // We'd need to persist summaryData to show it in "complete" state if we want stats persistent.
-            // For now, "complete" just shows generic success.
-            /> */}
 
             {/* 🟢 DAILY QUEST (NUTRITION & HABITS) */}
             <div className="mb-0">
@@ -274,12 +333,24 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
                     initialProfile={initialProfile || null}
                     onXpEarned={() => {
                         onLogComplete?.();
+                        // Reload body comp history after logging
+                        if (userId) {
+                            BodyCompositionService.getHistory(userId).then(setBodyCompHistory);
+                        }
                     }}
                     activeChallenge={null /* activeChallenge */}
                     onStartChallenge={() => { } /* setShowChallengeModal(true) */}
                     onChallengeUpdate={() => { } /* fetchChallenge */}
                 />
             </div>
+
+            {/* 🟢 BODY COMPOSITION SUMMARY */}
+            <BodyCompSummary 
+                profile={initialProfile}
+                bodyCompHistory={bodyCompHistory}
+                refactorScore={refactorScore}
+                onOpenModal={() => setShowBodyCompModal(true)}
+            />
 
             {/* SPACER FOR MOBILE NAV */}
             <div className="h-40 md:h-0 w-full shrink-0" />
