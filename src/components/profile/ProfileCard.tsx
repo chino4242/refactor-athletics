@@ -87,7 +87,7 @@ export default function ProfileCard({
             {/* Background Decoration */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
 
-            <div className="flex justify-between items-start mb-6 relative z-10">
+            <div className="flex justify-between items-start mb-6 relative z-20">
                 <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-3">
                         <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight">
