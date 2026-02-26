@@ -69,6 +69,7 @@ export default function HabitSettings({ isOpen, onClose, userProfile, onUpdate }
     };
 
     const toggleHidden = (id: string) => {
+        console.log("Toggling visibility for:", id, "Current hidden:", hidden);
         if (hidden.includes(id)) {
             setHidden(hidden.filter(h => h !== id));
         } else {
@@ -80,7 +81,13 @@ export default function HabitSettings({ isOpen, onClose, userProfile, onUpdate }
         const isHidden = hidden.includes(id);
         return (
             <button
-                onClick={() => toggleHidden(id)}
+                type="button"
+                onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log("Eye icon clicked for:", id);
+                    toggleHidden(id);
+                }}
                 className={`p-1.5 rounded transition-all ${isHidden ? 'bg-zinc-800 text-zinc-600 hover:text-red-400' : 'bg-zinc-800 text-green-500 hover:text-green-400'}`}
                 title={isHidden ? "Hidden" : "Visible"}
             >
