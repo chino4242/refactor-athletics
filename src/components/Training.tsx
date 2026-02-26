@@ -303,7 +303,7 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
                   {currentExercise && (
                     <button
                       onClick={() => setShowHistoryModal(true)}
-                      className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white p-3 rounded-lg border border-zinc-600 transition"
+                      className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white p-3.5 rounded-lg border border-zinc-600 transition text-lg"
                       title="View History"
                     >
                       📊
@@ -316,11 +316,11 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
                   <div className="absolute top-full left-0 right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl max-h-80 overflow-y-auto z-50 divide-y divide-zinc-800">
                     {Object.entries(filteredGroups).map(([category, items]) => (
                       <div key={category}>
-                        <div className="sticky top-0 bg-zinc-950/90 backdrop-blur px-3 py-1 text-[10px] uppercase font-bold text-orange-500 tracking-wider border-b border-zinc-800">
+                        <div className="sticky top-0 bg-zinc-950/90 backdrop-blur px-3 py-2 text-xs uppercase font-bold text-orange-500 tracking-wider border-b border-zinc-800">
                           {category}
                         </div>
                         {items.map((ex) => (
-                          <div key={ex.id} onClick={() => handleSelectExercise(ex)} className="px-4 py-3 text-sm font-medium text-zinc-300 hover:bg-zinc-800 hover:text-white cursor-pointer transition-colors">
+                          <div key={ex.id} onClick={() => handleSelectExercise(ex)} className="px-4 py-3.5 text-sm font-medium text-zinc-300 hover:bg-zinc-800 hover:text-white cursor-pointer transition-colors">
                             {ex.name}
                           </div>
                         ))}
@@ -353,7 +353,20 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
                 </div>
 
                 <div className="col-span-2 text-center">{isCalories ? 'Calories' : isWatts ? 'Watts' : showReps ? 'Reps' : showTime ? 'Time (mins)' : ''}</div>
-                <div className="col-span-1"></div>
+                <div className="col-span-1 flex justify-end">
+                  {sets.length > 1 && (
+                    <button
+                      onClick={() => {
+                        const lastSet = sets[sets.length - 1];
+                        setSets([...sets, { ...lastSet }]);
+                      }}
+                      className="text-[10px] text-zinc-500 hover:text-orange-500 font-bold uppercase tracking-wider transition-colors"
+                      title="Copy last set"
+                    >
+                      Copy ↓
+                    </button>
+                  )}
+                </div>
               </div>
 
               {sets.map((set, i) => (

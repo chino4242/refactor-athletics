@@ -127,10 +127,10 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
                 <h3 className="text-xl font-black italic text-white tracking-tighter">DAILY QUESTS</h3>
                 <button
                   onClick={() => setShowSettings(true)}
-                  className="text-zinc-600 hover:text-white transition-colors p-1 rounded hover:bg-zinc-700/50"
+                  className="text-zinc-600 hover:text-white transition-colors p-2 rounded hover:bg-zinc-700/50"
                   title="Manage Habits"
                 >
-                  <SlidersHorizontal size={14} />
+                  <SlidersHorizontal size={18} />
                 </button>
               </div>
               <p className="text-xs text-zinc-400 font-medium">Complete these tasks to boost your power.</p>
@@ -141,7 +141,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
         <div className="flex gap-2 w-full md:w-auto justify-end overflow-x-auto pb-1 md:pb-0 no-scrollbar">
           <button
             onClick={() => setShowBodyComp(true)}
-            className="flex-shrink-0 text-[10px] md:text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg transition-all flex items-center gap-2 text-zinc-500 hover:text-white border border-zinc-700 hover:border-zinc-500 whitespace-nowrap"
+            className="flex-shrink-0 text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded-lg transition-all flex items-center gap-2 text-zinc-500 hover:text-white border border-zinc-700 hover:border-zinc-500 whitespace-nowrap"
           >
             <span className="text-lg">⚖️</span>
             Body Comp
@@ -174,7 +174,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
               navigator.clipboard.writeText(text);
               toast.success("Report copied to clipboard!");
             }}
-            className="flex-shrink-0 text-[10px] md:text-xs font-bold uppercase tracking-wider text-zinc-500 hover:text-white border border-zinc-700 hover:border-zinc-500 px-3 py-1.5 rounded-lg transition-all whitespace-nowrap"
+            className="flex-shrink-0 text-xs font-bold uppercase tracking-wider text-zinc-500 hover:text-white border border-zinc-700 hover:border-zinc-500 px-4 py-2.5 rounded-lg transition-all whitespace-nowrap"
           >
             Share
           </button>

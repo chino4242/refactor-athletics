@@ -74,10 +74,10 @@ export default function HabitCard({
         return (
             <div className={`relative p-3 rounded-xl border border-zinc-700 bg-zinc-900 group animate-fade-in`}>
                 <div className="flex justify-between items-center mb-2">
-                    <span className="text-[10px] font-bold text-zinc-500 uppercase">{label}</span>
+                    <span className="text-xs font-bold text-zinc-500 uppercase">{label}</span>
                     <button
                         onClick={() => setIsEditing(false)}
-                        className="text-[10px] text-zinc-600 hover:text-white uppercase font-bold"
+                        className="text-xs text-zinc-600 hover:text-white uppercase font-bold px-2 py-1.5"
                     >
                         Cancel
                     </button>
@@ -87,23 +87,37 @@ export default function HabitCard({
                     <div className="flex bg-black rounded p-0.5 border border-zinc-800 mb-2">
                         <button
                             onClick={() => setMode('add')}
-                            className={`flex-1 text-[9px] font-bold rounded py-1 uppercase transition-all ${mode === 'add' ? 'bg-zinc-700 text-white shadow-sm' : 'text-zinc-600 hover:text-zinc-400'}`}
+                            className={`flex-1 text-xs font-bold rounded py-2.5 uppercase transition-all ${mode === 'add' ? 'bg-zinc-700 text-white shadow-sm' : 'text-zinc-600 hover:text-zinc-400'}`}
                         >
                             [+] Add
                         </button>
                         <button
                             onClick={() => setMode('total')}
-                            className={`flex-1 text-[9px] font-bold rounded py-1 uppercase transition-all ${mode === 'total' ? 'bg-blue-900/50 text-blue-400 shadow-sm border border-blue-900/50' : 'text-zinc-600 hover:text-zinc-400'}`}
+                            className={`flex-1 text-xs font-bold rounded py-2.5 uppercase transition-all ${mode === 'total' ? 'bg-blue-900/50 text-blue-400 shadow-sm border border-blue-900/50' : 'text-zinc-600 hover:text-zinc-400'}`}
                         >
                             [=] Set
                         </button>
                     </div>
                 )}
 
+                {/* Quick Add Buttons */}
+                <div className="flex gap-1 mb-2">
+                    {[1, 5, 10, 25].map(amt => (
+                        <button
+                            key={amt}
+                            onClick={() => setValue(String(parseFloat(value || '0') + amt))}
+                            className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white text-xs font-bold py-2 rounded transition-all"
+                        >
+                            +{amt}
+                        </button>
+                    ))}
+                </div>
+
                 <div className="flex gap-1">
                     <input
                         ref={inputRef}
                         type="number"
+                        inputMode="decimal"
                         value={value}
                         onChange={(e) => setValue(e.target.value)}
                         onKeyDown={(e) => {
@@ -116,7 +130,7 @@ export default function HabitCard({
                     <button
                         onClick={handleSubmit}
                         disabled={loading || !value}
-                        className={`px-3 rounded font-bold text-[10px] uppercase tracking-wider transition-all ${loading ? 'opacity-50' : `hover:opacity-90 active:scale-95 text-white ${colorClass}`}`}
+                        className={`px-4 py-2.5 rounded font-bold text-xs uppercase tracking-wider transition-all ${loading ? 'opacity-50' : `hover:opacity-90 active:scale-95 text-white ${colorClass}`}`}
                     >
                         {loading ? '...' : (mode === 'total' ? 'SET' : 'LOG')}
                     </button>

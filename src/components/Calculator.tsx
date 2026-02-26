@@ -102,6 +102,27 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
         return sortedGroups;
     }, [exercises, searchTerm]);
 
+    // Recent exercises (last 5 unique)
+    const recentExercises = useMemo(() => {
+        if (!history.length) return [];
+        const seen = new Set<string>();
+        const recent: any[] = [];
+        
+        [...history]
+            .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
+            .forEach(h => {
+                if (!seen.has(h.exercise_id) && recent.length < 5) {
+                    const ex = exercises.find(e => e.id === h.exercise_id);
+                    if (ex) {
+                        seen.add(h.exercise_id);
+                        recent.push(ex);
+                    }
+                }
+            });
+        
+        return recent;
+    }, [history, exercises]);
+
     const handleSelectExercise = (exercise: any) => {
         setExerciseId(exercise.id);
         setSearchTerm(exercise.displayName || exercise.name);
@@ -147,6 +168,7 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
         });
 
         const pb = sortedForPB[0];
+        const lastLog = [...logs].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))[0];
 
         const recentLogs = [...logs]
             .sort((a, b) => {
@@ -176,7 +198,7 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
 
         const areaPoints = `${points} 100,120 0,120`;
 
-        return { pb, recentLogs, graphMin, graphMax, graphRange, points, areaPoints };
+        return { pb, lastLog, recentLogs, graphMin, graphMax, graphRange, points, areaPoints };
     }, [exerciseId, history, currentExercise]);
 
     // --- NEXT GOAL LOGIC ---
@@ -353,6 +375,28 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
                         Log Performance
                     </h2>
 
+                    {/* Recent Exercises Quick Access */}
+                    {recentExercises.length > 0 && !isDropdownOpen && (
+                        <div className="mb-4">
+                            <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">Recent</label>
+                            <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+                                {recentExercises.map(ex => (
+                                    <button
+                                        key={ex.id}
+                                        onClick={() => handleSelectExercise(ex)}
+                                        className={`flex-shrink-0 px-3 py-2 rounded-lg text-xs font-bold transition-all border ${
+                                            exerciseId === ex.id 
+                                                ? 'bg-orange-600 text-white border-orange-500' 
+                                                : 'bg-zinc-800 text-zinc-400 hover:text-white border-zinc-700 hover:border-zinc-600'
+                                        }`}
+                                    >
+                                        {ex.displayName || ex.name}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     <div className="mb-6 relative" ref={dropdownRef}>
                         <label className="block text-xs font-bold text-zinc-400 uppercase mb-2">Select Exercise</label>
                         <input
@@ -441,25 +485,102 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
                                     Time Result
                                     <InfoTooltip text="Enter the time it took to complete the exercise / distance." />
                                 </label>
+                                <div className="flex gap-2 mb-2">
+                                    {[15, 30, 60].map(amt => (
+                                        <button
+                                            key={amt}
+                                            onClick={() => setSeconds(seconds + amt)}
+                                            className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white text-xs font-bold py-2 rounded transition-all"
+                                        >
+                                            +{amt}s
+                                        </button>
+                                    ))}
+                                </div>
                                 <div className="flex gap-2">
                                     <div className="flex-1">
-                                        <input type="number" value={minutes || ''} onChange={(e) => setMinutes(Number(e.target.value))} placeholder="Min" className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white text-lg font-mono focus:border-orange-500 outline-none transition text-center" />
+                                        <input 
+                                            type="number" 
+                                            inputMode="numeric"
+                                            value={minutes || ''} 
+                                            onChange={(e) => setMinutes(Number(e.target.value))} 
+                                            placeholder="Min" 
+                                            className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white text-lg font-mono focus:border-orange-500 outline-none transition text-center" 
+                                        />
                                         <span className="text-xs text-zinc-500 mt-1 block text-center">Minutes</span>
                                     </div>
                                     <div className="flex items-center text-xl font-bold text-zinc-600">:</div>
                                     <div className="flex-1">
-                                        <input type="number" value={seconds || ''} onChange={(e) => setSeconds(Number(e.target.value))} placeholder="Sec" className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white text-lg font-mono focus:border-orange-500 outline-none transition text-center" />
+                                        <input 
+                                            type="number" 
+                                            inputMode="numeric"
+                                            value={seconds || ''} 
+                                            onChange={(e) => setSeconds(Number(e.target.value))} 
+                                            placeholder="Sec" 
+                                            className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white text-lg font-mono focus:border-orange-500 outline-none transition text-center" 
+                                        />
                                         <span className="text-xs text-zinc-500 mt-1 block text-center">Seconds</span>
                                     </div>
                                 </div>
                             </div>
                         ) : (
                             <div>
-                                <label className="block text-xs font-bold text-zinc-400 uppercase mb-2">
-                                    {unitLabel === 'Distance' ? 'Distance (Miles/Km)' : `Result (${unitLabel})`}
-                                    <InfoTooltip text="Enter your Lift Weight (lbs) or Score." />
-                                </label>
-                                <input type="number" value={resultValue || ''} onChange={(e) => setResultValue(Number(e.target.value))} placeholder={unitLabel === 'lbs' ? "e.g., 225" : "e.g., 50"} className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white text-lg font-mono focus:border-orange-500 outline-none transition" />
+                                <div className="flex justify-between items-center mb-2">
+                                    <label className="text-xs font-bold text-zinc-400 uppercase">
+                                        {unitLabel === 'Distance' ? 'Distance (Miles/Km)' : `Result (${unitLabel})`}
+                                        <InfoTooltip text="Enter your Lift Weight (lbs) or Score." />
+                                    </label>
+                                    {exerciseStats?.lastLog && (
+                                        <button
+                                            onClick={() => {
+                                                const lastVal = parseFloat(exerciseStats.lastLog.value.replace(/[^0-9.]/g, '')) || 0;
+                                                setResultValue(lastVal);
+                                            }}
+                                            className="text-[10px] text-zinc-500 hover:text-orange-500 font-bold uppercase tracking-wider transition-colors"
+                                        >
+                                            Last: {exerciseStats.lastLog.value}
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="flex gap-2 mb-2">
+                                    {unitLabel === 'lbs' ? (
+                                        <>
+                                            {[5, 10, 25, 45].map(amt => (
+                                                <button
+                                                    key={amt}
+                                                    onClick={() => setResultValue(resultValue + amt)}
+                                                    className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white text-xs font-bold py-2 rounded transition-all"
+                                                >
+                                                    +{amt}
+                                                </button>
+                                            ))}
+                                        </>
+                                    ) : (
+                                        <>
+                                            {[1, 5, 10].map(amt => (
+                                                <button
+                                                    key={amt}
+                                                    onClick={() => setResultValue(resultValue + amt)}
+                                                    className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white text-xs font-bold py-2 rounded transition-all"
+                                                >
+                                                    +{amt}
+                                                </button>
+                                            ))}
+                                        </>
+                                    )}
+                                </div>
+                                <input 
+                                    type="number" 
+                                    inputMode="decimal"
+                                    value={resultValue || ''} 
+                                    onChange={(e) => setResultValue(Number(e.target.value))} 
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && !isLoading && exerciseId) {
+                                            handleCalculate();
+                                        }
+                                    }}
+                                    placeholder={unitLabel === 'lbs' ? "e.g., 225" : "e.g., 50"} 
+                                    className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white text-lg font-mono focus:border-orange-500 outline-none transition" 
+                                />
                             </div>
                         )}
                     </div>

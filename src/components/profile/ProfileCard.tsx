@@ -105,33 +105,33 @@ export default function ProfileCard({
                         <button
                             onClick={() => setShowMenu(!showMenu)}
                             aria-label="Settings Menu"
-                            className="p-2 text-zinc-400 hover:text-white bg-zinc-900/50 hover:bg-zinc-800 rounded-lg transition-all border border-transparent hover:border-zinc-700"
+                            className="p-2.5 text-zinc-400 hover:text-white bg-zinc-900/50 hover:bg-zinc-800 rounded-lg transition-all border border-transparent hover:border-zinc-700"
                         >
-                            <Settings size={18} />
+                            <Settings size={20} />
                         </button>
 
                         {showMenu && (
                             <>
                                 <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)}></div>
-                                <div className="absolute right-0 mt-2 w-40 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl z-50 overflow-hidden animate-fade-in-up">
+                                <div className="absolute right-0 mt-2 w-48 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl z-50 overflow-hidden animate-fade-in-up">
                                     <button
                                         onClick={() => {
                                             setIsEditing(true);
                                             setShowMenu(false);
                                         }}
-                                        className="w-full text-left px-4 py-3 text-xs font-bold text-zinc-300 hover:text-white hover:bg-zinc-800 flex items-center gap-2 border-b border-zinc-800"
+                                        className="w-full text-left px-4 py-3.5 text-sm font-bold text-zinc-300 hover:text-white hover:bg-zinc-800 flex items-center gap-2 border-b border-zinc-800"
                                     >
-                                        <Edit2 size={14} />
+                                        <Edit2 size={16} />
                                         Edit Stats
                                     </button>
                                     <Link href="/settings" onClick={() => setShowMenu(false)}>
-                                        <button className="w-full text-left px-4 py-3 text-xs font-bold text-zinc-300 hover:text-white hover:bg-zinc-800 flex items-center gap-2">
-                                            <UserCog size={14} />
+                                        <button className="w-full text-left px-4 py-3.5 text-sm font-bold text-zinc-300 hover:text-white hover:bg-zinc-800 flex items-center gap-2">
+                                            <UserCog size={16} />
                                             App Settings
                                         </button>
                                     </Link>
                                     <form action={signout}>
-                                        <button className="w-full text-left px-4 py-3 text-xs font-bold text-red-500 hover:text-red-400 hover:bg-zinc-800 flex items-center gap-2 border-t border-zinc-800">
+                                        <button className="w-full text-left px-4 py-3.5 text-sm font-bold text-red-500 hover:text-red-400 hover:bg-zinc-800 flex items-center gap-2 border-t border-zinc-800">
                                             Sign Out
                                         </button>
                                     </form>

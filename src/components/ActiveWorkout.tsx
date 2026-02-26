@@ -94,10 +94,10 @@ function ExerciseView({ block, onComplete, fullHistory, catalog }: any) {
           {catalogItem && (
             <button
               onClick={() => setShowHistoryModal(true)}
-              className="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white p-2 rounded-lg border border-zinc-700 transition"
+              className="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white p-2.5 rounded-lg border border-zinc-700 transition"
               title="View History"
             >
-              <Calendar size={20} />
+              <Calendar size={22} />
             </button>
           )}
         </div>
@@ -147,14 +147,37 @@ function ExerciseView({ block, onComplete, fullHistory, catalog }: any) {
                 {/* Weight Input */}
                 <div className="flex flex-col mr-4">
                   <span className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Weight</span>
-                  <input
-                    type="text"
-                    placeholder="lbs"
-                    value={weights[i]}
-                    onChange={(e) => updateWeight(i, e.target.value)}
-                    className="bg-zinc-900 text-white border border-zinc-600 rounded p-2 w-20 text-center font-mono text-sm focus:border-orange-500 focus:outline-none"
-                    onClick={(e) => e.stopPropagation()}
-                  />
+                  <div className="flex gap-1">
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="lbs"
+                      value={weights[i]}
+                      onChange={(e) => updateWeight(i, e.target.value)}
+                      className="bg-zinc-900 text-white border border-zinc-600 rounded p-2 w-20 text-center font-mono text-sm focus:border-orange-500 focus:outline-none"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    <div className="flex flex-col gap-0.5">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          updateWeight(i, String(parseFloat(weights[i] || '0') + 5));
+                        }}
+                        className="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white text-[10px] font-bold px-1.5 py-0.5 rounded transition-all"
+                      >
+                        +5
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          updateWeight(i, String(Math.max(0, parseFloat(weights[i] || '0') - 5)));
+                        }}
+                        className="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white text-[10px] font-bold px-1.5 py-0.5 rounded transition-all"
+                      >
+                        -5
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 <button
@@ -199,7 +222,7 @@ function ExerciseView({ block, onComplete, fullHistory, catalog }: any) {
           </div>
           <button
             onClick={() => setIsResting(false)}
-            className="text-xs bg-zinc-800 hover:bg-zinc-700 text-white px-3 py-2 rounded-lg transition"
+            className="text-sm bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2.5 rounded-lg transition font-bold"
           >
             SKIP
           </button>

@@ -242,24 +242,54 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
 
                 <div className="grid grid-cols-2 gap-3 mb-4">
                     <div>
-                        <label className="text-[10px] font-bold text-zinc-500 uppercase">Calories</label>
-                        <input type="number" value={targets.calories} onChange={e => setTargets({ ...targets, calories: Number(e.target.value) })} className="w-full bg-black p-2 rounded text-white text-center font-bold outline-none border border-zinc-700 focus:border-green-500" />
+                        <label className="text-xs font-bold text-zinc-500 uppercase">Calories</label>
+                        <input 
+                            type="number" 
+                            inputMode="numeric"
+                            value={targets.calories} 
+                            onChange={e => setTargets({ ...targets, calories: Number(e.target.value) })} 
+                            className="w-full bg-black p-2 rounded text-white text-center font-bold outline-none border border-zinc-700 focus:border-green-500" 
+                        />
                     </div>
                     <div>
-                        <label className="text-[10px] font-bold text-zinc-500 uppercase">Carbs (g)</label>
-                        <input type="number" value={targets.carbs} onChange={e => setTargets({ ...targets, carbs: Number(e.target.value) })} className="w-full bg-black p-2 rounded text-white text-center font-bold outline-none border border-zinc-700 focus:border-orange-500" />
+                        <label className="text-xs font-bold text-zinc-500 uppercase">Carbs (g)</label>
+                        <input 
+                            type="number" 
+                            inputMode="numeric"
+                            value={targets.carbs} 
+                            onChange={e => setTargets({ ...targets, carbs: Number(e.target.value) })} 
+                            className="w-full bg-black p-2 rounded text-white text-center font-bold outline-none border border-zinc-700 focus:border-orange-500" 
+                        />
                     </div>
                     <div>
-                        <label className="text-[10px] font-bold text-zinc-500 uppercase">Fat (g)</label>
-                        <input type="number" value={targets.fat} onChange={e => setTargets({ ...targets, fat: Number(e.target.value) })} className="w-full bg-black p-2 rounded text-white text-center font-bold outline-none border border-zinc-700 focus:border-yellow-500" />
+                        <label className="text-xs font-bold text-zinc-500 uppercase">Fat (g)</label>
+                        <input 
+                            type="number" 
+                            inputMode="numeric"
+                            value={targets.fat} 
+                            onChange={e => setTargets({ ...targets, fat: Number(e.target.value) })} 
+                            className="w-full bg-black p-2 rounded text-white text-center font-bold outline-none border border-zinc-700 focus:border-yellow-500" 
+                        />
                     </div>
                     <div>
-                        <label className="text-[10px] font-bold text-zinc-500 uppercase">Protein (g)</label>
-                        <input type="number" value={targets.protein} onChange={e => setTargets({ ...targets, protein: Number(e.target.value) })} className="w-full bg-black p-2 rounded text-white text-center font-bold outline-none border border-zinc-700 focus:border-blue-500" />
+                        <label className="text-xs font-bold text-zinc-500 uppercase">Protein (g)</label>
+                        <input 
+                            type="number" 
+                            inputMode="numeric"
+                            value={targets.protein} 
+                            onChange={e => setTargets({ ...targets, protein: Number(e.target.value) })} 
+                            className="w-full bg-black p-2 rounded text-white text-center font-bold outline-none border border-zinc-700 focus:border-blue-500" 
+                        />
                     </div>
                     <div>
-                        <label className="text-[10px] font-bold text-zinc-500 uppercase">Water (oz)</label>
-                        <input type="number" value={targets.water || 100} onChange={e => setTargets({ ...targets, water: Number(e.target.value) })} className="w-full bg-black p-2 rounded text-white text-center font-bold outline-none border border-zinc-700 focus:border-cyan-500" />
+                        <label className="text-xs font-bold text-zinc-500 uppercase">Water (oz)</label>
+                        <input 
+                            type="number" 
+                            inputMode="numeric"
+                            value={targets.water || 100} 
+                            onChange={e => setTargets({ ...targets, water: Number(e.target.value) })} 
+                            className="w-full bg-black p-2 rounded text-white text-center font-bold outline-none border border-zinc-700 focus:border-cyan-500" 
+                        />
                     </div>
                 </div>
                 <button onClick={handleSaveTargets} disabled={loading} className="w-full bg-zinc-100 hover:bg-white text-black font-black py-3 rounded text-xs uppercase tracking-wider">
