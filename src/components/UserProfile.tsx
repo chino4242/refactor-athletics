@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback } from 'react';
-import { deleteHistoryItem, type HistoryItem } from '../services/api';
+import { type HistoryItem } from '../services/api';
+import { deleteHistoryItemAction } from '@/app/actions';
 
 
 import { useUserProfileData } from '../hooks/useUserProfileData';
@@ -66,7 +67,7 @@ export default function UserProfile({
     if (!itemToDelete) return;
 
     try {
-      await deleteHistoryItem(userId, itemToDelete.timestamp);
+      await deleteHistoryItemAction(userId, itemToDelete.timestamp);
       toast.success("Record deleted.");
       loadUserData();
     } catch (e) {
