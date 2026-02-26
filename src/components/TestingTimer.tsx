@@ -78,7 +78,7 @@ export default function TestingTimer({ variant = 'card' }: TestingTimerProps) {
         // Active Testing Week State
         if (variant === 'overlay') {
             return (
-                <Link href="/rank" className="absolute bottom-4 right-4 z-20 animate-pulse">
+                <Link href="/train" className="absolute bottom-4 right-4 z-20 animate-pulse">
                     <div className={`bg-gradient-to-r ${gradient} p-0.5 rounded-lg shadow-lg`}>
                         <div className="bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-[6px] flex items-center gap-2">
                             <div className="text-sm">🔥</div>
@@ -93,7 +93,7 @@ export default function TestingTimer({ variant = 'card' }: TestingTimerProps) {
         }
 
         return (
-            <Link href="/rank" className="block w-full animate-pulse mb-6">
+            <Link href="/train" className="block w-full animate-pulse mb-6">
                 <div className={`bg-gradient-to-r ${gradient} p-0.5 rounded-xl`}>
                     <div className="bg-zinc-950 rounded-[10px] p-4 flex items-center justify-between group">
                         <div className="flex items-center gap-4">
@@ -114,7 +114,7 @@ export default function TestingTimer({ variant = 'card' }: TestingTimerProps) {
 
     if (variant === 'overlay') {
         return (
-            <Link href="/rank" className="absolute bottom-4 right-4 z-20 group">
+            <Link href="/train" className="absolute bottom-4 right-4 z-20 group">
                 <div className="bg-black/60 hover:bg-black/80 backdrop-blur-md border border-white/10 rounded-lg px-3 py-2 flex items-center gap-3 transition-all">
                     <div className="flex flex-col items-end">
                         <span className="text-xs uppercase text-zinc-400 font-bold leading-none mb-0.5 group-hover:text-white transition-colors">Until Testing</span>
@@ -129,7 +129,7 @@ export default function TestingTimer({ variant = 'card' }: TestingTimerProps) {
     }
 
     return (
-        <Link href="/rank" className="block w-full group mb-6 transition-transform hover:scale-[1.01]">
+        <Link href="/train" className="block w-full group mb-6 transition-transform hover:scale-[1.01]">
             <div className="relative bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex items-center justify-between overflow-hidden">
                 {/* Background Progress Hint (optional) */}
                 <div className="flex items-center gap-4 z-10">
