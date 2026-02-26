@@ -185,10 +185,10 @@ export const getHistory = async (userId: string): Promise<HistoryItem[]> => {
 export const getHabitProgress = async (userId: string, startTs: number): Promise<any> => {
     const supabase = createClient();
     
-    // Query nutrition and habits tables
+    // Query nutrition and habits tables with cache disabled
     const [nutrition, habits] = await Promise.all([
-        supabase.from('nutrition_logs').select('*').eq('user_id', userId).gte('timestamp', startTs),
-        supabase.from('habit_logs').select('*').eq('user_id', userId).gte('timestamp', startTs)
+        supabase.from('nutrition_logs').select('*').eq('user_id', userId).gte('timestamp', startTs).order('timestamp', { ascending: false }),
+        supabase.from('habit_logs').select('*').eq('user_id', userId).gte('timestamp', startTs).order('timestamp', { ascending: false })
     ]);
 
     const totals: Record<string, number> = {};
