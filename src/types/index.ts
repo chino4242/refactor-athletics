@@ -48,6 +48,56 @@ export interface UserStats {
     exercises_tracked: number;
     highest_level_achieved: number;
     total_career_xp: number;
+}
+
+// Workout Program Types
+export interface WorkoutProgram {
+    id: string;
+    user_id: string;
+    name: string;
+    description?: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface ProgramBlock {
+    id: string;
+    program_id: string;
+    block_order: number;
+    block_type: 'exercise' | 'treadmill';
+    
+    // Exercise fields
+    exercise_id?: string;
+    target_sets?: number;
+    target_reps?: number;
+    target_weight?: number;
+    is_superset?: boolean;
+    superset_group?: number;
+    
+    // Treadmill fields
+    duration_seconds?: number;
+    incline?: number;
+    intensity?: 'zone2' | 'base' | 'push' | 'all_out';
+    
+    notes?: string;
+    created_at: string;
+}
+
+export interface ProgramSchedule {
+    id: string;
+    user_id: string;
+    program_id: string;
+    scheduled_date: string;
+    completed: boolean;
+    completed_at?: string;
+    created_at: string;
+}
+
+export interface UserStats {
+    power_level: number;
+    exercises_tracked: number;
+    highest_level_achieved: number;
+    total_career_xp: number;
     player_level: number;
     level_progress_percent: number;
     xp_to_next_level: number;
