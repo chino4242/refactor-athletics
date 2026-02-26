@@ -17,12 +17,21 @@ interface NutritionTrackerProps {
 export default function NutritionTracker({ userId, userProfile, totals, onUpdate }: NutritionTrackerProps) {
     const [loading, setLoading] = useState(false);
     const [editing, setEditing] = useState(false);
-    const [targets, setTargets] = useState<NutritionTargets>(userProfile.nutrition_targets || {
+    
+    const defaultTargets = {
         calories: 2000,
         protein: 150,
         carbs: 200,
         fat: 65,
         water: 100
+    };
+
+    const [targets, setTargets] = useState<NutritionTargets>(() => {
+        const saved = userProfile.nutrition_targets;
+        if (saved && (saved.calories || saved.protein || saved.carbs || saved.fat)) {
+            return { ...saved, water: saved.water || 100 };
+        }
+        return defaultTargets;
     });
 
     // Debug: Log totals to see what's actually there
@@ -42,14 +51,14 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
     const [weeklyData, setWeeklyData] = useState<Record<number, Record<string, number>>>({}); // Day Index -> Totals
 
 
-    const hasTargets = !!userProfile.nutrition_targets;
+    const hasTargets = !!(userProfile.nutrition_targets?.calories || userProfile.nutrition_targets?.protein);
 
     useEffect(() => {
-        if (userProfile.nutrition_targets) {
-            setTargets({
-                ...userProfile.nutrition_targets,
-                water: userProfile.nutrition_targets.water || 100 // Default Water Target
-            });
+        const saved = userProfile.nutrition_targets;
+        if (saved && (saved.calories || saved.protein || saved.carbs || saved.fat)) {
+            setTargets({ ...saved, water: saved.water || 100 });
+        } else {
+            setTargets(defaultTargets);
         }
     }, [userProfile]);
 
