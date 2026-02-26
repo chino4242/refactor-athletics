@@ -213,21 +213,38 @@ export const getWeeklyProgress = async (userId: string, startTs: number): Promis
 };
 
 export const getUserStats = async (userId: string): Promise<UserStats | null> => {
-    const history = await getHistory(userId);
-    let totalXp = 0;
+    const supabase = createClient();
+    
+    // Query only workouts table for Power Level (exercises with rank thresholds)
+    const { data: workouts } = await supabase
+        .from('workouts')
+        .select('exercise_id, level, xp')
+        .eq('user_id', userId);
 
-    // Track highest level achieved per exercise for Power Level calculation
+    // Query all tables for total XP
+    const [nutrition, habits, measurements] = await Promise.all([
+        supabase.from('nutrition_logs').select('xp').eq('user_id', userId),
+        supabase.from('habit_logs').select('xp').eq('user_id', userId),
+        supabase.from('body_measurements').select('xp').eq('user_id', userId)
+    ]);
+
+    let totalXp = 0;
     const maxLevelPerExercise: Record<string, number> = {};
 
-    for (const item of history) {
+    // Calculate Power Level from workouts only
+    for (const item of workouts || []) {
         totalXp += item.xp || 0;
-
-        // Track the highest level for this exercise
+        
         if (item.level > 0 && item.exercise_id) {
             if (!maxLevelPerExercise[item.exercise_id] || item.level > maxLevelPerExercise[item.exercise_id]) {
                 maxLevelPerExercise[item.exercise_id] = item.level;
             }
         }
+    }
+
+    // Add XP from other sources
+    for (const item of [...(nutrition.data || []), ...(habits.data || []), ...(measurements.data || [])]) {
+        totalXp += item.xp || 0;
     }
 
     // Power Level = Sum of (100 * max_level) for each ranked exercise
@@ -236,16 +253,13 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
         powerLevelScore += (maxLevelPerExercise[exId] * 100);
     }
 
-    // If no ranked exercises, floor it to 1, or just use the calculated score
     const finalPowerLevel = powerLevelScore > 0 ? powerLevelScore : 1;
-
-    // Calculate player level based on total XP (every 1000 XP = 1 Level)
     const playerLevel = Math.floor(totalXp / 1000) + 1;
     const level_progress_percent = ((totalXp % 1000) / 1000) * 100;
 
     return {
         power_level: finalPowerLevel,
-        exercises_tracked: history.length,
+        exercises_tracked: (workouts || []).length,
         highest_level_achieved: Math.max(0, ...Object.values(maxLevelPerExercise)),
         total_career_xp: totalXp,
         player_level: playerLevel,
