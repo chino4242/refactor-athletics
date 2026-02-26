@@ -28,6 +28,8 @@ export default function ProgramBuilder({ userId }: ProgramBuilderProps) {
         ? catalog 
         : catalog.filter(ex => ex.category?.toLowerCase() === selectedCategory);
 
+    console.log('Filtered catalog:', filteredCatalog.length, 'exercises for category:', selectedCategory);
+
     useEffect(() => {
         loadPrograms();
         loadCatalog();
@@ -45,6 +47,8 @@ export default function ProgramBuilder({ userId }: ProgramBuilderProps) {
     const loadCatalog = async () => {
         try {
             const data = await getTrainingCatalog();
+            console.log('Loaded catalog:', data.length, 'exercises');
+            console.log('Sample exercise:', data[0]);
             setCatalog(data);
         } catch (e) {
             console.error('Failed to load catalog:', e);
