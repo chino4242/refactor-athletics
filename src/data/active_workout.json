@@ -1,0 +1,450 @@
+[
+  {
+    "name": "Tread Block - 14 minutes",
+    "type": "timer",
+    "intervals": [
+      {
+        "type": "interval",
+        "seconds": 60,
+        "zone": "PUSH PACE",
+        "color": "bg-orange-500",
+        "note": null,
+        "raw_text": "\u2022 1 minute push"
+      },
+      {
+        "type": "interval",
+        "seconds": 60,
+        "zone": "BASE PACE",
+        "color": "bg-green-600",
+        "note": null,
+        "raw_text": "\u2022 1 minute base"
+      },
+      {
+        "type": "interval",
+        "seconds": 45,
+        "zone": "PUSH PACE",
+        "color": "bg-orange-500",
+        "note": null,
+        "raw_text": "\u2022 45 seconds push @ 10%"
+      },
+      {
+        "type": "interval",
+        "seconds": 30,
+        "zone": "WALKING RECOVERY",
+        "color": "bg-blue-600",
+        "note": null,
+        "raw_text": "\u2022 30 seconds WR @ 9%"
+      },
+      {
+        "type": "interval",
+        "seconds": 45,
+        "zone": "PUSH PACE",
+        "color": "bg-orange-500",
+        "note": null,
+        "raw_text": "\u2022 45 seconds push @ 9%"
+      },
+      {
+        "type": "interval",
+        "seconds": 30,
+        "zone": "WALKING RECOVERY",
+        "color": "bg-blue-600",
+        "note": null,
+        "raw_text": "\u2022 30 seconds WR @ 8%"
+      },
+      {
+        "type": "interval",
+        "seconds": 45,
+        "zone": "PUSH PACE",
+        "color": "bg-orange-500",
+        "note": null,
+        "raw_text": "\u2022 45 seconds push @ 8%"
+      },
+      {
+        "type": "interval",
+        "seconds": 30,
+        "zone": "WALKING RECOVERY",
+        "color": "bg-blue-600",
+        "note": null,
+        "raw_text": "\u2022 30 seconds WR @ 7%"
+      },
+      {
+        "type": "interval",
+        "seconds": 45,
+        "zone": "PUSH PACE",
+        "color": "bg-orange-500",
+        "note": null,
+        "raw_text": "\u2022 45 seconds push @ 7%"
+      },
+      {
+        "type": "interval",
+        "seconds": 30,
+        "zone": "WALKING RECOVERY",
+        "color": "bg-blue-600",
+        "note": null,
+        "raw_text": "\u2022 30 seconds WR @ 6%"
+      },
+      {
+        "type": "interval",
+        "seconds": 45,
+        "zone": "PUSH PACE",
+        "color": "bg-orange-500",
+        "note": null,
+        "raw_text": "\u2022 45 seconds push @ 6%"
+      },
+      {
+        "type": "interval",
+        "seconds": 30,
+        "zone": "WALKING RECOVERY",
+        "color": "bg-blue-600",
+        "note": null,
+        "raw_text": "\u2022 30 seconds WR @ 5%"
+      },
+      {
+        "type": "interval",
+        "seconds": 45,
+        "zone": "PUSH PACE",
+        "color": "bg-orange-500",
+        "note": null,
+        "raw_text": "\u2022 45 seconds push @ 5%"
+      },
+      {
+        "type": "interval",
+        "seconds": 30,
+        "zone": "WALKING RECOVERY",
+        "color": "bg-blue-600",
+        "note": null,
+        "raw_text": "\u2022 30 seconds WR @ 4%"
+      },
+      {
+        "type": "interval",
+        "seconds": 45,
+        "zone": "PUSH PACE",
+        "color": "bg-orange-500",
+        "note": null,
+        "raw_text": "\u2022 45 seconds push @ 4%"
+      },
+      {
+        "type": "interval",
+        "seconds": 30,
+        "zone": "WALKING RECOVERY",
+        "color": "bg-blue-600",
+        "note": null,
+        "raw_text": "\u2022 30 seconds WR @ 3%"
+      },
+      {
+        "type": "interval",
+        "seconds": 45,
+        "zone": "PUSH PACE",
+        "color": "bg-orange-500",
+        "note": null,
+        "raw_text": "\u2022 45 seconds push @ 3%"
+      },
+      {
+        "type": "interval",
+        "seconds": 30,
+        "zone": "WALKING RECOVERY",
+        "color": "bg-blue-600",
+        "note": null,
+        "raw_text": "\u2022 30 seconds WR @ 2%"
+      },
+      {
+        "type": "interval",
+        "seconds": 45,
+        "zone": "PUSH PACE",
+        "color": "bg-orange-500",
+        "note": null,
+        "raw_text": "\u2022 45 seconds push @ 2%"
+      },
+      {
+        "type": "interval",
+        "seconds": 30,
+        "zone": "WALKING RECOVERY",
+        "color": "bg-blue-600",
+        "note": null,
+        "raw_text": "\u2022 30 seconds WR @ 1%"
+      },
+      {
+        "type": "header",
+        "text": "Finisher",
+        "seconds": 5,
+        "zone": "INSTRUCTION",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "interval",
+        "seconds": 45,
+        "zone": "ALL OUT",
+        "color": "bg-red-600 animate-pulse",
+        "note": null,
+        "raw_text": "\u2022 45 seconds AO @ 1%"
+      }
+    ]
+  },
+  {
+    "name": "Row Block- 14 Minutes",
+    "type": "list",
+    "intervals": [
+      {
+        "type": "card",
+        "text": "2026 Row Challenge",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "card",
+        "text": "1:00 All Out Row (200m-300m+)",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "card",
+        "text": "Y- bell Standing Rainbow x 16",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "card",
+        "text": "1:00 All Out Row (200m-300m+)",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "card",
+        "text": "Y- bell - Alt Forward Lunge x 16",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "card",
+        "text": "Repeat Circuit until 2026m are completed",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "card",
+        "text": "Bonus: Row until time for finisher",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "card",
+        "text": "0:45 All Out Row (150m-250m+)",
+        "color": "bg-zinc-800"
+      }
+    ]
+  },
+  {
+    "name": "Floor Block- 14 Minutes",
+    "type": "list",
+    "intervals": [
+      {
+        "type": "card",
+        "text": "Dumbbell- Squat to Biceps Curl x 10/8/6/4/2",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "card",
+        "text": "Dumbbell - Neutral Grip Shoulder Press \u00d7 10/8/6/4/2",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "card",
+        "text": "Decrease reps by 2 each round",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "subheading",
+        "text": "--- Set 1 of 5 ---",
+        "color": "text-zinc-500"
+      },
+      {
+        "type": "card",
+        "text": " (Set 1/5)",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "subheading",
+        "text": "--- Set 2 of 5 ---",
+        "color": "text-zinc-500"
+      },
+      {
+        "type": "card",
+        "text": " (Set 2/5)",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "subheading",
+        "text": "--- Set 3 of 5 ---",
+        "color": "text-zinc-500"
+      },
+      {
+        "type": "card",
+        "text": " (Set 3/5)",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "subheading",
+        "text": "--- Set 4 of 5 ---",
+        "color": "text-zinc-500"
+      },
+      {
+        "type": "card",
+        "text": " (Set 4/5)",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "subheading",
+        "text": "--- Set 5 of 5 ---",
+        "color": "text-zinc-500"
+      },
+      {
+        "type": "card",
+        "text": " (Set 5/5)",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "card",
+        "text": "DB - Bear Plank Alt Low Row x 10/8/6/4/2",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "card",
+        "text": "DB - Bridge Hold w/ Chest Fly x 10/8/6/4/2",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "card",
+        "text": "Decrease reps by 2 each round",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "subheading",
+        "text": "--- Set 1 of 5 ---",
+        "color": "text-zinc-500"
+      },
+      {
+        "type": "card",
+        "text": " (Set 1/5)",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "subheading",
+        "text": "--- Set 2 of 5 ---",
+        "color": "text-zinc-500"
+      },
+      {
+        "type": "card",
+        "text": " (Set 2/5)",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "subheading",
+        "text": "--- Set 3 of 5 ---",
+        "color": "text-zinc-500"
+      },
+      {
+        "type": "card",
+        "text": " (Set 3/5)",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "subheading",
+        "text": "--- Set 4 of 5 ---",
+        "color": "text-zinc-500"
+      },
+      {
+        "type": "card",
+        "text": " (Set 4/5)",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "subheading",
+        "text": "--- Set 5 of 5 ---",
+        "color": "text-zinc-500"
+      },
+      {
+        "type": "card",
+        "text": " (Set 5/5)",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "card",
+        "text": "Circuit",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "card",
+        "text": "DB - Alt Lateral Lunge x 10/8/6/4/2",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "card",
+        "text": "Body weight- Triceps Push-Up x 10/8/6/4/2",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "card",
+        "text": "Decrease reps by 2 each round",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "subheading",
+        "text": "--- Set 1 of 5 ---",
+        "color": "text-zinc-500"
+      },
+      {
+        "type": "card",
+        "text": " (Set 1/5)",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "subheading",
+        "text": "--- Set 2 of 5 ---",
+        "color": "text-zinc-500"
+      },
+      {
+        "type": "card",
+        "text": " (Set 2/5)",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "subheading",
+        "text": "--- Set 3 of 5 ---",
+        "color": "text-zinc-500"
+      },
+      {
+        "type": "card",
+        "text": " (Set 3/5)",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "subheading",
+        "text": "--- Set 4 of 5 ---",
+        "color": "text-zinc-500"
+      },
+      {
+        "type": "card",
+        "text": " (Set 4/5)",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "subheading",
+        "text": "--- Set 5 of 5 ---",
+        "color": "text-zinc-500"
+      },
+      {
+        "type": "card",
+        "text": " (Set 5/5)",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "card",
+        "text": "Bonus: Complete all exercises as one block at 6 reps until time for finisher",
+        "color": "bg-zinc-800"
+      },
+      {
+        "type": "card",
+        "text": "Finisher",
+        "color": "bg-red-900/40 border border-red-900"
+      },
+      {
+        "type": "card",
+        "text": "Choose your favorite exercise to complete for final 0:45",
+        "color": "bg-zinc-800"
+      }
+    ]
+  }
+]

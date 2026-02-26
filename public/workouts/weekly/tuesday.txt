@@ -1,0 +1,48 @@
+[TREADMILL]
+1. 3 min push (PW @ 4%+)
+2. 30 sec AO (PW @ 10%+)
+3. 90 sec WR, get to base when ready
+4. 2.5 min push (PW @ 4%+)
+5. 30 sec AO (PW @ 10%+)
+6. 90 sec WR, get to base when ready
+7. 2 min push (PW @ 5%+)
+8. 30 sec AO (PW @ 10%+)
+9. 90 sec WR, get to base when ready
+10. 90 sec push (PW @ 6%+)
+11. 30 sec AO (PW @ 10%+)
+12. 90 sec WR, get to base when ready
+13. 1 min push (PW @ 6%+)
+14. 30 sec AO (PW @ 10%+)
+15. 90 sec WR, get to base when ready
+16. 1 min push (PW @ 6%+)
+17. 30 sec AO (PW @ 10%+)
+18. 90 sec WR, get to base when ready
+19. 30 sec push (PW @ 8%+)
+20. 30 sec AO (PW @ 10%+)
+21. 90 sec WR, get to base when ready
+22. 30 sec AO (PW @ 10%+)
+
+[STRENGTH]
+2. The Armor: Wide Back Supersets
+Focus: Width and thickness. Lifting first means you can go much heavier on Pull-ups.
+
+1. Superset (Pull-Ups + Lat Pulldown): 4 Sets. Rest: 60 sec.
+    ◦ Reps: Failure / 15
+    ◦ Tip: Go to failure on Pull-Ups.
+
+2. Superset (BB Bent Over Row + DB Shrugs): 4 Sets. Rest: 60 sec.
+    ◦ Reps: 10-12 / 20
+    ◦ Tip: Heavy on Rows.
+
+3. Superset (Single Arm Row + Incline Back Fly): 4 Sets. Rest: 60 sec.
+    ◦ Reps: 8-10 / 12
+
+4. Finisher - Seated Row: 1 Set (2 mins).
+    ◦ Reps: Max Reps
+    ◦ Note: Cable Seated Row.
+
+
+[CORE]
+4. The Core
+• Plank: 1 Set.
+    ◦ Details: Max hold (Aim for 2+ minutes)
