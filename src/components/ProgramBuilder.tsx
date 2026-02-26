@@ -20,6 +20,13 @@ export default function ProgramBuilder({ userId }: ProgramBuilderProps) {
     const [newProgramName, setNewProgramName] = useState('');
     const [newProgramDescription, setNewProgramDescription] = useState('');
     const [loading, setLoading] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState<string>('all');
+
+    const categories = ['all', 'strength', 'metcon', 'gymnastics', 'endurance'];
+    
+    const filteredCatalog = selectedCategory === 'all' 
+        ? catalog 
+        : catalog.filter(ex => ex.category?.toLowerCase() === selectedCategory);
 
     useEffect(() => {
         loadPrograms();
@@ -251,52 +258,92 @@ export default function ProgramBuilder({ userId }: ProgramBuilderProps) {
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             {/* Exercise List */}
-                            <div className="space-y-2">
-                                <h3 className="text-sm font-bold text-zinc-400 uppercase mb-3">Available Exercises</h3>
-                                <div className="space-y-1 max-h-96 overflow-y-auto pr-2">
-                                    {catalog.map(exercise => (
+                            <div className="space-y-3">
+                                <h3 className="text-sm font-bold text-zinc-400 uppercase mb-2">Available Exercises</h3>
+                                
+                                {/* Category Filter */}
+                                <div className="flex gap-2 flex-wrap">
+                                    {categories.map(cat => (
+                                        <button
+                                            key={cat}
+                                            onClick={() => setSelectedCategory(cat)}
+                                            className={`text-xs font-bold uppercase px-3 py-1.5 rounded-lg transition ${
+                                                selectedCategory === cat
+                                                    ? 'bg-orange-600 text-white'
+                                                    : 'bg-zinc-800 text-zinc-400 hover:text-white'
+                                            }`}
+                                        >
+                                            {cat}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <div className="space-y-1.5 max-h-96 overflow-y-auto pr-2">
+                                    {filteredCatalog.map(exercise => (
                                         <button
                                             key={exercise.id}
                                             onClick={() => handleAddExercise(exercise.id)}
-                                            className="w-full text-left bg-zinc-800/50 hover:bg-zinc-700 border border-zinc-700 hover:border-zinc-600 rounded-lg px-3 py-2 text-sm text-white transition truncate"
+                                            className="w-full text-left bg-zinc-800/50 hover:bg-zinc-700 border border-zinc-700 hover:border-zinc-600 rounded-lg px-3 py-2.5 transition group"
                                         >
-                                            {exercise.display_name}
+                                            <div className="flex items-center justify-between gap-2">
+                                                <span className="text-sm font-bold text-white">{exercise.display_name}</span>
+                                                <Plus size={14} className="text-zinc-600 group-hover:text-orange-500 flex-shrink-0" />
+                                            </div>
+                                            {exercise.category && (
+                                                <span className="text-xs text-zinc-500 uppercase">{exercise.category}</span>
+                                            )}
                                         </button>
                                     ))}
                                 </div>
                             </div>
 
                             {/* Program Blocks */}
-                            <div className="space-y-2">
-                                <h3 className="text-sm font-bold text-zinc-400 uppercase mb-3">Program ({programBlocks.length} blocks)</h3>
+                            <div className="space-y-3">
+                                <h3 className="text-sm font-bold text-zinc-400 uppercase mb-2">Program ({programBlocks.length} exercises)</h3>
                                 <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
                                     {programBlocks.length === 0 ? (
-                                        <p className="text-sm text-zinc-500 text-center py-8">No exercises added yet</p>
+                                        <div className="text-center py-12 border-2 border-dashed border-zinc-800 rounded-lg">
+                                            <Dumbbell size={32} className="mx-auto mb-2 text-zinc-700" />
+                                            <p className="text-sm text-zinc-500">Add exercises from the left</p>
+                                        </div>
                                     ) : (
-                                        programBlocks.map((block, idx) => (
-                                            <div
-                                                key={block.id}
-                                                className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-3 flex items-center gap-3"
-                                            >
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-xs font-bold text-zinc-500">#{idx + 1}</span>
-                                                        <span className="text-sm font-bold text-white truncate">
-                                                            {catalog.find(e => e.id === block.exercise_id)?.display_name || block.exercise_id}
-                                                        </span>
-                                                    </div>
-                                                    <p className="text-xs text-zinc-400 mt-1">
-                                                        {block.target_sets} sets × {block.target_reps} reps
-                                                    </p>
-                                                </div>
-                                                <button
-                                                    onClick={() => handleDeleteBlock(block.id)}
-                                                    className="text-zinc-600 hover:text-red-500 transition flex-shrink-0"
+                                        programBlocks.map((block, idx) => {
+                                            const exercise = catalog.find(e => e.id === block.exercise_id);
+                                            return (
+                                                <div
+                                                    key={block.id}
+                                                    className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-3"
                                                 >
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            </div>
-                                        ))
+                                                    <div className="flex items-start gap-3">
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-2 mb-1">
+                                                                <span className="text-xs font-bold text-zinc-500 flex-shrink-0">#{idx + 1}</span>
+                                                                <span className="text-sm font-bold text-white">
+                                                                    {exercise?.display_name || block.exercise_id}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex items-center gap-3 text-xs text-zinc-400">
+                                                                <span>{block.target_sets} sets</span>
+                                                                <span>×</span>
+                                                                <span>{block.target_reps} reps</span>
+                                                                {exercise?.category && (
+                                                                    <>
+                                                                        <span>•</span>
+                                                                        <span className="uppercase text-zinc-500">{exercise.category}</span>
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => handleDeleteBlock(block.id)}
+                                                            className="text-zinc-600 hover:text-red-500 transition flex-shrink-0"
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })
                                     )}
                                 </div>
                             </div>
