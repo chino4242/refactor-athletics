@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { saveProfile, logHabit, getWeeklyProgress } from '../services/api';
+import { saveProfile, getWeeklyProgress } from '../services/api';
+import { logHabitAction } from '@/app/actions';
 import type { UserProfileData, NutritionTargets, HistoryItem } from '@/types';
 import MacroLogModal from './MacroLogModal';
 import { Plus } from 'lucide-react';
@@ -139,7 +140,7 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
 
         try {
             // 1. Log the Macro itself
-            await logHabit(userId, habitId, finalVal, userProfile.bodyweight, label);
+            await logHabitAction(userId, habitId, finalVal, userProfile.bodyweight, label);
 
             // 2. Auto-Log Calories (4/4/9 Rule) - Skip for Water
             // ONLY if mode is 'add'. If 'total', we don't know the breakdown of the ADDED amount easily for cals 
@@ -152,8 +153,7 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
 
                 if (cals > 0) {
                     // Log the calculated calories
-                    // We use 'Track Cals (Auto)' as label or similar?
-                    await logHabit(userId, 'macro_calories', cals, userProfile.bodyweight, `Auto-Cal (${type})`);
+                    await logHabitAction(userId, 'macro_calories', cals, userProfile.bodyweight, `Auto-Cal (${type})`);
                 }
             }
 
