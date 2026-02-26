@@ -28,7 +28,9 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
     // Debug: Log totals to see what's actually there
     useEffect(() => {
         console.log("NutritionTracker totals:", totals);
-    }, [totals]);
+        console.log("NutritionTracker targets:", targets);
+        console.log("NutritionTracker userProfile.nutrition_targets:", userProfile.nutrition_targets);
+    }, [totals, targets, userProfile.nutrition_targets]);
 
 
 
