@@ -36,10 +36,20 @@ export function useTrophies(history: HistoryItem[], exercises: any[]) {
             if (!map[originalId]) {
                 let meta = exercises.find(e => e.id === cleanId);
                 if (!meta) meta = exercises.find(e => e.id === originalId);
-                if (!meta) meta = { displayName: cleanId, category: 'Other' };
+                if (!meta) meta = { displayName: cleanId, category: 'Strength' }; // Default to Strength if unknown
 
-                let displayCategory = meta.category || 'Other';
-                if (displayCategory.includes("Strength")) displayCategory = "Strength";
+                let displayCategory = meta.category || 'Strength';
+
+                // Map sub-categories to the 4 main Radar buckets
+                if (displayCategory.includes("Strength") || displayCategory === "Gymnastics" || displayCategory === "Weightlifting") {
+                    displayCategory = "Strength";
+                } else if (displayCategory === "Cardio" || displayCategory === "Endurance") {
+                    displayCategory = "Endurance & Speed";
+                } else if (displayCategory === "Metcon" || displayCategory === "Power") {
+                    displayCategory = "Power & Capacity";
+                } else if (displayCategory === "Mobility" || displayCategory === "Flexibility") {
+                    displayCategory = "Mobility";
+                }
 
                 map[originalId] = {
                     exerciseId: originalId,
@@ -78,14 +88,12 @@ export function useTrophies(history: HistoryItem[], exercises: any[]) {
             "Strength": 0,
             "Endurance & Speed": 0,
             "Power & Capacity": 0,
-            "Mobility": 0,
-            "Strength (5 Rep Max)": 0
+            "Mobility": 0
         };
         Object.values(groupedTrophies).flat().forEach(t => {
+            const level = t.best?.level || 0;
             if (scores[t.category] !== undefined) {
-                scores[t.category] += (t.best.level * 100);
-            } else if (t.category === "Strength (5 Rep Max)") {
-                scores["Strength"] += (t.best.level * 100);
+                scores[t.category] += (level * 100);
             }
         });
         return scores;

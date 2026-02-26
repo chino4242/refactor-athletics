@@ -158,19 +158,40 @@ export const getWeeklyProgress = async (userId: string, startTs: number): Promis
 export const getUserStats = async (userId: string): Promise<UserStats | null> => {
     const history = await getHistory(userId);
     let totalXp = 0;
+
+    // Track highest level achieved per exercise for Power Level calculation
+    const maxLevelPerExercise: Record<string, number> = {};
+
     for (const item of history) {
         totalXp += item.xp || 0;
+
+        // Track the highest level for this exercise
+        if (item.level > 0 && item.exercise_id) {
+            if (!maxLevelPerExercise[item.exercise_id] || item.level > maxLevelPerExercise[item.exercise_id]) {
+                maxLevelPerExercise[item.exercise_id] = item.level;
+            }
+        }
     }
 
-    const power_level = Math.floor(totalXp / 1000) + 1;
+    // Power Level = Sum of (100 * max_level) for each ranked exercise
+    let powerLevelScore = 0;
+    for (const exId in maxLevelPerExercise) {
+        powerLevelScore += (maxLevelPerExercise[exId] * 100);
+    }
+
+    // If no ranked exercises, floor it to 1, or just use the calculated score
+    const finalPowerLevel = powerLevelScore > 0 ? powerLevelScore : 1;
+
+    // Calculate player level based on total XP (every 1000 XP = 1 Level)
+    const playerLevel = Math.floor(totalXp / 1000) + 1;
     const level_progress_percent = ((totalXp % 1000) / 1000) * 100;
 
     return {
-        power_level: power_level,
+        power_level: finalPowerLevel,
         exercises_tracked: history.length,
-        highest_level_achieved: 0,
+        highest_level_achieved: Math.max(0, ...Object.values(maxLevelPerExercise)),
         total_career_xp: totalXp,
-        player_level: power_level,
+        player_level: playerLevel,
         level_progress_percent: level_progress_percent,
         xp_to_next_level: 1000 - (totalXp % 1000),
         no_alcohol_streak: 0,
@@ -485,36 +506,60 @@ export const calculateRank = async (
     if (!item) throw new Error(`Exercise ${exerciseId} not found`);
 
     const standards = item.standards || {};
-    const tiers: any[] = standards.tiers || [];
     const scoring = standards.scoring || 'higher_is_better';
+    const isXBW = standards.unit === 'xBW';
 
-    let rankLevel = 'level0';
-    let rankName = 'Unranked';
-    let nextMilestone: string | null = 'Complete more workouts';
+    // 1. Calculate the comparison value based on xBW and special cases
+    let finalValue = value;
+    if (exerciseId === 'weighted_pullup' || exerciseId === 'five_rm_weighted_pull_up') {
+        finalValue = value + bodyweight;
+    }
+    const comparisonValue = isXBW ? finalValue / bodyweight : finalValue;
 
-    for (let i = tiers.length - 1; i >= 0; i--) {
-        const tier = tiers[i];
-        const threshold = tier.threshold_xbw ? tier.threshold_xbw * bodyweight : (tier.threshold ?? 0);
-        const passes = scoring === 'lower_is_better' ? value <= threshold : value >= threshold;
+    // 2. Find the correct brackets (age + sex)
+    const sexKey = (sex || 'male').toLowerCase() === 'female' ? 'female' : 'male';
+    const brackets = standards.brackets?.[sexKey] || [];
 
+    const userAge = age > 0 ? age : 25;
+    let ageBracket = brackets.find((b: any) => userAge >= b.min && userAge <= b.max);
+    if (!ageBracket && brackets.length > 0) {
+        if (userAge > 99) ageBracket = brackets[brackets.length - 1];
+        else ageBracket = brackets[0];
+    }
+    const levels = ageBracket ? ageBracket.levels : [];
+
+    // 3. Find current level
+    let currentLevelIndex = -1; // -1 means Level 0 (Peasant)
+    for (let i = 0; i < levels.length; i++) {
+        const threshold = levels[i];
+        const passes = scoring === 'lower_is_better' ? comparisonValue <= threshold : comparisonValue >= threshold;
         if (passes) {
-            rankLevel = `level${i + 1}`;
-            rankName = tier.name || `Level ${i + 1}`;
-            const nextTier = tiers[i + 1];
-            if (nextTier) {
-                const nextThreshold = nextTier.threshold_xbw ? nextTier.threshold_xbw * bodyweight : (nextTier.threshold ?? 0);
-                nextMilestone = `${nextThreshold} ${standards.unit || ''} to reach ${nextTier.name}`;
-            } else {
-                nextMilestone = 'MAX RANK ACHIEVED';
-            }
-            break;
+            currentLevelIndex = i;
         }
+    }
+
+    const rankLevel = `level${currentLevelIndex + 1}`;
+
+    const rankNames = ["Peasant", "Rookie", "Amateur", "Contender", "Pro", "Champion", "Legend"];
+    const rankName = rankNames[currentLevelIndex + 1] || "Vikingur";
+
+    let nextMilestone: string | null = null;
+    const nextLevelIndex = currentLevelIndex + 1;
+    if (nextLevelIndex < levels.length) {
+        let rawNextThreshold = levels[nextLevelIndex];
+        if (isXBW) {
+            rawNextThreshold *= bodyweight;
+        }
+        rawNextThreshold = Math.round(rawNextThreshold);
+        nextMilestone = `${rawNextThreshold} ${isXBW ? 'lbs' : (standards.unit || '')} to reach Level ${nextLevelIndex + 1}`;
+    } else {
+        nextMilestone = 'MAX RANK ACHIEVED';
     }
 
     const ts = Math.floor(Date.now() / 1000);
     const dateStr = new Date(ts * 1000).toISOString().split('T')[0];
-    const level = parseInt(rankLevel.replace('level', '')) || 0;
-    const xpEarned = level * 50;
+    const userLevelNum = currentLevelIndex + 1;
+    const xpEarned = userLevelNum > 0 ? userLevelNum * 50 : 0;
 
     await supabase.from('history').insert({
         user_id: userId,
@@ -523,7 +568,7 @@ export const calculateRank = async (
         date: dateStr,
         value: `${value}`,
         raw_value: value,
-        level,
+        level: userLevelNum,
         xp: xpEarned,
         rank_name: rankName,
     });
@@ -555,15 +600,43 @@ export const getPreviewRank = async (
     if (!item) return { next_milestone: null };
 
     const standards = item.standards || {};
-    const tiers: any[] = standards.tiers || [];
     const scoring = standards.scoring || 'higher_is_better';
+    const isXBW = standards.unit === 'xBW';
 
-    for (const tier of tiers) {
-        const threshold = tier.threshold_xbw ? tier.threshold_xbw * bodyweight : (tier.threshold ?? 0);
-        const passes = scoring === 'lower_is_better' ? currentValue <= threshold : currentValue >= threshold;
-        if (!passes) {
-            return { next_milestone: `${threshold} ${standards.unit || ''} to reach ${tier.name}` };
+    let finalValue = currentValue;
+    if (exerciseId === 'weighted_pullup' || exerciseId === 'five_rm_weighted_pull_up') {
+        finalValue = currentValue + bodyweight;
+    }
+    const comparisonValue = isXBW ? finalValue / bodyweight : finalValue;
+
+    const sexKey = (sex || 'male').toLowerCase() === 'female' ? 'female' : 'male';
+    const brackets = standards.brackets?.[sexKey] || [];
+
+    const userAge = age > 0 ? age : 25;
+    let ageBracket = brackets.find((b: any) => userAge >= b.min && userAge <= b.max);
+    if (!ageBracket && brackets.length > 0) {
+        if (userAge > 99) ageBracket = brackets[brackets.length - 1];
+        else ageBracket = brackets[0];
+    }
+    const levels = ageBracket ? ageBracket.levels : [];
+
+    let userLevelIndex = -1;
+    for (let i = 0; i < levels.length; i++) {
+        const threshold = levels[i];
+        const passes = scoring === 'lower_is_better' ? comparisonValue <= threshold : comparisonValue >= threshold;
+        if (passes) {
+            userLevelIndex = i;
         }
+    }
+
+    const nextIndex = userLevelIndex + 1;
+    if (nextIndex < levels.length) {
+        let rawNextThreshold = levels[nextIndex];
+        if (isXBW) {
+            rawNextThreshold *= bodyweight;
+        }
+        rawNextThreshold = Math.round(rawNextThreshold);
+        return { next_milestone: `${rawNextThreshold} ${isXBW ? 'lbs' : (standards.unit || '')} to reach Level ${nextIndex + 1}` };
     }
 
     return { next_milestone: null };
