@@ -185,14 +185,19 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
             const isOver = filled > dailyTarget;
             const color = isOver ? (macroKey === 'habit_water' ? baseColor : 'text-red-500') : baseColor; // Don't turn red for water
 
+            console.log(`Bar ${label} (${macroKey}):`, { filled, dailyTarget, percent });
+
             return (
                 <div className="mb-3">
-                    <div className="flex justify-between text-[10px] font-bold text-zinc-400 uppercase mb-1">
+                    <div className="flex justify-between text-xs font-bold text-zinc-400 uppercase mb-1">
                         <span>{label}</span>
                         <span className={color}>{Math.round(filled)} / {dailyTarget} {unit}</span>
                     </div>
                     <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden">
-                        <div className={`h-full ${color.replace('text-', 'bg-')} transition-all duration-500`} style={{ width: `${percent}%` }} />
+                        <div 
+                            className={`h-full ${color.replace('text-', 'bg-')} transition-all duration-500`} 
+                            style={{ width: `${percent}%` }} 
+                        />
                     </div>
                 </div>
             );
