@@ -25,6 +25,11 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
         water: 100
     });
 
+    // Debug: Log totals to see what's actually there
+    useEffect(() => {
+        console.log("NutritionTracker totals:", totals);
+    }, [totals]);
+
 
 
     // 🟢 NEW: Logging Mode for Macros
