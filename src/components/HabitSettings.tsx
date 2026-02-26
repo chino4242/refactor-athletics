@@ -56,7 +56,9 @@ export default function HabitSettings({ isOpen, onClose, userProfile, onUpdate }
             // Update hidden habits
             updatedProfile.hidden_habits = hidden;
 
+            console.log("Saving hidden_habits:", hidden);
             await saveProfile(updatedProfile);
+            console.log("Profile saved successfully");
             onUpdate();
             onClose();
         } catch (e) {

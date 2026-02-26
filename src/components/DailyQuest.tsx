@@ -190,6 +190,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
             const loadProfile = async () => {
               try {
                 const data = await getProfile(userId);
+                console.log("Profile reloaded, hidden_habits:", data?.hidden_habits);
                 if (data) setProfile(data);
               } catch (e) { console.error("Profile reload fail", e); }
             };
