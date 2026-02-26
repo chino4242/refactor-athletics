@@ -165,11 +165,14 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
 
   const handleFinishWorkout = async () => {
     if (!userId || sessionQueue.length === 0) return;
+    console.log("Starting workout submission...", { userId, sessionQueue });
     setIsSubmitting(true);
     let totalXp = 0;
     try {
       for (const item of sessionQueue) {
+        console.log("Logging workout:", item);
         const result = await logTrainingAction(userId, item.exerciseId, bodyweight, sex, item.sets);
+        console.log("Workout logged, result:", result);
         totalXp += result.xp_earned;
       }
       setSuccessData({ xp: totalXp, count: sessionQueue.length });
@@ -178,7 +181,7 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
       // Next.js Server Action automatically pushes standard revalidation on History
       if (onLogComplete) onLogComplete();
     } catch (e) {
-      console.error(e);
+      console.error("Error saving workout:", e);
       toast.error("Failed to save some exercises. Please check your internet.");
     } finally {
       setIsSubmitting(false);

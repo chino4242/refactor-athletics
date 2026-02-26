@@ -96,6 +96,7 @@ export async function logTrainingAction(
     sex: string,
     sets: any[]
 ) {
+    console.log("logTrainingAction called with:", { userId, exerciseId, bodyweight, sex, sets });
     const supabase = await createClient();
     
     // Fetch catalog and user profile
