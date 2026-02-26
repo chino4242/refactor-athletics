@@ -97,17 +97,68 @@ export async function logTrainingAction(
     sets: any[]
 ) {
     const supabase = await createClient();
-    let totalXp = 0;
-
-    // Fetch catalog to get XP factor
-    const { data: catalogItem } = await supabase.from('catalog').select('*').eq('id', exerciseId).single();
+    
+    // Fetch catalog and user profile
+    const [catalogResult, profileResult] = await Promise.all([
+        supabase.from('catalog').select('*').eq('id', exerciseId).single(),
+        supabase.from('users').select('age').eq('id', userId).single()
+    ]);
+    
+    const catalogItem = catalogResult.data;
+    const age = profileResult.data?.age || 25;
     const xpFactor = catalogItem ? (catalogItem.xp_factor || 1) : 1;
 
-    // Calculate XP
+    // Find best set for rank calculation
+    let bestValue = 0;
+    if (catalogItem?.type === 'Weight') {
+        // For weight exercises, use Epley formula: weight * (1 + reps/30)
+        bestValue = Math.max(...sets.map(s => s.weight * (1 + (s.reps || 1) / 30)));
+    } else if (catalogItem?.type === 'Reps') {
+        bestValue = Math.max(...sets.map(s => s.reps || 0));
+    } else if (catalogItem?.type === 'Time') {
+        bestValue = Math.max(...sets.map(s => s.duration || 0));
+    } else if (catalogItem?.type === 'Distance') {
+        bestValue = Math.max(...sets.map(s => s.distance || 0));
+    }
+
+    // Calculate rank
+    const standards = catalogItem?.standards || {};
+    const scoring = standards.scoring || 'higher_is_better';
+    const isXBW = standards.unit === 'xBW';
+    
+    let finalValue = bestValue;
+    if (exerciseId === 'weighted_pullup' || exerciseId === 'five_rm_weighted_pull_up') {
+        finalValue = bestValue + bodyweight;
+    }
+    const comparisonValue = isXBW ? finalValue / bodyweight : finalValue;
+
+    const sexKey = (sex || 'male').toLowerCase() === 'female' ? 'female' : 'male';
+    const brackets = standards.brackets?.[sexKey] || [];
+    let ageBracket = brackets.find((b: any) => age >= b.min && age <= b.max);
+    if (!ageBracket && brackets.length > 0) {
+        ageBracket = age > 99 ? brackets[brackets.length - 1] : brackets[0];
+    }
+    const levels = ageBracket ? ageBracket.levels : [];
+
+    let currentLevelIndex = -1;
+    for (let i = 0; i < levels.length; i++) {
+        const threshold = levels[i];
+        const passes = scoring === 'lower_is_better' ? comparisonValue <= threshold : comparisonValue >= threshold;
+        if (passes) currentLevelIndex = i;
+    }
+
+    const rankNames = ["Peasant", "Rookie", "Amateur", "Contender", "Pro", "Champion", "Legend"];
+    const rankName = rankNames[currentLevelIndex + 1] || "Vikingur";
+    const userLevel = currentLevelIndex + 1;
+    const xpEarned = userLevel > 0 ? userLevel * 50 : 0;
+
+    // Calculate total XP from sets
+    let totalXp = 0;
     for (const set of sets) {
         const setXp = Math.floor((set.reps || 10) * xpFactor);
         totalXp += setXp;
     }
+    totalXp += xpEarned; // Add rank XP
 
     const ts = Math.floor(Date.now() / 1000);
     const dateStr = new Date(ts * 1000).toISOString().split('T')[0];
@@ -119,12 +170,12 @@ export async function logTrainingAction(
             exercise_id: exerciseId,
             timestamp: ts,
             date: dateStr,
-            value: sets.length > 0 ? `${sets.length} sets` : 'Completed',
-            raw_value: sets.length,
+            value: `${Math.round(bestValue)} ${standards.unit || ''}`,
+            raw_value: bestValue,
             sets: sets,
-            level: 1,
+            level: userLevel,
             xp: totalXp,
-            rank_name: 'Novice'
+            rank_name: rankName
         });
 
     if (error) throw error;
