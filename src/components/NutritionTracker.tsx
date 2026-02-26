@@ -157,6 +157,9 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
                 }
             }
 
+            // Wait a moment for database to update before refreshing
+            await new Promise(resolve => setTimeout(resolve, 500));
+
             // Note: Inputs cleared by Modal
 
             onUpdate();
