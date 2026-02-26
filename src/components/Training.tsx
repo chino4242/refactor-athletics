@@ -328,7 +328,7 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
                     ))}
                   </div>
                 )}
-                <div className="mt-2 text-[10px] text-zinc-500 flex items-center gap-1">
+                <div className="mt-2 text-xs text-zinc-500 flex items-center gap-1">
                   <InfoTooltip text="Custom exercises award 'Grind XP' based on volume, but do not contribute to your Rank Levels." size={12} />
                   <span>Pro Tip: Only "Ranked" exercises contribute to your Power Level.</span>
                 </div>
@@ -337,7 +337,7 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
 
             {/* INPUTS */}
             <div className="space-y-3 mb-8">
-              <div className="grid grid-cols-6 gap-2 text-[10px] text-zinc-500 uppercase font-bold tracking-wider px-2">
+              <div className="grid grid-cols-6 gap-2 text-xs text-zinc-500 uppercase font-bold tracking-wider px-2">
                 <div className="col-span-1 text-center">Set</div>
 
                 {/* DYNAMIC HEADER A: WEIGHT OR DISTANCE */}
@@ -345,7 +345,7 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
                   {showWeight ? 'Weight (lbs)' : showDist ? (
                     <button
                       onClick={() => setUseMiles(!useMiles)}
-                      className="text-[10px] font-bold uppercase tracking-wider bg-zinc-800 px-2 py-1 rounded hover:bg-zinc-700 transition text-zinc-400 hover:text-white"
+                      className="text-xs font-bold uppercase tracking-wider bg-zinc-800 px-2 py-1 rounded hover:bg-zinc-700 transition text-zinc-400 hover:text-white"
                     >
                       Distance ({useMiles ? 'Miles' : 'Meters'}) ⇄
                     </button>
@@ -360,7 +360,7 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
                         const lastSet = sets[sets.length - 1];
                         setSets([...sets, { ...lastSet }]);
                       }}
-                      className="text-[10px] text-zinc-500 hover:text-orange-500 font-bold uppercase tracking-wider transition-colors"
+                      className="text-xs text-zinc-500 hover:text-orange-500 font-bold uppercase tracking-wider transition-colors"
                       title="Copy last set"
                     >
                       Copy ↓
@@ -593,7 +593,7 @@ function HistoryFeed({ history, catalog, userId, onRefresh }: {
             .slice(0, 7)
             .map(([date, items]) => (
               <div key={date} className="bg-zinc-950/80 border border-zinc-800 p-4 rounded-xl shadow-sm">
-                <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                <div className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-3 flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
                   {date}
                 </div>
@@ -610,7 +610,7 @@ function HistoryFeed({ history, catalog, userId, onRefresh }: {
                           <span className="text-base group-hover:scale-110 transition-transform">{isHabit ? '🔹' : '🏋️‍♂️'}</span>
                           <div>
                             <div className="font-bold text-zinc-300 capitalize text-xs md:text-sm leading-tight">{exName}</div>
-                            <div className="text-[10px] md:text-xs text-zinc-500 font-mono">
+                            <div className="text-xs md:text-xs text-zinc-500 font-mono">
                               {item.value}
                               {item.description && <span className="text-zinc-600"> • {item.description}</span>}
                             </div>

@@ -163,22 +163,29 @@ export async function logTrainingAction(
     const ts = Math.floor(Date.now() / 1000);
     const dateStr = new Date(ts * 1000).toISOString().split('T')[0];
 
+    const workoutData = {
+        user_id: userId,
+        exercise_id: exerciseId,
+        timestamp: ts,
+        date: dateStr,
+        value: `${Math.round(bestValue)} ${standards.unit || ''}`,
+        raw_value: bestValue,
+        sets: sets,
+        level: userLevel,
+        xp: totalXp,
+        rank_name: rankName
+    };
+
+    console.log("Saving workout:", workoutData);
+
     const { error } = await supabase
         .from('workouts')
-        .insert({
-            user_id: userId,
-            exercise_id: exerciseId,
-            timestamp: ts,
-            date: dateStr,
-            value: `${Math.round(bestValue)} ${standards.unit || ''}`,
-            raw_value: bestValue,
-            sets: sets,
-            level: userLevel,
-            xp: totalXp,
-            rank_name: rankName
-        });
+        .insert(workoutData);
 
-    if (error) throw error;
+    if (error) {
+        console.error("Error inserting workout:", error);
+        throw error;
+    }
 
     revalidatePath('/', 'layout');
     return { xp_earned: totalXp };

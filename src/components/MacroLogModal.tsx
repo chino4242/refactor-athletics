@@ -84,7 +84,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals }: MacroL
                     <div className="grid grid-cols-2 gap-3">
                         {/* Carbs */}
                         <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-orange-500 uppercase flex items-center gap-1">
+                            <label className="text-xs font-bold text-orange-500 uppercase flex items-center gap-1">
                                 <Wheat size={12} /> Carbs (g)
                             </label>
                             <div className="flex gap-1">
@@ -97,7 +97,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals }: MacroL
                                 />
                                 <button
                                     onClick={() => handleQuickLog('carbs', carbs)}
-                                    className="bg-orange-600/20 hover:bg-orange-600 text-orange-500 hover:text-white border border-orange-600/50 rounded px-3 font-bold transition-all"
+                                    className="bg-orange-600/20 hover:bg-orange-600 text-orange-500 hover:text-white border border-orange-600/50 rounded px-4 py-2.5 font-bold transition-all"
                                 >
                                     LOG
                                 </button>
@@ -106,7 +106,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals }: MacroL
 
                         {/* Fat */}
                         <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-yellow-500 uppercase flex items-center gap-1">
+                            <label className="text-xs font-bold text-yellow-500 uppercase flex items-center gap-1">
                                 <Ban size={12} /> Fat (g)
                             </label>
                             <div className="flex gap-1">
@@ -119,7 +119,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals }: MacroL
                                 />
                                 <button
                                     onClick={() => handleQuickLog('fat', fat)}
-                                    className="bg-yellow-600/20 hover:bg-yellow-600 text-yellow-500 hover:text-white border border-yellow-600/50 rounded px-3 font-bold transition-all"
+                                    className="bg-yellow-600/20 hover:bg-yellow-600 text-yellow-500 hover:text-white border border-yellow-600/50 rounded px-4 py-2.5 font-bold transition-all"
                                 >
                                     LOG
                                 </button>
@@ -128,7 +128,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals }: MacroL
 
                         {/* Protein */}
                         <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-blue-500 uppercase flex items-center gap-1">
+                            <label className="text-xs font-bold text-blue-500 uppercase flex items-center gap-1">
                                 <Egg size={12} /> Protein (g)
                             </label>
                             <div className="flex gap-1">
@@ -141,7 +141,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals }: MacroL
                                 />
                                 <button
                                     onClick={() => handleQuickLog('protein', protein)}
-                                    className="bg-blue-600/20 hover:bg-blue-600 text-blue-500 hover:text-white border border-blue-600/50 rounded px-3 font-bold transition-all"
+                                    className="bg-blue-600/20 hover:bg-blue-600 text-blue-500 hover:text-white border border-blue-600/50 rounded px-4 py-2.5 font-bold transition-all"
                                 >
                                     LOG
                                 </button>

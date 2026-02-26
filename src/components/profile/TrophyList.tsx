@@ -46,14 +46,14 @@ export default function TrophyList({
                         {!isBest && (
                             <button
                                 onClick={(e) => { e.stopPropagation(); onDelete(item); }}
-                                className="text-zinc-600 hover:text-red-500 transition-all p-2 hover:bg-zinc-800 rounded ml-2"
+                                className="text-zinc-600 hover:text-red-500 transition-all p-2.5 hover:bg-zinc-800 rounded ml-2"
                                 title="Delete entry"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
                             </button>
                         )}
                     </div>
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide border ${item.level >= 3 ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' : item.level >= 1 ? 'bg-zinc-800 text-zinc-400 border-zinc-700' : 'bg-zinc-900 text-zinc-600 border-zinc-800'}`}>Level {item.level}</span>
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wide border ${item.level >= 3 ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' : item.level >= 1 ? 'bg-zinc-800 text-zinc-400 border-zinc-700' : 'bg-zinc-900 text-zinc-600 border-zinc-800'}`}>Level {item.level}</span>
                     <span className="text-[9px] text-zinc-500 mt-1">{item.date}</span>
                 </div>
                 {isBest && <img src={imageSrc} alt={`Lvl ${item.level}`} className="w-12 h-12 rounded-md object-cover border border-zinc-700 bg-zinc-800 shrink-0 shadow-sm" />}
@@ -92,14 +92,14 @@ export default function TrophyList({
                                 {displayCategory.includes("Mobility") && "🧘"}
                                 {displayCategory}
                             </h3>
-                            <span className="text-[10px] font-bold bg-zinc-800 text-zinc-400 px-2 py-1 rounded">
+                            <span className="text-xs font-bold bg-zinc-800 text-zinc-400 px-2 py-1 rounded">
                                 Total Score: {categoryStats[category] || 0}
                             </span>
                         </div>
                         <div className="overflow-x-auto w-full max-w-full">
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="text-zinc-500 text-[10px] uppercase tracking-wider border-b border-zinc-800 bg-zinc-900/30">
+                                    <tr className="text-zinc-500 text-xs uppercase tracking-wider border-b border-zinc-800 bg-zinc-900/30">
                                         <th className="py-3 pl-6 font-bold w-1/3">Exercise</th>
                                         <th className="py-3 pl-4 font-bold w-1/3">Most Recent</th>
                                         <th className="py-3 pr-6 text-right font-bold w-1/3">Personal Best</th>

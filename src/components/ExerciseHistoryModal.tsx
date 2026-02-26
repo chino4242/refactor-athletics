@@ -94,7 +94,7 @@ export default function ExerciseHistoryModal({ exercise, history, onClose }: Exe
                 <div className="p-6 border-b border-zinc-800 bg-zinc-950 relative">
                     <button
                         onClick={onClose}
-                        className="absolute top-4 right-4 p-2 bg-zinc-800 hover:bg-zinc-700 rounded-full text-zinc-400 hover:text-white transition"
+                        className="absolute top-4 right-4 p-2.5 bg-zinc-800 hover:bg-zinc-700 rounded-full text-zinc-400 hover:text-white transition"
                     >
                         ✕
                     </button>
@@ -105,7 +105,7 @@ export default function ExerciseHistoryModal({ exercise, history, onClose }: Exe
                             <div className="flex items-center gap-3">
                                 <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{exercise.category}</span>
                                 {maxLevel > 0 && (
-                                    <span className="bg-orange-600 text-white text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider">
+                                    <span className="bg-orange-600 text-white text-xs font-black px-2 py-0.5 rounded uppercase tracking-wider">
                                         Level {maxLevel} Power
                                     </span>
                                 )}
@@ -116,8 +116,8 @@ export default function ExerciseHistoryModal({ exercise, history, onClose }: Exe
                         {isRusty && (
                             <div className="flex flex-col items-end">
                                 <div className="text-3xl">⚠️</div>
-                                <div className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">Rusty</div>
-                                <div className="text-[10px] text-zinc-600">{daysSinceLastLog} Days Inactive</div>
+                                <div className="text-xs font-bold text-amber-500 uppercase tracking-widest">Rusty</div>
+                                <div className="text-xs text-zinc-600">{daysSinceLastLog} Days Inactive</div>
                             </div>
                         )}
                     </div>

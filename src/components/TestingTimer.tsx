@@ -83,8 +83,8 @@ export default function TestingTimer({ variant = 'card' }: TestingTimerProps) {
                         <div className="bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-[6px] flex items-center gap-2">
                             <div className="text-sm">🔥</div>
                             <div className="flex flex-col items-end">
-                                <span className="text-[10px] font-bold uppercase text-white leading-none">Testing Week</span>
-                                <span className="text-[9px] text-zinc-300 leading-none">Log your Ranks</span>
+                                <span className="text-xs font-bold uppercase text-white leading-none">Testing Week</span>
+                                <span className="text-xs text-zinc-300 leading-none">Log your Ranks</span>
                             </div>
                         </div>
                     </div>
@@ -117,7 +117,7 @@ export default function TestingTimer({ variant = 'card' }: TestingTimerProps) {
             <Link href="/rank" className="absolute bottom-4 right-4 z-20 group">
                 <div className="bg-black/60 hover:bg-black/80 backdrop-blur-md border border-white/10 rounded-lg px-3 py-2 flex items-center gap-3 transition-all">
                     <div className="flex flex-col items-end">
-                        <span className="text-[10px] uppercase text-zinc-400 font-bold leading-none mb-0.5 group-hover:text-white transition-colors">Until Testing</span>
+                        <span className="text-xs uppercase text-zinc-400 font-bold leading-none mb-0.5 group-hover:text-white transition-colors">Until Testing</span>
                         <span className="text-xs font-black text-white leading-none">{daysUntilTest} Days</span>
                     </div>
                     <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">

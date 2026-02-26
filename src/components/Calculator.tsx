@@ -362,7 +362,7 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
                     <div className="mb-8 p-4 bg-zinc-900 rounded-xl border border-zinc-700 flex flex-col gap-2">
                         <div className="flex justify-between items-center">
                             <div>
-                                <h3 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Player Stats</h3>
+                                <h3 className="text-xs text-zinc-500 font-bold uppercase tracking-wider">Player Stats</h3>
                                 <p className="text-sm font-bold text-zinc-300">
                                     {age > 0 ? `${age} yrs` : 'Age: --'} • <span className="capitalize">{sex}</span> • {bodyweight > 0 ? `${bodyweight} lbs` : 'Weight: --'}
                                 </p>
@@ -378,7 +378,7 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
                     {/* Recent Exercises Quick Access */}
                     {recentExercises.length > 0 && !isDropdownOpen && (
                         <div className="mb-4">
-                            <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">Recent</label>
+                            <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">Recent</label>
                             <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
                                 {recentExercises.map(ex => (
                                     <button
@@ -415,7 +415,7 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
                             <div className="absolute top-full left-0 right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl max-h-80 overflow-y-auto z-50 divide-y divide-zinc-800">
                                 {Object.entries(filteredGroups).map(([category, items]) => (
                                     <div key={category}>
-                                        <div className="sticky top-0 bg-zinc-950/90 backdrop-blur px-3 py-1 text-[10px] uppercase font-bold text-orange-500 tracking-wider border-b border-zinc-800">
+                                        <div className="sticky top-0 bg-zinc-950/90 backdrop-blur px-3 py-1 text-xs uppercase font-bold text-orange-500 tracking-wider border-b border-zinc-800">
                                             {category}
                                         </div>
                                         {items.map((ex) => (
@@ -435,18 +435,18 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
                     <div className="mb-8 p-4 rounded-xl border border-orange-500/30 bg-gradient-to-r from-orange-500/10 to-transparent flex justify-between items-center relative overflow-hidden">
                         <div className="absolute left-0 top-0 w-1 h-full bg-orange-500"></div>
                         <div>
-                            <div className="text-[10px] text-orange-400 font-bold uppercase tracking-widest mb-1 flex items-center gap-2">
+                            <div className="text-xs text-orange-400 font-bold uppercase tracking-widest mb-1 flex items-center gap-2">
                                 🎯 Current Objective
                             </div>
                             <div className={`text-lg font-black italic ${!nextGoal ? "text-zinc-500 animate-pulse" : "text-white"}`}>
                                 {nextGoal || (exerciseId ? "Calculating..." : "Select Exercise")}
                             </div>
                             {exerciseStats?.pb ? (
-                                <div className="text-[10px] text-zinc-500 font-mono mt-1">
+                                <div className="text-xs text-zinc-500 font-mono mt-1">
                                     <span>Current PB: {exerciseStats.pb.value}</span>
                                 </div>
                             ) : (
-                                <div className="text-[10px] text-zinc-500 font-mono mt-1">No history yet.</div>
+                                <div className="text-xs text-zinc-500 font-mono mt-1">No history yet.</div>
                             )}
                         </div>
                     </div>
@@ -535,7 +535,7 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
                                                 const lastVal = parseFloat(exerciseStats.lastLog.value.replace(/[^0-9.]/g, '')) || 0;
                                                 setResultValue(lastVal);
                                             }}
-                                            className="text-[10px] text-zinc-500 hover:text-orange-500 font-bold uppercase tracking-wider transition-colors"
+                                            className="text-xs text-zinc-500 hover:text-orange-500 font-bold uppercase tracking-wider transition-colors"
                                         >
                                             Last: {exerciseStats.lastLog.value}
                                         </button>
@@ -635,14 +635,14 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
                                     <div>
                                         <h3 className="text-lg font-bold text-white italic tracking-tight leading-none">RECENT PERFORMANCE</h3>
                                         <div className="flex items-center gap-2 mt-2 mb-1">
-                                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide border ${currentLog.level >= 3 ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' : currentLog.level >= 1 ? 'bg-zinc-800 text-zinc-400 border-zinc-700' : 'bg-zinc-900 text-zinc-600 border-zinc-800'}`}>
+                                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wide border ${currentLog.level >= 3 ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' : currentLog.level >= 1 ? 'bg-zinc-800 text-zinc-400 border-zinc-700' : 'bg-zinc-900 text-zinc-600 border-zinc-800'}`}>
                                                 Level {currentLog.level}
                                             </span>
                                             <span className="text-white font-bold text-sm">{currentLog.value}</span>
-                                            <span className="text-[10px] text-zinc-500">({formatDate(currentLog.date)})</span>
+                                            <span className="text-xs text-zinc-500">({formatDate(currentLog.date)})</span>
                                         </div>
                                         <div className="flex items-baseline gap-1">
-                                            <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">All-Time Best:</span>
+                                            <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider">All-Time Best:</span>
                                             <span className="text-orange-400 font-bold text-xs">{exerciseStats.pb.value}</span>
                                         </div>
                                     </div>
@@ -669,7 +669,7 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
                                 </svg>
                             </div>
 
-                            <div className="flex justify-between mt-2 text-[10px] text-zinc-500 font-mono uppercase pl-4">
+                            <div className="flex justify-between mt-2 text-xs text-zinc-500 font-mono uppercase pl-4">
                                 <span>{formatDate(exerciseStats.recentLogs[0]?.date)}</span>
                                 <span>{formatDate(exerciseStats.recentLogs[exerciseStats.recentLogs.length - 1]?.date)}</span>
                             </div>

@@ -154,12 +154,12 @@ export default function RankGauge({ exercise, value, age, sex, themeKey, bodywei
     return (
         <div className="bg-black/20 rounded-xl p-4 border border-white/10 mt-4">
             <div className="flex justify-between items-end mb-2">
-                <h4 className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Rank Progress</h4>
+                <h4 className="text-xs font-bold uppercase tracking-widest text-zinc-400">Rank Progress</h4>
                 <div className="text-xs font-mono font-bold text-orange-400">
                     {value > 0 ? (
-                        <span>{Math.round(value)} <span className="text-[10px] text-zinc-500">{unitLabel}</span></span>
+                        <span>{Math.round(value)} <span className="text-xs text-zinc-500">{unitLabel}</span></span>
                     ) : '--'}
-                    {isXBW && value > 0 && bodyweight > 0 && <span className="ml-1 text-[8px] text-zinc-600">({(value / bodyweight).toFixed(2)}x)</span>}
+                    {isXBW && value > 0 && bodyweight > 0 && <span className="ml-1 text-[10px] text-zinc-600">({(value / bodyweight).toFixed(2)}x)</span>}
                 </div>
             </div>
 
@@ -223,7 +223,7 @@ export default function RankGauge({ exercise, value, age, sex, themeKey, bodywei
                     animate={{ left: `${progressPercent}%` }}
                     transition={{ type: "spring", damping: 20 }}
                 >
-                    <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 text-[8px] font-bold bg-white text-black px-1 rounded z-30">YOU</div>
+                    <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 text-[10px] font-bold bg-white text-black px-1 rounded z-30">YOU</div>
                 </motion.div>
             </div>
         </div>

@@ -118,7 +118,7 @@ export default function BodyCompSummary({ profile, bodyCompHistory, refactorScor
 
                 {/* Refactor Score Badge */}
                 <div className="bg-zinc-800/50 px-3 py-1.5 rounded-lg border border-zinc-700">
-                    <div className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Score</div>
+                    <div className="text-xs text-zinc-500 uppercase tracking-widest font-bold">Score</div>
                     <div className={`text-xl font-black ${refactorScore.color}`}>
                         {refactorScore.score > 0 ? '+' : ''}{refactorScore.score}
                     </div>
@@ -153,7 +153,7 @@ export default function BodyCompSummary({ profile, bodyCompHistory, refactorScor
                 {metrics.map(metric => (
                     <div key={metric.id} className="bg-zinc-800/50 rounded-lg p-3 border border-zinc-700">
                         <div className="flex items-center justify-between mb-1">
-                            <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">
+                            <span className="text-xs text-zinc-500 uppercase tracking-wider font-bold">
                                 {metric.label}
                             </span>
                             {getGoalIcon(metric.goal)}
@@ -161,7 +161,7 @@ export default function BodyCompSummary({ profile, bodyCompHistory, refactorScor
                         <div className="text-lg font-black text-white mb-1">
                             {metric.current}{metric.unit}
                         </div>
-                        <div className={`text-[10px] font-mono ${
+                        <div className={`text-xs font-mono ${
                             metric.isOnTrack ? 'text-emerald-400' : 'text-rose-400'
                         }`}>
                             {metric.delta > 0 ? '+' : ''}{metric.delta.toFixed(1)}{metric.unit} {metric.isOnTrack ? '✓' : '✗'}

@@ -16,19 +16,19 @@ export default function MobileNav() {
             <div className="grid grid-cols-4 h-16">
                 <Link href="/track" className={`flex flex-col items-center justify-center gap-1 transition-colors ${isActive('/track')}`}>
                     <span className="text-xl">📝</span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider">Track</span>
+                    <span className="text-xs font-bold uppercase tracking-wider">Track</span>
                 </Link>
                 <Link href="/train" className={`flex flex-col items-center justify-center gap-1 transition-colors ${isActive('/train')}`}>
                     <span className="text-xl">🏋️‍♀️</span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider">Train</span>
+                    <span className="text-xs font-bold uppercase tracking-wider">Train</span>
                 </Link>
                 <Link href="/arena" className={`flex flex-col items-center justify-center gap-1 transition-colors ${isActive('/arena')}`}>
                     <span className="text-xl">⚔️</span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider">Arena</span>
+                    <span className="text-xs font-bold uppercase tracking-wider">Arena</span>
                 </Link>
                 <Link href="/profile" className={`flex flex-col items-center justify-center gap-1 transition-colors ${isActive('/profile')}`}>
                     <span className="text-xl">🏆</span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider">Profile</span>
+                    <span className="text-xs font-bold uppercase tracking-wider">Profile</span>
                 </Link>
             </div>
         </nav>
