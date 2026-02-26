@@ -282,7 +282,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
               <ViceToggle
                 virtueId="habit_no_alcohol"
                 viceId="habit_alcohol"
-                label="Alcohol"
+                label="Avoid Alcohol"
                 icon="🍺"
                 history={history}
                 viewDateStartTs={viewDateStartTs}
@@ -297,7 +297,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
               <ViceToggle
                 virtueId="habit_no_vice"
                 viceId="habit_bad_habit"
-                label="Vice"
+                label="Avoid Vice"
                 icon="🛡️"
                 history={history}
                 viewDateStartTs={viewDateStartTs}
@@ -312,7 +312,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
               <ViceToggle
                 virtueId="habit_no_sugar"
                 viceId="habit_sugar"
-                label="Sugar"
+                label="Avoid Sugar"
                 icon="🍬"
                 history={history}
                 viewDateStartTs={viewDateStartTs}

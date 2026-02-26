@@ -57,7 +57,7 @@ export default function ViceToggle({
             }
             // Log Success
             if (status !== 'success') {
-                await onLog(virtueId, 1, `No ${label}`);
+                await onLog(virtueId, 1, `Success: ${label}`);
             }
         } catch (e) {
             console.error("Failed to mark safe", e);
@@ -106,7 +106,7 @@ export default function ViceToggle({
 
                 <span className="text-2xl">✅</span>
                 <div className="text-center">
-                    <span className="block text-xs font-black uppercase text-white tracking-tight">No {label}</span>
+                    <span className="block text-xs font-black uppercase text-white tracking-tight">{label}</span>
                     <span className="text-[9px] font-bold text-emerald-400">COMPLETE</span>
                 </div>
             </div>
@@ -124,7 +124,7 @@ export default function ViceToggle({
                     <button
                         onClick={(e) => { e.stopPropagation(); handleMarkSafe(); }}
                         className="p-2 bg-black/40 hover:bg-emerald-500 rounded-full text-white/70 hover:text-white"
-                        title={`Mistake - Mark Safe`}
+                        title={`Mistake - Revert`}
                     >
                         <Check size={12} />
                     </button>
@@ -160,7 +160,7 @@ export default function ViceToggle({
                     onClick={handleMarkSafe}
                     disabled={isLoading}
                     className="bg-zinc-800 hover:bg-emerald-500 hover:text-white text-zinc-500 rounded-lg flex items-center justify-center transition-colors border border-zinc-700 hover:border-emerald-400"
-                    title={`No ${label}`}
+                    title={`Success: ${label}`}
                 >
                     <Check size={14} />
                 </button>
@@ -168,7 +168,7 @@ export default function ViceToggle({
                     onClick={handleMarkFail}
                     disabled={isLoading}
                     className="bg-zinc-800 hover:bg-red-500 hover:text-white text-zinc-500 rounded-lg flex items-center justify-center transition-colors border border-zinc-700 hover:border-red-400"
-                    title={`Logged ${label}`}
+                    title={`Failed: ${label}`}
                 >
                     <X size={14} />
                 </button>

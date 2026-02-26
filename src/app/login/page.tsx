@@ -1,11 +1,13 @@
 import { login, signup } from './actions';
 import Image from 'next/image';
 
-export default function LoginPage({
+export default async function LoginPage({
     searchParams,
 }: {
-    searchParams?: { message?: string }
+    searchParams?: Promise<{ message?: string }>
 }) {
+    const params = await searchParams;
+
     return (
         <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
             <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-3xl p-8 relative overflow-hidden">
@@ -22,9 +24,9 @@ export default function LoginPage({
                         <p className="text-zinc-500 font-mono text-xs uppercase tracking-widest mt-2">v2.0 Next.js</p>
                     </div>
 
-                    {searchParams?.message && (
+                    {params?.message && (
                         <div className="mb-6 p-4 rounded-xl bg-orange-500/10 border border-orange-500/30 text-orange-400 text-sm font-bold text-center">
-                            {searchParams.message}
+                            {params.message}
                         </div>
                     )}
 

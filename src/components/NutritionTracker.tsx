@@ -173,7 +173,7 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
         if (viewMode === 'daily') {
             // --- DAILY VIEW (Single Bar) ---
             const filled = totals[macroKey] || 0;
-            const percent = Math.min((filled / dailyTarget) * 100, 100);
+            const percent = dailyTarget > 0 ? Math.min((filled / dailyTarget) * 100, 100) : 0;
             const isOver = filled > dailyTarget;
             const color = isOver ? (macroKey === 'habit_water' ? baseColor : 'text-red-500') : baseColor; // Don't turn red for water
 
@@ -194,7 +194,7 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
             const actualTotal = Object.values(weeklyData).reduce((sum, dayData) => sum + (dayData[macroKey] || 0), 0);
 
             // Cap at 100% for the main bar width (unless we want it to overflow, better to stick to 100 and change color)
-            const percent = Math.min((actualTotal / weeklyTarget) * 100, 100);
+            const percent = weeklyTarget > 0 ? Math.min((actualTotal / weeklyTarget) * 100, 100) : 0;
             const isOver = actualTotal > weeklyTarget;
 
             // Base color for the bar

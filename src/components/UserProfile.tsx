@@ -28,9 +28,9 @@ interface UserProfileProps {
   currentWeight: number;
   exercises: any[];
   currentTheme: string;
-  history?: any[]; // Legacy prop, might be unused now if we fetch internally
-  onWeightUpdate: (newWeight: number) => void;
-  onProfileUpdate: (age: number, sex: string) => void;
+  history?: any[];
+  onWeightUpdate?: (newWeight: number) => void;
+  onProfileUpdate?: (age: number, sex: string) => void;
 }
 
 export default function UserProfile({
@@ -41,8 +41,8 @@ export default function UserProfile({
   currentWeight,
   exercises,
   currentTheme,
-  onWeightUpdate,
-  onProfileUpdate
+  onWeightUpdate = () => { },
+  onProfileUpdate = () => { },
 }: UserProfileProps) {
 
   // --- HOOKS ---
