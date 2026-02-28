@@ -8,6 +8,9 @@ The application uses **Supabase** (PostgreSQL) as its primary backend.
 ### 1.1 Core Tables
 - **users**: User profiles with age, sex, bodyweight, nutrition targets, habit targets, hidden habits
 - **catalog**: Exercise library with standards, categories, and XP factors
+  - **standards** (jsonb): Contains `brackets` (age/sex-based thresholds), `scoring` (higher_is_better/lower_is_better), and `unit` (lbs, sec, reps, xBW)
+  - **xp_factor** (numeric): Multiplier for XP calculation (default: 1)
+  - **242 exercises ingested** from activity_catalog.json
 - **workouts**: Exercise logs with sets, rank, level, XP (domain-specific table)
 - **nutrition_logs**: Macro tracking (protein, carbs, fat, calories, water) with XP
 - **habit_logs**: Daily habits (steps, sleep, etc.) with XP
@@ -21,6 +24,8 @@ The application uses **Supabase** (PostgreSQL) as its primary backend.
 ### 1.2 Row Level Security (RLS)
 RLS is active on all tables:
 - The `catalog` table is readable by everyone `(true)` but requires the `SUPABASE_SERVICE_ROLE_KEY` to insert/update metadata.
+  - **Important**: The `standards` and `xp_factor` columns were added via migration `20260228120000_add_catalog_columns.sql`
+  - After adding columns, you must restart the Supabase project or wait ~10 minutes for PostgREST schema cache to refresh
 - User data tables require authenticated `auth.uid()` checks to mutate data.
 - Program tables allow viewing all programs (for sharing) but only owners can edit.
 
@@ -29,6 +34,12 @@ RLS is active on all tables:
 2. `20260226_separate_domain_tables.sql` - Migrated from monolithic `history` table to domain-specific tables
 3. `20260226_remove_workout_fkey.sql` - Removed foreign key constraint on workouts.exercise_id for dynamic blocks
 4. `20260226_workout_programs_standalone.sql` - Added workout program builder tables
+5. `20260228120000_add_catalog_columns.sql` - Added `standards` (jsonb) and `xp_factor` (numeric) columns to catalog table
+
+**Note**: After running migrations that modify table schemas, Supabase's PostgREST API server caches the old schema. You must either:
+- Restart the Supabase project (Settings → General → Restart project)
+- Wait ~10 minutes for automatic cache refresh
+- Pause and unpause the project to force all services to reload
 
 ## 2. Core Mechanics
 

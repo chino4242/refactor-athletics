@@ -52,10 +52,9 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
       if (targetDateTs) {
         startTs = targetDateTs;
       } else {
-        const currentYear = new Date().getFullYear();
-        const yearStart = new Date(currentYear, 0, 1);
-        yearStart.setHours(0, 0, 0, 0);
-        startTs = Math.floor(yearStart.getTime() / 1000);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        startTs = Math.floor(today.getTime() / 1000);
       }
 
       const data = await getHabitProgress(userId, startTs);

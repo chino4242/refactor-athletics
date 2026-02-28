@@ -19,7 +19,8 @@ Recent architectural changes migrated from a monolithic `history` table to domai
 
 ### Core Tables
 - **users**: User profiles with age, sex, bodyweight, nutrition targets, habit targets, hidden habits
-- **catalog**: Exercise library with standards, categories, and XP factors
+- **catalog**: Exercise library with standards, categories, XP factors (242 exercises ingested)
+  - Added columns: `standards` (jsonb), `xp_factor` (numeric)
 - **workouts**: Exercise logs with sets, rank, level, XP (replaces old `history` table for workouts)
 - **nutrition_logs**: Macro tracking (protein, carbs, fat, calories, water) with XP
 - **habit_logs**: Daily habits (steps, sleep, etc.) with XP
@@ -66,11 +67,19 @@ Apply migrations in order:
 2. `20260226_separate_domain_tables.sql` - Domain-specific tables
 3. `20260226_remove_workout_fkey.sql` - Remove foreign key constraint
 4. `20260226_workout_programs_standalone.sql` - Workout programs
+5. `20260228120000_add_catalog_columns.sql` - Add catalog columns (standards, xp_factor)
 
 Run in Supabase SQL Editor or via CLI:
 ```bash
 supabase db push
 ```
+
+**After migrations, ingest the exercise catalog:**
+```bash
+npx tsx scripts/ingest-catalog.ts
+```
+
+This will populate the `catalog` table with 242 exercises including standards/thresholds for rank calculations.
 
 ### Running the App
 Start the Next.js development server:
