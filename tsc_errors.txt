@@ -1,0 +1,38 @@
+next.config.ts(7,3): error TS2353: Object literal may only specify known properties, and 'eslint' does not exist in type 'NextConfig'.
+src/components/arena/ActiveDuelCard.tsx(34,31): error TS2345: Argument of type 'number | undefined' is not assignable to parameter of type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+src/components/arena/ActiveDuelCard.tsx(35,33): error TS18048: 'myScore' is possibly 'undefined'.
+src/components/arena/ActiveDuelCard.tsx(36,36): error TS18048: 'theirScore' is possibly 'undefined'.
+src/components/arena/ActiveDuelCard.tsx(38,19): error TS18048: 'myScore' is possibly 'undefined'.
+src/components/arena/ActiveDuelCard.tsx(38,29): error TS18048: 'theirScore' is possibly 'undefined'.
+src/components/arena/ActiveDuelCard.tsx(62,57): error TS2345: Argument of type 'number | undefined' is not assignable to parameter of type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+src/components/arena/ChallengeLanding.tsx(25,21): error TS2345: Argument of type 'string | string[]' is not assignable to parameter of type 'string'.
+  Type 'string[]' is not assignable to type 'string'.
+src/components/arena/ChallengeModal.tsx(96,17): error TS2554: Expected 2 arguments, but got 7.
+src/components/arena/ChallengeModal.tsx(104,65): error TS18047: 'duel' is possibly 'null'.
+src/components/challenges/ActiveChallengeCard.tsx(49,31): error TS18047: 'res' is possibly 'null'.
+src/components/profile/CareerXpBar.tsx(1,15): error TS2724: '"../../services/api"' has no exported member named 'UserStats'. Did you mean 'getUserStats'?
+src/components/profile/MilestoneTable.tsx(4,30): error TS2459: Module '"../../services/api"' declares 'MilestoneResponse' locally, but it is not exported.
+src/components/profile/MilestoneTable.tsx(87,56): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/components/profile/PowerRadar.tsx(1,15): error TS2724: '"../../services/api"' has no exported member named 'UserStats'. Did you mean 'getUserStats'?
+src/components/profile/StatsOverview.tsx(1,15): error TS2724: '"../../services/api"' has no exported member named 'UserStats'. Did you mean 'getUserStats'?
+src/components/TrackPage.tsx(324,17): error TS2322: Type 'UserStats | null | undefined' is not assignable to type '{ player_level?: number | undefined; total_xp?: number | undefined; power_level?: number | undefined; } | null'.
+  Type 'undefined' is not assignable to type '{ player_level?: number | undefined; total_xp?: number | undefined; power_level?: number | undefined; } | null'.
+src/components/TrackPage.tsx(325,17): error TS2322: Type 'UserProfileData | null | undefined' is not assignable to type '{ body_composition_goals?: Record<string, string> | undefined; } | null'.
+  Type 'undefined' is not assignable to type '{ body_composition_goals?: Record<string, string> | undefined; } | null'.
+src/components/TrackPage.tsx(359,17): error TS2322: Type 'UserProfileData | null | undefined' is not assignable to type '{ bodyweight?: number | undefined; body_composition_goals?: Record<string, string> | undefined; } | null'.
+  Type 'undefined' is not assignable to type '{ bodyweight?: number | undefined; body_composition_goals?: Record<string, string> | undefined; } | null'.
+src/components/Training.tsx(6,15): error TS2305: Module '"../services/api"' has no exported member 'WorkoutSet'.
+src/components/WorkoutBuilder.tsx(6,53): error TS2724: '"@/services/workoutApi"' has no exported member named 'getworkoutBlocks'. Did you mean 'getWorkoutBlocks'?
+src/components/WorkoutBuilder.tsx(111,28): error TS2552: Cannot find name 'workout'. Did you mean 'Workout'?
+src/components/WorkoutBuilder.tsx(113,51): error TS2552: Cannot find name 'workout'. Did you mean 'Workout'?
+src/components/WorkoutBuilder.tsx(155,29): error TS2552: Cannot find name 'selectedworkout'. Did you mean 'selectedWorkout'?
+src/components/WorkoutBuilder.tsx(165,51): error TS2552: Cannot find name 'selectedworkout'. Did you mean 'selectedWorkout'?
+src/components/WorkoutBuilder.tsx(192,55): error TS2552: Cannot find name 'selectedworkout'. Did you mean 'selectedWorkout'?
+src/components/WorkoutBuilder.tsx(202,55): error TS2552: Cannot find name 'selectedworkout'. Did you mean 'selectedWorkout'?
+src/components/WorkoutBuilder.tsx(235,55): error TS2552: Cannot find name 'selectedworkout'. Did you mean 'selectedWorkout'?
+src/components/WorkoutBuilder.tsx(282,55): error TS2552: Cannot find name 'selectedworkout'. Did you mean 'selectedWorkout'?
+src/components/WorkoutBuilder.tsx(300,55): error TS2552: Cannot find name 'selectedworkout'. Did you mean 'selectedWorkout'?
+src/components/WorkoutBuilder.tsx(435,106): error TS2304: Cannot find name 'selectedworkout'.
+src/components/YesterdayRetroModal.tsx(42,22): error TS2741: Property 'initialProfile' is missing in type '{ userId: string; bodyweight: number; onXpEarned: () => void; targetDateTs: number; stats: null; activeChallenge: null; onStartChallenge: () => void; onChallengeUpdate: () => void; }' but required in type 'DailyQuestProps'.

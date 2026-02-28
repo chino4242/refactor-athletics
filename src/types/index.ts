@@ -50,8 +50,8 @@ export interface UserStats {
     total_career_xp: number;
 }
 
-// Workout Program Types
-export interface WorkoutProgram {
+// Workout Types
+export interface Workout {
     id: string;
     user_id: string;
     name: string;
@@ -60,12 +60,12 @@ export interface WorkoutProgram {
     updated_at: string;
 }
 
-export interface ProgramBlock {
+export interface WorkoutBlock {
     id: string;
-    program_id: string;
+    workout_id: string;
     block_order: number;
     block_type: 'exercise' | 'treadmill';
-    
+
     // Exercise fields
     exercise_id?: string;
     target_sets?: number;
@@ -73,20 +73,20 @@ export interface ProgramBlock {
     target_weight?: number;
     is_superset?: boolean;
     superset_group?: number;
-    
+
     // Treadmill fields
     duration_seconds?: number;
     incline?: number;
     intensity?: 'zone2' | 'base' | 'push' | 'all_out';
-    
+
     notes?: string;
     created_at: string;
 }
 
-export interface ProgramSchedule {
+export interface WorkoutSchedule {
     id: string;
     user_id: string;
-    program_id: string;
+    workout_id: string;
     scheduled_date: string;
     completed: boolean;
     completed_at?: string;

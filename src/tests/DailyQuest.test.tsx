@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import '@testing-library/jest-dom';
 import DailyQuest from '@/components/DailyQuest';
@@ -49,12 +49,16 @@ describe('DailyQuest Component', () => {
     });
 
     it('renders the DAILY QUESTS header', async () => {
-        render(<DailyQuest {...defaultProps} />);
+        await act(async () => {
+            render(<DailyQuest {...defaultProps} />);
+        });
         expect(screen.getByText(/DAILY QUESTS/i)).toBeInTheDocument();
     });
 
     it('renders the core habit buttons', async () => {
-        render(<DailyQuest {...defaultProps} />);
+        await act(async () => {
+            render(<DailyQuest {...defaultProps} />);
+        });
         expect(screen.getByText('Supplements')).toBeInTheDocument();
         expect(screen.getByText(/Sleep 7\+/i)).toBeInTheDocument();
         expect(screen.getByText(/Steps/i)).toBeInTheDocument();
@@ -64,9 +68,14 @@ describe('DailyQuest Component', () => {
         const { logHabitAction } = await import('@/app/actions');
         vi.mocked(logHabitAction).mockResolvedValue({ xp_earned: 5 });
 
-        render(<DailyQuest {...defaultProps} />);
+        await act(async () => {
+            render(<DailyQuest {...defaultProps} />);
+        });
         const btn = screen.getByText('Supplements').closest('button');
-        fireEvent.click(btn!);
+
+        await act(async () => {
+            fireEvent.click(btn!);
+        });
 
         await waitFor(() => {
             expect(logHabitAction).toHaveBeenCalledWith(
@@ -86,18 +95,28 @@ describe('DailyQuest Component', () => {
         const { logHabitAction } = await import('@/app/actions');
         vi.mocked(logHabitAction).mockResolvedValue({ xp_earned: 150 });
 
-        render(<DailyQuest {...defaultProps} />);
+        await act(async () => {
+            render(<DailyQuest {...defaultProps} />);
+        });
 
         const card = screen.getByText('Steps', { selector: 'span.uppercase' }).closest('button');
         expect(card).toBeInTheDocument();
-        fireEvent.click(card!);
+
+        await act(async () => {
+            fireEvent.click(card!);
+        });
 
         const stepsInput = screen.getByPlaceholderText('steps');
-        fireEvent.change(stepsInput, { target: { value: '10000' } });
+        await act(async () => {
+            fireEvent.change(stepsInput, { target: { value: '10000' } });
+        });
 
         const logBtn = screen.getByText('LOG');
         expect(logBtn).not.toBeDisabled();
-        fireEvent.click(logBtn);
+
+        await act(async () => {
+            fireEvent.click(logBtn);
+        });
 
         await waitFor(() => {
             expect(logHabitAction).toHaveBeenCalledWith(
@@ -112,17 +131,23 @@ describe('DailyQuest Component', () => {
         expect(mockToast.xp).toHaveBeenCalledWith(expect.stringContaining('+150 XP'));
     });
 
-    it('disables LOG button when input is empty', () => {
-        render(<DailyQuest {...defaultProps} />);
+    it('disables LOG button when input is empty', async () => {
+        await act(async () => {
+            render(<DailyQuest {...defaultProps} />);
+        });
 
         const card = screen.getByText('Steps', { selector: 'span.uppercase' }).closest('button');
-        fireEvent.click(card!);
+        await act(async () => {
+            fireEvent.click(card!);
+        });
 
         const logBtn = screen.getByText('LOG');
         expect(logBtn).toBeDisabled();
 
         const stepsInput = screen.getByPlaceholderText('steps');
-        fireEvent.change(stepsInput, { target: { value: '100' } });
+        await act(async () => {
+            fireEvent.change(stepsInput, { target: { value: '100' } });
+        });
         expect(logBtn).not.toBeDisabled();
     });
 
@@ -130,9 +155,14 @@ describe('DailyQuest Component', () => {
         const { logHabitAction } = await import('@/app/actions');
         vi.mocked(logHabitAction).mockRejectedValue(new Error('Network Error'));
 
-        render(<DailyQuest {...defaultProps} />);
+        await act(async () => {
+            render(<DailyQuest {...defaultProps} />);
+        });
+
         const btn = screen.getByText(/Sleep 7\+/i).closest('button');
-        fireEvent.click(btn!);
+        await act(async () => {
+            fireEvent.click(btn!);
+        });
 
         await waitFor(() => {
             expect(mockToast.error).toHaveBeenCalledWith('Failed to log quest.');
@@ -159,10 +189,14 @@ describe('DailyQuest Component', () => {
             total_volume_today: 12500,
         };
 
-        render(<DailyQuest {...defaultProps} stats={statsWithVolume as any} />);
+        await act(async () => {
+            render(<DailyQuest {...defaultProps} stats={statsWithVolume as any} />);
+        });
 
         const shareBtn = screen.getByText('Share');
-        fireEvent.click(shareBtn);
+        await act(async () => {
+            fireEvent.click(shareBtn);
+        });
 
         expect(mockToast.success).toHaveBeenCalledWith('Report copied to clipboard!');
         const copiedText = writeTextMock.mock.calls[0][0];
