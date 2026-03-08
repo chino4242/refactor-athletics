@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { saveProfile } from '../../services/api';
 import { Settings, Edit2, UserCog } from 'lucide-react';
@@ -29,6 +30,7 @@ export default function ProfileCard({
     onProfileUpdate,
     onReload
 }: ProfileCardProps) {
+    const router = useRouter();
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
@@ -62,21 +64,22 @@ export default function ProfileCard({
     const handleSaveProfile = async () => {
         setIsSaving(true);
         try {
-            await saveProfile({
+            const result = await saveProfile({
                 user_id: userId,
                 age: calculatedAge,
                 sex: formSex,
                 bodyweight: formWeight,
-                goal_weight: formGoalWeight > 0 ? formGoalWeight : undefined,
+                body_composition_goals: formGoalWeight > 0 ? { target_weight: formGoalWeight.toString() } : undefined,
                 is_onboarded: true,
                 display_name: displayName,
             });
+            console.log("Profile saved successfully:", result);
             onProfileUpdate(formWeight, calculatedAge, formSex);
             setIsEditing(false);
-            onReload();
+            router.refresh(); // Refresh server-rendered data
         } catch (error) {
             console.error("Failed to save profile:", error);
-            alert("Failed to save profile.");
+            alert(`Failed to save profile: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
         } finally {
             setIsSaving(false);
         }

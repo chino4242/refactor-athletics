@@ -26,7 +26,8 @@ export function useTrophies(history: HistoryItem[], exercises: any[]) {
             const cleanId = normalizeId(item.exercise_id);
             const originalId = item.exercise_id;
 
-            let shouldShow = validCatalogIds.has(cleanId) || validCatalogIds.has(originalId) || Number(item.level) > 0;
+            // Only show exercises that have standards defined in the catalog
+            let shouldShow = validCatalogIds.has(cleanId) || validCatalogIds.has(originalId);
 
             if (item.exercise_id.startsWith('habit_')) shouldShow = false;
             if (item.exercise_id === 'body_weight') shouldShow = false;

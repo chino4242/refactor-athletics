@@ -19,8 +19,8 @@ export function useUserProfileData(userId: string) {
 
             try {
                 const profile = await getProfile(userId);
-                if (profile && profile.goal_weight) {
-                    setInitialGoalWeight(Number(profile.goal_weight));
+                if (profile?.body_composition_goals?.target_weight) {
+                    setInitialGoalWeight(parseFloat(profile.body_composition_goals.target_weight));
                 }
             } catch (e) {
                 console.error("Failed to load goal weight", e);

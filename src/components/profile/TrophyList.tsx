@@ -106,13 +106,26 @@ export default function TrophyList({
                                     </tr>
                                 </thead>
                                 <tbody className="text-sm divide-y divide-zinc-800">
-                                    {items.map((trophy) => (
-                                        <tr key={trophy.exerciseId} className="hover:bg-zinc-800/50 transition group">
-                                            <td className="py-3 pl-6 align-middle"><span className="font-bold text-white block text-sm">{getExerciseName(trophy.exerciseId.replace(/^(five_rm_|one_rm_)/, ''))}</span></td>
-                                            <td className="py-3 pl-4 align-middle">{renderStatCell(trophy.recent, false)}</td>
-                                            <td className="py-3 pr-6 align-middle">{renderStatCell(trophy.best, true)}</td>
-                                        </tr>
-                                    ))}
+                                    {items.map((trophy) => {
+                                        const cleanId = trophy.exerciseId.replace(/^(five_rm_|one_rm_)/, '');
+                                        let exerciseName = getExerciseName(cleanId) || getExerciseName(trophy.exerciseId);
+                                        
+                                        // Fallback: format the ID if no name found
+                                        if (!exerciseName || exerciseName === cleanId || exerciseName === trophy.exerciseId) {
+                                            exerciseName = cleanId
+                                                .split('_')
+                                                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                                                .join(' ');
+                                        }
+                                        
+                                        return (
+                                            <tr key={trophy.exerciseId} className="hover:bg-zinc-800/50 transition group">
+                                                <td className="py-3 pl-6 align-middle"><span className="font-bold text-white block text-sm">{exerciseName}</span></td>
+                                                <td className="py-3 pl-4 align-middle">{renderStatCell(trophy.recent, false)}</td>
+                                                <td className="py-3 pr-6 align-middle">{renderStatCell(trophy.best, true)}</td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>

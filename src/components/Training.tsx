@@ -66,6 +66,9 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successData, setSuccessData] = useState<{ xp: number, count: number } | null>(null);
+  const [achievements, setAchievements] = useState<Array<{type: 'rankup' | 'pr', exerciseName: string, level?: number, value?: string}>>([]);
+  const [showAchievement, setShowAchievement] = useState(false);
+  const [currentAchievementIndex, setCurrentAchievementIndex] = useState(0);
   const toast = useToast();
 
 
@@ -174,15 +177,74 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
     console.log("Starting workout submission...", { userId, sessionQueue });
     setIsSubmitting(true);
     let totalXp = 0;
+    const newAchievements: Array<{type: 'rankup' | 'pr', exerciseName: string, level?: number, value?: string, rankName?: string}> = [];
+    
     try {
+      // Get previous bests for all exercises in session
+      const exerciseIds = sessionQueue.map(item => item.exerciseId);
+      const previousBests: Record<string, {level: number, raw_value: number}> = {};
+      
+      console.log("Checking for achievements. History:", history.length, "exercises");
+      
+      for (const exId of exerciseIds) {
+        const prevLogs = history.filter(h => h.exercise_id === exId);
+        if (prevLogs.length > 0) {
+          const bestLevel = Math.max(...prevLogs.map(h => h.level || 0));
+          const bestValue = Math.max(...prevLogs.map(h => parseFloat(h.value) || 0));
+          previousBests[exId] = { level: bestLevel, raw_value: bestValue };
+          console.log(`Previous best for ${exId}:`, previousBests[exId]);
+        } else {
+          console.log(`No previous logs for ${exId}`);
+        }
+      }
+      
       for (const item of sessionQueue) {
         console.log("Logging workout:", item);
         const result = await logTrainingAction(userId, item.exerciseId, bodyweight, sex, item.sets);
         console.log("Workout logged, result:", result);
         totalXp += result.xp_earned;
+        
+        // Check for rank up
+        const prevBest = previousBests[item.exerciseId];
+        console.log(`Checking ${item.exerciseId}: new level=${result.level}, prev level=${prevBest?.level}, new value=${result.raw_value}, prev value=${prevBest?.raw_value}`);
+        
+        if (result.level !== undefined && prevBest && result.level > prevBest.level) {
+          console.log("RANK UP DETECTED!");
+          newAchievements.push({
+            type: 'rankup',
+            exerciseName: item.name,
+            level: result.level,
+            rankName: result.rank_name
+          });
+        }
+        
+        // Check for PR (new best raw value)
+        if (result.raw_value !== undefined && prevBest && result.raw_value > prevBest.raw_value) {
+          console.log("PR DETECTED!");
+          newAchievements.push({
+            type: 'pr',
+            exerciseName: item.name,
+            value: result.value
+          });
+        }
       }
-      setSuccessData({ xp: totalXp, count: sessionQueue.length });
+      
+      const exerciseCount = sessionQueue.length;
       setSessionQueue([]);
+      
+      // Show achievements if any, then show success card
+      if (newAchievements.length > 0) {
+        setAchievements(newAchievements);
+        setCurrentAchievementIndex(0);
+        setShowAchievement(true);
+        // Show success card after achievements finish
+        setTimeout(() => {
+          setSuccessData({ xp: totalXp, count: exerciseCount });
+        }, newAchievements.length * 3000);
+      } else {
+        // No achievements, show success card immediately
+        setSuccessData({ xp: totalXp, count: exerciseCount });
+      }
 
       // Next.js Server Action automatically pushes standard revalidation on History
       if (onLogComplete) onLogComplete();
@@ -198,6 +260,23 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
     setSuccessData(null);
     setSets([{ weight: 0, reps: 0, distance: 0, duration: 0 }]);
   };
+
+  // Cycle through achievements
+  useEffect(() => {
+    if (showAchievement && achievements.length > 0) {
+      const timer = setTimeout(() => {
+        if (currentAchievementIndex < achievements.length - 1) {
+          setCurrentAchievementIndex(currentAchievementIndex + 1);
+        } else {
+          setShowAchievement(false);
+          setAchievements([]);
+          setCurrentAchievementIndex(0);
+        }
+      }, 3000); // Show each achievement for 3 seconds
+      
+      return () => clearTimeout(timer);
+    }
+  }, [showAchievement, currentAchievementIndex, achievements.length]);
 
   // --- RENDER ---
   return (
@@ -240,7 +319,7 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
                 <div className="text-4xl font-black text-green-400">+{successData.xp} XP</div>
               </div>
               <button onClick={resetAfterSuccess} className="bg-zinc-100 hover:bg-white text-black font-black uppercase tracking-wider py-3 px-8 rounded-lg w-full transition transform hover:scale-105">
-                Start New Session
+                Continue Training
               </button>
             </div>
           </div>
@@ -544,6 +623,75 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
           onClose={() => setShowHistoryModal(false)}
         />
       )}
+
+      {/* Achievement Overlay */}
+      {isMounted && showAchievement && achievements[currentAchievementIndex] && (() => {
+        const achievement = achievements[currentAchievementIndex];
+        const level = achievement.level || 0;
+        const rankKey = `level${level}`;
+        const rankDetails = currentTheme.ranks[rankKey];
+        const themeRankName = rankDetails?.name || achievement.rankName || 'Unknown';
+        const rankImage = rankDetails?.image;
+        
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fade-in">
+            <div className="bg-gradient-to-br from-zinc-900 to-black border-2 border-orange-500 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl shadow-orange-500/20 animate-scale-in">
+              {achievement.type === 'rankup' ? (
+                <>
+                  <div className="text-center mb-6">
+                    <div className="text-6xl mb-4 animate-bounce">⚡</div>
+                    <h2 className="text-3xl font-black text-orange-500 uppercase tracking-wider mb-2">RANK UP!</h2>
+                    <p className="text-xl font-bold text-white">{achievement.exerciseName}</p>
+                  </div>
+                  <div className="bg-black/50 rounded-xl p-6 border border-orange-500/30">
+                    <div className="flex items-center justify-center gap-6">
+                      {rankImage && (
+                        <img src={rankImage} alt={themeRankName} className="w-20 h-20 object-contain" />
+                      )}
+                      <div className="text-center">
+                        <div className="text-lg text-orange-400 font-bold uppercase tracking-wide">
+                          {themeRankName}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-6 text-center text-sm text-zinc-400">
+                    +{level * 100} Power Level
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="text-center mb-6">
+                    <div className="text-6xl mb-4 animate-bounce">🏆</div>
+                    <h2 className="text-3xl font-black text-emerald-500 uppercase tracking-wider mb-2">NEW PR!</h2>
+                    <p className="text-xl font-bold text-white">{achievement.exerciseName}</p>
+                  </div>
+                  <div className="bg-black/50 rounded-xl p-6 border border-emerald-500/30">
+                    <div className="text-center">
+                      <div className="text-4xl font-black text-white">
+                        {achievement.value}
+                      </div>
+                      <div className="text-sm text-emerald-400 font-bold uppercase tracking-wide mt-2">
+                        Personal Best
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+              <div className="mt-6 flex justify-center gap-2">
+                {achievements.map((_, idx) => (
+                  <div
+                    key={idx}
+                    className={`h-2 rounded-full transition-all ${
+                      idx === currentAchievementIndex ? 'w-8 bg-orange-500' : 'w-2 bg-zinc-700'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

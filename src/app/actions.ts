@@ -111,14 +111,23 @@ export async function logTrainingAction(
 
     // Find best set for rank calculation
     let bestValue = 0;
-    if (catalogItem?.type === 'Weight') {
-        // For weight exercises, use Epley formula: weight * (1 + reps/30)
-        bestValue = Math.max(...sets.map(s => s.weight * (1 + (s.reps || 1) / 30)));
-    } else if (catalogItem?.type === 'Reps') {
+    const exerciseType = catalogItem?.type?.toLowerCase() || '';
+    const exerciseName = catalogItem?.name?.toLowerCase() || '';
+    const is5RM = exerciseName.includes('5rm') || exerciseName.includes('5 rm');
+    
+    if (exerciseType.includes('weight') || exerciseType === 'strength') {
+        if (is5RM) {
+            // For 5RM exercises, use the weight directly (already a 5RM)
+            bestValue = Math.max(...sets.map(s => s.weight || 0));
+        } else {
+            // For other weight exercises, use Epley formula: weight * (1 + reps/30)
+            bestValue = Math.max(...sets.map(s => s.weight * (1 + (s.reps || 1) / 30)));
+        }
+    } else if (exerciseType.includes('reps') || exerciseType === 'bodyweight') {
         bestValue = Math.max(...sets.map(s => s.reps || 0));
-    } else if (catalogItem?.type === 'Time') {
+    } else if (exerciseType.includes('time') || exerciseType === 'duration') {
         bestValue = Math.max(...sets.map(s => s.duration || 0));
-    } else if (catalogItem?.type === 'Distance') {
+    } else if (exerciseType.includes('distance') || exerciseType === 'cardio') {
         bestValue = Math.max(...sets.map(s => s.distance || 0));
     }
 
@@ -134,6 +143,7 @@ export async function logTrainingAction(
     const comparisonValue = isXBW ? finalValue / bodyweight : finalValue;
 
     const sexKey = (sex || 'male').toLowerCase() === 'female' ? 'female' : 'male';
+    
     const brackets = standards.brackets?.[sexKey] || [];
     let ageBracket = brackets.find((b: any) => age >= b.min && age <= b.max);
     if (!ageBracket && brackets.length > 0) {
@@ -148,9 +158,11 @@ export async function logTrainingAction(
         if (passes) currentLevelIndex = i;
     }
 
-    const rankNames = ["Peasant", "Rookie", "Amateur", "Contender", "Pro", "Champion", "Legend"];
-    const rankName = rankNames[currentLevelIndex + 1] || "Vikingur";
+    // currentLevelIndex represents the highest threshold passed (0-4 for 5 thresholds)
+    // Level is currentLevelIndex + 1, where level 0 = failed all thresholds
     const userLevel = currentLevelIndex + 1;
+    const rankNames = ["Peasant", "Rookie", "Amateur", "Contender", "Pro", "Champion", "Legend"];
+    const rankName = rankNames[userLevel] || "Peasant";
     const xpEarned = userLevel > 0 ? userLevel * 50 : 0;
 
     // Calculate total XP from sets
@@ -164,12 +176,15 @@ export async function logTrainingAction(
     const ts = Math.floor(Date.now() / 1000);
     const dateStr = new Date(ts * 1000).toISOString().split('T')[0];
 
+    // For 5RM exercises, show lbs instead of xBW
+    const displayUnit = is5RM ? 'lbs' : (standards.unit || '');
+    
     const workoutData = {
         user_id: userId,
         exercise_id: exerciseId,
         timestamp: ts,
         date: dateStr,
-        value: `${Math.round(bestValue)} ${standards.unit || ''}`,
+        value: `${Math.round(bestValue)} ${displayUnit}`,
         raw_value: bestValue,
         sets: sets,
         level: userLevel,
@@ -189,7 +204,13 @@ export async function logTrainingAction(
     }
 
     revalidatePath('/', 'layout');
-    return { xp_earned: totalXp };
+    return { 
+        xp_earned: totalXp,
+        level: userLevel,
+        rank_name: rankName,
+        raw_value: bestValue,
+        value: workoutData.value
+    };
 }
 
 export async function logWorkoutBlockAction(

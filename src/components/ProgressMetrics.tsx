@@ -6,7 +6,7 @@ import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 interface ProgressMetricsProps {
     stats: {
         player_level?: number;
-        total_xp?: number;
+        total_career_xp?: number;
         power_level?: number;
     } | null;
     profile: {
@@ -27,7 +27,7 @@ interface ProgressMetricsProps {
 export default function ProgressMetrics({ stats, profile, bodyCompHistory }: ProgressMetricsProps) {
     // Calculate XP progress to next level
     const xpProgress = useMemo(() => {
-        const totalXp = stats?.total_xp || 0;
+        const totalXp = stats?.total_career_xp || 0;
         const currentLevel = stats?.player_level || 1;
         const xpForCurrentLevel = (currentLevel - 1) * 1000;
         const xpIntoLevel = totalXp - xpForCurrentLevel;

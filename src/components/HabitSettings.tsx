@@ -14,6 +14,7 @@ interface HabitSettingsProps {
 
 export default function HabitSettings({ isOpen, onClose, userProfile, onUpdate }: HabitSettingsProps) {
     const [targets, setTargets] = useState<Record<string, number>>({});
+    const [nutritionTargets, setNutritionTargets] = useState<Record<string, number>>({});
     const [hidden, setHidden] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
 
@@ -29,9 +30,21 @@ export default function HabitSettings({ isOpen, onClose, userProfile, onUpdate }
                 habit_sauna: userProfile.habit_targets?.habit_sauna || 15,
                 habit_meditation: userProfile.habit_targets?.habit_meditation || 10,
             });
+            setNutritionTargets({
+                protein: userProfile.nutrition_targets?.protein || 150,
+                carbs: userProfile.nutrition_targets?.carbs || 150,
+                fat: userProfile.nutrition_targets?.fat || 60,
+                calories: userProfile.nutrition_targets?.calories || 2000,
+            });
             setHidden(userProfile?.hidden_habits || []);
         }
     }, [isOpen, userProfile]);
+
+    // Auto-calculate calories when macros change
+    useEffect(() => {
+        const calculatedCalories = (nutritionTargets.protein * 4) + (nutritionTargets.carbs * 4) + (nutritionTargets.fat * 9);
+        setNutritionTargets(prev => ({ ...prev, calories: calculatedCalories }));
+    }, [nutritionTargets.protein, nutritionTargets.carbs, nutritionTargets.fat]);
 
     const handleSave = async () => {
         setLoading(true);
@@ -45,13 +58,12 @@ export default function HabitSettings({ isOpen, onClose, userProfile, onUpdate }
                 ...targets
             };
 
-            // Sync Water to Nutrition Targets if it exists
-            if (userProfile.nutrition_targets) {
-                updatedProfile.nutrition_targets = {
-                    ...userProfile.nutrition_targets,
-                    water: targets.habit_water
-                };
-            }
+            // Update nutrition targets
+            updatedProfile.nutrition_targets = {
+                ...userProfile.nutrition_targets,
+                ...nutritionTargets,
+                water: targets.habit_water
+            };
 
             // Update hidden habits
             updatedProfile.hidden_habits = hidden;
@@ -109,11 +121,63 @@ export default function HabitSettings({ isOpen, onClose, userProfile, onUpdate }
                 </button>
 
                 <div className="mb-6">
-                    <h3 className="text-xl font-black italic text-white mb-1 uppercase tracking-tighter">Habit Settings</h3>
-                    <p className="text-xs text-zinc-400">Manage habit goals and visibility.</p>
+                    <h3 className="text-xl font-black italic text-white mb-1 uppercase tracking-tighter">Quest Settings</h3>
+                    <p className="text-xs text-zinc-400">Manage nutrition, habit goals, and visibility.</p>
                 </div>
 
                 <div className="space-y-6 flex-1 overflow-y-auto pr-2 custom-scrollbar">
+
+                    {/* Section 0: Nutrition Targets */}
+                    <div className="space-y-4">
+                        <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest border-b border-zinc-800 pb-2">Nutrition Targets</h4>
+                        <div className="grid grid-cols-2 gap-4">
+                            {/* Protein */}
+                            <div>
+                                <label className="text-[10px] font-bold text-zinc-400 uppercase flex items-center gap-2 mb-1">
+                                    🥩 Protein (g)
+                                </label>
+                                <input
+                                    type="number"
+                                    value={nutritionTargets.protein}
+                                    onChange={(e) => setNutritionTargets({ ...nutritionTargets, protein: Number(e.target.value) })}
+                                    className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-white text-center font-bold focus:border-red-500 outline-none"
+                                />
+                            </div>
+                            {/* Carbs */}
+                            <div>
+                                <label className="text-[10px] font-bold text-zinc-400 uppercase flex items-center gap-2 mb-1">
+                                    🍞 Carbs (g)
+                                </label>
+                                <input
+                                    type="number"
+                                    value={nutritionTargets.carbs}
+                                    onChange={(e) => setNutritionTargets({ ...nutritionTargets, carbs: Number(e.target.value) })}
+                                    className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-white text-center font-bold focus:border-yellow-500 outline-none"
+                                />
+                            </div>
+                            {/* Fat */}
+                            <div>
+                                <label className="text-[10px] font-bold text-zinc-400 uppercase flex items-center gap-2 mb-1">
+                                    🥑 Fat (g)
+                                </label>
+                                <input
+                                    type="number"
+                                    value={nutritionTargets.fat}
+                                    onChange={(e) => setNutritionTargets({ ...nutritionTargets, fat: Number(e.target.value) })}
+                                    className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-white text-center font-bold focus:border-green-500 outline-none"
+                                />
+                            </div>
+                            {/* Calories */}
+                            <div>
+                                <label className="text-[10px] font-bold text-zinc-400 uppercase flex items-center gap-2 mb-1">
+                                    🔥 Calories
+                                </label>
+                                <div className="w-full bg-zinc-800/50 border border-zinc-700 rounded p-2 text-zinc-400 text-center font-bold">
+                                    {nutritionTargets.calories}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     {/* Section 1: Quantitative Habits (Targets) */}
                     <div className="space-y-4">

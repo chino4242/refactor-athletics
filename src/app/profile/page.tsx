@@ -13,6 +13,9 @@ export default async function ProfilePage() {
 
     const profile = await getProfile(user.id);
     const catalog = await getTrainingCatalog();
+    const goalWeight = profile?.body_composition_goals?.target_weight 
+        ? parseFloat(profile.body_composition_goals.target_weight) 
+        : 0;
 
     return (
         <div className="min-h-screen bg-black text-white w-full">

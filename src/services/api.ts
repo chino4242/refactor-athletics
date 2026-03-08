@@ -36,28 +36,30 @@ export const getProfile = async (userId: string): Promise<UserProfileData | null
 
 export const saveProfile = async (profile: UserProfileData): Promise<any> => {
     const supabase = createClient();
-    const payload = {
+    const payload: any = {
         id: profile.user_id,
-        age: profile.age,
-        sex: profile.sex,
-        bodyweight: profile.bodyweight,
-        goal_weight: profile.goal_weight,
-        is_onboarded: profile.is_onboarded,
-        selected_theme: profile.selected_theme,
-        timezone: profile.timezone,
-        display_name: profile.display_name,
-        nutrition_targets: profile.nutrition_targets,
-        hidden_habits: profile.hidden_habits,
-        habit_targets: profile.habit_targets,
-        body_composition_goals: profile.body_composition_goals,
     };
+    
+    // Only include defined fields
+    if (profile.age !== undefined) payload.age = profile.age;
+    if (profile.sex !== undefined) payload.sex = profile.sex;
+    if (profile.bodyweight !== undefined) payload.bodyweight = profile.bodyweight;
+    if (profile.is_onboarded !== undefined) payload.is_onboarded = profile.is_onboarded;
+    if (profile.selected_theme !== undefined) payload.selected_theme = profile.selected_theme;
+    if (profile.timezone !== undefined) payload.timezone = profile.timezone;
+    if (profile.display_name !== undefined) payload.display_name = profile.display_name;
+    if (profile.nutrition_targets !== undefined) payload.nutrition_targets = profile.nutrition_targets;
+    if (profile.hidden_habits !== undefined) payload.hidden_habits = profile.hidden_habits;
+    if (profile.habit_targets !== undefined) payload.habit_targets = profile.habit_targets;
+    if (profile.body_composition_goals !== undefined) payload.body_composition_goals = profile.body_composition_goals;
 
     const { error } = await supabase
         .from('users')
-        .upsert(payload, { onConflict: 'id' });
+        .upsert(payload);
 
     if (error) {
         console.error("Error saving profile:", error);
+        console.error("Error details:", JSON.stringify(error, null, 2));
         throw error;
     }
     return { status: 'success' };
@@ -235,7 +237,7 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
     for (const item of workouts || []) {
         totalXp += item.xp || 0;
         
-        if (item.level > 0 && item.exercise_id) {
+        if (item.exercise_id && item.level !== null && item.level !== undefined) {
             if (!maxLevelPerExercise[item.exercise_id] || item.level > maxLevelPerExercise[item.exercise_id]) {
                 maxLevelPerExercise[item.exercise_id] = item.level;
             }
