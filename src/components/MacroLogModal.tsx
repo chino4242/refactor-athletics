@@ -189,21 +189,6 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals }: MacroL
                     </button>
 
                 </div>
-                                    placeholder={mode === 'total' ? String(totals['habit_water'] || 0) : "Custom"}
-                                    onChange={(e) => setWater(e.target.value)}
-                                    className="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-white text-center font-bold focus:border-cyan-500 outline-none"
-                                />
-                                <button
-                                    onClick={() => handleQuickLog('water', water)}
-                                    className="bg-cyan-600/20 hover:bg-cyan-600 text-cyan-500 hover:text-white border border-cyan-600/50 rounded px-3 font-bold transition-all"
-                                >
-                                    LOG
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
             </div>
         </div>
         , document.body);
