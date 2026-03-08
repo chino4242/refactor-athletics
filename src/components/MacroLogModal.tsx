@@ -13,16 +13,13 @@ interface MacroLogModalProps {
 }
 
 export default function MacroLogModal({ isOpen, onClose, onLog, totals }: MacroLogModalProps) {
-    if (!isOpen) return null;
-
     const [mode, setMode] = useState<'add' | 'total'>('add');
-
+    const [mounted, setMounted] = useState(false);
 
     // Values
     const [protein, setProtein] = useState('');
     const [carbs, setCarbs] = useState('');
     const [fat, setFat] = useState('');
-
     const [water, setWater] = useState('');
 
     const handleNutritionData = (data: any) => {
@@ -60,11 +57,13 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals }: MacroL
 
     const handleQuickWater = async (amount: string) => {
         const val = parseFloat(amount);
+    const handleQuickWater = async (amount: string) => {
+        const val = parseFloat(amount);
         if (val > 0) {
             await onLog('water', val, 'add');
         }
     };
-    const [mounted, setMounted] = useState(false);
+
     useEffect(() => {
         setMounted(true);
     }, []);
