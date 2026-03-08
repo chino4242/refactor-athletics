@@ -32,18 +32,37 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals }: MacroL
         if (data.water) setWater(String(data.water));
     };
 
-    const handleQuickLog = async (type: 'calories' | 'protein' | 'carbs' | 'fat' | 'water', valStr: string) => {
-        const val = parseFloat(valStr);
-        if (!val || val <= 0) return;
+    const handleLogAll = async () => {
+        const promises = [];
+        
+        if (protein && parseFloat(protein) > 0) {
+            promises.push(onLog('protein', parseFloat(protein), mode));
+        }
+        if (carbs && parseFloat(carbs) > 0) {
+            promises.push(onLog('carbs', parseFloat(carbs), mode));
+        }
+        if (fat && parseFloat(fat) > 0) {
+            promises.push(onLog('fat', parseFloat(fat), mode));
+        }
+        if (water && parseFloat(water) > 0) {
+            promises.push(onLog('water', parseFloat(water), mode));
+        }
 
-        await onLog(type, val, mode);
+        if (promises.length > 0) {
+            await Promise.all(promises);
+            // Clear all fields after logging
+            setProtein('');
+            setCarbs('');
+            setFat('');
+            setWater('');
+        }
+    };
 
-        // Clear input after log
-        if (type === 'protein') setProtein('');
-        if (type === 'carbs') setCarbs('');
-        if (type === 'fat') setFat('');
-
-        if (type === 'water') setWater('');
+    const handleQuickWater = async (amount: string) => {
+        const val = parseFloat(amount);
+        if (val > 0) {
+            await onLog('water', val, 'add');
+        }
     };
     const [mounted, setMounted] = useState(false);
     useEffect(() => {
@@ -94,27 +113,19 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals }: MacroL
 
                 <div className="p-4 space-y-4">
                     {/* MACROS */}
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-3 gap-3">
                         {/* Carbs */}
                         <div className="space-y-1">
                             <label className="text-xs font-bold text-orange-500 uppercase flex items-center gap-1">
                                 <Wheat size={12} /> Carbs (g)
                             </label>
-                            <div className="flex gap-1">
-                                <input
-                                    type="number"
-                                    value={carbs}
-                                    placeholder={mode === 'total' ? String(Math.round(totals['macro_carbs'] || 0)) : "0"}
-                                    onChange={(e) => setCarbs(e.target.value)}
-                                    className="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-white text-center font-bold focus:border-orange-500 outline-none"
-                                />
-                                <button
-                                    onClick={() => handleQuickLog('carbs', carbs)}
-                                    className="bg-orange-600/20 hover:bg-orange-600 text-orange-500 hover:text-white border border-orange-600/50 rounded px-4 py-2.5 font-bold transition-all"
-                                >
-                                    LOG
-                                </button>
-                            </div>
+                            <input
+                                type="number"
+                                value={carbs}
+                                placeholder={mode === 'total' ? String(Math.round(totals['macro_carbs'] || 0)) : "0"}
+                                onChange={(e) => setCarbs(e.target.value)}
+                                className="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-white text-center font-bold focus:border-orange-500 outline-none"
+                            />
                         </div>
 
                         {/* Fat */}
@@ -122,21 +133,13 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals }: MacroL
                             <label className="text-xs font-bold text-yellow-500 uppercase flex items-center gap-1">
                                 <Ban size={12} /> Fat (g)
                             </label>
-                            <div className="flex gap-1">
-                                <input
-                                    type="number"
-                                    value={fat}
-                                    placeholder={mode === 'total' ? String(Math.round(totals['macro_fat'] || 0)) : "0"}
-                                    onChange={(e) => setFat(e.target.value)}
-                                    className="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-white text-center font-bold focus:border-yellow-500 outline-none"
-                                />
-                                <button
-                                    onClick={() => handleQuickLog('fat', fat)}
-                                    className="bg-yellow-600/20 hover:bg-yellow-600 text-yellow-500 hover:text-white border border-yellow-600/50 rounded px-4 py-2.5 font-bold transition-all"
-                                >
-                                    LOG
-                                </button>
-                            </div>
+                            <input
+                                type="number"
+                                value={fat}
+                                placeholder={mode === 'total' ? String(Math.round(totals['macro_fat'] || 0)) : "0"}
+                                onChange={(e) => setFat(e.target.value)}
+                                className="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-white text-center font-bold focus:border-yellow-500 outline-none"
+                            />
                         </div>
 
                         {/* Protein */}
@@ -144,21 +147,13 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals }: MacroL
                             <label className="text-xs font-bold text-blue-500 uppercase flex items-center gap-1">
                                 <Egg size={12} /> Protein (g)
                             </label>
-                            <div className="flex gap-1">
-                                <input
-                                    type="number"
-                                    value={protein}
-                                    placeholder={mode === 'total' ? String(Math.round(totals['macro_protein'] || 0)) : "0"}
-                                    onChange={(e) => setProtein(e.target.value)}
-                                    className="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-white text-center font-bold focus:border-blue-500 outline-none"
-                                />
-                                <button
-                                    onClick={() => handleQuickLog('protein', protein)}
-                                    className="bg-blue-600/20 hover:bg-blue-600 text-blue-500 hover:text-white border border-blue-600/50 rounded px-4 py-2.5 font-bold transition-all"
-                                >
-                                    LOG
-                                </button>
-                            </div>
+                            <input
+                                type="number"
+                                value={protein}
+                                placeholder={mode === 'total' ? String(Math.round(totals['macro_protein'] || 0)) : "0"}
+                                onChange={(e) => setProtein(e.target.value)}
+                                className="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-white text-center font-bold focus:border-blue-500 outline-none"
+                            />
                         </div>
                     </div>
 
@@ -171,14 +166,29 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals }: MacroL
                         </label>
                         <div className="flex gap-2">
                             {/* Quick Adds */}
-                            <button onClick={() => handleQuickLog('water', '8')} className="bg-zinc-800 hover:bg-cyan-900 border border-zinc-700 hover:border-cyan-500 text-xs font-bold text-zinc-400 hover:text-cyan-400 rounded px-3 transition-all">+8</button>
-                            <button onClick={() => handleQuickLog('water', '16')} className="bg-zinc-800 hover:bg-cyan-900 border border-zinc-700 hover:border-cyan-500 text-xs font-bold text-zinc-400 hover:text-cyan-400 rounded px-3 transition-all">+16</button>
-                            <button onClick={() => handleQuickLog('water', '32')} className="bg-zinc-800 hover:bg-cyan-900 border border-zinc-700 hover:border-cyan-500 text-xs font-bold text-zinc-400 hover:text-cyan-400 rounded px-3 transition-all">+32</button>
+                            <button onClick={() => handleQuickWater('8')} className="bg-zinc-800 hover:bg-cyan-900 border border-zinc-700 hover:border-cyan-500 text-xs font-bold text-zinc-400 hover:text-cyan-400 rounded px-3 transition-all">+8</button>
+                            <button onClick={() => handleQuickWater('16')} className="bg-zinc-800 hover:bg-cyan-900 border border-zinc-700 hover:border-cyan-500 text-xs font-bold text-zinc-400 hover:text-cyan-400 rounded px-3 transition-all">+16</button>
+                            <button onClick={() => handleQuickWater('32')} className="bg-zinc-800 hover:bg-cyan-900 border border-zinc-700 hover:border-cyan-500 text-xs font-bold text-zinc-400 hover:text-cyan-400 rounded px-3 transition-all">+32</button>
 
-                            <div className="flex-1 flex gap-1">
-                                <input
-                                    type="number"
-                                    value={water}
+                            <input
+                                type="number"
+                                value={water}
+                                placeholder="Custom"
+                                onChange={(e) => setWater(e.target.value)}
+                                className="flex-1 bg-zinc-950 border border-zinc-800 rounded p-2 text-white text-center font-bold focus:border-cyan-500 outline-none"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Log All Button */}
+                    <button
+                        onClick={handleLogAll}
+                        className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white font-black italic uppercase py-3 rounded-lg shadow-lg transition-all"
+                    >
+                        Log All
+                    </button>
+
+                </div>
                                     placeholder={mode === 'total' ? String(totals['habit_water'] || 0) : "Custom"}
                                     onChange={(e) => setWater(e.target.value)}
                                     className="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-white text-center font-bold focus:border-cyan-500 outline-none"
