@@ -52,6 +52,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals }: MacroL
             setCarbs('');
             setFat('');
             setWater('');
+            onClose(); // Close modal after logging
         }
     };
 
