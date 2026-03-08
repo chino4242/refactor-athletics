@@ -16,7 +16,7 @@ export async function GET() {
 
     // Try a simple text-only request to test the key
     const response = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20240620',
+      model: 'claude-3-opus-20240229',
       max_tokens: 100,
       messages: [
         {
