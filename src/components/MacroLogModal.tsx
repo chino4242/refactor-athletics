@@ -57,8 +57,6 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals }: MacroL
 
     const handleQuickWater = async (amount: string) => {
         const val = parseFloat(amount);
-    const handleQuickWater = async (amount: string) => {
-        const val = parseFloat(amount);
         if (val > 0) {
             await onLog('water', val, 'add');
         }
