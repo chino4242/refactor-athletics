@@ -7,12 +7,14 @@ The application uses **Supabase** (PostgreSQL) as its primary backend.
 
 ### 1.1 Core Tables
 - **users**: User profiles with age, sex, bodyweight, nutrition targets, habit targets, hidden habits
+  - **body_composition_goals** (jsonb): Stores user goals including `target_weight` (stored as string)
 - **catalog**: Exercise library with standards, categories, and XP factors
   - **standards** (jsonb): Contains `brackets` (age/sex-based thresholds), `scoring` (higher_is_better/lower_is_better), and `unit` (lbs, sec, reps, xBW)
   - **xp_factor** (numeric): Multiplier for XP calculation (default: 1)
   - **242 exercises ingested** from activity_catalog.json
 - **workouts**: Exercise logs with sets, rank, level, XP (domain-specific table)
 - **nutrition_logs**: Macro tracking (protein, carbs, fat, calories, water) with XP
+  - **Calories auto-calculated**: protein × 4 + carbs × 4 + fat × 9
 - **habit_logs**: Daily habits (steps, sleep, etc.) with XP
 - **body_measurements**: Body composition tracking
 - **workout_programs**: Custom workout templates
@@ -61,6 +63,8 @@ There are two distinct progression metrics for a user:
 ### 2.3 Data Architecture Patterns
 - **Server Actions** (`src/app/actions.ts`): All write operations (logging workouts, habits, macros)
 - **API Functions** (`src/services/api.ts`): All read operations (getHistory, getHabitProgress, getUserStats)
+  - **Profile Updates**: Use `router.refresh()` after saving to reload server-rendered data
+  - **Target Weight**: Stored in `body_composition_goals.target_weight` (string format)
 - **Program API** (`src/services/programApi.ts`): Workout program CRUD operations
 
 ### 2.4 Attribute Balance Radar

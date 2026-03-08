@@ -14,6 +14,7 @@ import { useTheme } from '../context/ThemeContext';
 import TestingTimer from './TestingTimer';
 import WeeklySchedule from './WeeklySchedule';
 import ExerciseHistoryModal from './ExerciseHistoryModal'; // 👈 Imported
+import ScreenshotUploader from './ScreenshotUploader';
 
 interface TrainingProps {
   userId: string;
@@ -70,6 +71,32 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
   const [showAchievement, setShowAchievement] = useState(false);
   const [currentAchievementIndex, setCurrentAchievementIndex] = useState(0);
   const toast = useToast();
+
+  const handleWorkoutData = (data: any) => {
+    // Auto-match exercises and add to queue
+    data.exercises?.forEach((ex: any) => {
+      const catalogExercise = catalog.find(e => 
+        e.name.toLowerCase().includes(ex.name.toLowerCase()) ||
+        ex.name.toLowerCase().includes(e.name.toLowerCase())
+      );
+      
+      if (catalogExercise && ex.sets?.length > 0) {
+        const queuedEx: QueuedExercise = {
+          id: `${Date.now()}-${Math.random()}`,
+          exerciseId: catalogExercise.id,
+          name: catalogExercise.name,
+          sets: ex.sets.map((s: any) => ({
+            weight: s.weight || 0,
+            reps: s.reps || 0,
+            distance: 0,
+            duration: 0
+          }))
+        };
+        setSessionQueue(prev => [...prev, queuedEx]);
+      }
+    });
+    toast.success(`Added ${data.exercises?.length || 0} exercises from screenshot`);
+  };
 
 
 
@@ -370,6 +397,11 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
               <div>
                 <h2 className="text-2xl font-black italic text-white tracking-tighter">TRAINING LOG</h2>
                 <p className="text-xs text-zinc-500 uppercase font-bold tracking-widest">Build Your Session</p>
+              </div>
+
+              {/* Screenshot Upload */}
+              <div className="w-full md:w-auto">
+                <ScreenshotUploader type="workout" onDataExtracted={handleWorkoutData} />
               </div>
 
               {/* SEARCHABLE DROPDOWN */}

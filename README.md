@@ -19,10 +19,12 @@ Recent architectural changes migrated from a monolithic `history` table to domai
 
 ### Core Tables
 - **users**: User profiles with age, sex, bodyweight, nutrition targets, habit targets, hidden habits
+  - Added columns: `body_composition_goals` (jsonb) for storing target weight and other goals
 - **catalog**: Exercise library with standards, categories, XP factors (242 exercises ingested)
   - Added columns: `standards` (jsonb), `xp_factor` (numeric)
 - **workouts**: Exercise logs with sets, rank, level, XP (replaces old `history` table for workouts)
 - **nutrition_logs**: Macro tracking (protein, carbs, fat, calories, water) with XP
+  - Calories automatically calculated from macros: protein × 4 + carbs × 4 + fat × 9
 - **habit_logs**: Daily habits (steps, sleep, etc.) with XP
 - **body_measurements**: Body composition tracking (weight, waist, body fat %, etc.)
 - **workout_programs**: Custom workout templates
@@ -95,6 +97,11 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 - **API Functions** (`src/services/api.ts`): All read operations (getHistory, getHabitProgress, getUserStats)
 - **Program API** (`src/services/programApi.ts`): Workout program CRUD operations
 
+### Profile Management
+- **Target Weight**: Stored in `body_composition_goals.target_weight` as a string
+- **Profile Updates**: Use `router.refresh()` after saving to reload server-rendered data
+- **Nutrition Targets**: Calories are auto-calculated from macros and displayed as read-only
+
 ### Rank Calculation
 Uses Epley formula for weight exercises: `weight * (1 + reps/30)`
 Compares against standards from catalog (age/sex brackets)
@@ -121,3 +128,7 @@ This project is optimized for deployment on [Vercel](https://vercel.com/new). En
 - Fixed nutrition bar rendering issues
 - Prevented theme banner flash on page load
 - Added workout program builder with exercise selection and category filtering
+- Fixed profile save to use correct database schema (removed non-existent goal_weight column)
+- Implemented target weight storage in body_composition_goals JSON field
+- Added automatic calorie calculation from macros (protein × 4 + carbs × 4 + fat × 9)
+- Implemented router.refresh() for proper UI updates after profile changes

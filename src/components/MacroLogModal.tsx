@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Droplets, Wheat, Egg, Ban } from 'lucide-react';
+import ScreenshotUploader from './ScreenshotUploader';
 
 interface MacroLogModalProps {
     isOpen: boolean;
@@ -23,6 +24,13 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals }: MacroL
     const [fat, setFat] = useState('');
 
     const [water, setWater] = useState('');
+
+    const handleNutritionData = (data: any) => {
+        if (data.protein) setProtein(String(data.protein));
+        if (data.carbs) setCarbs(String(data.carbs));
+        if (data.fat) setFat(String(data.fat));
+        if (data.water) setWater(String(data.water));
+    };
 
     const handleQuickLog = async (type: 'calories' | 'protein' | 'carbs' | 'fat' | 'water', valStr: string) => {
         const val = parseFloat(valStr);
@@ -59,6 +67,11 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals }: MacroL
                     >
                         <X size={20} />
                     </button>
+                </div>
+
+                {/* Screenshot Upload */}
+                <div className="p-4 border-b border-zinc-800/50">
+                    <ScreenshotUploader type="nutrition" onDataExtracted={handleNutritionData} />
                 </div>
 
                 {/* Mode Toggle */}
