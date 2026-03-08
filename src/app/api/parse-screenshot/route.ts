@@ -7,18 +7,30 @@ const anthropic = new Anthropic({
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('Screenshot upload request received');
+    
     const formData = await request.formData();
     const file = formData.get('image') as File;
-    const type = formData.get('type') as string; // 'workout' | 'nutrition' | 'habits'
+    const type = formData.get('type') as string;
+
+    console.log('File:', file?.name, 'Type:', type);
 
     if (!file) {
+      console.error('No image provided');
       return NextResponse.json({ error: 'No image provided' }, { status: 400 });
+    }
+
+    if (!process.env.ANTHROPIC_API_KEY) {
+      console.error('ANTHROPIC_API_KEY not set');
+      return NextResponse.json({ error: 'API key not configured' }, { status: 500 });
     }
 
     // Convert file to base64
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     const base64Image = buffer.toString('base64');
+
+    console.log('Image converted to base64, size:', base64Image.length);
 
     // Determine media type
     const mediaType = file.type.includes('png') ? 'image/png' : 'image/jpeg';
@@ -48,6 +60,8 @@ export async function POST(request: NextRequest) {
 }`
     };
 
+    console.log('Calling Claude API...');
+
     const response = await anthropic.messages.create({
       model: 'claude-3-5-sonnet-20241022',
       max_tokens: 1024,
@@ -72,14 +86,22 @@ export async function POST(request: NextRequest) {
       ],
     });
 
+    console.log('Claude response received');
+
     const content = response.content[0];
     const text = content.type === 'text' ? content.text : '';
+    console.log('Extracted text:', text);
+    
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     const data = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
+
+    console.log('Parsed data:', data);
 
     return NextResponse.json({ success: true, data });
   } catch (error) {
     console.error('Error parsing screenshot:', error);
-    return NextResponse.json({ error: 'Failed to parse screenshot' }, { status: 500 });
+    return NextResponse.json({ 
+      error: error instanceof Error ? error.message : 'Failed to parse screenshot' 
+    }, { status: 500 });
   }
 }

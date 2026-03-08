@@ -28,21 +28,27 @@ export default function ScreenshotUploader({ type, onDataExtracted }: Screenshot
       formData.append('image', file);
       formData.append('type', type);
 
+      console.log('Uploading screenshot:', file.name, file.type, file.size);
+
       const response = await fetch('/api/parse-screenshot', {
         method: 'POST',
         body: formData,
       });
 
+      console.log('Response status:', response.status);
       const result = await response.json();
+      console.log('Response data:', result);
+
       if (result.success) {
         onDataExtracted(result.data);
         setPreview(null);
       } else {
-        alert('Failed to parse screenshot');
+        console.error('Parse failed:', result.error);
+        alert(`Failed to parse screenshot: ${result.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Upload error:', error);
-      alert('Failed to upload screenshot');
+      alert(`Failed to upload screenshot: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setUploading(false);
     }
