@@ -23,6 +23,8 @@ export default function HabitSettings({ isOpen, onClose, userProfile, onUpdate }
             // Initialize with existing targets or defaults
             setTargets({
                 habit_steps: userProfile.habit_targets?.habit_steps || 10000,
+                habit_exercise_minutes: userProfile.habit_targets?.habit_exercise_minutes || 30,
+                habit_stand_hours: userProfile.habit_targets?.habit_stand_hours || 12,
                 habit_water: userProfile.nutrition_targets?.water || userProfile.habit_targets?.habit_water || 100,
                 habit_reading: userProfile.habit_targets?.habit_reading || 10,
                 habit_mobility: userProfile.habit_targets?.habit_mobility || 15,
@@ -214,6 +216,40 @@ export default function HabitSettings({ isOpen, onClose, userProfile, onUpdate }
                                 value={targets.habit_water}
                                 onChange={(e) => setTargets({ ...targets, habit_water: Number(e.target.value) })}
                                 className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                            />
+                        </div>
+
+                        {/* Exercise Minutes */}
+                        <div>
+                            <div className="flex justify-between items-center mb-2">
+                                <label className="text-[10px] font-bold text-zinc-400 uppercase flex items-center gap-2">
+                                    <VisibilityToggle id="habit_exercise_minutes" />
+                                    Exercise (min) <span className="text-green-500">{targets.habit_exercise_minutes}</span>
+                                </label>
+                            </div>
+                            <input
+                                type="range"
+                                min="10" max="120" step="5"
+                                value={targets.habit_exercise_minutes}
+                                onChange={(e) => setTargets({ ...targets, habit_exercise_minutes: Number(e.target.value) })}
+                                className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-green-500"
+                            />
+                        </div>
+
+                        {/* Stand Hours */}
+                        <div>
+                            <div className="flex justify-between items-center mb-2">
+                                <label className="text-[10px] font-bold text-zinc-400 uppercase flex items-center gap-2">
+                                    <VisibilityToggle id="habit_stand_hours" />
+                                    Stand (hrs) <span className="text-blue-500">{targets.habit_stand_hours}</span>
+                                </label>
+                            </div>
+                            <input
+                                type="range"
+                                min="6" max="16" step="1"
+                                value={targets.habit_stand_hours}
+                                onChange={(e) => setTargets({ ...targets, habit_stand_hours: Number(e.target.value) })}
+                                className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
                             />
                         </div>
 

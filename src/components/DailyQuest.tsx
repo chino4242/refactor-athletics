@@ -9,12 +9,11 @@ import WeeklyQuest from './WeeklyQuest';
 import { useToast } from '@/context/ToastContext';
 import { SlidersHorizontal, Footprints, Timer } from 'lucide-react';
 import HabitSettings from './HabitSettings';
-// import ActiveChallengeCard from './challenges/ActiveChallengeCard';
-// Removed Challenge import since it's in @/types
 import BodyCompositionModal from './BodyCompositionModal';
 import HabitCard from './HabitCard';
 import ViceToggle from './ViceToggle';
 import { logHabitAction, deleteHistoryItemAction } from '@/app/actions';
+import ScreenshotUploader from './ScreenshotUploader';
 
 interface DailyQuestProps {
   userId: string;
@@ -95,6 +94,20 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
     }
   };
 
+  const handleHabitData = async (data: any) => {
+    const promises = [];
+    if (data.steps) promises.push(handleLog('habit_steps', data.steps, 'Steps'));
+    if (data.exercise_minutes) promises.push(handleLog('habit_exercise_minutes', data.exercise_minutes, 'Exercise'));
+    if (data.stand_hours) promises.push(handleLog('habit_stand_hours', data.stand_hours, 'Stand'));
+    if (data.water) promises.push(handleLog('habit_water', data.water, 'Water'));
+    if (data.sleep) promises.push(handleLog('habit_sleep', data.sleep, 'Sleep'));
+    
+    if (promises.length > 0) {
+      await Promise.all(promises);
+      toast.success(`Logged ${promises.length} habits from screenshot!`);
+    }
+  };
+
   const handleDelete = async (timestamp: number) => {
     try {
       await deleteHistoryItemAction(userId, timestamp);
@@ -138,6 +151,8 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
         </div>
 
         <div className="flex gap-2 w-full md:w-auto justify-end overflow-x-auto pb-1 md:pb-0 no-scrollbar">
+          <ScreenshotUploader type="habits" onDataExtracted={handleHabitData} />
+          
           <button
             onClick={() => setShowBodyComp(true)}
             className="flex-shrink-0 text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded-lg transition-all flex items-center gap-2 text-zinc-500 hover:text-white border border-zinc-700 hover:border-zinc-500 whitespace-nowrap"
@@ -373,6 +388,38 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
                   xp={150}
                 />
               </div>
+            )}
+
+            {/* EXERCISE MINUTES */}
+            {!isHidden('habit_exercise_minutes') && (
+              <HabitCard
+                habitId="habit_exercise_minutes"
+                label="Exercise"
+                icon="💪"
+                current={totals['habit_exercise_minutes'] || 0}
+                goal={profile?.habit_targets?.habit_exercise_minutes || 30}
+                unit="mins"
+                colorClass="bg-green-500"
+                onLog={(val, label) => handleLog('habit_exercise_minutes', val, label)}
+                loading={loading === 'habit_exercise_minutes'}
+                xp={3}
+              />
+            )}
+
+            {/* STAND HOURS */}
+            {!isHidden('habit_stand_hours') && (
+              <HabitCard
+                habitId="habit_stand_hours"
+                label="Stand"
+                icon="🚶"
+                current={totals['habit_stand_hours'] || 0}
+                goal={profile?.habit_targets?.habit_stand_hours || 12}
+                unit="hrs"
+                colorClass="bg-blue-400"
+                onLog={(val, label) => handleLog('habit_stand_hours', val, label)}
+                loading={loading === 'habit_stand_hours'}
+                xp={2}
+              />
             )}
 
             {!isHidden('habit_reading') && (

@@ -58,6 +58,8 @@ export async function POST(request: NextRequest) {
       habits: `Extract habit/activity data from this screenshot. Return ONLY valid JSON with this exact structure:
 {
   "steps": 10000,
+  "exercise_minutes": 30,
+  "stand_hours": 12,
   "sleep": 7.5,
   "water": 100
 }`
