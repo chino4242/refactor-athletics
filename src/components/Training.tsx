@@ -74,7 +74,7 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
 
   const handleWorkoutData = (data: any) => {
     // Auto-match exercises and add to queue
-    data.exercises?.forEach((ex: any) => {
+    data.exercises?.forEach((ex: any, index: number) => {
       const catalogExercise = catalog.find(e => 
         e.name.toLowerCase().includes(ex.name.toLowerCase()) ||
         ex.name.toLowerCase().includes(e.name.toLowerCase())
@@ -82,7 +82,7 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
       
       if (catalogExercise && ex.sets?.length > 0) {
         const queuedEx: QueuedExercise = {
-          id: `${Date.now()}-${Math.random()}`,
+          id: `${Date.now()}-${index}-${Math.random()}`,
           exerciseId: catalogExercise.id,
           name: catalogExercise.name,
           sets: ex.sets.map((s: any) => ({
