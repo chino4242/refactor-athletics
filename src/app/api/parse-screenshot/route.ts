@@ -8,6 +8,8 @@ const anthropic = new Anthropic({
 export async function POST(request: NextRequest) {
   try {
     console.log('Screenshot upload request received');
+    console.log('API Key present:', !!process.env.ANTHROPIC_API_KEY);
+    console.log('API Key length:', process.env.ANTHROPIC_API_KEY?.length);
     
     const formData = await request.formData();
     const file = formData.get('image') as File;
@@ -22,6 +24,7 @@ export async function POST(request: NextRequest) {
 
     if (!process.env.ANTHROPIC_API_KEY) {
       console.error('ANTHROPIC_API_KEY not set');
+      console.error('Available env vars:', Object.keys(process.env).filter(k => k.includes('ANTHROPIC')));
       return NextResponse.json({ error: 'API key not configured' }, { status: 500 });
     }
 
@@ -63,7 +66,7 @@ export async function POST(request: NextRequest) {
     console.log('Calling Claude API...');
 
     const response = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-3-5-sonnet-20240620',
       max_tokens: 1024,
       messages: [
         {
