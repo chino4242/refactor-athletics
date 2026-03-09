@@ -93,15 +93,70 @@ Users can create custom workout programs with exercises and treadmill blocks, th
   - Treadmill blocks: duration_seconds, incline, intensity (zone2/base/push/all_out)
 - **program_schedule**: Assigns programs to calendar days (one per day)
 
-### 3.2 Implementation Phases
+### 3.2 Implementation Status
 - **Phase 1** ✅: Database schema, basic CRUD, program list UI
 - **Phase 2** ✅: Program editor with exercise selection and category filtering
-- **Phase 3** (Planned): Edit sets/reps/weight, treadmill blocks, reordering, supersets
+- **Phase 3** ✅: Edit sets/reps/weight, treadmill blocks, reordering, supersets
 - **Phase 4** (Planned): Calendar scheduling, week/month copying, execution with timer
 
 See `WORKOUT_PROGRAMS.md` for detailed documentation.
 
-## 4. UI Guidelines & Component Guardrails
+## 4. Testing & Quality Assurance
+
+### 4.1 Test Framework
+- **Vitest** for unit and integration tests
+- **React Testing Library** for component tests
+- **138 tests** covering critical business logic and user flows
+
+### 4.2 Test Coverage Areas
+- **Server Actions**: logHabitAction, logTrainingAction, deleteHistoryItemAction
+- **API Functions**: saveProfile, getHabitProgress, getUserStats, getHistory
+- **API Routes**: parse-screenshot (Claude AI integration)
+- **Components**: MacroLogModal, ScreenshotUploader, DailyQuest, HabitCard, ProfileCard, WorkoutBuilder
+- **Business Logic**: Rank calculation (Epley formula, xBW comparison, level assignment)
+- **Data Aggregation**: History from 4 domain-specific tables
+
+### 4.3 Testing Patterns
+- Mock Supabase client with proper method chaining
+- Use `vi.hoisted()` for external SDK mocks (e.g., Anthropic)
+- Test business logic separately from UI interactions
+- Use `waitFor()` for async operations
+- Mock `window.confirm` and `window.alert` for user interactions
+
+### 4.4 Running Tests
+```bash
+npm test                    # Run all tests
+npm test -- <filename>      # Run specific test file
+npm test -- --coverage      # Run with coverage report
+```
+
+## 5. Progressive Web App (PWA)
+
+### 5.1 PWA Implementation
+The application is a fully functional PWA with offline support:
+- **Service Worker** (`public/sw.js`): Network-first caching strategy
+- **Web App Manifest** (`public/manifest.json`): App metadata and icons
+- **Offline Fallback** (`src/app/offline/page.tsx`): Graceful offline experience
+- **Install Prompt** (`src/components/InstallPrompt.tsx`): Custom install banner with 7-day dismissal
+- **Auto-registration** (`src/components/ServiceWorkerRegistration.tsx`): Automatic service worker setup
+
+### 5.2 PWA Configuration
+- **Caching Strategy**: Network-first (always tries network, falls back to cache)
+- **Cached Resources**: Successful responses (200 status) are automatically cached
+- **Offline Detection**: Service worker intercepts failed requests and serves offline page
+- **Install Prompt**: Shows on Android/Desktop Chrome/Edge, dismissible for 7 days
+
+### 5.3 Testing PWA
+```bash
+npm run build && npm start   # Production build required
+```
+- Chrome DevTools → Application → Service Workers
+- Test offline mode in Network tab
+- Run Lighthouse audit (target: 90+ PWA score)
+
+See `PWA_SETUP.md` for detailed implementation guide.
+
+## 6. UI Guidelines & Component Guardrails
 - **Mobile First**: All layouts must be responsive, defaulting to stacked views on mobile (`flex-col`) before applying `md:` modifiers.
 - **Z-Index Stacking Contexts**: Be careful with sibling `relative z-10` containers. If a dropdown menu (e.g., App Settings on the Profile Card) is placed inside a `z-10` container, the sibling container must have a lower z-index (or the parent must be elevated to `z-20`) so floating elements can escape the bounding box and remain clickable on mobile.
 - **Styling**: Tailwind CSS is used globally. Favor dark, premium gradients (`bg-zinc-900`, `from-orange-600 to-red-600`) and glowing accents (`drop-shadow-[0_0_30px_rgba(249,115,22,0.4)]`).

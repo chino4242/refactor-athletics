@@ -121,7 +121,7 @@ Sum of (max_level × 100) for each exercise
 ## Deployment
 This project is optimized for deployment on [Vercel](https://vercel.com/new). Ensure all environment variables are securely mapped before triggering a production build.
 
-## Recent Changes (Feb 2026)
+## Recent Changes (Feb-Mar 2026)
 - Migrated from monolithic `history` table to domain-specific tables
 - Fixed macro logging to use Server Actions
 - Added habit visibility toggles
@@ -132,3 +132,58 @@ This project is optimized for deployment on [Vercel](https://vercel.com/new). En
 - Implemented target weight storage in body_composition_goals JSON field
 - Added automatic calorie calculation from macros (protein × 4 + carbs × 4 + fat × 9)
 - Implemented router.refresh() for proper UI updates after profile changes
+- **Implemented PWA functionality** (service worker, manifest, offline support, install prompt)
+- **Added comprehensive test coverage** (138 tests covering critical business logic)
+
+## Testing
+The project uses **Vitest** and **React Testing Library** for testing.
+
+### Running Tests
+```bash
+npm test                    # Run all tests
+npm test -- <filename>      # Run specific test file
+npm test -- --coverage      # Run with coverage report
+```
+
+### Test Coverage (138 tests)
+- **Server Actions**: logHabitAction, logTrainingAction, deleteHistoryItemAction
+- **API Functions**: saveProfile, getHabitProgress, getUserStats, getHistory
+- **API Routes**: parse-screenshot (Claude AI integration)
+- **Components**: MacroLogModal, ScreenshotUploader, DailyQuest, HabitCard, ProfileCard, WorkoutBuilder
+- **Business Logic**: Rank calculation (Epley formula, xBW comparison, level assignment)
+- **Utility Functions**: Time formatting, data aggregation
+
+### Test Files
+- `src/tests/actions.test.ts` - Server action tests
+- `src/tests/api.test.ts` - API function tests
+- `src/tests/parse-screenshot.test.ts` - Screenshot parsing with Claude
+- `src/tests/logTrainingAction.test.ts` - Rank calculation logic
+- `src/tests/getHistory.test.ts` - Data aggregation from 4 tables
+- `src/tests/MacroLogModal.test.tsx` - Macro logging UI
+- `src/tests/ScreenshotUploader.test.tsx` - Screenshot upload flow
+- `src/tests/DailyQuest.test.tsx` - Habit tracking UI
+- `src/tests/HabitCard.test.tsx` - Individual habit cards
+- `src/tests/ProfileCard.test.tsx` - Profile management
+- `src/tests/WorkoutBuilder.test.tsx` - Workout program builder
+- `src/tests/time.test.ts` - Time utility functions
+
+## Progressive Web App (PWA)
+The application is a fully functional PWA with offline support.
+
+### PWA Features
+- **Service Worker** (`public/sw.js`): Network-first caching strategy
+- **Web App Manifest** (`public/manifest.json`): App metadata and icons
+- **Offline Fallback** (`src/app/offline/page.tsx`): Graceful offline experience
+- **Install Prompt** (`src/components/InstallPrompt.tsx`): Custom install banner with 7-day dismissal
+- **Auto-registration** (`src/components/ServiceWorkerRegistration.tsx`): Automatic service worker setup
+
+### Testing PWA
+```bash
+npm run build && npm start   # Production build required for PWA
+```
+- Open Chrome DevTools → Application → Service Workers
+- Test offline mode by checking "Offline" in Network tab
+- Run Lighthouse audit for PWA score (target: 90+)
+
+### PWA Setup
+See `PWA_SETUP.md` for detailed implementation guide and troubleshooting.
