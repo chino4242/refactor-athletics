@@ -64,6 +64,100 @@ describe('DailyQuest Component', () => {
         expect(screen.getByText(/Steps/i)).toBeInTheDocument();
     });
 
+    it('renders new Apple Fitness habit cards', async () => {
+        await act(async () => {
+            render(<DailyQuest {...defaultProps} />);
+        });
+        expect(screen.getByText(/Exercise/i)).toBeInTheDocument();
+        expect(screen.getByText(/Stand/i)).toBeInTheDocument();
+    });
+
+    it('logs exercise minutes habit', async () => {
+        const { logHabitAction } = await import('@/app/actions');
+        vi.mocked(logHabitAction).mockResolvedValue({ xp_earned: 3 });
+
+        await act(async () => {
+            render(<DailyQuest {...defaultProps} />);
+        });
+
+        const exerciseCard = screen.getByText('Exercise', { selector: 'span.uppercase' }).closest('button');
+        await act(async () => {
+            fireEvent.click(exerciseCard!);
+        });
+
+        const input = screen.getByPlaceholderText('mins');
+        await act(async () => {
+            fireEvent.change(input, { target: { value: '45' } });
+        });
+
+        const logBtn = screen.getByText('LOG');
+        await act(async () => {
+            fireEvent.click(logBtn);
+        });
+
+        await waitFor(() => {
+            expect(logHabitAction).toHaveBeenCalledWith(
+                'test-user',
+                'habit_exercise_minutes',
+                45,
+                185,
+                'Exercise',
+                undefined
+            );
+        });
+    });
+
+    it('logs stand hours habit', async () => {
+        const { logHabitAction } = await import('@/app/actions');
+        vi.mocked(logHabitAction).mockResolvedValue({ xp_earned: 2 });
+
+        await act(async () => {
+            render(<DailyQuest {...defaultProps} />);
+        });
+
+        const standCard = screen.getByText('Stand', { selector: 'span.uppercase' }).closest('button');
+        await act(async () => {
+            fireEvent.click(standCard!);
+        });
+
+        const input = screen.getByPlaceholderText('hrs');
+        await act(async () => {
+            fireEvent.change(input, { target: { value: '12' } });
+        });
+
+        const logBtn = screen.getByText('LOG');
+        await act(async () => {
+            fireEvent.click(logBtn);
+        });
+
+        await waitFor(() => {
+            expect(logHabitAction).toHaveBeenCalledWith(
+                'test-user',
+                'habit_stand_hours',
+                12,
+                185,
+                'Stand',
+                undefined
+            );
+        });
+    });
+
+    it('renders the DAILY QUESTS header', async () => {
+        await act(async () => {
+            render(<DailyQuest {...defaultProps} />);
+        });
+        expect(screen.getByText(/DAILY QUESTS/i)).toBeInTheDocument();
+    });
+
+    it('renders the core habit buttons', async () => {
+        await act(async () => {
+            render(<DailyQuest {...defaultProps} />);
+        });
+        expect(screen.getByText('Supplements')).toBeInTheDocument();
+        expect(screen.getByText(/Sleep 7\+/i)).toBeInTheDocument();
+        expect(screen.getByText(/Steps/i)).toBeInTheDocument();
+    });
+
     it('calls logHabitAction when a simple habit button is clicked', async () => {
         const { logHabitAction } = await import('@/app/actions');
         vi.mocked(logHabitAction).mockResolvedValue({ xp_earned: 5 });

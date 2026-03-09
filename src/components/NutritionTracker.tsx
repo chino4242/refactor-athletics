@@ -196,8 +196,6 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
             const isOver = filled > dailyTarget;
             const color = isOver ? (macroKey === 'habit_water' ? baseColor : 'text-red-500') : baseColor; // Don't turn red for water
 
-            console.log(`Bar ${label} (${macroKey}):`, { filled, dailyTarget, percent });
-
             return (
                 <div className="mb-3">
                     <div className="flex justify-between text-xs font-bold text-zinc-400 uppercase mb-1">
