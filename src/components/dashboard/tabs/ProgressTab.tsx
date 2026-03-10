@@ -189,6 +189,19 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                 </div>
                 {loading ? (
                     <p className="text-sm text-zinc-500">Loading...</p>
+                ) : Object.values(groupedExercises).every(arr => arr.length === 0) ? (
+                    <div className="text-center py-8">
+                        <div className="text-5xl mb-4">🏆</div>
+                        <p className="text-sm text-zinc-400 mb-2">No exercises completed yet</p>
+                        <p className="text-xs text-zinc-500 mb-4">Complete workouts to build your Power Level</p>
+                        <Link 
+                            href="/train" 
+                            className="inline-flex items-center gap-1 text-xs text-orange-500 hover:text-orange-400 font-semibold"
+                        >
+                            Start Training
+                            <ChevronRight size={14} />
+                        </Link>
+                    </div>
                 ) : (
                     <div className="space-y-6">
                         {['Strength', 'Endurance & Speed', 'Power & Capacity', 'Mobility'].map(category => {

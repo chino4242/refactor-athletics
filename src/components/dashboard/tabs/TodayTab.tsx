@@ -198,7 +198,17 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                         </div>
                     </Link>
                 ) : (
-                    <p className="text-sm text-zinc-500">No workout scheduled for today</p>
+                    <div className="text-center py-6">
+                        <div className="text-4xl mb-3">📅</div>
+                        <p className="text-sm text-zinc-400 mb-3">Rest day! No workout scheduled.</p>
+                        <Link 
+                            href="/train" 
+                            className="inline-flex items-center gap-1 text-xs text-orange-500 hover:text-orange-400 font-semibold"
+                        >
+                            Browse Workouts
+                            <ChevronRight size={14} />
+                        </Link>
+                    </div>
                 )}
             </div>
 
@@ -222,7 +232,17 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                         </p>
                     </div>
                 ) : (
-                    <p className="text-sm text-zinc-500">No workouts logged yet</p>
+                    <div className="text-center py-6">
+                        <div className="text-4xl mb-3">🚀</div>
+                        <p className="text-sm text-zinc-400 mb-3">Start your fitness journey!</p>
+                        <Link 
+                            href="/train" 
+                            className="inline-flex items-center gap-1 text-xs text-orange-500 hover:text-orange-400 font-semibold"
+                        >
+                            Log Your First Workout
+                            <ChevronRight size={14} />
+                        </Link>
+                    </div>
                 )}
             </div>
         </div>

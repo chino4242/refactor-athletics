@@ -101,7 +101,64 @@ Users can create custom workout programs with exercises and treadmill blocks, th
 
 See `WORKOUT_PROGRAMS.md` for detailed documentation.
 
-## 4. Testing & Quality Assurance
+## 4. Dashboard & User Experience
+
+### 4.1 Dashboard as Home Screen
+The dashboard (`/dashboard`) is the default landing page after login, featuring three tabs:
+
+**Today Tab:**
+- Daily goals (calories, water, steps) with green highlights when met
+- Today's scheduled workout from weekly schedule
+- Last completed workout
+- Improved empty states with motivational CTAs
+
+**Progress Tab:**
+- Power Level Contributors showing all exercises with rank images
+- Grouped by category (Strength, Endurance & Speed, Power & Capacity, Mobility)
+- Shows current level or Level 1 target for unattempted exercises
+- Refactor Score tracking (body composition changes vs goals)
+
+**Arena Tab:**
+- Active duels display
+- Weekly challenge status
+- Challenge a friend CTA
+
+### 4.2 Dashboard Features
+- **Pull-to-Refresh**: Touch gesture to reload all dashboard data (mobile-first)
+- **Skeleton Loaders**: Animated placeholders instead of "Loading..." text
+- **Weight Tracking**: Current weight, target weight, and progress in header
+- **Refactor Score**: Calculated from body composition changes vs goals (color-coded)
+- **Empty States**: Motivational messages with CTAs for all empty sections
+
+### 4.3 Onboarding Wizard
+New users see a 4-step wizard before accessing the dashboard:
+1. **Introduction**: Explains Refactor Athletics concept (fitness RPG, Power Level, ranked standards)
+2. **Theme Selection**: Choose from 5 themes (Athlete, Draconic, Samurai, Apex Predator, Viking)
+3. **Personal Info**: Age, sex, current weight
+4. **Goal Setting**: Target weight
+
+After completion, `is_onboarded` flag is set to true and user sees normal dashboard.
+
+### 4.4 Empty State Design Pattern
+All empty states follow this pattern:
+- Large emoji for visual interest (🚀, 📅, ⚔️, 🏆)
+- Friendly, motivational messaging
+- Clear call-to-action link with arrow icon
+- Centered layout with proper spacing
+
+Example:
+```tsx
+<div className="text-center py-6">
+  <div className="text-4xl mb-3">🚀</div>
+  <p className="text-sm text-zinc-400 mb-3">Start your fitness journey!</p>
+  <Link href="/train" className="inline-flex items-center gap-1 text-xs text-orange-500 hover:text-orange-400 font-semibold">
+    Log Your First Workout
+    <ChevronRight size={14} />
+  </Link>
+</div>
+```
+
+## 5. Testing & Quality Assurance
 
 ### 4.1 Test Framework
 - **Vitest** for unit and integration tests
@@ -130,9 +187,9 @@ npm test -- <filename>      # Run specific test file
 npm test -- --coverage      # Run with coverage report
 ```
 
-## 5. Progressive Web App (PWA)
+## 6. Progressive Web App (PWA)
 
-### 5.1 PWA Implementation
+### 6.1 PWA Implementation
 The application is a fully functional PWA with offline support:
 - **Service Worker** (`public/sw.js`): Network-first caching strategy
 - **Web App Manifest** (`public/manifest.json`): App metadata and icons
@@ -140,13 +197,13 @@ The application is a fully functional PWA with offline support:
 - **Install Prompt** (`src/components/InstallPrompt.tsx`): Custom install banner with 7-day dismissal
 - **Auto-registration** (`src/components/ServiceWorkerRegistration.tsx`): Automatic service worker setup
 
-### 5.2 PWA Configuration
+### 6.2 PWA Configuration
 - **Caching Strategy**: Network-first (always tries network, falls back to cache)
 - **Cached Resources**: Successful responses (200 status) are automatically cached
 - **Offline Detection**: Service worker intercepts failed requests and serves offline page
 - **Install Prompt**: Shows on Android/Desktop Chrome/Edge, dismissible for 7 days
 
-### 5.3 Testing PWA
+### 6.3 Testing PWA
 ```bash
 npm run build && npm start   # Production build required
 ```
@@ -156,7 +213,20 @@ npm run build && npm start   # Production build required
 
 See `PWA_SETUP.md` for detailed implementation guide.
 
-## 6. UI Guidelines & Component Guardrails
+## 7. UI Guidelines & Component Guardrails
 - **Mobile First**: All layouts must be responsive, defaulting to stacked views on mobile (`flex-col`) before applying `md:` modifiers.
 - **Z-Index Stacking Contexts**: Be careful with sibling `relative z-10` containers. If a dropdown menu (e.g., App Settings on the Profile Card) is placed inside a `z-10` container, the sibling container must have a lower z-index (or the parent must be elevated to `z-20`) so floating elements can escape the bounding box and remain clickable on mobile.
 - **Styling**: Tailwind CSS is used globally. Favor dark, premium gradients (`bg-zinc-900`, `from-orange-600 to-red-600`) and glowing accents (`drop-shadow-[0_0_30px_rgba(249,115,22,0.4)]`).
+
+## 8. Future Features & Design Documents
+
+### 8.1 Character Creation System
+A comprehensive RPG-style character creation and customization system is planned. See `CHARACTER_CREATION_DESIGN.md` for full specifications including:
+- SVG base bodies + PNG gear overlays approach
+- Database schema for character config and gear catalog
+- Unlock system (XP, achievements, themes)
+- Component architecture and rendering logic
+- 4-phase implementation plan
+- Asset requirements and design guidelines
+
+This feature will allow users to build visual avatars that evolve with their fitness journey, unlock cosmetic gear through achievements, and display their character throughout the app.

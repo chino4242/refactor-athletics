@@ -10,6 +10,20 @@ Recent architectural changes migrated from a monolithic `history` table to domai
 - **Dynamic Training Catalog**: Exercises (`catalog`) are fetched via Supabase, complete with XP factors, categories (e.g., Metcon, Gymnastics), and standards thresholds.
 - **Rank Calculator**: Computes performance (e.g., Lbs, Sec, Reps) against Age, Sex, and Bodyweight, converting raw results into themed tier rankings (e.g., Rookie, Contender, Legend).
 - **Power Level System**: Aggregates the `max_level_achieved` across all historic exercises, multiplying each by 100 to generate a holistic player strength score.
+- **Dashboard**: Mobile-first home screen with Today, Progress, and Arena tabs featuring:
+  - Pull-to-refresh gesture
+  - Skeleton loaders
+  - Daily goals with green highlights when met
+  - Power Level Contributors with rank images
+  - Refactor Score tracking
+  - Current and target weight display
+  - Today's scheduled workout
+  - Improved empty states with CTAs
+- **Onboarding Wizard**: 4-step guided setup for new users:
+  - Introduction to Refactor Athletics concept
+  - Theme selection (Athlete, Draconic, Samurai, Apex Predator, Viking)
+  - Personal info (age, sex, current weight)
+  - Goal setting (target weight)
 - **Attribute Balance**: A specialized radar chart categorizes logged exercises into four cardinal points: Strength (STR), Endurance (END), Power (PWR), and Mobility (MOB).
 - **Daily Quests**: Track habits (steps, water, sleep, etc.) and nutrition (macros) with customizable targets and visibility settings.
 - **Workout Programs**: Create custom workout programs with exercises and treadmill blocks, schedule them to specific days.
@@ -134,6 +148,10 @@ This project is optimized for deployment on [Vercel](https://vercel.com/new). En
 - Implemented router.refresh() for proper UI updates after profile changes
 - **Implemented PWA functionality** (service worker, manifest, offline support, install prompt)
 - **Added comprehensive test coverage** (138 tests covering critical business logic)
+- **Dashboard as home screen** with pull-to-refresh, skeleton loaders, and improved UX
+- **Onboarding wizard** for new user setup with theme selection
+- **Weight tracking** in dashboard header (current weight, target weight, progress)
+- **Improved empty states** with motivational messages and CTAs throughout dashboard
 
 ## Testing
 The project uses **Vitest** and **React Testing Library** for testing.

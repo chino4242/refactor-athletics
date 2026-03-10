@@ -50,7 +50,17 @@ export default function ArenaTab({ userId, activeDuels }: ArenaTabProps) {
                         )}
                     </div>
                 ) : (
-                    <p className="text-sm text-zinc-500">No active duels</p>
+                    <div className="text-center py-6">
+                        <div className="text-4xl mb-3">⚔️</div>
+                        <p className="text-sm text-zinc-400 mb-3">No active duels. Time to challenge someone!</p>
+                        <Link 
+                            href="/arena" 
+                            className="inline-flex items-center gap-1 text-xs text-orange-500 hover:text-orange-400 font-semibold"
+                        >
+                            Start a Duel
+                            <ChevronRight size={14} />
+                        </Link>
+                    </div>
                 )}
             </div>
 
@@ -66,7 +76,17 @@ export default function ArenaTab({ userId, activeDuels }: ArenaTabProps) {
                         <ChevronRight size={14} />
                     </Link>
                 </div>
-                <p className="text-sm text-zinc-500">No active challenge</p>
+                <div className="text-center py-6">
+                    <div className="text-4xl mb-3">🏆</div>
+                    <p className="text-sm text-zinc-400 mb-3">No active challenge this week</p>
+                    <Link 
+                        href="/arena" 
+                        className="inline-flex items-center gap-1 text-xs text-orange-500 hover:text-orange-400 font-semibold"
+                    >
+                        Check Back Soon
+                        <ChevronRight size={14} />
+                    </Link>
+                </div>
             </div>
 
             {/* Challenge a Friend CTA */}
