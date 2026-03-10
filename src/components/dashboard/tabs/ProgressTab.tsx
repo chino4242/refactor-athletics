@@ -10,6 +10,8 @@ import { useTrophies } from '@/hooks/useTrophies';
 import { useTheme } from '@/context/ThemeContext';
 import { THEMES } from '@/data/themes';
 import { createClient } from '@/utils/supabase/client';
+import CharacterAvatar from '@/components/character/CharacterAvatar';
+import { CharacterConfig, getTierName } from '@/types/character';
 
 interface ProgressTabProps {
     userId: string;
@@ -23,6 +25,7 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
     const [powerLevelExercises, setPowerLevelExercises] = useState<any[]>([]);
     const [allRankedExercises, setAllRankedExercises] = useState<any[]>([]);
     const [userProfile, setUserProfile] = useState<any>(null);
+    const [characterConfig, setCharacterConfig] = useState<CharacterConfig | null>(null);
     const [loading, setLoading] = useState(true);
     const { currentTheme } = useTheme();
 
@@ -33,12 +36,13 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                 const [history, catalog, profile] = await Promise.all([
                     getHistory(userId),
                     getTrainingCatalog(),
-                    supabase.from('users').select('age, sex, bodyweight').eq('id', userId).single(),
+                    supabase.from('users').select('age, sex, bodyweight, character_config').eq('id', userId).single(),
                 ]);
                 setFullHistory(history);
                 setRecentHistory(history.slice(0, 5));
                 setExercises(catalog);
                 setUserProfile(profile.data);
+                setCharacterConfig(profile.data?.character_config || null);
                 
                 // Get exercises with standards (these contribute to power level)
                 const rankedCatalog = catalog.filter((ex: any) => ex.standards);
@@ -158,6 +162,41 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
 
     return (
         <div className="space-y-4">
+            {/* Character Card */}
+            {characterConfig && stats && (
+                <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+                    <div className="flex items-center gap-4">
+                        <CharacterAvatar
+                            character={characterConfig}
+                            powerLevel={stats.power_level || 0}
+                            size="md"
+                            animated
+                        />
+                        <div className="flex-1">
+                            <h3 className="text-lg font-black text-white mb-1">Your Character</h3>
+                            <div className="text-sm text-zinc-400 mb-2">{getTierName(characterConfig.powerLevelTier)}</div>
+                            <div className="flex gap-4 text-xs">
+                                <div>
+                                    <span className="text-zinc-500">Power Level:</span>
+                                    <span className="text-orange-500 font-bold ml-1">{stats.power_level || 0}</span>
+                                </div>
+                                <div>
+                                    <span className="text-zinc-500">Career XP:</span>
+                                    <span className="text-blue-500 font-bold ml-1">{stats.total_xp || 0}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <Link 
+                            href="/character-test" 
+                            className="text-xs text-orange-500 hover:text-orange-400 font-semibold flex items-center gap-1"
+                        >
+                            Customize
+                            <ChevronRight size={14} />
+                        </Link>
+                    </div>
+                </div>
+            )}
+
             {/* Power Radar */}
             <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-3">
