@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getUserStats, getActiveDuels } from '@/services/api';
 import { getWorkouts } from '@/services/workoutApi';
 import type { UserStats, DuelResponse, Workout } from '@/types';
 import DashboardHeader from './DashboardHeader';
 import DashboardTabs from './DashboardTabs';
+import DashboardSkeleton from './DashboardSkeleton';
 import QuickActionButton from './QuickActionButton';
 import { Plus } from 'lucide-react';
 
@@ -19,41 +20,102 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
     const [programs, setPrograms] = useState<Workout[]>([]);
     const [loading, setLoading] = useState(true);
     const [showQuickActions, setShowQuickActions] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
+    
+    // Pull to refresh state
+    const [pullDistance, setPullDistance] = useState(0);
+    const touchStartY = useRef(0);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+    const loadData = async () => {
+        try {
+            const [statsData, duelsData, programsData] = await Promise.all([
+                getUserStats(userId).catch(e => { console.error('Stats error:', e); return null; }),
+                getActiveDuels(userId).catch(e => { console.error('Duels error:', e); return []; }),
+                getWorkouts(userId).catch(e => { console.error('Programs error:', e); return []; }),
+            ]);
+            console.log('Dashboard loaded:', { statsData, duelsData: duelsData?.length, programsData: programsData?.length });
+            setStats(statsData);
+            setActiveDuels(duelsData || []);
+            setPrograms(programsData || []);
+        } catch (error) {
+            console.error('Failed to load dashboard data:', error);
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
+        }
+    };
 
     useEffect(() => {
-        const loadData = async () => {
-            try {
-                const [statsData, duelsData, programsData] = await Promise.all([
-                    getUserStats(userId).catch(e => { console.error('Stats error:', e); return null; }),
-                    getActiveDuels(userId).catch(e => { console.error('Duels error:', e); return []; }),
-                    getWorkouts(userId).catch(e => { console.error('Programs error:', e); return []; }),
-                ]);
-                console.log('Dashboard loaded:', { statsData, duelsData: duelsData?.length, programsData: programsData?.length });
-                setStats(statsData);
-                setActiveDuels(duelsData || []);
-                setPrograms(programsData || []);
-            } catch (error) {
-                console.error('Failed to load dashboard data:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         loadData();
     }, [userId]);
+
+    // Pull to refresh handlers
+    const handleTouchStart = (e: React.TouchEvent) => {
+        if (scrollContainerRef.current && scrollContainerRef.current.scrollTop === 0) {
+            touchStartY.current = e.touches[0].clientY;
+        }
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        if (touchStartY.current === 0) return;
+        
+        const touchY = e.touches[0].clientY;
+        const distance = touchY - touchStartY.current;
+        
+        if (distance > 0 && scrollContainerRef.current && scrollContainerRef.current.scrollTop === 0) {
+            setPullDistance(Math.min(distance, 100));
+        }
+    };
+
+    const handleTouchEnd = () => {
+        if (pullDistance > 60) {
+            setRefreshing(true);
+            loadData();
+        }
+        setPullDistance(0);
+        touchStartY.current = 0;
+    };
 
     const hasActiveDuels = activeDuels.length > 0;
 
     if (loading) {
-        return (
-            <div className="min-h-screen bg-black flex items-center justify-center">
-                <div className="text-zinc-400">Loading...</div>
-            </div>
-        );
+        return <DashboardSkeleton />;
     }
 
     return (
-        <div className="min-h-screen bg-black pb-24">
+        <div 
+            ref={scrollContainerRef}
+            className="min-h-screen bg-black pb-24 overflow-y-auto"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+        >
+            {/* Pull to refresh indicator */}
+            {pullDistance > 0 && (
+                <div 
+                    className="fixed top-0 left-0 right-0 flex items-center justify-center z-50 transition-opacity"
+                    style={{ 
+                        height: `${pullDistance}px`,
+                        opacity: pullDistance / 100 
+                    }}
+                >
+                    <div className="text-orange-500 text-sm font-bold">
+                        {pullDistance > 60 ? '↓ Release to refresh' : '↓ Pull to refresh'}
+                    </div>
+                </div>
+            )}
+            
+            {/* Refreshing indicator */}
+            {refreshing && (
+                <div className="fixed top-4 left-0 right-0 flex items-center justify-center z-50">
+                    <div className="bg-zinc-900 border border-zinc-800 rounded-full px-4 py-2 flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                        <span className="text-sm text-zinc-400">Refreshing...</span>
+                    </div>
+                </div>
+            )}
+
             {/* Header with Power Level & Stats */}
             <DashboardHeader stats={stats} userId={userId} />
 

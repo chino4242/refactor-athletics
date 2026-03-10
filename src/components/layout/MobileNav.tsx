@@ -23,7 +23,7 @@ export default function MobileNav() {
                     <span className="text-xs font-bold uppercase tracking-wider">Track</span>
                 </Link>
                 <Link href="/train" className={`flex flex-col items-center justify-center gap-1 transition-colors ${isActive('/train')}`}>
-                    <span className="text-xl">🏋️♀️</span>
+                    <span className="text-xl">🏋️</span>
                     <span className="text-xs font-bold uppercase tracking-wider">Train</span>
                 </Link>
                 <Link href="/arena" className={`flex flex-col items-center justify-center gap-1 transition-colors ${isActive('/arena')}`}>
