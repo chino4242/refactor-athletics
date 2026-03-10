@@ -56,6 +56,13 @@ export function getTierName(tier: number, theme?: string): string {
       4: 'Wyrm',
       5: 'Ancient Dragon'
     },
+    dragon: { // Alias for draconic
+      1: 'Hatchling',
+      2: 'Whelp',
+      3: 'Drake',
+      4: 'Wyrm',
+      5: 'Ancient Dragon'
+    },
     athlete: {
       1: 'Rookie',
       2: 'Varsity',
