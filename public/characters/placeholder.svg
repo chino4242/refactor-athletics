@@ -1,0 +1,10 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Placeholder character - will be replaced with actual artwork -->
+  <rect width="512" height="512" fill="#1a1a1a"/>
+  <text x="256" y="256" text-anchor="middle" fill="#666" font-size="24" font-family="Arial">
+    Character Placeholder
+  </text>
+  <text x="256" y="290" text-anchor="middle" fill="#999" font-size="16" font-family="Arial">
+    Artwork coming soon
+  </text>
+</svg>

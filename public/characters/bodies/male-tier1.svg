@@ -1,0 +1,25 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Male Tier 1 (Novice) - Basic proportions -->
+  
+  <!-- Head -->
+  <circle cx="256" cy="120" r="50" fill="#d4a574"/>
+  
+  <!-- Neck -->
+  <rect x="241" y="160" width="30" height="30" fill="#d4a574"/>
+  
+  <!-- Torso -->
+  <rect x="206" y="190" width="100" height="140" rx="10" fill="#e8b896"/>
+  
+  <!-- Arms -->
+  <rect x="176" y="200" width="25" height="120" rx="12" fill="#d4a574"/>
+  <rect x="311" y="200" width="25" height="120" rx="12" fill="#d4a574"/>
+  
+  <!-- Legs -->
+  <rect x="216" y="330" width="35" height="150" rx="15" fill="#d4a574"/>
+  <rect x="261" y="330" width="35" height="150" rx="15" fill="#d4a574"/>
+  
+  <!-- Simple face -->
+  <circle cx="241" cy="115" r="5" fill="#000"/>
+  <circle cx="271" cy="115" r="5" fill="#000"/>
+  <path d="M 241 135 Q 256 140 271 135" stroke="#000" stroke-width="2" fill="none"/>
+</svg>
