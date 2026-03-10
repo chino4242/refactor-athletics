@@ -8,12 +8,11 @@ import ScreenshotUploader from './ScreenshotUploader';
 interface MacroLogModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onLog: (type: 'calories' | 'protein' | 'carbs' | 'fat' | 'water', value: number, mode: 'add' | 'total') => Promise<void>;
+    onLog: (type: 'calories' | 'protein' | 'carbs' | 'fat' | 'water', value: number) => Promise<void>;
     totals: Record<string, number>;
 }
 
 export default function MacroLogModal({ isOpen, onClose, onLog, totals }: MacroLogModalProps) {
-    const [mode, setMode] = useState<'add' | 'total'>('add');
     const [mounted, setMounted] = useState(false);
 
     // Values
@@ -33,16 +32,16 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals }: MacroL
         const promises = [];
         
         if (protein && parseFloat(protein) > 0) {
-            promises.push(onLog('protein', parseFloat(protein), mode));
+            promises.push(onLog('protein', parseFloat(protein)));
         }
         if (carbs && parseFloat(carbs) > 0) {
-            promises.push(onLog('carbs', parseFloat(carbs), mode));
+            promises.push(onLog('carbs', parseFloat(carbs)));
         }
         if (fat && parseFloat(fat) > 0) {
-            promises.push(onLog('fat', parseFloat(fat), mode));
+            promises.push(onLog('fat', parseFloat(fat)));
         }
         if (water && parseFloat(water) > 0) {
-            promises.push(onLog('water', parseFloat(water), mode));
+            promises.push(onLog('water', parseFloat(water)));
         }
 
         if (promises.length > 0) {
@@ -59,7 +58,8 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals }: MacroL
     const handleQuickWater = async (amount: string) => {
         const val = parseFloat(amount);
         if (val > 0) {
-            await onLog('water', val, 'add');
+            const currentWater = totals['habit_water'] || 0;
+            await onLog('water', currentWater + val);
         }
     };
 
@@ -75,8 +75,13 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals }: MacroL
 
                 {/* Header */}
                 <div className="flex justify-between items-center p-4 border-b border-zinc-800 bg-zinc-900/50">
-                    <div className="flex items-center gap-2 text-white font-black italic tracking-tighter uppercase">
-                        <span>🥗 Log Nutrition</span>
+                    <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2 text-white font-black italic tracking-tighter uppercase">
+                            <span>🥗 Set Nutrition Totals</span>
+                        </div>
+                        <div className="text-[10px] text-zinc-500 font-medium">
+                            Enter exact totals for the day
+                        </div>
                     </div>
                     <button
                         onClick={onClose}
@@ -91,21 +96,16 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals }: MacroL
                     <ScreenshotUploader type="nutrition" onDataExtracted={handleNutritionData} />
                 </div>
 
-                {/* Mode Toggle */}
+                {/* Current Totals Display */}
                 <div className="p-4 border-b border-zinc-800/50">
-                    <div className="flex bg-black rounded p-0.5 border border-zinc-800">
-                        <button
-                            onClick={() => setMode('add')}
-                            className={`flex-1 text-xs font-bold rounded py-1.5 uppercase transition-all ${mode === 'add' ? 'bg-zinc-700 text-white shadow-sm' : 'text-zinc-600 hover:text-zinc-400'}`}
-                        >
-                            [+] Add to Total
-                        </button>
-                        <button
-                            onClick={() => setMode('total')}
-                            className={`flex-1 text-xs font-bold rounded py-1.5 uppercase transition-all ${mode === 'total' ? 'bg-blue-900/50 text-blue-400 shadow-sm border border-blue-900/50' : 'text-zinc-600 hover:text-zinc-400'}`}
-                        >
-                            [=] Set Exact Total
-                        </button>
+                    <div className="p-2 bg-blue-950/20 border border-blue-900/30 rounded text-xs text-blue-400">
+                        <div className="font-bold mb-1">Current Totals:</div>
+                        <div className="grid grid-cols-4 gap-2 text-[10px]">
+                            <div>🍞 {Math.round(totals['macro_carbs'] || 0)}g</div>
+                            <div>🥑 {Math.round(totals['macro_fat'] || 0)}g</div>
+                            <div>🥩 {Math.round(totals['macro_protein'] || 0)}g</div>
+                            <div>💧 {Math.round(totals['habit_water'] || 0)}oz</div>
+                        </div>
                     </div>
                 </div>
 
@@ -120,7 +120,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals }: MacroL
                             <input
                                 type="number"
                                 value={carbs}
-                                placeholder={mode === 'total' ? String(Math.round(totals['macro_carbs'] || 0)) : "0"}
+                                placeholder={String(Math.round(totals['macro_carbs'] || 0))}
                                 onChange={(e) => setCarbs(e.target.value)}
                                 className="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-white text-center font-bold focus:border-orange-500 outline-none"
                             />
@@ -134,7 +134,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals }: MacroL
                             <input
                                 type="number"
                                 value={fat}
-                                placeholder={mode === 'total' ? String(Math.round(totals['macro_fat'] || 0)) : "0"}
+                                placeholder={String(Math.round(totals['macro_fat'] || 0))}
                                 onChange={(e) => setFat(e.target.value)}
                                 className="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-white text-center font-bold focus:border-yellow-500 outline-none"
                             />
@@ -148,7 +148,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals }: MacroL
                             <input
                                 type="number"
                                 value={protein}
-                                placeholder={mode === 'total' ? String(Math.round(totals['macro_protein'] || 0)) : "0"}
+                                placeholder={String(Math.round(totals['macro_protein'] || 0))}
                                 onChange={(e) => setProtein(e.target.value)}
                                 className="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-white text-center font-bold focus:border-blue-500 outline-none"
                             />
@@ -183,7 +183,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals }: MacroL
                         onClick={handleLogAll}
                         className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white font-black italic uppercase py-3 rounded-lg shadow-lg transition-all"
                     >
-                        Log All
+                        Set Totals
                     </button>
 
                 </div>

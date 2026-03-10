@@ -69,7 +69,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
 
   useEffect(() => {
     fetchProgress();
-  }, [userId]);
+  }, [userId, targetDateTs]); // Re-fetch when date changes
 
   // Sync profile when props change
   useEffect(() => {

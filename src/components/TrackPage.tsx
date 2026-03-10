@@ -28,6 +28,75 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
     const { currentTheme } = useTheme();
     const [isMounted, setIsMounted] = useState(false);
 
+    // Date navigation state
+    const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+    const [selectedDateTs, setSelectedDateTs] = useState<number>(() => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return Math.floor(today.getTime() / 1000);
+    });
+
+    // Update timestamp when date changes
+    useEffect(() => {
+        const dateAtMidnight = new Date(selectedDate);
+        dateAtMidnight.setHours(0, 0, 0, 0);
+        setSelectedDateTs(Math.floor(dateAtMidnight.getTime() / 1000));
+    }, [selectedDate]);
+
+    // Date navigation handlers
+    const goToPreviousDay = () => {
+        const newDate = new Date(selectedDate);
+        newDate.setDate(newDate.getDate() - 1);
+        setSelectedDate(newDate);
+    };
+
+    const goToNextDay = () => {
+        const newDate = new Date(selectedDate);
+        newDate.setDate(newDate.getDate() + 1);
+        setSelectedDate(newDate);
+    };
+
+    const goToToday = () => {
+        setSelectedDate(new Date());
+    };
+
+    const isToday = useMemo(() => {
+        const today = new Date();
+        return selectedDate.toDateString() === today.toDateString();
+    }, [selectedDate]);
+
+    const isFuture = useMemo(() => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const selected = new Date(selectedDate);
+        selected.setHours(0, 0, 0, 0);
+        return selected > today;
+    }, [selectedDate]);
+
+    // Keyboard shortcuts for date navigation
+    useEffect(() => {
+        const handleKeyPress = (e: KeyboardEvent) => {
+            // Only handle if not typing in an input
+            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+                return;
+            }
+
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                goToPreviousDay();
+            } else if (e.key === 'ArrowRight' && !isFuture) {
+                e.preventDefault();
+                goToNextDay();
+            } else if (e.key === 't' || e.key === 'T') {
+                e.preventDefault();
+                goToToday();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyPress);
+        return () => window.removeEventListener('keydown', handleKeyPress);
+    }, [selectedDate, isFuture]);
+
     // Wait for client-side hydration
     useEffect(() => {
         setIsMounted(true);
@@ -319,6 +388,59 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
                 progressGradient={THEMES[currentTheme]?.progressGradient}
             />
 
+            {/* 🟢 DATE NAVIGATION */}
+            <div className="bg-zinc-800/50 p-4 rounded-2xl border border-zinc-700/50 backdrop-blur-sm">
+                <div className="flex items-center justify-between gap-4">
+                    <button
+                        onClick={goToPreviousDay}
+                        className="px-4 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-orange-500 hover:bg-orange-500/10 transition-all text-white font-bold"
+                        title="Previous day (←)"
+                    >
+                        ← Prev
+                    </button>
+                    
+                    <div className="flex flex-col items-center gap-1">
+                        <div className="text-lg font-black text-white">
+                            {selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </div>
+                        <div className="text-xs font-medium">
+                            {isToday ? (
+                                <span className="text-emerald-400">📅 Today</span>
+                            ) : isFuture ? (
+                                <span className="text-zinc-500">🔮 Future Date</span>
+                            ) : (
+                                <span className="text-orange-400">📜 Past Date</span>
+                            )}
+                        </div>
+                        {!isToday && (
+                            <button
+                                onClick={goToToday}
+                                className="text-xs text-orange-500 hover:text-orange-400 font-semibold"
+                                title="Jump to today (T)"
+                            >
+                                Jump to Today
+                            </button>
+                        )}
+                        <div className="text-[10px] text-zinc-600 mt-1">
+                            Use ← → keys or T for today
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={goToNextDay}
+                        disabled={isFuture}
+                        className={`px-4 py-2 rounded-lg font-bold transition-all ${
+                            isFuture 
+                                ? 'bg-zinc-900/50 border border-zinc-800 text-zinc-600 cursor-not-allowed'
+                                : 'bg-zinc-900 border border-zinc-700 hover:border-orange-500 hover:bg-orange-500/10 text-white'
+                        }`}
+                        title="Next day (→)"
+                    >
+                        Next →
+                    </button>
+                </div>
+            </div>
+
             {/* 🟢 PROGRESS METRICS */}
             <ProgressMetrics 
                 stats={initialStats}
@@ -341,6 +463,7 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
                     bodyweight={bodyweight}
                     stats={initialStats || null}
                     initialProfile={initialProfile || null}
+                    targetDateTs={selectedDateTs}
                     onXpEarned={() => {
                         onLogComplete?.();
                         // Reload body comp history after logging

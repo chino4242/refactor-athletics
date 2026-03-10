@@ -128,55 +128,45 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
         }
     };
 
-    const handleLogMacro = async (type: 'calories' | 'protein' | 'carbs' | 'fat' | 'water', value: number, mode: 'add' | 'total' = 'add') => {
-        if (value <= 0) return;
+    const handleLogMacro = async (type: 'calories' | 'protein' | 'carbs' | 'fat' | 'water', value: number) => {
+        if (value < 0) return;
         setLoading(true);
 
         // Special case for water ID
         const habitId = type === 'water' ? 'habit_water' : `macro_${type}`;
 
-        // Calculate diff if mode is 'total'
-        let finalVal = value;
-        let label = type === 'water' ? 'Water' : `Track ${type}`;
-
-        if (mode === 'total') {
-            const current = totals[habitId] || 0;
-            if (value <= current) {
-                // Technically valid to log 0 or negative diff? But simpler to ignore or warn.
-                // For now, let's just log the diff if positive. if negative, we might need a "remove" logic which `logHabit` supports if backend handles it?
-                // Actually `logHabit` usually adds. If we want to precise set, we currently just Add. 
-                // So we can only "Set Total" if the new total is HIGHER. (MVP Limitation)
-                console.warn("Cannot set total lower than current via this method yet.");
-                setLoading(false);
-                return;
-            }
-            finalVal = value - current;
-            label = `${label} (Sync)`;
+        // Always calculate diff for "Set Total" mode
+        const current = totals[habitId] || 0;
+        
+        // If setting to exact same value, skip
+        if (value === current) {
+            setLoading(false);
+            return;
         }
+        
+        // Calculate the difference (can be negative for adjustments)
+        const finalVal = value - current;
+        const label = type === 'water' ? 'Water' : `${type.charAt(0).toUpperCase() + type.slice(1)}`;
 
         try {
-            // 1. Log the Macro itself
+            // 1. Log the Macro itself (can be negative for adjustments)
             await logHabitAction(userId, habitId, finalVal, userProfile.bodyweight, label);
 
             // 2. Auto-Log Calories (4/4/9 Rule) - Skip for Water
-            // ONLY if mode is 'add'. If 'total', we don't know the breakdown of the ADDED amount easily for cals 
-            // unless we blindly apply 4/4/9 to the diff. Let's do that.
-            if (type !== 'water') {
+            if (type !== 'water' && type !== 'calories') {
                 let cals = 0;
                 if (type === 'protein') cals = finalVal * 4;
                 if (type === 'carbs') cals = finalVal * 4;
                 if (type === 'fat') cals = finalVal * 9;
 
-                if (cals > 0) {
-                    // Log the calculated calories
+                if (cals !== 0) {
+                    // Log the calculated calories (can be negative)
                     await logHabitAction(userId, 'macro_calories', cals, userProfile.bodyweight, `Auto-Cal (${type})`);
                 }
             }
 
             // Wait a moment for database to update before refreshing
             await new Promise(resolve => setTimeout(resolve, 500));
-
-            // Note: Inputs cleared by Modal
 
             onUpdate();
         } catch (e) {

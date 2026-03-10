@@ -13,8 +13,12 @@ interface WorkoutBuilderProps {
 export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
     const [workouts, setWorkouts] = useState<Workout[]>([]);
     const [catalog, setCatalog] = useState<CatalogItem[]>([]);
+    const [weeklySchedule, setWeeklySchedule] = useState<any[]>([]);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showEditorModal, setShowEditorModal] = useState(false);
+    const [showDefaultWorkoutModal, setShowDefaultWorkoutModal] = useState(false);
+    const [selectedDefaultDay, setSelectedDefaultDay] = useState<any>(null);
+    const [defaultWorkoutContent, setDefaultWorkoutContent] = useState('');
     const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
     const [workoutBlocks, setWorkoutBlocks] = useState<WorkoutBlock[]>([]);
     const [newWorkoutName, setNewWorkoutName] = useState('');
@@ -42,6 +46,7 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
     useEffect(() => {
         loadWorkouts();
         loadCatalog();
+        loadWeeklySchedule();
     }, [userId]);
 
     const loadWorkouts = async () => {
@@ -50,6 +55,55 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
             setWorkouts(data);
         } catch (e) {
             console.error('Failed to load Workouts:', e);
+        }
+    };
+
+    const loadWeeklySchedule = async () => {
+        try {
+            const response = await fetch('/api/workouts/schedule');
+            if (response.ok) {
+                const data = await response.json();
+                setWeeklySchedule(data);
+            }
+        } catch (e) {
+            console.error('Failed to load weekly schedule:', e);
+        }
+    };
+
+    const handleViewDefaultWorkout = async (day: any) => {
+        setSelectedDefaultDay(day);
+        setLoading(true);
+        try {
+            const response = await fetch(`/api/workouts/default/${day.day}`);
+            if (response.ok) {
+                const content = await response.text();
+                setDefaultWorkoutContent(content);
+                setShowDefaultWorkoutModal(true);
+            }
+        } catch (e) {
+            console.error('Failed to load workout content:', e);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSaveDefaultWorkout = async () => {
+        if (!selectedDefaultDay) return;
+        setLoading(true);
+        try {
+            const response = await fetch(`/api/workouts/default/${selectedDefaultDay.day}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'text/plain' },
+                body: defaultWorkoutContent
+            });
+            if (response.ok) {
+                setShowDefaultWorkoutModal(false);
+                loadWeeklySchedule(); // Refresh the schedule
+            }
+        } catch (e) {
+            console.error('Failed to save workout:', e);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -309,7 +363,7 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-black italic text-white uppercase tracking-tighter">Workouts</h1>
-                    <p className="text-sm text-zinc-400">Create custom workouts</p>
+                    <p className="text-sm text-zinc-400">Create custom workouts and view weekly schedule</p>
                 </div>
                 <button
                     onClick={() => setShowCreateModal(true)}
@@ -320,8 +374,54 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
                 </button>
             </div>
 
-            {/* Workouts Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Default Weekly Schedule */}
+            {weeklySchedule.length > 0 && (
+                <div className="bg-zinc-900/50 border border-zinc-700 rounded-2xl p-6">
+                    <div className="flex items-center justify-between mb-4">
+                        <div>
+                            <h2 className="text-lg font-black italic text-white uppercase tracking-tighter">Default Weekly Program</h2>
+                            <p className="text-xs text-zinc-500 mt-1">This is the default schedule shown on the Train page</p>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        {weeklySchedule.map((day) => (
+                            <button
+                                key={day.day}
+                                onClick={() => handleViewDefaultWorkout(day)}
+                                className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-3 hover:border-orange-500 hover:bg-zinc-800 transition text-left"
+                            >
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-xs font-bold text-zinc-400 uppercase">{day.day}</span>
+                                    <span className={`text-[10px] px-2 py-0.5 rounded ${
+                                        day.type === 'Strength' ? 'bg-orange-900/30 text-orange-400' :
+                                        day.type === 'Cardio' ? 'bg-blue-900/30 text-blue-400' :
+                                        day.type === 'Hybrid' ? 'bg-purple-900/30 text-purple-400' :
+                                        'bg-zinc-700 text-zinc-400'
+                                    }`}>
+                                        {day.type}
+                                    </span>
+                                </div>
+                                <h4 className="text-sm font-bold text-white mb-1 line-clamp-2">{day.title}</h4>
+                                <div className="text-xs text-zinc-500">
+                                    ⚡ {day.xp} XP
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+                    <div className="mt-4 p-3 bg-blue-950/20 border border-blue-900/30 rounded-lg">
+                        <p className="text-xs text-blue-400">
+                            💡 <strong>Tip:</strong> Click any day to view and edit the workout. Create custom workouts below to override the default plan for specific days.
+                        </p>
+                    </div>
+                </div>
+            )}
+
+            {/* User Workouts Section */}
+            <div>
+                <h2 className="text-lg font-black italic text-white uppercase tracking-tighter mb-4">Your Custom Workouts</h2>
+                
+                {/* Workouts Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {workouts.length === 0 ? (
                     <div className="col-span-full bg-zinc-800/50 border border-zinc-700 rounded-xl p-12 text-center">
                         <Dumbbell size={48} className="mx-auto mb-4 text-zinc-600" />
@@ -371,6 +471,7 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
                         </div>
                     ))
                 )}
+                </div>
             </div>
 
             {/* Create Modal */}
@@ -713,6 +814,57 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
                                     </button>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Default Workout Editor Modal */}
+            {showDefaultWorkoutModal && selectedDefaultDay && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                    <div className="bg-zinc-900 border border-zinc-700 rounded-2xl w-full max-w-4xl h-[85vh] flex flex-col">
+                        <div className="p-6 border-b border-zinc-800 flex-shrink-0">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h2 className="text-xl font-black italic text-white uppercase">{selectedDefaultDay.day}</h2>
+                                    <p className="text-sm text-zinc-400 mt-1">{selectedDefaultDay.title}</p>
+                                </div>
+                                <button
+                                    onClick={() => setShowDefaultWorkoutModal(false)}
+                                    className="text-zinc-500 hover:text-white transition p-2"
+                                >
+                                    <X size={20} />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto p-6">
+                            <label className="text-xs font-bold text-zinc-400 uppercase mb-2 block">Workout Content</label>
+                            <textarea
+                                value={defaultWorkoutContent}
+                                onChange={(e) => setDefaultWorkoutContent(e.target.value)}
+                                className="w-full h-full min-h-[500px] bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white font-mono text-sm focus:border-orange-500 outline-none resize-none"
+                                placeholder="Enter workout content..."
+                            />
+                            <p className="text-xs text-zinc-500 mt-2">
+                                Format: Use # for title, [Exercise Name] for exercises, and specify sets/reps/weight
+                            </p>
+                        </div>
+
+                        <div className="p-6 border-t border-zinc-800 flex gap-3 flex-shrink-0">
+                            <button
+                                onClick={() => setShowDefaultWorkoutModal(false)}
+                                className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 font-bold py-2.5 rounded-lg transition"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSaveDefaultWorkout}
+                                disabled={loading}
+                                className="flex-1 bg-orange-600 hover:bg-orange-500 text-white font-bold py-2.5 rounded-lg transition disabled:opacity-50"
+                            >
+                                {loading ? 'Saving...' : 'Save Changes'}
+                            </button>
                         </div>
                     </div>
                 </div>
