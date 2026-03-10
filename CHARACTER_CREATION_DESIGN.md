@@ -4,10 +4,72 @@
 Add RPG-style character creation and customization to Refactor Athletics, giving users a visual avatar that evolves with their fitness journey.
 
 ## Core Concept
+
+### Dual Progression System
+
+**Power Level (Performance-Based) → Visual "Cool Factor"**
+- Represents actual fitness achievement and strength
+- Calculated from max level achieved per exercise × 100
+- Maximum possible: 6,000 (60 exercises × Level 5 × 100)
+- **Dictates character's base appearance, physique, and visual effects**
+
+**Power Level Tiers:**
+- **Tier 1 (0-1,200)**: Novice
+  - Basic character model, simple stance
+  - Minimal visual effects
+  - Standard proportions
+  
+- **Tier 2 (1,201-2,400)**: Intermediate
+  - Enhanced physique, better posture
+  - Subtle glow effects on equipped gear
+  - Slightly more muscular build
+  
+- **Tier 3 (2,401-3,600)**: Advanced
+  - Noticeably muscular build
+  - Confident, powerful stance
+  - Glowing accents and aura hints
+  - Gear has enhanced visual effects
+  
+- **Tier 4 (3,601-4,800)**: Elite
+  - Heroic proportions
+  - Dynamic idle animations (breathing, flexing)
+  - Particle effects around character
+  - Gear glows and pulses
+  
+- **Tier 5 (4,801-6,000)**: Legendary
+  - Maximum visual impact
+  - Full aura effects (theme-colored)
+  - Epic idle animations
+  - Gear has legendary particle trails
+  - Screen effects when viewing character
+
+**Career XP (Consistency-Based) → Customization Currency**
+- Earned from all activities: workouts, habits, nutrition, streaks
+- Accumulates forever (never resets)
+- **Used to unlock and purchase cosmetic gear**
+
+**XP Sources:**
+- Logging workouts (even if performance doesn't improve)
+- Tracking macros daily
+- Hitting habit targets (steps, water, sleep)
+- Maintaining streaks
+- Completing challenges and duels
+- Daily login bonuses
+
+**The Philosophy:**
+- **Power Level** = "How strong are you?" (outcome-based, harder to increase)
+- **Career XP** = "How dedicated are you?" (process-based, always progressing)
+
+**Example Scenarios:**
+- **Beginner (PL: 400, XP: 50,000)**: Unlocked lots of cool gear through consistency, but character looks novice-tier because performance is still developing
+- **Veteran (PL: 4,200, XP: 200,000)**: Elite-tier character with heroic proportions AND extensive gear collection
+- **Talented Newcomer (PL: 2,800, XP: 15,000)**: Advanced-tier character from strong performance, but limited gear options due to low consistency
+- **Grinder (PL: 1,800, XP: 150,000)**: Intermediate-tier character but owns nearly every cosmetic item from years of logging
+
 Users build and customize a visual character that:
 - Represents them in the app
-- Unlocks gear/cosmetics through achievements and XP
-- Reflects their training progress (muscle mass, body type)
+- Base appearance reflects Power Level (performance)
+- Customization options reflect Career XP (dedication)
 - Displays on dashboard, profile, and in duels
 
 ## Technical Approach: SVG Base + PNG Overlays
@@ -23,12 +85,12 @@ Users build and customize a visual character that:
 
 ```typescript
 interface Character {
-  // Base attributes
+  // Base attributes (determined by Power Level tier)
   baseBody: 'male' | 'female';
-  bodyType: 'lean' | 'athletic' | 'muscular'; // Affects SVG used
+  powerLevelTier: 1 | 2 | 3 | 4 | 5; // Auto-calculated from Power Level
   skinTone: string; // Hex color or hue-rotate degree
   
-  // Equipped gear (unlocked items)
+  // Equipped gear (purchased with Career XP)
   gear: {
     head?: string;      // 'warrior-helm', 'runner-headband', 'dragon-crown'
     torso?: string;     // 'gym-tank', 'samurai-armor', 'viking-tunic'
@@ -37,10 +99,11 @@ interface Character {
     weapon?: string;    // 'sword', 'dumbbell', 'staff' (cosmetic)
   };
   
-  // Progression-based attributes
-  muscleMass?: number; // 0-100, could scale body SVG
+  // Visual effects (determined by Power Level tier)
+  auraEnabled: boolean;
+  particleEffects: boolean;
   
-  // Pose/animation state (future)
+  // Pose/animation state (unlocked by tier)
   pose?: 'idle' | 'flexing' | 'running' | 'lifting';
 }
 ```
@@ -51,10 +114,14 @@ interface Character {
 -- Add to users table
 ALTER TABLE users ADD COLUMN character_config jsonb DEFAULT '{
   "baseBody": "male",
-  "bodyType": "athletic",
+  "powerLevelTier": 1,
   "skinTone": "#d4a574",
-  "gear": {}
+  "gear": {},
+  "auraEnabled": false,
+  "particleEffects": false
 }'::jsonb;
+
+ALTER TABLE users ADD COLUMN career_xp integer DEFAULT 0;
 
 -- New table for gear catalog
 CREATE TABLE gear_catalog (
@@ -62,10 +129,10 @@ CREATE TABLE gear_catalog (
   name text NOT NULL,
   slot text NOT NULL, -- 'head', 'torso', 'legs', 'accessory', 'weapon'
   image_path text NOT NULL,
-  unlock_type text NOT NULL, -- 'xp', 'achievement', 'premium'
-  unlock_requirement jsonb, -- { "xp": 5000 } or { "achievement": "run_100_miles" }
+  xp_cost integer NOT NULL, -- Career XP required to unlock
   theme text, -- 'athlete', 'warrior', 'samurai', 'dragon', 'viking'
   rarity text DEFAULT 'common', -- 'common', 'rare', 'epic', 'legendary'
+  min_power_level integer DEFAULT 0, -- Some gear requires minimum Power Level
   created_at timestamp DEFAULT now()
 );
 
@@ -84,12 +151,23 @@ CREATE TABLE user_gear (
 public/
   characters/
     bodies/
-      male-lean.svg
-      male-athletic.svg
-      male-muscular.svg
-      female-lean.svg
-      female-athletic.svg
-      female-muscular.svg
+      # 5 tiers × 2 genders = 10 base body SVGs
+      male-tier1.svg    # Novice - basic proportions
+      male-tier2.svg    # Intermediate - slightly enhanced
+      male-tier3.svg    # Advanced - muscular
+      male-tier4.svg    # Elite - heroic proportions
+      male-tier5.svg    # Legendary - maximum impact
+      female-tier1.svg
+      female-tier2.svg
+      female-tier3.svg
+      female-tier4.svg
+      female-tier5.svg
+    
+    effects/
+      # Visual effects overlays for higher tiers
+      aura-tier3.png    # Subtle glow
+      aura-tier4.png    # Particle effects
+      aura-tier5.png    # Epic aura with particles
     
     gear/
       head/
@@ -162,27 +240,48 @@ export function GearShop({
 
 ### Gear Unlock System
 
-**Unlock Types:**
+**Career XP Pricing:**
 
-1. **XP Purchase**
-   - Common gear: 1,000 - 5,000 XP
-   - Rare gear: 10,000 - 25,000 XP
-   - Epic gear: 50,000+ XP
+1. **Common Gear (1,000 - 5,000 XP)**
+   - Basic gym outfits
+   - Simple accessories
+   - Starter weapons
+   - Available to all players
 
-2. **Achievement-Based**
-   - "First Workout" → Basic gym outfit
-   - "100 Mile Club" → Runner's gear set
-   - "Deadlift 2x Bodyweight" → Warrior helm
-   - "30 Day Streak" → Legendary cape
+2. **Rare Gear (10,000 - 25,000 XP)**
+   - Theme-specific outfits
+   - Enhanced accessories
+   - Unique weapons
+   - Requires some dedication
 
-3. **Theme-Locked**
-   - Selecting "Samurai" theme unlocks basic samurai gear
-   - Premium themes unlock exclusive gear sets
+3. **Epic Gear (50,000 - 100,000 XP)**
+   - Legendary armor sets
+   - Glowing accessories
+   - Prestigious weapons
+   - For committed players
 
-4. **Premium/Special**
-   - Limited-time event gear
-   - Seasonal cosmetics
-   - Supporter/patron exclusive items
+4. **Legendary Gear (150,000+ XP)**
+   - Ultimate cosmetics
+   - Full armor sets with effects
+   - Mythical weapons
+   - Status symbols
+
+**Power Level Gates:**
+Some gear requires minimum Power Level to unlock:
+- Basic gear: No requirement
+- Intermediate gear: 1,200+ Power Level
+- Advanced gear: 2,400+ Power Level
+- Elite gear: 3,600+ Power Level
+- Legendary gear: 4,800+ Power Level
+
+**Example:**
+- "Dragon Crown" costs 75,000 Career XP AND requires 3,600 Power Level
+- This ensures only players who both grind (XP) and perform (Power Level) can access top-tier cosmetics
+
+**Theme Integration:**
+- Selecting a theme unlocks 1-2 basic gear items for that theme (free)
+- Additional theme gear must be purchased with Career XP
+- Encourages players to commit to a theme aesthetic
 
 ### UI Flow
 
@@ -251,21 +350,32 @@ export function GearShop({
 
 ```typescript
 // CharacterAvatar.tsx
-export function CharacterAvatar({ character, size = 'md' }: Props) {
+export function CharacterAvatar({ 
+  character, 
+  powerLevel, 
+  size = 'md' 
+}: Props) {
   const dimensions = {
     sm: 64,
     md: 128,
     lg: 256,
   }[size];
   
+  // Calculate Power Level tier
+  const tier = powerLevel === 0 ? 1 :
+    powerLevel <= 1200 ? 1 :
+    powerLevel <= 2400 ? 2 :
+    powerLevel <= 3600 ? 3 :
+    powerLevel <= 4800 ? 4 : 5;
+  
   return (
     <div 
       className="relative" 
       style={{ width: dimensions, height: dimensions }}
     >
-      {/* Layer 1: Base body SVG */}
+      {/* Layer 1: Base body SVG (determined by Power Level tier) */}
       <img 
-        src={`/characters/bodies/${character.baseBody}-${character.bodyType}.svg`}
+        src={`/characters/bodies/${character.baseBody}-tier${tier}.svg`}
         className="absolute inset-0 w-full h-full"
         style={{ 
           filter: `hue-rotate(${character.skinTone}deg)` 
@@ -273,7 +383,16 @@ export function CharacterAvatar({ character, size = 'md' }: Props) {
         alt="Character body"
       />
       
-      {/* Layer 2: Torso gear */}
+      {/* Layer 2: Aura/Effects (Tier 3+) */}
+      {tier >= 3 && (
+        <img 
+          src={`/characters/effects/aura-tier${tier}.png`}
+          className="absolute inset-0 w-full h-full animate-pulse"
+          alt="Aura effect"
+        />
+      )}
+      
+      {/* Layer 3: Torso gear */}
       {character.gear.torso && (
         <img 
           src={`/characters/gear/torso/${character.gear.torso}.png`}
@@ -282,7 +401,7 @@ export function CharacterAvatar({ character, size = 'md' }: Props) {
         />
       )}
       
-      {/* Layer 3: Legs gear */}
+      {/* Layer 4: Legs gear */}
       {character.gear.legs && (
         <img 
           src={`/characters/gear/legs/${character.gear.legs}.png`}
@@ -291,7 +410,7 @@ export function CharacterAvatar({ character, size = 'md' }: Props) {
         />
       )}
       
-      {/* Layer 4: Head gear (on top) */}
+      {/* Layer 5: Head gear (on top) */}
       {character.gear.head && (
         <img 
           src={`/characters/gear/head/${character.gear.head}.png`}
@@ -300,7 +419,7 @@ export function CharacterAvatar({ character, size = 'md' }: Props) {
         />
       )}
       
-      {/* Layer 5: Accessories (cape, belt, etc.) */}
+      {/* Layer 6: Accessories (cape, belt, etc.) */}
       {character.gear.accessory && (
         <img 
           src={`/characters/gear/accessories/${character.gear.accessory}.png`}
@@ -309,7 +428,7 @@ export function CharacterAvatar({ character, size = 'md' }: Props) {
         />
       )}
       
-      {/* Layer 6: Weapon (optional, held in hand) */}
+      {/* Layer 7: Weapon (optional, held in hand) */}
       {character.gear.weapon && (
         <img 
           src={`/characters/gear/weapons/${character.gear.weapon}.png`}
@@ -317,6 +436,17 @@ export function CharacterAvatar({ character, size = 'md' }: Props) {
           alt="Weapon"
         />
       )}
+      
+      {/* Layer 8: Particle effects (Tier 4+) */}
+      {tier >= 4 && (
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-orange-500 rounded-full animate-ping" />
+          <div className="absolute bottom-0 left-1/4 w-1 h-1 bg-orange-400 rounded-full animate-pulse" />
+          <div className="absolute bottom-0 right-1/4 w-1 h-1 bg-orange-400 rounded-full animate-pulse delay-75" />
+        </div>
+      )}
+    </div>
+  );
     </div>
   );
 }
@@ -441,7 +571,8 @@ export async function PUT(request: Request) {
 ## Asset Requirements
 
 **To Commission/Create:**
-- 6 base body SVGs (male/female × lean/athletic/muscular)
+- 10 base body SVGs (male/female × 5 Power Level tiers)
+- 3 aura/effect overlays (tiers 3, 4, 5)
 - 50+ gear PNG overlays:
   - 10 head items
   - 15 torso items
@@ -455,14 +586,50 @@ export async function PUT(request: Request) {
 - Aligned to same anchor points
 - 512x512px base resolution
 - Optimized file sizes (<50kb per item)
+- Progressive visual enhancement across tiers (subtle → epic)
 
 ## Success Metrics
 
 - % of users who customize their character
 - Average time spent in character editor
-- Gear unlock rate (XP vs achievement)
+- Gear purchase rate (Career XP spending)
 - Character sharing frequency
-- Correlation between character engagement and retention
+- Correlation between Power Level tier and engagement
+- Correlation between Career XP and retention
+
+## Key Takeaways
+
+**The Dual Progression Philosophy:**
+
+1. **Power Level = Visual Prestige**
+   - Your character's base appearance reflects your actual fitness achievements
+   - Can't "buy" your way to looking powerful - must earn it through performance
+   - Creates aspirational goals: "I want my character to reach Tier 4"
+
+2. **Career XP = Customization Freedom**
+   - Rewards consistency and dedication, not just performance
+   - Beginners can still unlock cool gear by showing up daily
+   - Creates engagement loop: "Just 5,000 more XP until I can buy that helmet"
+
+3. **Combined System = Depth**
+   - Elite players (high PL + high XP) have the most impressive characters
+   - Prevents pay-to-win: can't buy Power Level, only cosmetics
+   - Encourages both performance improvement AND daily engagement
+   - Visual progression is earned, not purchased
+
+**Example Player Journeys:**
+
+- **The Grinder**: Logs everything daily for a year → 150k Career XP, 1,800 PL
+  - Owns tons of gear but character looks Tier 2 (intermediate)
+  - Motivated to improve performance to unlock higher tier appearance
+
+- **The Athlete**: Strong performer, inconsistent logger → 15k Career XP, 3,200 PL
+  - Character looks Tier 3 (advanced) but limited gear options
+  - Motivated to log more consistently to unlock cosmetics
+
+- **The Legend**: Years of dedication + elite performance → 250k Career XP, 5,200 PL
+  - Tier 5 character with full legendary gear collection
+  - Ultimate visual status symbol in the app
 
 ## Notes
 
@@ -471,3 +638,5 @@ export async function PUT(request: Request) {
 - Could use AI generation for initial prototypes
 - Theme gear should be visually distinct but cohesive
 - Mobile-first: ensure editor works on small screens
+- Power Level tier transitions should feel rewarding (celebration animation)
+- Consider "prestige" system at 6,000 PL for infinite progression
