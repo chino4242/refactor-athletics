@@ -38,6 +38,9 @@ export async function logHabitAction(
             throw error;
         }
 
+        // Increment career XP
+        await supabase.rpc('increment_career_xp', { user_id: userId, xp_amount: xp });
+
         revalidatePath('/');
         return { xp_earned: xp };
     } else if (habitId.startsWith('habit_')) {
@@ -59,6 +62,9 @@ export async function logHabitAction(
             console.error("Error logging habit:", error);
             throw error;
         }
+
+        // Increment career XP
+        await supabase.rpc('increment_career_xp', { user_id: userId, xp_amount: xp });
 
         revalidatePath('/');
         return { xp_earned: xp };
@@ -203,6 +209,9 @@ export async function logTrainingAction(
         throw error;
     }
 
+    // Increment career XP
+    await supabase.rpc('increment_career_xp', { user_id: userId, xp_amount: totalXp });
+
     revalidatePath('/', 'layout');
     return { 
         xp_earned: totalXp,
@@ -241,6 +250,9 @@ export async function logWorkoutBlockAction(
         });
 
     if (error) throw error;
+
+    // Increment career XP
+    await supabase.rpc('increment_career_xp', { user_id: userId, xp_amount: xp });
 
     revalidatePath('/', 'layout');
     return { status: 'success' };
