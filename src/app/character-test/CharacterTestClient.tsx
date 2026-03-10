@@ -1,17 +1,10 @@
-import { createClient } from '@/utils/supabase/server';
-import { redirect } from 'next/navigation';
-import CharacterTestClient from './CharacterTestClient';
+"use client";
 
-export default async function CharacterTestPage() {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-        return redirect('/login');
-    }
-
-    return <CharacterTestClient userId={user.id} />;
-}
+import { useState, useEffect } from 'react';
+import { createClient } from '@/utils/supabase/client';
+import CharacterAvatar from '@/components/character/CharacterAvatar';
+import CharacterEditor from '@/components/character/CharacterEditor';
+import { CharacterConfig } from '@/types/character';
 
 export default function CharacterTestClient({ userId }: { userId: string }) {
     const [characterConfig, setCharacterConfig] = useState<CharacterConfig | null>(null);

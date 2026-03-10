@@ -44,6 +44,9 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                 setUserProfile(profile.data);
                 setCharacterConfig(profile.data?.character_config || null);
                 
+                console.log('Character config loaded:', profile.data?.character_config);
+                console.log('Stats:', stats);
+                
                 // Get exercises with standards (these contribute to power level)
                 const rankedCatalog = catalog.filter((ex: any) => ex.standards);
                 
