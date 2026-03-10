@@ -163,10 +163,19 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
 
           <button
             onClick={() => {
+              // Calculate today's total XP from history
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              const todayStart = Math.floor(today.getTime() / 1000);
+              
+              const todayXp = history
+                .filter(item => item.timestamp >= todayStart)
+                .reduce((sum, item) => sum + (item.xp || 0), 0);
+              
               const lines = [
                 "REFACTOR ATHLETICS REPORT",
                 `📅 ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
-                `⚡ ${totals['total_daily_xp'] || 0} XP`,
+                `⚡ ${todayXp} XP`,
                 "",
                 "🔥 STREAKS",
                 `🍺 No Alcohol: ${stats?.no_alcohol_streak || 0} Days`,
