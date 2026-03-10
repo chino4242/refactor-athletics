@@ -20,12 +20,15 @@ export default function CharacterTestClient({ userId }: { userId: string }) {
         const supabase = createClient();
         const { data } = await supabase
             .from('users')
-            .select('character_config, power_level, career_xp')
+            .select('character_config, power_level, career_xp, selected_theme')
             .eq('id', userId)
             .single();
 
         if (data) {
-            setCharacterConfig(data.character_config);
+            setCharacterConfig(data.character_config ? {
+                ...data.character_config,
+                theme: data.selected_theme
+            } : null);
             setPowerLevel(data.power_level || 0);
             setCareerXp(data.career_xp || 0);
         }

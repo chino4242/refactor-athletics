@@ -4,6 +4,7 @@ export interface CharacterConfig {
   baseBody: 'male' | 'female';
   powerLevelTier: 1 | 2 | 3 | 4 | 5;
   skinTone: string; // Hex color
+  theme?: string; // 'athlete', 'warrior', 'samurai', 'draconic', 'viking'
   gear: {
     head?: string;
     torso?: string;
@@ -46,14 +47,55 @@ export function getPowerLevelTier(powerLevel: number): 1 | 2 | 3 | 4 | 5 {
 }
 
 // Helper function to get tier name
-export function getTierName(tier: number): string {
-  const names = {
-    1: 'Novice',
-    2: 'Intermediate',
-    3: 'Advanced',
-    4: 'Elite',
-    5: 'Legendary'
+export function getTierName(tier: number, theme?: string): string {
+  const themeNames: Record<string, Record<number, string>> = {
+    draconic: {
+      1: 'Hatchling',
+      2: 'Whelp',
+      3: 'Drake',
+      4: 'Wyrm',
+      5: 'Ancient Dragon'
+    },
+    athlete: {
+      1: 'Rookie',
+      2: 'Varsity',
+      3: 'All-Star',
+      4: 'Pro',
+      5: 'Hall of Fame'
+    },
+    warrior: {
+      1: 'Recruit',
+      2: 'Soldier',
+      3: 'Veteran',
+      4: 'Champion',
+      5: 'Legend'
+    },
+    samurai: {
+      1: 'Ronin',
+      2: 'Samurai',
+      3: 'Daimyo',
+      4: 'Shogun',
+      5: 'Legendary Warrior'
+    },
+    viking: {
+      1: 'Thrall',
+      2: 'Warrior',
+      3: 'Berserker',
+      4: 'Jarl',
+      5: 'Einherjar'
+    }
   };
+
+  const names = theme && themeNames[theme.toLowerCase()] 
+    ? themeNames[theme.toLowerCase()] 
+    : {
+      1: 'Novice',
+      2: 'Intermediate',
+      3: 'Advanced',
+      4: 'Elite',
+      5: 'Legendary'
+    };
+  
   return names[tier as keyof typeof names] || 'Unknown';
 }
 

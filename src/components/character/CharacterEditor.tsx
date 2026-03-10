@@ -106,7 +106,7 @@ export default function CharacterEditor({
                 <div>
                     <h1 className="text-xl font-black italic text-white uppercase">Character Editor</h1>
                     <p className="text-xs text-zinc-500 mt-1">
-                        {getTierName(currentTier)} • Power Level: {powerLevel} • Career XP: {careerXp.toLocaleString()}
+                        {getTierName(currentTier, characterConfig.theme)} • Power Level: {powerLevel} • Career XP: {careerXp.toLocaleString()}
                     </p>
                 </div>
                 <button

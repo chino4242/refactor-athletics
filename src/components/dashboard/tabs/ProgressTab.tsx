@@ -36,13 +36,16 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                 const [history, catalog, profile] = await Promise.all([
                     getHistory(userId),
                     getTrainingCatalog(),
-                    supabase.from('users').select('age, sex, bodyweight, character_config').eq('id', userId).single(),
+                    supabase.from('users').select('age, sex, bodyweight, character_config, selected_theme').eq('id', userId).single(),
                 ]);
                 setFullHistory(history);
                 setRecentHistory(history.slice(0, 5));
                 setExercises(catalog);
                 setUserProfile(profile.data);
-                setCharacterConfig(profile.data?.character_config || null);
+                setCharacterConfig(profile.data?.character_config ? {
+                    ...profile.data.character_config,
+                    theme: profile.data.selected_theme
+                } : null);
                 
                 console.log('Character config loaded:', profile.data?.character_config);
                 console.log('Stats:', stats);
@@ -177,7 +180,7 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                         />
                         <div className="flex-1">
                             <h3 className="text-lg font-black text-white mb-1">Your Character</h3>
-                            <div className="text-sm text-zinc-400 mb-2">{getTierName(characterConfig.powerLevelTier)}</div>
+                            <div className="text-sm text-zinc-400 mb-2">{getTierName(characterConfig.powerLevelTier, characterConfig.theme)}</div>
                             <div className="flex gap-4 text-xs">
                                 <div>
                                     <span className="text-zinc-500">Power Level:</span>
