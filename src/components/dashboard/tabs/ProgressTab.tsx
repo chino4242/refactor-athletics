@@ -36,7 +36,7 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                 const [history, catalog, profile] = await Promise.all([
                     getHistory(userId),
                     getTrainingCatalog(),
-                    supabase.from('users').select('age, sex, bodyweight, character_config, selected_theme').eq('id', userId).single(),
+                    supabase.from('users').select('age, sex, bodyweight, character_config, selected_theme, career_xp').eq('id', userId).single(),
                 ]);
                 setFullHistory(history);
                 setRecentHistory(history.slice(0, 5));
@@ -188,7 +188,7 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                                 </div>
                                 <div>
                                     <span className="text-zinc-500">Career XP:</span>
-                                    <span className="text-blue-500 font-bold ml-1">{stats.total_xp || 0}</span>
+                                    <span className="text-blue-500 font-bold ml-1">{userProfile?.career_xp || 0}</span>
                                 </div>
                             </div>
                         </div>
