@@ -36,10 +36,10 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                 setProfile(profileData);
                 
                 // Get today's workout from weekly schedule API (same as Train page)
+                const today = new Date();
                 const scheduleResponse = await fetch('/api/workouts/schedule');
                 if (scheduleResponse.ok) {
                     const weeklySchedule = await scheduleResponse.json();
-                    const today = new Date();
                     const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
                     const todayName = dayNames[today.getDay()];
                     
@@ -112,23 +112,53 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                     
                     {/* Quick Stats Grid */}
                     <div className="grid grid-cols-3 gap-3">
-                        <div className="bg-zinc-800/50 rounded-lg p-3 text-center">
+                        <div className={`rounded-lg p-3 text-center transition-colors ${
+                            todayProgress.calories >= (profile.nutrition_targets?.calories || 2000)
+                                ? 'bg-emerald-500/10 border border-emerald-500/20'
+                                : 'bg-zinc-800/50'
+                        }`}>
                             <div className="text-2xl mb-1">🍽️</div>
                             <div className="text-xs text-zinc-500 mb-1">Calories</div>
-                            <div className="text-sm font-bold text-white">{Math.round(todayProgress.calories)}</div>
+                            <div className={`text-sm font-bold ${
+                                todayProgress.calories >= (profile.nutrition_targets?.calories || 2000)
+                                    ? 'text-emerald-400'
+                                    : 'text-white'
+                            }`}>
+                                {Math.round(todayProgress.calories)}
+                            </div>
                             <div className="text-xs text-zinc-600">/ {profile.nutrition_targets?.calories || 2000}</div>
                         </div>
-                        <div className="bg-zinc-800/50 rounded-lg p-3 text-center">
+                        <div className={`rounded-lg p-3 text-center transition-colors ${
+                            todayProgress.water >= (profile.habit_targets?.habit_water || 100)
+                                ? 'bg-emerald-500/10 border border-emerald-500/20'
+                                : 'bg-zinc-800/50'
+                        }`}>
                             <div className="text-2xl mb-1">💧</div>
                             <div className="text-xs text-zinc-500 mb-1">Water</div>
-                            <div className="text-sm font-bold text-white">{Math.round(todayProgress.water)}</div>
-                            <div className="text-xs text-zinc-600">/ {profile.habit_targets?.water || 100} oz</div>
+                            <div className={`text-sm font-bold ${
+                                todayProgress.water >= (profile.habit_targets?.habit_water || 100)
+                                    ? 'text-emerald-400'
+                                    : 'text-white'
+                            }`}>
+                                {Math.round(todayProgress.water)}
+                            </div>
+                            <div className="text-xs text-zinc-600">/ {profile.habit_targets?.habit_water || 100} oz</div>
                         </div>
-                        <div className="bg-zinc-800/50 rounded-lg p-3 text-center">
+                        <div className={`rounded-lg p-3 text-center transition-colors ${
+                            todayProgress.steps >= (profile.habit_targets?.habit_steps || 10000)
+                                ? 'bg-emerald-500/10 border border-emerald-500/20'
+                                : 'bg-zinc-800/50'
+                        }`}>
                             <div className="text-2xl mb-1">👟</div>
                             <div className="text-xs text-zinc-500 mb-1">Steps</div>
-                            <div className="text-sm font-bold text-white">{Math.round(todayProgress.steps)}</div>
-                            <div className="text-xs text-zinc-600">/ {profile.habit_targets?.steps || 10000}</div>
+                            <div className={`text-sm font-bold ${
+                                todayProgress.steps >= (profile.habit_targets?.habit_steps || 10000)
+                                    ? 'text-emerald-400'
+                                    : 'text-white'
+                            }`}>
+                                {Math.round(todayProgress.steps)}
+                            </div>
+                            <div className="text-xs text-zinc-600">/ {profile.habit_targets?.habit_steps || 10000}</div>
                         </div>
                     </div>
                     

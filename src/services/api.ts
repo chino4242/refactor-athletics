@@ -259,6 +259,30 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
     const playerLevel = Math.floor(totalXp / 1000) + 1;
     const level_progress_percent = ((totalXp % 1000) / 1000) * 100;
 
+    // Simple streak calculation: check if user logged alcohol/vice today
+    // If no logs or value = 0, streak = 1 (today counts)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStart = Math.floor(today.getTime() / 1000);
+    
+    const { data: todayAlcohol } = await supabase
+        .from('habit_logs')
+        .select('value')
+        .eq('user_id', userId)
+        .eq('habit_id', 'habit_alcohol')
+        .gte('timestamp', todayStart);
+    
+    const { data: todayVice } = await supabase
+        .from('habit_logs')
+        .select('value')
+        .eq('user_id', userId)
+        .eq('habit_id', 'habit_vice')
+        .gte('timestamp', todayStart);
+    
+    // If no logs today or all values are 0, streak is at least 1
+    const alcoholStreak = (!todayAlcohol || todayAlcohol.length === 0 || todayAlcohol.every(log => log.value === 0)) ? 1 : 0;
+    const viceStreak = (!todayVice || todayVice.length === 0 || todayVice.every(log => log.value === 0)) ? 1 : 0;
+
     return {
         power_level: finalPowerLevel,
         exercises_tracked: (workouts || []).length,
@@ -267,8 +291,8 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
         player_level: playerLevel,
         level_progress_percent: level_progress_percent,
         xp_to_next_level: 1000 - (totalXp % 1000),
-        no_alcohol_streak: 0,
-        no_vice_streak: 0,
+        no_alcohol_streak: alcoholStreak,
+        no_vice_streak: viceStreak,
     };
 };
 
