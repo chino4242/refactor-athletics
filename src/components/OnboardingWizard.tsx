@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { saveProfile } from '@/services/api';
 import { useRouter } from 'next/navigation';
 import { THEMES } from '@/data/themes';
+import { PATHS } from '@/data/paths';
 
 interface OnboardingWizardProps {
     userId: string;
@@ -19,10 +20,13 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
         bodyweight: '',
         target_weight: '',
         theme: 'athlete',
+        path: 'hybrid',
     });
 
+    const totalSteps = 6;
+
     const handleNext = () => {
-        if (step < 5) setStep(step + 1);
+        if (step < totalSteps) setStep(step + 1);
     };
 
     const handleBack = () => {
@@ -39,6 +43,7 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                 target_weight: formData.target_weight,
             },
             selected_theme: formData.theme,
+            selected_path: formData.path,
             is_onboarded: true,
             waiver_accepted_at: new Date().toISOString(),
         });
@@ -56,7 +61,7 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
             <div className="bg-zinc-900 rounded-lg max-w-md w-full p-6 my-8">
                 <div className="mb-6">
                     <div className="flex gap-2 mb-4">
-                        {[1, 2, 3, 4, 5].map(i => (
+                        {[1, 2, 3, 4, 5, 6].map(i => (
                             <div key={i} className={`h-1 flex-1 rounded ${i <= step ? 'bg-orange-500' : 'bg-zinc-700'}`} />
                         ))}
                     </div>
@@ -149,8 +154,32 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                     </div>
                 )}
 
-                {/* Step 4: Personal Info */}
+                {/* Step 4: Path Selection */}
                 {step === 4 && (
+                    <div className="space-y-4">
+                        <p className="text-zinc-400">Choose your training path</p>
+                        <div className="grid grid-cols-2 gap-3">
+                            {Object.entries(PATHS).map(([key, path]) => (
+                                <button
+                                    key={key}
+                                    onClick={() => setFormData({ ...formData, path: key })}
+                                    className={`p-4 rounded-lg border-2 transition-all text-left ${
+                                        formData.path === key
+                                            ? 'border-orange-500 bg-orange-500/10'
+                                            : 'border-zinc-700 bg-zinc-800 hover:border-zinc-600'
+                                    }`}
+                                >
+                                    <div className="text-3xl mb-2">{path.emoji}</div>
+                                    <div className="text-sm font-medium text-white">{path.name}</div>
+                                    <div className="text-xs text-zinc-400 mt-1">{path.description}</div>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Step 5: Personal Info */}
+                {step === 5 && (
                     <div className="space-y-4">
                         <p className="text-zinc-400">Tell us about yourself</p>
                         <div>
@@ -189,8 +218,8 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                     </div>
                 )}
 
-                {/* Step 5: Goal Setting */}
-                {step === 5 && (
+                {/* Step 6: Goal Setting */}
+                {step === 6 && (
                     <div className="space-y-4">
                         <p className="text-zinc-400">Set your goal</p>
                         <div>
@@ -218,12 +247,12 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                             Back
                         </button>
                     )}
-                    {step < 5 ? (
+                    {step < totalSteps ? (
                         <button
                             onClick={handleNext}
                             disabled={
                                 (step === 1 && !waiverAccepted) ||
-                                (step === 4 && (!formData.age || !formData.sex || !formData.bodyweight))
+                                (step === 5 && (!formData.age || !formData.sex || !formData.bodyweight))
                             }
                             className="flex-1 px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
                         >

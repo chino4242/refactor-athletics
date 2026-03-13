@@ -46,6 +46,8 @@ export const saveProfile = async (profile: UserProfileData): Promise<any> => {
     if (profile.bodyweight !== undefined) payload.bodyweight = profile.bodyweight;
     if (profile.is_onboarded !== undefined) payload.is_onboarded = profile.is_onboarded;
     if (profile.selected_theme !== undefined) payload.selected_theme = profile.selected_theme;
+    if (profile.selected_path !== undefined) payload.selected_path = profile.selected_path;
+    if (profile.waiver_accepted_at !== undefined) payload.waiver_accepted_at = profile.waiver_accepted_at;
     if (profile.timezone !== undefined) payload.timezone = profile.timezone;
     if (profile.display_name !== undefined) payload.display_name = profile.display_name;
     if (profile.nutrition_targets !== undefined) payload.nutrition_targets = profile.nutrition_targets;

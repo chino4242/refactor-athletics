@@ -8,6 +8,8 @@ The application uses **Supabase** (PostgreSQL) as its primary backend.
 ### 1.1 Core Tables
 - **users**: User profiles with age, sex, bodyweight, nutrition targets, habit targets, hidden habits
   - **body_composition_goals** (jsonb): Stores user goals including `target_weight` (stored as string)
+  - **waiver_accepted_at** (timestamptz): Timestamp of liability waiver acceptance
+  - **selected_path** (text): Training path (hybrid, strength, endurance, mobility)
 - **catalog**: Exercise library with standards, categories, and XP factors
   - **standards** (jsonb): Contains `brackets` (age/sex-based thresholds), `scoring` (higher_is_better/lower_is_better), and `unit` (lbs, sec, reps, xBW)
   - **xp_factor** (numeric): Multiplier for XP calculation (default: 1)
@@ -37,6 +39,8 @@ RLS is active on all tables:
 3. `20260226_remove_workout_fkey.sql` - Removed foreign key constraint on workouts.exercise_id for dynamic blocks
 4. `20260226_workout_programs_standalone.sql` - Added workout program builder tables
 5. `20260228120000_add_catalog_columns.sql` - Added `standards` (jsonb) and `xp_factor` (numeric) columns to catalog table
+6. `20260313_waiver_acceptance.sql` - Added `waiver_accepted_at` (timestamptz) to users table
+7. `20260313_selected_path.sql` - Added `selected_path` (text, default 'hybrid') to users table
 
 **Note**: After running migrations that modify table schemas, Supabase's PostgREST API server caches the old schema. You must either:
 - Restart the Supabase project (Settings → General → Restart project)
@@ -131,13 +135,17 @@ The dashboard (`/dashboard`) is the default landing page after login, featuring 
 - **Empty States**: Motivational messages with CTAs for all empty sections
 
 ### 4.3 Onboarding Wizard
-New users see a 4-step wizard before accessing the dashboard:
-1. **Introduction**: Explains Refactor Athletics concept (fitness RPG, Power Level, ranked standards)
-2. **Theme Selection**: Choose from 5 themes (Athlete, Draconic, Samurai, Apex Predator, Viking)
-3. **Personal Info**: Age, sex, current weight
-4. **Goal Setting**: Target weight
+New users see a 6-step wizard before accessing the dashboard:
+1. **Liability Waiver**: Assumption of risk and waiver of liability (must accept to proceed)
+2. **Introduction**: Explains Refactor Athletics concept (fitness RPG, Power Level, ranked standards)
+3. **Theme Selection**: Choose from 5 themes (Athlete, Draconic, Samurai, Apex Predator, Viking)
+4. **Path Selection**: Choose training path (Hybrid, Strength, Endurance, Mobility)
+5. **Personal Info**: Age, sex, current weight
+6. **Goal Setting**: Target weight
 
-After completion, `is_onboarded` flag is set to true and user sees normal dashboard.
+After completion, `is_onboarded` flag is set to true, `waiver_accepted_at` timestamp is saved, and user sees normal dashboard.
+
+Existing users who haven't accepted the waiver see a blocking `WaiverModal` overlay on the dashboard until they accept.
 
 ### 4.4 Empty State Design Pattern
 All empty states follow this pattern:

@@ -19,9 +19,11 @@ Recent architectural changes migrated from a monolithic `history` table to domai
   - Current and target weight display
   - Today's scheduled workout
   - Improved empty states with CTAs
-- **Onboarding Wizard**: 4-step guided setup for new users:
+- **Onboarding Wizard**: 6-step guided setup for new users:
+  - Liability waiver acceptance (required before proceeding)
   - Introduction to Refactor Athletics concept
   - Theme selection (Athlete, Draconic, Samurai, Apex Predator, Viking)
+  - Training path selection (Hybrid, Strength, Endurance, Mobility)
   - Personal info (age, sex, current weight)
   - Goal setting (target weight)
 - **Attribute Balance**: A specialized radar chart categorizes logged exercises into four cardinal points: Strength (STR), Endurance (END), Power (PWR), and Mobility (MOB).
@@ -84,6 +86,8 @@ Apply migrations in order:
 3. `20260226_remove_workout_fkey.sql` - Remove foreign key constraint
 4. `20260226_workout_programs_standalone.sql` - Workout programs
 5. `20260228120000_add_catalog_columns.sql` - Add catalog columns (standards, xp_factor)
+6. `20260313_waiver_acceptance.sql` - Add waiver acceptance tracking
+7. `20260313_selected_path.sql` - Add training path selection
 
 Run in Supabase SQL Editor or via CLI:
 ```bash
@@ -149,7 +153,7 @@ This project is optimized for deployment on [Vercel](https://vercel.com/new). En
 - **Implemented PWA functionality** (service worker, manifest, offline support, install prompt)
 - **Added comprehensive test coverage** (138 tests covering critical business logic)
 - **Dashboard as home screen** with pull-to-refresh, skeleton loaders, and improved UX
-- **Onboarding wizard** for new user setup with theme selection
+- **Onboarding wizard** for new user setup with waiver, theme, and path selection
 - **Weight tracking** in dashboard header (current weight, target weight, progress)
 - **Improved empty states** with motivational messages and CTAs throughout dashboard
 

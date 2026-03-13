@@ -131,6 +131,37 @@ describe('API Functions', () => {
             );
         });
 
+        it('saves selected_path', async () => {
+            const profile = {
+                user_id: 'user-123',
+                selected_path: 'strength',
+            };
+
+            await saveProfile(profile);
+
+            expect(mockUpsert).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    selected_path: 'strength',
+                })
+            );
+        });
+
+        it('saves waiver_accepted_at', async () => {
+            const ts = '2026-03-13T21:00:00.000Z';
+            const profile = {
+                user_id: 'user-123',
+                waiver_accepted_at: ts,
+            };
+
+            await saveProfile(profile);
+
+            expect(mockUpsert).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    waiver_accepted_at: ts,
+                })
+            );
+        });
+
         it('throws error when upsert fails', async () => {
             mockUpsert.mockResolvedValueOnce({ error: { message: 'Database error' } });
 

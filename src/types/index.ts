@@ -6,6 +6,8 @@ export interface UserProfileData {
     goal_weight?: number;
     is_onboarded?: boolean;
     selected_theme?: string;
+    selected_path?: string;
+    waiver_accepted_at?: string;
     timezone?: string;
     display_name?: string;
     nutrition_targets?: NutritionTargets;
