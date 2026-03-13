@@ -12,6 +12,7 @@ interface OnboardingWizardProps {
 export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
     const router = useRouter();
     const [step, setStep] = useState(1);
+    const [waiverAccepted, setWaiverAccepted] = useState(false);
     const [formData, setFormData] = useState({
         age: '',
         sex: '',
@@ -21,7 +22,7 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
     });
 
     const handleNext = () => {
-        if (step < 4) setStep(step + 1);
+        if (step < 5) setStep(step + 1);
     };
 
     const handleBack = () => {
@@ -39,6 +40,7 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
             },
             selected_theme: formData.theme,
             is_onboarded: true,
+            waiver_accepted_at: new Date().toISOString(),
         });
         router.refresh();
     };
@@ -54,14 +56,57 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
             <div className="bg-zinc-900 rounded-lg max-w-md w-full p-6 my-8">
                 <div className="mb-6">
                     <div className="flex gap-2 mb-4">
-                        {[1, 2, 3, 4].map(i => (
+                        {[1, 2, 3, 4, 5].map(i => (
                             <div key={i} className={`h-1 flex-1 rounded ${i <= step ? 'bg-orange-500' : 'bg-zinc-700'}`} />
                         ))}
                     </div>
-                    <h2 className="text-2xl font-bold text-white">Welcome to Refactor Athletics</h2>
+                    <h2 className="text-2xl font-bold text-white">
+                        {step === 1 ? 'Liability Waiver' : 'Welcome to Refactor Athletics'}
+                    </h2>
                 </div>
 
+                {/* Step 1: Waiver */}
                 {step === 1 && (
+                    <div className="space-y-4">
+                        <div className="bg-zinc-800 border border-zinc-700 rounded-lg p-4 max-h-64 overflow-y-auto text-sm text-zinc-300 space-y-3">
+                            <p className="font-semibold text-white">ASSUMPTION OF RISK AND WAIVER OF LIABILITY</p>
+                            <p>
+                                By using Refactor Athletics, I acknowledge that physical exercise involves inherent risks including, 
+                                but not limited to, muscle strains, sprains, fractures, cardiovascular stress, and in rare cases, 
+                                serious injury or death.
+                            </p>
+                            <p>
+                                I understand that Refactor Athletics is a fitness tracking application and does not provide medical 
+                                advice, supervision, or personalized training programs. I am solely responsible for determining my 
+                                fitness level and consulting with a healthcare provider before beginning any exercise program.
+                            </p>
+                            <p>
+                                I voluntarily assume all risks associated with using this application and participating in physical 
+                                activities tracked through it. I agree to release, waive, discharge, and hold harmless Refactor 
+                                Athletics, its owners, developers, and affiliates from any and all liability for injuries or damages 
+                                resulting from my use of this application.
+                            </p>
+                            <p className="text-xs text-zinc-400 pt-2">
+                                Last updated: March 13, 2026
+                            </p>
+                        </div>
+                        <label className="flex items-start gap-3 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={waiverAccepted}
+                                onChange={e => setWaiverAccepted(e.target.checked)}
+                                className="mt-1 w-4 h-4 rounded border-zinc-600 bg-zinc-800 text-orange-500 focus:ring-orange-500"
+                            />
+                            <span className="text-sm text-zinc-300">
+                                I have read and agree to the terms of this waiver. I understand the risks involved in physical exercise 
+                                and assume full responsibility for my participation.
+                            </span>
+                        </label>
+                    </div>
+                )}
+
+                {/* Step 2: Introduction */}
+                {step === 2 && (
                     <div className="space-y-4">
                         <div className="text-zinc-300 space-y-3">
                             <p className="font-semibold text-orange-400">What is Refactor Athletics?</p>
@@ -81,7 +126,8 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                     </div>
                 )}
 
-                {step === 2 && (
+                {/* Step 3: Theme Selection */}
+                {step === 3 && (
                     <div className="space-y-4">
                         <p className="text-zinc-400">Choose your theme</p>
                         <div className="grid grid-cols-2 gap-3">
@@ -103,7 +149,8 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                     </div>
                 )}
 
-                {step === 3 && (
+                {/* Step 4: Personal Info */}
+                {step === 4 && (
                     <div className="space-y-4">
                         <p className="text-zinc-400">Tell us about yourself</p>
                         <div>
@@ -142,7 +189,8 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                     </div>
                 )}
 
-                {step === 4 && (
+                {/* Step 5: Goal Setting */}
+                {step === 5 && (
                     <div className="space-y-4">
                         <p className="text-zinc-400">Set your goal</p>
                         <div>
@@ -160,6 +208,7 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                     </div>
                 )}
 
+                {/* Navigation Buttons */}
                 <div className="flex gap-3 mt-6">
                     {step > 1 && (
                         <button
@@ -169,10 +218,13 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                             Back
                         </button>
                     )}
-                    {step < 4 ? (
+                    {step < 5 ? (
                         <button
                             onClick={handleNext}
-                            disabled={step === 3 && (!formData.age || !formData.sex || !formData.bodyweight)}
+                            disabled={
+                                (step === 1 && !waiverAccepted) ||
+                                (step === 4 && (!formData.age || !formData.sex || !formData.bodyweight))
+                            }
                             className="flex-1 px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             Next
