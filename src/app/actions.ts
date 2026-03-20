@@ -235,7 +235,7 @@ export async function logWorkoutBlockAction(
             value: details,
             raw_value: xp,
             sets: exercises || [],
-            level: 1,
+            level: 0,
             xp: xp,
             rank_name: activityType
         });

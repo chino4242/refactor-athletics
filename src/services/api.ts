@@ -219,11 +219,11 @@ export const getWeeklyProgress = async (userId: string, startTs: number): Promis
 export const getUserStats = async (userId: string): Promise<UserStats | null> => {
     const supabase = createClient();
     
-    // Query only workouts table for Power Level (exercises with rank thresholds)
-    const { data: workouts } = await supabase
-        .from('workouts')
-        .select('exercise_id, level, xp')
-        .eq('user_id', userId);
+    // Query workouts and catalog in parallel
+    const [{ data: workouts }, { data: catalog }] = await Promise.all([
+        supabase.from('workouts').select('exercise_id, level, xp').eq('user_id', userId),
+        supabase.from('catalog').select('id').not('standards', 'is', null),
+    ]);
 
     // Query all tables for total XP
     const [nutrition, habits, measurements] = await Promise.all([
@@ -232,14 +232,18 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
         supabase.from('body_measurements').select('xp').eq('user_id', userId)
     ]);
 
+    // Build set of ranked catalog exercise IDs
+    const rankedIds = new Set((catalog || []).map(c => c.id));
+
     let totalXp = 0;
     const maxLevelPerExercise: Record<string, number> = {};
 
-    // Calculate Power Level from workouts only
+    // Calculate Power Level from ranked exercises only
     for (const item of workouts || []) {
         totalXp += item.xp || 0;
         
-        if (item.exercise_id && item.level !== null && item.level !== undefined) {
+        const normalizedId = item.exercise_id?.replace(/^(five_rm_|one_rm_|est_1rm_)/, '');
+        if (item.exercise_id && item.level > 0 && (rankedIds.has(item.exercise_id) || rankedIds.has(normalizedId))) {
             if (!maxLevelPerExercise[item.exercise_id] || item.level > maxLevelPerExercise[item.exercise_id]) {
                 maxLevelPerExercise[item.exercise_id] = item.level;
             }

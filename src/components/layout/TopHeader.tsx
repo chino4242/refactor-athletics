@@ -29,11 +29,7 @@ export default function TopHeader() {
                             Train
                         </button>
                     </Link>
-                    <Link href="/workouts">
-                        <button className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-300 ${pathname === '/workouts' ? 'bg-orange-600 text-white shadow-lg shadow-orange-900/20' : 'text-zinc-500 hover:text-white hover:bg-zinc-800'}`}>
-                            Workouts
-                        </button>
-                    </Link>
+                    {/* Workouts link hidden until v2 */}
                     <Link href="/arena">
                         <button className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-300 ${pathname === '/arena' ? 'bg-orange-600 text-white shadow-lg shadow-orange-900/20' : 'text-zinc-500 hover:text-white hover:bg-zinc-800'}`}>
                             Arena

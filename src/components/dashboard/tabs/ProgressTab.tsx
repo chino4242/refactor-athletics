@@ -44,13 +44,13 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                 const rankedCatalog = catalog.filter((ex: any) => ex.standards);
                 
                 // Get user's max level per exercise
-                const workouts = history.filter(item => item.type === 'workout');
+                const rankedIds = new Set(rankedCatalog.map((ex: any) => ex.id));
                 const userLevels = new Map();
-                workouts.forEach(workout => {
-                    if (workout.level > 0) {
-                        const existing = userLevels.get(workout.exercise_id);
-                        if (!existing || workout.level > existing) {
-                            userLevels.set(workout.exercise_id, workout.level);
+                history.forEach(item => {
+                    if (item.level > 0 && (rankedIds.has(item.exercise_id) || rankedIds.has(item.exercise_id.replace(/^(five_rm_|one_rm_|est_1rm_)/, '')))) {
+                        const existing = userLevels.get(item.exercise_id);
+                        if (!existing || item.level > existing) {
+                            userLevels.set(item.exercise_id, item.level);
                         }
                     }
                 });

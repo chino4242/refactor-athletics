@@ -175,10 +175,7 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                         <span className="text-lg">📅</span>
                         <h3 className="text-sm font-bold text-white uppercase tracking-wider">Today's Workout</h3>
                     </div>
-                    <Link href="/programs" className="text-xs text-orange-500 hover:text-orange-400 flex items-center gap-1">
-                        View All
-                        <ChevronRight size={14} />
-                    </Link>
+                    {/* View All link hidden until v2 */}
                 </div>
                 {todayScheduled ? (
                     <Link href="/train" className="block">
