@@ -41,8 +41,19 @@ export async function logHabitAction(
         revalidatePath('/');
         return { xp_earned: xp };
     } else if (habitId.startsWith('habit_')) {
-        // Habit logging
-        const xp = habitId.includes('meal_prep') ? 100 : (habitId.includes('sleep') ? 15 : 10);
+        // Habit logging - scaled XP
+        let xp = 10;
+        if (habitId === 'habit_steps') {
+            xp = Math.round(value * 0.015); // 10,000 steps = 150 XP
+        } else if (habitId === 'habit_water') {
+            xp = Math.round(value * 0.25); // 64 oz = 16 XP
+        } else if (habitId === 'habit_sleep') {
+            xp = Math.round(value * 2); // 8 hours = 16 XP
+        } else if (habitId === 'habit_meal_prep') {
+            xp = 100;
+        } else {
+            xp = 25; // creatine, no_alcohol, no_vice, etc.
+        }
 
         const { error } = await supabase
             .from('habit_logs')

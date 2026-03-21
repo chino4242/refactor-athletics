@@ -23,6 +23,7 @@ export default function HabitSettings({ isOpen, onClose, userProfile, onUpdate }
             // Initialize with existing targets or defaults
             setTargets({
                 habit_steps: userProfile.habit_targets?.habit_steps || 10000,
+                habit_sleep: userProfile.habit_targets?.habit_sleep || 8,
                 habit_exercise_minutes: userProfile.habit_targets?.habit_exercise_minutes || 30,
                 habit_stand_hours: userProfile.habit_targets?.habit_stand_hours || 12,
                 habit_water: userProfile.nutrition_targets?.water || userProfile.habit_targets?.habit_water || 100,
@@ -202,6 +203,23 @@ export default function HabitSettings({ isOpen, onClose, userProfile, onUpdate }
                             />
                         </div>
 
+                        {/* Sleep */}
+                        <div>
+                            <div className="flex justify-between items-center mb-2">
+                                <label className="text-[10px] font-bold text-zinc-400 uppercase flex items-center gap-2">
+                                    <VisibilityToggle id="habit_sleep" />
+                                    Sleep (hrs) <span className="text-purple-500">{targets.habit_sleep}</span>
+                                </label>
+                            </div>
+                            <input
+                                type="range"
+                                min="4" max="12" step="0.5"
+                                value={targets.habit_sleep}
+                                onChange={(e) => setTargets({ ...targets, habit_sleep: Number(e.target.value) })}
+                                className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                            />
+                        </div>
+
                         {/* Water */}
                         <div>
                             <div className="flex justify-between items-center mb-2">
@@ -327,7 +345,6 @@ export default function HabitSettings({ isOpen, onClose, userProfile, onUpdate }
                         <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest border-b border-zinc-800 pb-2">Habit Visibility</h4>
                         <div className="grid grid-cols-2 gap-3">
                             {[
-                                { id: 'habit_sleep', label: 'Sleep 7+ Hrs' },
                                 { id: 'habit_creatine', label: 'Supplements' },
                                 { id: 'habit_no_alcohol', label: 'No Alcohol' },
                                 { id: 'habit_no_vice', label: 'No Vice' },

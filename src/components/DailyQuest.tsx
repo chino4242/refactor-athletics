@@ -264,22 +264,18 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
           {/* HABITS GRID */}
           <div className="grid grid-cols-2 gap-2">
             {!isHidden('habit_sleep') && (
-              <button
-                onClick={() => handleLog('habit_sleep', 7.5, 'Sleep')}
-                disabled={loading === 'habit_sleep' || (totals['habit_sleep'] || 0) > 0}
-                className={`p-3 rounded-xl border transition-all flex flex-col items-center justify-center gap-1.5 relative overflow-hidden group h-24 ${(totals['habit_sleep'] || 0) > 0
-                  ? 'bg-emerald-900/20 border-emerald-500/50 cursor-default'
-                  : 'bg-zinc-900 border-zinc-700 hover:border-purple-500 hover:bg-purple-500/10'
-                  }`}
-              >
-                <span className="text-2xl">{(totals['habit_sleep'] || 0) > 0 ? '✅' : '💤'}</span>
-                <div className="text-center">
-                  <span className="block text-xs font-black uppercase text-white tracking-tight">Sleep 7+</span>
-                  <span className={`text-[9px] font-bold ${(totals['habit_sleep'] || 0) > 0 ? 'text-emerald-400' : 'text-purple-400'}`}>
-                    {(totals['habit_sleep'] || 0) > 0 ? 'COMPLETE' : '+15 XP'}
-                  </span>
-                </div>
-              </button>
+              <HabitCard
+                habitId="habit_sleep"
+                label="Sleep"
+                icon="💤"
+                current={totals['habit_sleep'] || 0}
+                goal={profile?.habit_targets?.habit_sleep || 8}
+                unit="hrs"
+                colorClass="bg-purple-500"
+                onLog={(val, label) => handleLog('habit_sleep', val, label)}
+                loading={loading === 'habit_sleep'}
+                xp={16}
+              />
             )}
 
             {!isHidden('habit_creatine') && (
@@ -295,7 +291,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
                 <div className="text-center">
                   <span className="block text-xs font-black uppercase text-white tracking-tight">Supplements</span>
                   <span className={`text-[9px] font-bold ${(totals['habit_creatine'] || 0) > 0 ? 'text-emerald-400' : 'text-blue-400'}`}>
-                    {(totals['habit_creatine'] || 0) > 0 ? 'COMPLETE' : '+5 XP'}
+                    {(totals['habit_creatine'] || 0) > 0 ? 'COMPLETE' : '+25 XP'}
                   </span>
                 </div>
               </button>

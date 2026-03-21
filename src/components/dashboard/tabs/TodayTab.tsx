@@ -168,6 +168,17 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                 </Link>
             )}
 
+            {/* Test Your Fitness CTA */}
+            <Link href="/test" className="block bg-gradient-to-r from-orange-600/20 to-red-600/20 border border-orange-500/30 rounded-xl p-4 hover:border-orange-500/50 transition-all">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h3 className="text-sm font-bold text-white uppercase tracking-wider">🏆 Test Your Fitness</h3>
+                        <p className="text-xs text-zinc-400 mt-1">Log your best result on an exercise to earn your rank and build Power Level</p>
+                    </div>
+                    <ChevronRight size={20} className="text-orange-500 shrink-0" />
+                </div>
+            </Link>
+
             {/* Today's Scheduled Workout */}
             <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-3">
