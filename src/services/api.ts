@@ -234,6 +234,7 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
 
     // Build set of ranked catalog exercise IDs
     const rankedIds = new Set((catalog || []).map(c => c.id));
+    console.log(`Ranked exercises with standards: ${rankedIds.size} (max expertise: ${rankedIds.size * 5})`);
 
     let totalXp = 0;
     const maxLevelPerExercise: Record<string, number> = {};
@@ -292,7 +293,7 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
 
     return {
         power_level: finalExpertise,
-        max_expertise: testedCount * 5,
+        max_expertise: rankedIds.size * 5,
         exercises_tracked: (workouts || []).length,
         highest_level_achieved: Math.max(0, ...Object.values(maxLevelPerExercise)),
         total_career_xp: totalXp,
