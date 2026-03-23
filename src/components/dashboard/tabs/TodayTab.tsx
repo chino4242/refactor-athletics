@@ -173,7 +173,7 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                 <div className="flex items-center justify-between">
                     <div>
                         <h3 className="text-sm font-bold text-white uppercase tracking-wider">🏆 Test Your Fitness</h3>
-                        <p className="text-xs text-zinc-400 mt-1">Log your best result on an exercise to earn your rank and build Power Level</p>
+                        <p className="text-xs text-zinc-400 mt-1">Log your best result on an exercise to earn your rank and build Mastery</p>
                     </div>
                     <ChevronRight size={20} className="text-orange-500 shrink-0" />
                 </div>

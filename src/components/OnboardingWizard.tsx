@@ -121,7 +121,7 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                             </p>
                             <p className="text-sm">
                                 Your performance is ranked against age and sex-adjusted standards, so everyone competes fairly. 
-                                Build your <span className="text-orange-400 font-semibold">Power Level</span> by mastering exercises across 
+                                Build your <span className="text-orange-400 font-semibold">Mastery</span> by mastering exercises across 
                                 Strength, Endurance, Power, and Mobility.
                             </p>
                             <p className="text-sm">

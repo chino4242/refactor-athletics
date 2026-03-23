@@ -40,7 +40,7 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                 setExercises(catalog);
                 setUserProfile(profile.data);
                 
-                // Get exercises with standards (these contribute to power level)
+                // Get exercises with standards (these contribute to mastery)
                 const rankedCatalog = catalog.filter((ex: any) => ex.standards);
                 
                 // Get user's max level per exercise
@@ -109,7 +109,7 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                 
                 setAllRankedExercises(allRanked);
                 
-                // Keep existing power level exercises (only ones user has completed)
+                // Keep existing mastery exercises (only ones user has completed)
                 const powerExercises = allRanked.filter((ex: any) => ex.user_level > 0);
                 setPowerLevelExercises(powerExercises);
             } catch (error) {
@@ -175,12 +175,12 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                 )}
             </div>
 
-            {/* Power Level Contributors */}
+            {/* Mastery Contributors */}
             <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                         <span className="text-lg">💪</span>
-                        <h3 className="text-sm font-bold text-white uppercase tracking-wider">Power Level Contributors</h3>
+                        <h3 className="text-sm font-bold text-white uppercase tracking-wider">Mastery Contributors</h3>
                     </div>
                     <Link href="/profile" className="text-xs text-orange-500 hover:text-orange-400 flex items-center gap-1">
                         Trophy Case
@@ -193,7 +193,7 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                     <div className="text-center py-8">
                         <div className="text-5xl mb-4">🏆</div>
                         <p className="text-sm text-zinc-400 mb-2">No exercises completed yet</p>
-                        <p className="text-xs text-zinc-500 mb-4">Complete workouts to build your Power Level</p>
+                        <p className="text-xs text-zinc-500 mb-4">Complete workouts to build your Mastery</p>
                         <Link 
                             href="/train" 
                             className="inline-flex items-center gap-1 text-xs text-orange-500 hover:text-orange-400 font-semibold"

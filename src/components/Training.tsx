@@ -452,7 +452,7 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
                 )}
                 <div className="mt-2 text-xs text-zinc-500 flex items-center gap-1">
                   <InfoTooltip text="Custom exercises award 'Grind XP' based on volume, but do not contribute to your Rank Levels." size={12} />
-                  <span>Pro Tip: Only "Ranked" exercises contribute to your Power Level.</span>
+                  <span>Pro Tip: Only "Ranked" exercises contribute to your Mastery.</span>
                 </div>
               </div>
             </div>
@@ -627,7 +627,7 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
 
       {/* 5. RANK CALCULATOR (Always Visible, No Banner) */}
       <div className="animate-fade-in-up pt-8 border-t border-zinc-800">
-        <h2 className="text-2xl font-black italic text-zinc-500 uppercase tracking-tighter mb-6 text-center">Power Level Calculator</h2>
+        <h2 className="text-2xl font-black italic text-zinc-500 uppercase tracking-tighter mb-6 text-center">Mastery Calculator</h2>
         <Calculator
           userId={userId}
           bodyweight={bodyweight}
@@ -688,7 +688,7 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
                     </div>
                   </div>
                   <div className="mt-6 text-center text-sm text-zinc-400">
-                    +{level * 100} Power Level
+                    +{level} Mastery
                   </div>
                 </>
               ) : (

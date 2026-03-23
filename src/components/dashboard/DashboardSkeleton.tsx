@@ -9,7 +9,7 @@ export default function DashboardSkeleton() {
                 {/* Header Content */}
                 <div className="bg-gradient-to-br from-zinc-900 via-zinc-900 to-zinc-800 border-b border-zinc-800 p-6">
                     <div className="max-w-6xl mx-auto">
-                        {/* Power Level */}
+                        {/* Mastery */}
                         <div className="mb-4">
                             <div className="h-4 w-24 bg-zinc-800 rounded animate-pulse mb-2" />
                             <div className="h-10 w-32 bg-zinc-800 rounded animate-pulse" />

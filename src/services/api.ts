@@ -238,7 +238,7 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
     let totalXp = 0;
     const maxLevelPerExercise: Record<string, number> = {};
 
-    // Calculate Power Level from ranked exercises only
+    // Calculate Mastery from ranked exercises only
     for (const item of workouts || []) {
         totalXp += item.xp || 0;
         
@@ -255,13 +255,13 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
         totalXp += item.xp || 0;
     }
 
-    // Power Level = Sum of (100 * max_level) for each ranked exercise
-    let powerLevelScore = 0;
+    // Mastery = Sum of max_level for each ranked exercise
+    let masteryScore = 0;
     for (const exId in maxLevelPerExercise) {
-        powerLevelScore += (maxLevelPerExercise[exId] * 100);
+        masteryScore += maxLevelPerExercise[exId];
     }
 
-    const finalPowerLevel = powerLevelScore > 0 ? powerLevelScore : 1;
+    const finalMastery = masteryScore > 0 ? masteryScore : 0;
     const playerLevel = Math.floor(totalXp / 1000) + 1;
     const level_progress_percent = ((totalXp % 1000) / 1000) * 100;
 
@@ -290,7 +290,7 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
     const viceStreak = (!todayVice || todayVice.length === 0 || todayVice.every(log => log.value === 0)) ? 1 : 0;
 
     return {
-        power_level: finalPowerLevel,
+        power_level: finalMastery,
         exercises_tracked: (workouts || []).length,
         highest_level_achieved: Math.max(0, ...Object.values(maxLevelPerExercise)),
         total_career_xp: totalXp,
