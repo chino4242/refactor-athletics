@@ -35,7 +35,7 @@ export default function BodyCompositionModal({
     toast
 }: BodyCompositionModalProps) {
     const [history, setHistory] = useState<BodyCompositionEntry[]>([]);
-    const [refactorScore, setRefactorScore] = useState<number>(0);
+    const [physiquePoints, setPhysiquePoints] = useState<number>(0);
     const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
     // Initial Load
@@ -49,13 +49,13 @@ export default function BodyCompositionModal({
         setIsLoadingHistory(true);
         const data = await BodyCompositionService.getHistory(profile.user_id);
         setHistory(data);
-        calculateRefactorScore(data);
+        calculatePhysiquePoints(data);
         setIsLoadingHistory(false);
     };
 
-    const calculateRefactorScore = (data: BodyCompositionEntry[]) => {
+    const calculatePhysiquePoints = (data: BodyCompositionEntry[]) => {
         if (data.length < 2) {
-            setRefactorScore(0);
+            setPhysiquePoints(0);
             return;
         }
 
@@ -91,7 +91,7 @@ export default function BodyCompositionModal({
         });
 
         // Round to 1 decimal
-        setRefactorScore(Math.round(score * 10) / 10);
+        setPhysiquePoints(Math.round(score * 10) / 10);
     };
 
     const handleMeasurementLog = async (metricId: string, value: number, label: string) => {
@@ -167,11 +167,11 @@ export default function BodyCompositionModal({
                         </div>
                     </div>
 
-                    {/* REFACTOR SCORE CARD */}
+                    {/* PHYSIQUE POINTS CARD */}
                     <div className="bg-zinc-800/50 px-4 py-2 rounded-xl border border-zinc-700 flex flex-col items-center">
-                        <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold">Refactor Score</span>
-                        <div className={`text-2xl font-black ${refactorScore > 0 ? 'text-emerald-400' : refactorScore < 0 ? 'text-rose-400' : 'text-zinc-500'}`}>
-                            {isLoadingHistory ? '...' : (refactorScore > 0 ? '+' : '') + refactorScore}
+                        <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold">💪 Physique Points</span>
+                        <div className={`text-2xl font-black ${physiquePoints > 0 ? 'text-emerald-400' : physiquePoints < 0 ? 'text-rose-400' : 'text-zinc-500'}`}>
+                            {isLoadingHistory ? '...' : (physiquePoints > 0 ? '+' : '') + physiquePoints}
                         </div>
                     </div>
 

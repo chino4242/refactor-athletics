@@ -41,8 +41,8 @@ export default function ProgressMetrics({ stats, profile, bodyCompHistory }: Pro
         };
     }, [stats]);
 
-    // Calculate Refactor Score
-    const refactorScore = useMemo(() => {
+    // Calculate Physique Points
+    const physiquePoints = useMemo(() => {
         if (bodyCompHistory.length < 2) return { score: 0, status: 'No Data' };
 
         const baseline = bodyCompHistory[0];
@@ -121,14 +121,14 @@ export default function ProgressMetrics({ stats, profile, bodyCompHistory }: Pro
                 </div>
             </div>
 
-            {/* REFACTOR SCORE CARD */}
+            {/* PHYSIQUE POINTS CARD */}
             <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 hover:border-zinc-700 transition-colors">
-                <div className="text-xs text-zinc-500 uppercase tracking-widest font-bold mb-2">Refactor</div>
-                <div className={`text-3xl font-black mb-2 ${refactorScore.color}`}>
-                    {refactorScore.score > 0 ? '+' : ''}{refactorScore.score}
+                <div className="text-xs text-zinc-500 uppercase tracking-widest font-bold mb-2">💪 Physique Points</div>
+                <div className={`text-3xl font-black mb-2 ${physiquePoints.color}`}>
+                    {physiquePoints.score > 0 ? '+' : ''}{physiquePoints.score}
                 </div>
                 <div className="text-xs text-zinc-600">
-                    {refactorScore.status}
+                    {physiquePoints.status}
                 </div>
             </div>
         </div>

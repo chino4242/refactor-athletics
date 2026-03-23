@@ -46,7 +46,7 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
     const xpPercent = (xpProgress / 1000) * 100;
 
     // Calculate refactor score
-    const refactorScore = useMemo(() => {
+    const physiquePoints = useMemo(() => {
         if (bodyCompHistory.length < 2) return { score: 0, status: '⚖️ No Data', color: 'text-zinc-400' };
 
         const baseline = bodyCompHistory[0];
@@ -126,17 +126,17 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                             </div>
                         </div>
 
-                        {/* Refactor Score */}
+                        {/* Physique Points */}
                         <div>
                             <div className="flex items-center gap-2 mb-2">
                                 <span className="text-xl">⚖️</span>
-                                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Refactor Score</span>
+                                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">💪 Physique Points</span>
                             </div>
-                            <div className={`text-4xl font-black italic ${refactorScore.color}`}>
-                                {refactorScore.score > 0 ? '+' : ''}{refactorScore.score}
+                            <div className={`text-4xl font-black italic ${physiquePoints.color}`}>
+                                {physiquePoints.score > 0 ? '+' : ''}{physiquePoints.score}
                             </div>
                             <div className="text-xs text-zinc-500 mt-1">
-                                {refactorScore.status}
+                                {physiquePoints.status}
                             </div>
                         </div>
 

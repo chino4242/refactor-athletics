@@ -18,7 +18,7 @@ interface BodyCompSummaryProps {
         shoulders?: number;
         [key: string]: string | number | undefined;
     }>;
-    refactorScore: {
+    physiquePoints: {
         score: number;
         status: string;
         color: string;
@@ -26,7 +26,7 @@ interface BodyCompSummaryProps {
     onOpenModal: () => void;
 }
 
-export default function BodyCompSummary({ profile, bodyCompHistory, refactorScore, onOpenModal }: BodyCompSummaryProps) {
+export default function BodyCompSummary({ profile, bodyCompHistory, physiquePoints, onOpenModal }: BodyCompSummaryProps) {
     const metrics = useMemo(() => {
         if (bodyCompHistory.length === 0) return [];
 
@@ -116,33 +116,33 @@ export default function BodyCompSummary({ profile, bodyCompHistory, refactorScor
                     </div>
                 </div>
 
-                {/* Refactor Score Badge */}
+                {/* Physique Points Badge */}
                 <div className="bg-zinc-800/50 px-3 py-1.5 rounded-lg border border-zinc-700">
-                    <div className="text-xs text-zinc-500 uppercase tracking-widest font-bold">Score</div>
-                    <div className={`text-xl font-black ${refactorScore.color}`}>
-                        {refactorScore.score > 0 ? '+' : ''}{refactorScore.score}
+                    <div className="text-xs text-zinc-500 uppercase tracking-widest font-bold">💪 PP</div>
+                    <div className={`text-xl font-black ${physiquePoints.color}`}>
+                        {physiquePoints.score > 0 ? '+' : ''}{physiquePoints.score}
                     </div>
                 </div>
             </div>
 
             {/* Status Bar */}
             <div className={`mb-4 p-3 rounded-lg border ${
-                refactorScore.score > 0 
+                physiquePoints.score > 0 
                     ? 'bg-emerald-500/10 border-emerald-500/20' 
-                    : refactorScore.score < 0 
+                    : physiquePoints.score < 0 
                     ? 'bg-rose-500/10 border-rose-500/20'
                     : 'bg-zinc-800/50 border-zinc-700'
             }`}>
                 <div className="flex items-center justify-between">
-                    <span className={`text-sm font-bold ${refactorScore.color}`}>
-                        {refactorScore.status}
+                    <span className={`text-sm font-bold ${physiquePoints.color}`}>
+                        {physiquePoints.status}
                     </span>
                     <div className="w-2/3 bg-zinc-800 rounded-full h-2">
                         <div 
                             className={`h-2 rounded-full transition-all duration-500 ${
-                                refactorScore.score > 0 ? 'bg-emerald-500' : 'bg-rose-500'
+                                physiquePoints.score > 0 ? 'bg-emerald-500' : 'bg-rose-500'
                             }`}
-                            style={{ width: `${Math.min(Math.abs(refactorScore.score) * 5, 100)}%` }}
+                            style={{ width: `${Math.min(Math.abs(physiquePoints.score) * 5, 100)}%` }}
                         />
                     </div>
                 </div>

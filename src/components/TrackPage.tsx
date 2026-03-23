@@ -142,7 +142,7 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
     }, [userId]);
 
     // Calculate refactor score
-    const refactorScore = useMemo(() => {
+    const physiquePoints = useMemo(() => {
         if (bodyCompHistory.length < 2) return { score: 0, status: '⚖️ No Data', color: 'text-zinc-400' };
 
         const baseline = bodyCompHistory[0];
@@ -481,7 +481,7 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
             <BodyCompSummary 
                 profile={initialProfile}
                 bodyCompHistory={bodyCompHistory}
-                refactorScore={refactorScore}
+                physiquePoints={physiquePoints}
                 onOpenModal={() => setShowBodyCompModal(true)}
             />
 
