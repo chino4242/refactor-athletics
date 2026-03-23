@@ -115,11 +115,11 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
             <div className="bg-gradient-to-br from-zinc-900 via-zinc-900 to-zinc-800 border-b border-zinc-800 p-6">
                 <div className="max-w-6xl mx-auto">
                     <div className="grid grid-cols-3 gap-4 mb-4">
-                        {/* Mastery */}
+                        {/* Expertise */}
                         <div>
                             <div className="flex items-center gap-2 mb-2">
                                 <span className="text-xl">{theme.emoji}</span>
-                                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Mastery</span>
+                                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Expertise</span>
                             </div>
                             <div className={`text-4xl font-black italic text-transparent bg-clip-text bg-gradient-to-r ${progressGradient}`}>
                                 {powerLevel.toLocaleString()}

@@ -116,7 +116,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                 </div>
             )}
 
-            {/* Header with Mastery & Stats */}
+            {/* Header with Expertise & Stats */}
             <DashboardHeader stats={stats} userId={userId} />
 
             {/* Tabbed Content */}

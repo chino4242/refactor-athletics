@@ -32,8 +32,8 @@ export default function PowerRadar({ stats, categoryStats }: PowerRadarProps) {
                         <div>
                             <h3 className="text-orange-500 font-bold uppercase tracking-widest text-xs mb-2">Aggregate Score</h3>
                             <h2 className="text-4xl md:text-5xl font-black italic text-white tracking-tighter flex items-center">
-                                MASTERY
-                                <InfoTooltip text="Your Mastery is the sum of your best lifts, cardio, and mobility scores. Raise it by hitting new standards across all categories." size={24} />
+                                EXPERTISE
+                                <InfoTooltip text="Your Expertise is the sum of your best lifts, cardio, and mobility scores. Raise it by hitting new standards across all categories." size={24} />
                             </h2>
                         </div>
                         <div className="text-right">
