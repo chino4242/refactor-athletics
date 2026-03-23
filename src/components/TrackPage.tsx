@@ -143,7 +143,7 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
 
     // Calculate refactor score
     const physiquePoints = useMemo(() => {
-        if (bodyCompHistory.length < 2) return { score: 0, status: '⚖️ No Data', color: 'text-zinc-400' };
+        if (bodyCompHistory.length < 2) return { score: 0, status: 'No Data', color: 'text-zinc-400' };
 
         const baseline = bodyCompHistory[0];
         const current = bodyCompHistory[bodyCompHistory.length - 1];
@@ -170,7 +170,7 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
 
         const roundedScore = Math.round(score * 10) / 10;
 
-        let status = '⚖️ Maintaining';
+        let status = 'Maintaining';
         let color = 'text-zinc-400';
         
         if (roundedScore > 10) {

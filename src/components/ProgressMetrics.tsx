@@ -71,7 +71,7 @@ export default function ProgressMetrics({ stats, profile, bodyCompHistory }: Pro
         const roundedScore = Math.round(score * 10) / 10;
 
         // Determine status
-        let status = '⚖️ Maintaining';
+        let status = 'Maintaining';
         let color = 'text-zinc-400';
         
         if (roundedScore > 10) {

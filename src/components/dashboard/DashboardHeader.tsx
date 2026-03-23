@@ -47,7 +47,7 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
 
     // Calculate refactor score
     const physiquePoints = useMemo(() => {
-        if (bodyCompHistory.length < 2) return { score: 0, status: '⚖️ No Data', color: 'text-zinc-400' };
+        if (bodyCompHistory.length < 2) return { score: 0, status: 'No Data', color: 'text-zinc-400' };
 
         const baseline = bodyCompHistory[0];
         const current = bodyCompHistory[bodyCompHistory.length - 1];
@@ -74,7 +74,7 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
 
         const roundedScore = Math.round(score * 10) / 10;
 
-        let status = '⚖️ Maintaining';
+        let status = 'Maintaining';
         let color = 'text-zinc-400';
         
         if (roundedScore > 10) {
@@ -129,7 +129,6 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                         {/* Physique Points */}
                         <div>
                             <div className="flex items-center gap-2 mb-2">
-                                <span className="text-xl">⚖️</span>
                                 <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">💪 Physique Points</span>
                             </div>
                             <div className={`text-4xl font-black italic ${physiquePoints.color}`}>
