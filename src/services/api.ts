@@ -222,7 +222,7 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
     // Query workouts and catalog in parallel
     const [{ data: workouts }, { data: catalog }] = await Promise.all([
         supabase.from('workouts').select('exercise_id, level, xp').eq('user_id', userId),
-        supabase.from('catalog').select('id').not('standards', 'is', null),
+        supabase.from('catalog').select('id, standards').not('standards', 'is', null),
     ]);
 
     // Query all tables for total XP
@@ -232,9 +232,19 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
         supabase.from('body_measurements').select('xp').eq('user_id', userId)
     ]);
 
-    // Build set of ranked catalog exercise IDs
-    const rankedIds = new Set((catalog || []).map(c => c.id));
-    console.log(`Ranked exercises with standards: ${rankedIds.size} (max expertise: ${rankedIds.size * 5})`);
+    // Build set of ranked catalog exercise IDs — only those with actual bracket thresholds
+    const rankedIds = new Set(
+        (catalog || [])
+            .filter((c: any) => {
+                const b = c.standards?.brackets;
+                if (!b) return false;
+                const male = b.male || [];
+                const female = b.female || [];
+                return (male.length > 0 && male[0]?.levels?.length > 0) ||
+                       (female.length > 0 && female[0]?.levels?.length > 0);
+            })
+            .map((c: any) => c.id)
+    );
 
     let totalXp = 0;
     const maxLevelPerExercise: Record<string, number> = {};

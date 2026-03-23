@@ -121,7 +121,7 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                             <div className="flex items-center gap-2 mb-2">
                                 <span className="text-xl">{theme.emoji}</span>
                                 <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Expertise</span>
-                                <InfoTooltip text="Sum of your best rank levels across all ranked exercises. Max level per exercise is 6 (Legend). Raise it by hitting new standards." size={14} />
+                                <InfoTooltip text={`Your best rank level (1-5) across ${stats?.max_expertise ? stats.max_expertise / 5 : 0} ranked exercises. Max = ${stats?.max_expertise || 0} (${stats?.max_expertise ? stats.max_expertise / 5 : 0} exercises × 5 levels).`} size={14} />
                             </div>
                             <div className={`text-4xl font-black italic text-transparent bg-clip-text bg-gradient-to-r ${progressGradient}`}>
                                 {powerLevel}<span className="text-lg text-zinc-500">/{stats?.max_expertise || 0}</span>
