@@ -291,6 +291,7 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
 
     return {
         power_level: finalExpertise,
+        max_expertise: rankedIds.size * 6,
         exercises_tracked: (workouts || []).length,
         highest_level_achieved: Math.max(0, ...Object.values(maxLevelPerExercise)),
         total_career_xp: totalXp,

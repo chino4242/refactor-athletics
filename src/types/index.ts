@@ -47,6 +47,7 @@ export interface HistoryItem {
 
 export interface UserStats {
     power_level: number;
+    max_expertise: number;
     exercises_tracked: number;
     highest_level_achieved: number;
     total_career_xp: number;
@@ -97,6 +98,7 @@ export interface WorkoutSchedule {
 
 export interface UserStats {
     power_level: number;
+    max_expertise: number;
     exercises_tracked: number;
     highest_level_achieved: number;
     total_career_xp: number;

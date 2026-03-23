@@ -111,10 +111,10 @@ export default function ProgressMetrics({ stats, profile, bodyCompHistory }: Pro
                 </div>
             </div>
 
-            {/* POWER CARD */}
+            {/* EXPERTISE CARD */}
             <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 hover:border-zinc-700 transition-colors">
-                <div className="text-xs text-zinc-500 uppercase tracking-widest font-bold mb-2">Power</div>
-                <div className="text-3xl font-black text-orange-500 mb-2">{stats?.power_level?.toLocaleString() || 0}</div>
+                <div className="text-xs text-zinc-500 uppercase tracking-widest font-bold mb-2">Expertise</div>
+                <div className="text-3xl font-black text-orange-500 mb-2">{stats?.power_level || 0}<span className="text-lg text-zinc-500">/{stats?.max_expertise || 0}</span></div>
                 <div className="flex items-center gap-1 text-xs text-zinc-600">
                     <span className="text-orange-500">⚡</span>
                     <span>Aggregate Score</span>

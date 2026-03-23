@@ -33,12 +33,12 @@ export default function PowerRadar({ stats, categoryStats }: PowerRadarProps) {
                             <h3 className="text-orange-500 font-bold uppercase tracking-widest text-xs mb-2">Aggregate Score</h3>
                             <h2 className="text-4xl md:text-5xl font-black italic text-white tracking-tighter flex items-center">
                                 EXPERTISE
-                                <InfoTooltip text="Your Expertise is the sum of your best lifts, cardio, and mobility scores. Raise it by hitting new standards across all categories." size={24} />
+                                <InfoTooltip text="Sum of your best rank levels across all ranked exercises. Max level per exercise is 6 (Legend)." size={24} />
                             </h2>
                         </div>
                         <div className="text-right">
                             <span className="block text-7xl md:text-9xl font-black text-white drop-shadow-[0_0_30px_rgba(249,115,22,0.4)] tracking-tighter">
-                                {stats?.power_level || 0}
+                                {stats?.power_level || 0}<span className="text-3xl md:text-5xl text-zinc-500">/{stats?.max_expertise || 0}</span>
                             </span>
                         </div>
                     </div>
