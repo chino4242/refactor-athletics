@@ -128,11 +128,9 @@ export async function logTrainingAction(
     
     if (exerciseType.includes('weight') || exerciseType === 'strength') {
         if (is5RM) {
-            // For 5RM exercises, use the weight directly (already a 5RM)
             bestValue = Math.max(...sets.map(s => s.weight || 0));
         } else {
-            // For other weight exercises, use Epley formula: weight * (1 + reps/30)
-            bestValue = Math.max(...sets.map(s => s.weight * (1 + (s.reps || 1) / 30)));
+            bestValue = Math.max(...sets.map(s => (s.weight || 0) * (1 + (s.reps || 1) / 30)));
         }
     } else if (exerciseType.includes('reps') || exerciseType === 'bodyweight') {
         bestValue = Math.max(...sets.map(s => s.reps || 0));
@@ -140,6 +138,14 @@ export async function logTrainingAction(
         bestValue = Math.max(...sets.map(s => s.duration || 0));
     } else if (exerciseType.includes('distance') || exerciseType === 'cardio') {
         bestValue = Math.max(...sets.map(s => s.distance || 0));
+    } else {
+        // Fallback: if sets have weight, use Epley; if reps only, use reps
+        const hasWeight = sets.some(s => s.weight > 0);
+        if (hasWeight) {
+            bestValue = Math.max(...sets.map(s => (s.weight || 0) * (1 + (s.reps || 1) / 30)));
+        } else {
+            bestValue = Math.max(...sets.map(s => s.reps || s.duration || s.distance || 0));
+        }
     }
 
     // Calculate rank

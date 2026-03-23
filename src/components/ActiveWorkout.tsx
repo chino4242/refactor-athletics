@@ -7,7 +7,8 @@ import ExerciseHistoryModal from './ExerciseHistoryModal'; // 🟢 NEW
 import { playCountdownBeep } from '../utils/audio';
 import { Play, Pause, SkipForward, RotateCcw, Calendar, CheckCircle, Info, Timer, ChevronRight } from 'lucide-react';
 import ChecklistView from './ChecklistView';
-import { logWorkoutBlockAction } from '@/app/actions';
+import { logWorkoutBlockAction, logTrainingAction } from '@/app/actions';
+import { getProfile } from '@/services/api';
 
 // --- SAFELIST CONSTANT REMOVED ---
 
@@ -733,6 +734,13 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
   const [fullHistory, setFullHistory] = useState<HistoryItem[]>([]);
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
 
+  // User profile for rank calculations
+  const [userProfile, setUserProfile] = useState<{ bodyweight: number; sex: string } | null>(null);
+
+  // Block completion results & continue/stop prompt
+  const [blockResults, setBlockResults] = useState<any[] | null>(null);
+  const [showBlockComplete, setShowBlockComplete] = useState(false);
+
   // 🟢 NEW: Briefing State
   const [briefingData, setBriefingData] = useState<any[] | null>(null);
   const [briefingDate, setBriefingDate] = useState<string | null>(null);
@@ -815,6 +823,8 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
       setFullHistory(h || []);
       const c = await getTrainingCatalog();
       setCatalog(c || []);
+      const p = await getProfile(userId);
+      if (p) setUserProfile({ bodyweight: p.bodyweight || 150, sex: p.sex || 'M' });
 
     } catch (err) {
       console.error(err);
@@ -879,64 +889,122 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
 
   const currentBlock = workoutData[blockIndex];
 
+  // Match workout exercise name to catalog item (fuzzy)
+  const findCatalogMatch = (name: string) => {
+    const n = name.toLowerCase().trim();
+    // Exact name match first
+    let match = catalog.find((c: any) => c.name.toLowerCase() === n);
+    if (match) return match;
+    // Catalog name contains exercise name (e.g., "Est. 1RM Bench Press" contains "Bench Press")
+    match = catalog.find((c: any) => c.name.toLowerCase().includes(n));
+    if (match) return match;
+    // Exercise name contains catalog name
+    match = catalog.find((c: any) => n.includes(c.name.toLowerCase()));
+    return match || null;
+  };
+
+  // Check if exercise is a PR based on history
+  const checkPR = (exerciseId: string, newRawValue: number) => {
+    const prevBest = fullHistory
+      .filter(h => h.exercise_id === exerciseId)
+      .reduce((best, h) => Math.max(best, h.raw_value || 0), 0);
+    return newRawValue > prevBest && prevBest > 0;
+  };
+
   const handleBlockComplete = async (skipped: boolean = false, exercisesData: any[] = []) => {
-    // 1. Submit XP if applicable (AND NOT SKIPPED)
-    // 🟢 CHANGED: Prevent duplicate XP for timer/interval blocks which award XP incrementally
-    const isIncremental = !['checklist_exercise', 'list', 'superset'].includes(currentBlock.type);
+    const isExerciseBlock = ['checklist_exercise', 'list', 'superset'].includes(currentBlock.type);
 
-    if (!skipped && userId && currentBlock && currentBlock.xp_value > 0 && !isIncremental) {
-      try {
-        console.log(`Submitting XP for block: ${currentBlock.name} (${currentBlock.xp_value} XP)`);
-        await logWorkoutBlockAction(
-          userId,
-          currentBlock.name,
-          currentBlock.description || `${currentBlock.sets || 1} Sets`, // Details
-          currentBlock.xp_value,
-          currentBlock.type === 'card' || currentBlock.name.includes('Tread') ? 'Cardio' : 'Strength',
-          exercisesData // <--- Pass Detailed Data
-        );
-
-        // Notify Parent (Training.tsx) to refresh stats
-        if (onLogComplete) onLogComplete();
-
-      } catch (e) {
-        console.error("Failed to log block XP", e);
-      }
-    } else if (skipped) {
+    if (skipped) {
       console.log("Block skipped. No XP awarded.");
       setSkippedIndices(prev => [...prev, blockIndex]);
+    } else if (userId && currentBlock) {
+      try {
+        if (isExerciseBlock && exercisesData.length > 0 && userProfile) {
+          const results: any[] = [];
+          for (const ex of exercisesData) {
+            if (!ex.sets || ex.sets.length === 0) continue;
+            const catalogItem = findCatalogMatch(ex.name);
+
+            if (catalogItem) {
+              try {
+                const result = await logTrainingAction(
+                  userId, catalogItem.id, userProfile.bodyweight, userProfile.sex, ex.sets
+                );
+                const hasStandards = !!catalogItem.standards?.brackets;
+                const isPR = checkPR(catalogItem.id, result.raw_value || 0);
+                results.push({
+                  name: ex.name, ...result,
+                  hasStandards,
+                  isPR,
+                });
+              } catch (e) {
+                console.error(`Failed to log ${ex.name}:`, e);
+                results.push({ name: ex.name, xp_earned: 0, level: 0, rank_name: null, hasStandards: false, isPR: false });
+              }
+            } else {
+              // No catalog match — log as generic block exercise with default xp_factor of 1.0
+              const setXp = ex.sets.reduce((sum: number, s: any) => sum + Math.floor((s.reps || 10) * 1.0), 0);
+              await logWorkoutBlockAction(userId, ex.name, `${ex.sets.length} Sets`, setXp, 'Strength', ex.sets);
+              results.push({ name: ex.name, xp_earned: setXp, level: 0, rank_name: null, value: `${ex.sets.length} Sets`, hasStandards: false, isPR: false });
+            }
+          }
+          setBlockResults(results);
+          setShowBlockComplete(true);
+          if (onLogComplete) onLogComplete();
+          const newCompleted = [...completedIndices, blockIndex];
+          setCompletedIndices(newCompleted);
+          if (newCompleted.length === workoutData.length) setIsComplete(true);
+          return;
+        } else if (!isExerciseBlock && currentBlock.xp_value > 0) {
+          await logWorkoutBlockAction(
+            userId, currentBlock.name, currentBlock.description || `${currentBlock.sets || 1} Sets`,
+            currentBlock.xp_value,
+            currentBlock.type === 'card' || currentBlock.name.includes('Tread') ? 'Cardio' : 'Strength',
+            exercisesData
+          );
+          if (onLogComplete) onLogComplete();
+        }
+      } catch (e) {
+        console.error("Failed to log block:", e);
+      }
     }
 
-    // 2. Mark as Complete locally
+    advanceToNextBlock();
+  };
+
+  const advanceToNextBlock = () => {
     const newCompleted = [...completedIndices, blockIndex];
     setCompletedIndices(newCompleted);
 
-    // Check Global Completion
     if (newCompleted.length === workoutData.length) {
       setIsComplete(true);
       return;
     }
 
-    // 3. Advance Logic
     const nextBlockIndex = blockIndex + 1;
-
-    // Check if next block exists
     if (nextBlockIndex < workoutData.length) {
-      // Check if next block is in same section
       const currentSection = currentBlock.section || 'General';
       const nextSection = workoutData[nextBlockIndex].section || 'General';
-
       if (currentSection === nextSection) {
         setBlockIndex(nextBlockIndex);
       } else {
-        // Section Complete! Return to Hub.
         setViewMode('HUB');
-        // Allow user to see they finished it? Maybe toast?
       }
     } else {
-      // End of linear list, return to Hub
       setViewMode('HUB');
     }
+  };
+
+  const handleContinueAfterBlock = () => {
+    setBlockResults(null);
+    setShowBlockComplete(false);
+    advanceToNextBlock();
+  };
+
+  const handleStopAfterBlock = () => {
+    setBlockResults(null);
+    setShowBlockComplete(false);
+    setViewMode('HUB');
   };
 
   // Debug logging
@@ -950,6 +1018,60 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
   // (Empty check handled in main view logic below)
 
 
+
+  // RENDER: Block completion results with continue/stop
+  if (showBlockComplete && blockResults) {
+    const totalXp = blockResults.reduce((sum: number, r: any) => sum + (r.xp_earned || 0), 0);
+    return (
+      <div className="w-full max-w-md mx-auto bg-zinc-900 rounded-3xl flex flex-col items-center justify-center text-center p-8 border border-orange-500/30">
+        <div className="text-5xl mb-4">⚡</div>
+        <h1 className="text-2xl font-black italic text-white uppercase mb-2">Block Complete</h1>
+        <p className="text-orange-500 font-bold text-lg mb-6">+{totalXp} XP</p>
+
+        <div className="w-full space-y-2 mb-8">
+          {blockResults.map((r: any, i: number) => (
+            <div key={i} className="flex items-center justify-between bg-zinc-800/50 rounded-lg p-3">
+              <div className="text-left">
+                <p className="text-sm font-bold text-white">
+                  {r.name}
+                  {r.isPR && <span className="ml-2 text-yellow-400 text-xs">🏆 PR!</span>}
+                </p>
+                <p className="text-xs text-zinc-500">{r.value}</p>
+              </div>
+              <div className="text-right">
+                {r.hasStandards && r.level > 0 ? (
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded ${
+                    r.level >= 4 ? 'bg-orange-500/20 text-orange-400' :
+                    r.level >= 2 ? 'bg-zinc-700 text-zinc-300' :
+                    'bg-zinc-800 text-zinc-400'
+                  }`}>
+                    {r.rank_name}
+                  </span>
+                ) : (
+                  <span className="text-xs text-zinc-600">+{r.xp_earned} XP</span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="w-full space-y-3">
+          <button
+            onClick={handleContinueAfterBlock}
+            className="w-full py-4 bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold uppercase tracking-wider rounded-xl hover:from-orange-500 hover:to-red-500 transition-all"
+          >
+            Next Exercise →
+          </button>
+          <button
+            onClick={handleStopAfterBlock}
+            className="w-full py-3 bg-zinc-800 text-zinc-400 font-bold uppercase tracking-wider rounded-xl hover:bg-zinc-700 hover:text-white transition-all"
+          >
+            Stop Workout
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (isComplete) {
     return (
