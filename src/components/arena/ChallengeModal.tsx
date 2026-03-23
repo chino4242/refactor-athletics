@@ -309,8 +309,7 @@ export default function ChallengeModal({ isOpen, challengerId, onClose, onChalle
                                         </div>
 
                                         {activeDateField && (
-                                            <div className="animate-fade-in relative z-10">
-                                                <div className="absolute inset-0 bg-zinc-900/90 backdrop-blur-sm -mb-2 -mx-4 z-0 rounded-b-2xl" />
+                                            <div className="animate-fade-in">
                                                 <CalendarPicker
                                                     startDate={activeDateField === 'start' ? customStartDate : customEndDate}
                                                     endDate={null}
@@ -329,7 +328,7 @@ export default function ChallengeModal({ isOpen, challengerId, onClose, onChalle
                                                         }
                                                     }}
                                                 />
-                                                <div className="mt-2 text-center relative z-10">
+                                                <div className="mt-2 text-center">
                                                     <p className="text-[10px] text-zinc-500">
                                                         *Midnight to Midnight (Local Time)
                                                     </p>

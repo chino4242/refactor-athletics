@@ -108,25 +108,25 @@ export default function CalendarPicker({
             <div className="flex items-center justify-between mb-4">
                 <button
                     onClick={handlePrevMonth}
-                    className="p-1 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors"
+                    className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors"
                 >
-                    <ChevronLeft size={16} />
+                    <ChevronLeft size={20} />
                 </button>
-                <div className="text-sm font-bold text-zinc-200">
+                <div className="text-base font-black text-white uppercase tracking-wider">
                     {MONTHS[currentMonth]} {currentYear}
                 </div>
                 <button
                     onClick={handleNextMonth}
-                    className="p-1 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors"
+                    className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors"
                 >
-                    <ChevronRight size={16} />
+                    <ChevronRight size={20} />
                 </button>
             </div>
 
-            {/* Grid */}
+            {/* Day-of-week headers */}
             <div className="grid grid-cols-7 gap-1 mb-2">
                 {DAYS.map(day => (
-                    <div key={day} className="text-center text-[10px] font-bold text-zinc-500 uppercase">
+                    <div key={day} className="text-center text-xs font-bold text-zinc-500 uppercase py-1">
                         {day}
                     </div>
                 ))}
@@ -150,11 +150,11 @@ export default function CalendarPicker({
                     if (disabled) {
                         bgClass = 'text-zinc-700 cursor-not-allowed hover:bg-transparent';
                     } else if (isStart || isEnd) {
-                        bgClass = 'bg-orange-500 text-white shadow-lg shadow-orange-900/50';
+                        bgClass = 'bg-orange-500 text-white font-bold shadow-lg shadow-orange-900/50';
                     } else if (inRange) {
                         bgClass = 'bg-orange-500/20 text-orange-200';
                     } else if (isToday) {
-                        bgClass = 'bg-zinc-800 text-white font-bold border border-zinc-700';
+                        bgClass = 'bg-zinc-800 text-orange-400 font-bold ring-1 ring-orange-500/50';
                     }
 
                     // Rounding logic for visual connection
@@ -169,7 +169,7 @@ export default function CalendarPicker({
                             onClick={() => handleDateClick(day)}
                             disabled={disabled}
                             className={`
-                                h-8 w-full flex items-center justify-center text-xs transition-all relative
+                                h-10 w-full flex items-center justify-center text-sm transition-all relative
                                 ${bgClass}
                                 ${roundedClass}
                             `}
