@@ -255,8 +255,9 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
         totalXp += item.xp || 0;
     }
 
-    // Expertise = Sum of max_level for each ranked exercise
+    // Expertise = Sum of max_level for each ranked exercise the user has tested
     let expertiseScore = 0;
+    const testedCount = Object.keys(maxLevelPerExercise).length;
     for (const exId in maxLevelPerExercise) {
         expertiseScore += maxLevelPerExercise[exId];
     }
@@ -291,7 +292,7 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
 
     return {
         power_level: finalExpertise,
-        max_expertise: rankedIds.size * 6,
+        max_expertise: testedCount * 5,
         exercises_tracked: (workouts || []).length,
         highest_level_achieved: Math.max(0, ...Object.values(maxLevelPerExercise)),
         total_career_xp: totalXp,
