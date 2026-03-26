@@ -117,10 +117,10 @@ git push origin main
 - [ ] Verify Power Level displays
 - [ ] Compare with previous values (should match)
 
-**Refactor Score:**
+**Physique Points:**
 - [ ] Go to /track
-- [ ] Check Refactor Score displays
-- [ ] Verify calculation is correct
+- [ ] Check Physique Points displays
+- [ ] Verify calculation is correct (requires 2+ body measurement entries)
 
 **Exercise History:**
 - [ ] Go to /train

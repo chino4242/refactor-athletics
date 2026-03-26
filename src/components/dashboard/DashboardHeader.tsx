@@ -8,6 +8,7 @@ import { THEMES } from '@/data/themes';
 import { BodyCompositionService } from '@/services/BodyCompositionService';
 import { createClient } from '@/utils/supabase/client';
 import InfoTooltip from '@/components/common/InfoTooltip';
+import { calculatePhysiquePoints } from '@/utils/physiquePoints';
 
 interface DashboardHeaderProps {
     stats: UserStats | null;
@@ -48,55 +49,8 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
 
     // Calculate refactor score
     const physiquePoints = useMemo(() => {
-        if (bodyCompHistory.length < 2) return { score: 0, status: 'No Data', color: 'text-zinc-400' };
-
-        const baseline = bodyCompHistory[0];
-        const current = bodyCompHistory[bodyCompHistory.length - 1];
-        let score = 0;
-
-        const goals = current.body_composition_goals || {};
-        const metrics = ['waist', 'arms', 'legs', 'chest', 'shoulders', 'weight'];
-
-        metrics.forEach(metric => {
-            const goal = goals[metric];
-            const baseVal = baseline[metric];
-            const currVal = current[metric];
-
-            if (baseVal !== undefined && currVal !== undefined && goal) {
-                const delta = Number(currVal) - Number(baseVal);
-
-                if (goal.toLowerCase() === 'shrink') {
-                    score -= delta;
-                } else if (goal.toLowerCase() === 'grow') {
-                    score += delta;
-                }
-            }
-        });
-
-        const roundedScore = Math.round(score * 10) / 10;
-
-        let status = 'Maintaining';
-        let color = 'text-zinc-400';
-        
-        if (roundedScore > 10) {
-            status = '🔥 Crushing It';
-            color = 'text-emerald-400';
-        } else if (roundedScore > 5) {
-            status = '🎯 On Track';
-            color = 'text-emerald-400';
-        } else if (roundedScore > 0) {
-            status = '✓ Progressing';
-            color = 'text-green-400';
-        } else if (roundedScore < -5) {
-            status = '🚨 Off Track';
-            color = 'text-rose-400';
-        } else if (roundedScore < 0) {
-            status = '⚠️ Slipping';
-            color = 'text-orange-400';
-        }
-
-        return { score: roundedScore, status, color };
-    }, [bodyCompHistory]);
+        return calculatePhysiquePoints(bodyCompHistory, userProfile?.body_composition_goals || {});
+    }, [bodyCompHistory, userProfile]);
 
     return (
         <div className="relative">

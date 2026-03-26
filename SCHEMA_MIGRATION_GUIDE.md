@@ -146,7 +146,7 @@ async function getTotalXP(userId: string) {
 - [ ] Daily totals calculate correctly
 - [ ] XP totals match across all tables
 - [ ] Power Level calculates correctly
-- [ ] Refactor Score calculates correctly
+- [ ] Physique Points calculates correctly
 - [ ] History views show all data
 
 ## 🎯 Next Steps

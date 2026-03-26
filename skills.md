@@ -66,10 +66,12 @@ There are two distinct progression metrics for a user:
 
 ### 2.3 Data Architecture Patterns
 - **Server Actions** (`src/app/actions.ts`): All write operations (logging workouts, habits, macros)
+  - **Body Measurements**: `logBodyMeasurementAction` upserts per date — if a row exists for that date, it merges new metrics into it rather than creating duplicate rows
 - **API Functions** (`src/services/api.ts`): All read operations (getHistory, getHabitProgress, getUserStats)
   - **Profile Updates**: Use `router.refresh()` after saving to reload server-rendered data
   - **Target Weight**: Stored in `body_composition_goals.target_weight` (string format)
 - **Program API** (`src/services/programApi.ts`): Workout program CRUD operations
+- **Shared Utilities** (`src/utils/physiquePoints.ts`): `calculatePhysiquePoints()` — used by TrackPage, ProgressMetrics, DashboardHeader, and BodyCompositionModal
 
 ### 2.4 Attribute Balance Radar
 The Radar chart in `PowerRadar.tsx` requires exactly 4 cardinal points: **STR**, **END**, **PWR**, **MOB**.
@@ -120,7 +122,7 @@ The dashboard (`/dashboard`) is the default landing page after login, featuring 
 - Power Level Contributors showing all exercises with rank images
 - Grouped by category (Strength, Endurance & Speed, Power & Capacity, Mobility)
 - Shows current level or Level 1 target for unattempted exercises
-- Refactor Score tracking (body composition changes vs goals)
+- Physique Points tracking (body composition changes vs goals)
 
 **Arena Tab:**
 - Active duels display
@@ -131,7 +133,7 @@ The dashboard (`/dashboard`) is the default landing page after login, featuring 
 - **Pull-to-Refresh**: Touch gesture to reload all dashboard data (mobile-first)
 - **Skeleton Loaders**: Animated placeholders instead of "Loading..." text
 - **Weight Tracking**: Current weight, target weight, and progress in header
-- **Refactor Score**: Calculated from body composition changes vs goals (color-coded)
+- **Physique Points**: Calculated from body composition changes vs goals (color-coded). Uses shared `calculatePhysiquePoints()` utility from `src/utils/physiquePoints.ts`. For each metric (waist, arms, legs, chest, shoulders, weight), finds the earliest and latest non-null values across all `body_measurements` rows, then sums deltas aligned with goals (shrink = points for decrease, grow = points for increase). Rounded to 1 decimal place. Requires 2+ entries to calculate.
 - **Empty States**: Motivational messages with CTAs for all empty sections
 
 ### 4.3 Onboarding Wizard

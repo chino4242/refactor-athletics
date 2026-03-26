@@ -198,6 +198,6 @@ supabase db push
 - [ ] Daily totals calculate correctly
 - [ ] XP totals match previous values
 - [ ] Power Level unchanged
-- [ ] Refactor Score unchanged
+- [ ] Physique Points unchanged
 - [ ] No performance regressions
 - [ ] All tests passing

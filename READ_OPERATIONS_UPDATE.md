@@ -163,7 +163,7 @@ git push origin main
 - [ ] Daily totals → Calculate correctly
 - [ ] XP total → Matches previous value
 - [ ] Power Level → Unchanged
-- [ ] Refactor Score → Unchanged
+- [ ] Physique Points → Unchanged
 
 ---
 

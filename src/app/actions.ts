@@ -281,15 +281,32 @@ export async function logBodyMeasurementAction(
     const dateStr = new Date(ts * 1000).toISOString().split('T')[0];
     const xp = 5;
 
-    const { error } = await supabase
+    // Check for existing row on this date to merge measurements
+    const { data: existing } = await supabase
         .from('body_measurements')
-        .insert({
-            user_id: userId,
-            date: dateStr,
-            timestamp: ts,
-            ...measurements,
-            xp: xp
-        });
+        .select('id')
+        .eq('user_id', userId)
+        .eq('date', dateStr)
+        .limit(1)
+        .single();
+
+    let error;
+    if (existing) {
+        ({ error } = await supabase
+            .from('body_measurements')
+            .update({ ...measurements, timestamp: ts })
+            .eq('id', existing.id));
+    } else {
+        ({ error } = await supabase
+            .from('body_measurements')
+            .insert({
+                user_id: userId,
+                date: dateStr,
+                timestamp: ts,
+                ...measurements,
+                xp: xp
+            }));
+    }
 
     if (error) {
         console.error("Error logging body measurement:", error);

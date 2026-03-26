@@ -28,38 +28,12 @@ describe('MacroLogModal Component', () => {
         await act(async () => {
             render(<MacroLogModal {...defaultProps} />);
         });
-        expect(screen.getByText('🥗 Log Nutrition')).toBeInTheDocument();
+        expect(screen.getByText(/Set Nutrition Totals/)).toBeInTheDocument();
     });
 
     it('does not render when isOpen is false', () => {
         render(<MacroLogModal {...defaultProps} isOpen={false} />);
-        expect(screen.queryByText('🥗 Log Nutrition')).not.toBeInTheDocument();
-    });
-
-    it('renders mode toggle buttons', async () => {
-        await act(async () => {
-            render(<MacroLogModal {...defaultProps} />);
-        });
-        expect(screen.getByText('[+] Add to Total')).toBeInTheDocument();
-        expect(screen.getByText('[=] Set Exact Total')).toBeInTheDocument();
-    });
-
-    it('switches between Add and Set Total modes', async () => {
-        await act(async () => {
-            render(<MacroLogModal {...defaultProps} />);
-        });
-
-        const addButton = screen.getByText('[+] Add to Total');
-        const setButton = screen.getByText('[=] Set Exact Total');
-
-        // Default is Add mode
-        expect(addButton).toHaveClass('bg-zinc-700');
-
-        // Switch to Set Total mode
-        await act(async () => {
-            fireEvent.click(setButton);
-        });
-        expect(setButton).toHaveClass('bg-blue-900/50');
+        expect(screen.queryByText(/Set Nutrition Totals/)).not.toBeInTheDocument();
     });
 
     it('renders all macro input fields', async () => {
@@ -85,7 +59,7 @@ describe('MacroLogModal Component', () => {
         expect(proteinInput).toHaveValue(150);
     });
 
-    it('logs all macros when Log All button is clicked', async () => {
+    it('logs all macros when Set Totals button is clicked', async () => {
         await act(async () => {
             render(<MacroLogModal {...defaultProps} />);
         });
@@ -102,17 +76,15 @@ describe('MacroLogModal Component', () => {
             fireEvent.change(fatInput, { target: { value: '60' } });
         });
 
-        // Click Log All
-        const logAllButton = screen.getByText('Log All');
+        const setTotalsButton = screen.getByText('Set Totals');
         await act(async () => {
-            fireEvent.click(logAllButton);
+            fireEvent.click(setTotalsButton);
         });
 
-        // Should call onLog for each macro
         await waitFor(() => {
-            expect(mockOnLog).toHaveBeenCalledWith('protein', 150, 'add');
-            expect(mockOnLog).toHaveBeenCalledWith('carbs', 200, 'add');
-            expect(mockOnLog).toHaveBeenCalledWith('fat', 60, 'add');
+            expect(mockOnLog).toHaveBeenCalledWith('protein', 150);
+            expect(mockOnLog).toHaveBeenCalledWith('carbs', 200);
+            expect(mockOnLog).toHaveBeenCalledWith('fat', 60);
         });
     });
 
@@ -127,9 +99,9 @@ describe('MacroLogModal Component', () => {
             fireEvent.change(proteinInput, { target: { value: '150' } });
         });
 
-        const logAllButton = screen.getByText('Log All');
+        const setTotalsButton = screen.getByText('Set Totals');
         await act(async () => {
-            fireEvent.click(logAllButton);
+            fireEvent.click(setTotalsButton);
         });
 
         await waitFor(() => {
@@ -148,9 +120,9 @@ describe('MacroLogModal Component', () => {
             fireEvent.change(proteinInput, { target: { value: '150' } });
         });
 
-        const logAllButton = screen.getByText('Log All');
+        const setTotalsButton = screen.getByText('Set Totals');
         await act(async () => {
-            fireEvent.click(logAllButton);
+            fireEvent.click(setTotalsButton);
         });
 
         await waitFor(() => {
@@ -169,51 +141,15 @@ describe('MacroLogModal Component', () => {
             fireEvent.change(proteinInput, { target: { value: '150' } });
         });
 
-        const logAllButton = screen.getByText('Log All');
+        const setTotalsButton = screen.getByText('Set Totals');
         await act(async () => {
-            fireEvent.click(logAllButton);
+            fireEvent.click(setTotalsButton);
         });
 
         await waitFor(() => {
             expect(mockOnLog).toHaveBeenCalledTimes(1);
-            expect(mockOnLog).toHaveBeenCalledWith('protein', 150, 'add');
+            expect(mockOnLog).toHaveBeenCalledWith('protein', 150);
         });
-    });
-
-    it('uses correct mode when logging', async () => {
-        await act(async () => {
-            render(<MacroLogModal {...defaultProps} />);
-        });
-
-        // Switch to Set Total mode
-        const setButton = screen.getByText('[=] Set Exact Total');
-        await act(async () => {
-            fireEvent.click(setButton);
-        });
-
-        const inputs = screen.getAllByRole('spinbutton');
-        const proteinInput = inputs[2];
-        await act(async () => {
-            fireEvent.change(proteinInput, { target: { value: '150' } });
-        });
-
-        const logAllButton = screen.getByText('Log All');
-        await act(async () => {
-            fireEvent.click(logAllButton);
-        });
-
-        await waitFor(() => {
-            expect(mockOnLog).toHaveBeenCalledWith('protein', 150, 'total');
-        });
-    });
-
-    it('renders water quick-add buttons', async () => {
-        await act(async () => {
-            render(<MacroLogModal {...defaultProps} />);
-        });
-        expect(screen.getByText('+8')).toBeInTheDocument();
-        expect(screen.getByText('+16')).toBeInTheDocument();
-        expect(screen.getByText('+32')).toBeInTheDocument();
     });
 
     it('logs water when quick-add button is clicked', async () => {
@@ -227,7 +163,8 @@ describe('MacroLogModal Component', () => {
         });
 
         await waitFor(() => {
-            expect(mockOnLog).toHaveBeenCalledWith('water', 16, 'add');
+            // Water quick-add is additive: current 64 + 16 = 80
+            expect(mockOnLog).toHaveBeenCalledWith('water', 80);
         });
     });
 
@@ -244,29 +181,14 @@ describe('MacroLogModal Component', () => {
         expect(mockOnClose).toHaveBeenCalled();
     });
 
-    it('shows placeholder values in Set Total mode', async () => {
-        await act(async () => {
-            render(<MacroLogModal {...defaultProps} />);
-        });
-
-        const setButton = screen.getByText('[=] Set Exact Total');
-        await act(async () => {
-            fireEvent.click(setButton);
-        });
-
-        const inputs = screen.getAllByRole('spinbutton');
-        const proteinInput = inputs[2];
-        expect(proteinInput).toHaveAttribute('placeholder', '100');
-    });
-
     it('does not log if no values are entered', async () => {
         await act(async () => {
             render(<MacroLogModal {...defaultProps} />);
         });
 
-        const logAllButton = screen.getByText('Log All');
+        const setTotalsButton = screen.getByText('Set Totals');
         await act(async () => {
-            fireEvent.click(logAllButton);
+            fireEvent.click(setTotalsButton);
         });
 
         expect(mockOnLog).not.toHaveBeenCalled();

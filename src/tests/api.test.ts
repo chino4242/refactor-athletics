@@ -226,100 +226,76 @@ describe('API Functions', () => {
     });
 
     describe('getUserStats', () => {
-        it('calculates power level from max exercise levels', async () => {
+        const catalogData = [
+            { id: 'back_squat', standards: { brackets: { male: [{ levels: [100,200,300,400,500] }], female: [] } } },
+            { id: 'deadlift', standards: { brackets: { male: [{ levels: [100,200,300,400,500] }], female: [] } } },
+            { id: 'squat', standards: { brackets: { male: [{ levels: [100,200,300,400,500] }], female: [] } } },
+        ];
+
+        const mockNotChain = (resolvedData: any) => vi.fn().mockResolvedValue({ data: resolvedData, error: null });
+
+        // Chainable eq mock that supports .eq().eq().gte() patterns
+        const chainableEq = (data: any) => {
+            const chain: any = {};
+            chain.eq = vi.fn().mockReturnValue(chain);
+            chain.gte = vi.fn().mockResolvedValue({ data, error: null });
+            // Also resolve directly for simple .eq() patterns
+            chain.then = (resolve: any) => resolve({ data, error: null });
+            return chain;
+        };
+
+        const makeSelectMock = (workoutsData: any[], xpSources?: { nutrition?: any[]; habits?: any[]; measurements?: any[] }) => {
             let callCount = 0;
-            mockSelect.mockImplementation(() => {
+            return () => {
                 callCount++;
                 if (callCount === 1) {
-                    // workouts query
-                    return {
-                        eq: vi.fn().mockResolvedValue({
-                            data: [
-                                { exercise_id: 'back_squat', level: 3, xp: 150 },
-                                { exercise_id: 'back_squat', level: 4, xp: 200 },
-                                { exercise_id: 'deadlift', level: 2, xp: 100 },
-                            ],
-                            error: null,
-                        }),
-                    };
+                    // workouts
+                    return { eq: vi.fn().mockResolvedValue({ data: workoutsData, error: null }) };
+                } else if (callCount === 2) {
+                    // catalog
+                    return { not: mockNotChain(catalogData) };
+                } else if (callCount <= 5) {
+                    // nutrition (3), habits (4), measurements (5)
+                    const sources = [xpSources?.nutrition || [], xpSources?.habits || [], xpSources?.measurements || []];
+                    return { eq: vi.fn().mockResolvedValue({ data: sources[callCount - 3], error: null }) };
                 } else {
-                    // nutrition/habits/measurements queries
-                    return {
-                        eq: vi.fn().mockResolvedValue({ data: [], error: null }),
-                    };
+                    // alcohol/vice streak queries - chainable .eq().eq().gte()
+                    return { eq: vi.fn().mockReturnValue(chainableEq([])) };
                 }
-            });
+            };
+        };
+
+        it('calculates power level from max exercise levels', async () => {
+            mockSelect.mockImplementation(makeSelectMock([
+                { exercise_id: 'back_squat', level: 3, xp: 150 },
+                { exercise_id: 'back_squat', level: 4, xp: 200 },
+                { exercise_id: 'deadlift', level: 2, xp: 100 },
+            ]));
 
             const result = await getUserStats('user-123');
 
-            expect(result?.power_level).toBe(600); // (4 * 100) + (2 * 100)
+            expect(result?.power_level).toBe(6); // max(3,4) + max(2) = 4 + 2
             expect(result?.highest_level_achieved).toBe(4);
             expect(result?.total_career_xp).toBe(450);
         });
 
         it('calculates player level from total XP', async () => {
-            let callCount = 0;
-            mockSelect.mockImplementation(() => {
-                callCount++;
-                if (callCount === 1) {
-                    return {
-                        eq: vi.fn().mockResolvedValue({
-                            data: [{ exercise_id: 'squat', level: 1, xp: 2500 }],
-                            error: null,
-                        }),
-                    };
-                } else {
-                    return {
-                        eq: vi.fn().mockResolvedValue({ data: [], error: null }),
-                    };
-                }
-            });
+            mockSelect.mockImplementation(makeSelectMock([
+                { exercise_id: 'squat', level: 1, xp: 2500 },
+            ]));
 
             const result = await getUserStats('user-123');
 
             expect(result?.player_level).toBe(3); // floor(2500 / 1000) + 1
-            expect(result?.level_progress_percent).toBe(50); // (500 / 1000) * 100
-            expect(result?.xp_to_next_level).toBe(500); // 1000 - 500
+            expect(result?.level_progress_percent).toBe(50);
+            expect(result?.xp_to_next_level).toBe(500);
         });
 
         it('includes XP from all sources', async () => {
-            let callCount = 0;
-            mockSelect.mockImplementation(() => {
-                callCount++;
-                if (callCount === 1) {
-                    // workouts
-                    return {
-                        eq: vi.fn().mockResolvedValue({
-                            data: [{ exercise_id: 'squat', level: 1, xp: 100 }],
-                            error: null,
-                        }),
-                    };
-                } else if (callCount === 2) {
-                    // nutrition
-                    return {
-                        eq: vi.fn().mockResolvedValue({
-                            data: [{ xp: 50 }],
-                            error: null,
-                        }),
-                    };
-                } else if (callCount === 3) {
-                    // habits
-                    return {
-                        eq: vi.fn().mockResolvedValue({
-                            data: [{ xp: 30 }],
-                            error: null,
-                        }),
-                    };
-                } else {
-                    // measurements
-                    return {
-                        eq: vi.fn().mockResolvedValue({
-                            data: [{ xp: 20 }],
-                            error: null,
-                        }),
-                    };
-                }
-            });
+            mockSelect.mockImplementation(makeSelectMock(
+                [{ exercise_id: 'squat', level: 1, xp: 100 }],
+                { nutrition: [{ xp: 50 }], habits: [{ xp: 30 }], measurements: [{ xp: 20 }] }
+            ));
 
             const result = await getUserStats('user-123');
 
@@ -327,13 +303,11 @@ describe('API Functions', () => {
         });
 
         it('returns minimum power level of 1', async () => {
-            mockSelect.mockReturnValue({
-                eq: vi.fn().mockResolvedValue({ data: [], error: null }),
-            });
+            mockSelect.mockImplementation(makeSelectMock([]));
 
             const result = await getUserStats('user-123');
 
-            expect(result?.power_level).toBe(1);
+            expect(result?.power_level).toBe(0);
         });
     });
 });

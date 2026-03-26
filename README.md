@@ -15,7 +15,7 @@ Recent architectural changes migrated from a monolithic `history` table to domai
   - Skeleton loaders
   - Daily goals with green highlights when met
   - Power Level Contributors with rank images
-  - Refactor Score tracking
+  - Physique Points tracking
   - Current and target weight display
   - Today's scheduled workout
   - Improved empty states with CTAs
@@ -156,6 +156,7 @@ This project is optimized for deployment on [Vercel](https://vercel.com/new). En
 - **Onboarding wizard** for new user setup with waiver, theme, and path selection
 - **Weight tracking** in dashboard header (current weight, target weight, progress)
 - **Improved empty states** with motivational messages and CTAs throughout dashboard
+- **Physique Points fix**: Body measurements now upsert per date (no duplicate rows), calculation uses per-metric non-null scanning via shared `calculatePhysiquePoints()` utility
 
 ## Testing
 The project uses **Vitest** and **React Testing Library** for testing.

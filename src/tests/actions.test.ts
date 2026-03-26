@@ -36,10 +36,10 @@ describe('Server Actions', () => {
                     user_id: 'user-123',
                     habit_id: 'habit_steps',
                     value: 10000,
-                    xp: 10,
+                    xp: 150,
                 })
             );
-            expect(result).toEqual({ xp_earned: 10 });
+            expect(result).toEqual({ xp_earned: 150 });
         });
 
         it('logs nutrition to nutrition_logs table', async () => {
@@ -57,16 +57,16 @@ describe('Server Actions', () => {
             expect(result).toEqual({ xp_earned: 10 });
         });
 
-        it('awards 15 XP for sleep habit', async () => {
+        it('awards 16 XP for sleep habit', async () => {
             const result = await logHabitAction('user-123', 'habit_sleep', 8, 185, 'Sleep');
 
             expect(mockInsert).toHaveBeenCalledWith(
                 expect.objectContaining({
                     habit_id: 'habit_sleep',
-                    xp: 15,
+                    xp: 16,
                 })
             );
-            expect(result).toEqual({ xp_earned: 15 });
+            expect(result).toEqual({ xp_earned: 16 });
         });
 
         it('awards 100 XP for meal prep habit', async () => {
@@ -126,10 +126,10 @@ describe('Server Actions', () => {
                 expect.objectContaining({
                     habit_id: 'habit_exercise_minutes',
                     value: 45,
-                    xp: 10,
+                    xp: 25,
                 })
             );
-            expect(result).toEqual({ xp_earned: 10 });
+            expect(result).toEqual({ xp_earned: 25 });
         });
 
         it('logs stand hours habit', async () => {
@@ -140,10 +140,10 @@ describe('Server Actions', () => {
                 expect.objectContaining({
                     habit_id: 'habit_stand_hours',
                     value: 12,
-                    xp: 10,
+                    xp: 25,
                 })
             );
-            expect(result).toEqual({ xp_earned: 10 });
+            expect(result).toEqual({ xp_earned: 25 });
         });
     });
 

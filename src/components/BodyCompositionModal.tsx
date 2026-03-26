@@ -7,6 +7,7 @@ import MeasurementRow from './MeasurementRow';
 import type { UserProfileData } from '@/types';
 import { BodyCompositionService } from '../services/BodyCompositionService';
 import type { BodyCompositionEntry } from '../services/BodyCompositionService';
+import { calculatePhysiquePoints } from '@/utils/physiquePoints';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface BodyCompositionModalProps {
@@ -49,49 +50,9 @@ export default function BodyCompositionModal({
         setIsLoadingHistory(true);
         const data = await BodyCompositionService.getHistory(profile.user_id);
         setHistory(data);
-        calculatePhysiquePoints(data);
+        const result = calculatePhysiquePoints(data, profile.body_composition_goals || {});
+        setPhysiquePoints(result.score);
         setIsLoadingHistory(false);
-    };
-
-    const calculatePhysiquePoints = (data: BodyCompositionEntry[]) => {
-        if (data.length < 2) {
-            setPhysiquePoints(0);
-            return;
-        }
-
-        const baseline = data[0]; // Earliest
-        const current = data[data.length - 1]; // Latest
-        let score = 0;
-
-        const goals = profile.body_composition_goals || {};
-
-        // Metrics to track
-        const metrics = ['waist', 'arms', 'legs', 'chest', 'shoulders', 'weight'];
-
-        metrics.forEach(metric => {
-            const goal = goals[metric];
-            const baseVal = baseline[metric];
-            const currVal = current[metric];
-
-            if (baseVal !== undefined && currVal !== undefined && goal) {
-                const delta = Number(currVal) - Number(baseVal);
-
-                if (goal.toLowerCase() === 'shrink') {
-                    // Shrink means we WANT it to go down. 
-                    // If delta is -1 (lost 1 inch), we want +1 score.
-                    score -= delta;
-                } else if (goal.toLowerCase() === 'grow') {
-                    // Grow means we WANT it to go up.
-                    // If delta is +1, score is +1.
-                    score += delta;
-                }
-                // 'Maintain' adds 0 ideally, or maybe penalizes change? 
-                // For now, Maintain = 0 impact.
-            }
-        });
-
-        // Round to 1 decimal
-        setPhysiquePoints(Math.round(score * 10) / 10);
     };
 
     const handleMeasurementLog = async (metricId: string, value: number, label: string) => {

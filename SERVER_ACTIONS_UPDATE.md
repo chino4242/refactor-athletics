@@ -104,7 +104,7 @@ Components still need to be updated to read from new tables:
 - [ ] Workout history displays
 - [ ] Total XP calculates correctly
 - [ ] Power Level unchanged
-- [ ] Refactor Score unchanged
+- [ ] Physique Points unchanged
 
 ---
 
