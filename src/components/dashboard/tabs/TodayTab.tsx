@@ -15,7 +15,7 @@ interface TodayTabProps {
 export default function TodayTab({ userId, programs }: TodayTabProps) {
     const [profile, setProfile] = useState<any>(null);
     const [todayScheduled, setTodayScheduled] = useState<any>(null);
-    const [lastWorkout, setLastWorkout] = useState<{ date: string; exercises: string[]; totalXp: number; count: number } | null>(null);
+    const [lastWorkout, setLastWorkout] = useState<{ date: string; totalXp: number; lifts: { name: string; volume: number }[]; treadmillSets: number } | null>(null);
     const [todayProgress, setTodayProgress] = useState<any>({
         calories: 0,
         water: 0,
@@ -74,12 +74,34 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                 if (workouts.length > 0) {
                     const latest = workouts[workouts.length - 1];
                     const sessionItems = workouts.filter(w => w.date === latest.date);
-                    const names = [...new Set(sessionItems.map(w => (w.exercise_id || '').replace(/_/g, ' ')))];
+                    
+                    // Group lifts by exercise, sum volume (weight × reps per set)
+                    const liftMap: Record<string, number> = {};
+                    let treadmillSets = 0;
+                    
+                    for (const w of sessionItems) {
+                        const id = w.exercise_id || '';
+                        if (id.includes('treadmill')) {
+                            treadmillSets++;
+                            continue;
+                        }
+                        const sets = (w as any).details || w.data || [];
+                        const vol = Array.isArray(sets) 
+                            ? sets.reduce((s: number, set: any) => s + (set.weight || 0) * (set.reps || 0), 0) 
+                            : 0;
+                        const name = id.replace(/^block_/, '').replace(/_/g, ' ');
+                        liftMap[name] = (liftMap[name] || 0) + vol;
+                    }
+                    
+                    const lifts = Object.entries(liftMap)
+                        .map(([name, volume]) => ({ name, volume }))
+                        .sort((a, b) => b.volume - a.volume);
+
                     setLastWorkout({
                         date: latest.date,
-                        exercises: names,
                         totalXp: sessionItems.reduce((sum, w) => sum + (w.xp || 0), 0),
-                        count: sessionItems.length,
+                        lifts,
+                        treadmillSets,
                     });
                 }
             } catch (error) {
@@ -242,12 +264,24 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                 </div>
                 {lastWorkout ? (
                     <div className="text-sm text-zinc-300">
-                        <div className="flex justify-between items-center mb-1">
+                        <div className="flex justify-between items-center mb-2">
                             <span className="text-xs text-zinc-500">{lastWorkout.date}</span>
                             <span className="text-xs text-orange-500 font-bold">+{lastWorkout.totalXp} XP</span>
                         </div>
-                        <p className="font-bold text-white">{lastWorkout.count} exercise{lastWorkout.count !== 1 ? 's' : ''}</p>
-                        <p className="text-xs text-zinc-500 capitalize leading-relaxed">{lastWorkout.exercises.join(' · ')}</p>
+                        <div className="space-y-1">
+                            {lastWorkout.lifts.map(l => (
+                                <div key={l.name} className="flex justify-between text-xs">
+                                    <span className="text-zinc-400 capitalize">{l.name}</span>
+                                    <span className="text-white font-bold">{l.volume.toLocaleString()} lbs</span>
+                                </div>
+                            ))}
+                            {lastWorkout.treadmillSets > 0 && (
+                                <div className="flex justify-between text-xs">
+                                    <span className="text-zinc-400">🏃 Treadmill</span>
+                                    <span className="text-white font-bold">{lastWorkout.treadmillSets} intervals</span>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 ) : (
                     <div className="text-center py-6">
