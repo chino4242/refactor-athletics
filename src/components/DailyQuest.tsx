@@ -161,6 +161,12 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
                     today.setHours(0, 0, 0, 0);
                     const todayStart = Math.floor(today.getTime() / 1000);
                     const todayXp = history.filter(item => item.timestamp >= todayStart).reduce((sum, item) => sum + (item.xp || 0), 0);
+                    const todayVolume = history
+                      .filter(item => item.timestamp >= todayStart && item.rank_name)
+                      .reduce((sum, item) => {
+                        const sets = (item as any).details || (item as any).data || [];
+                        return sum + (Array.isArray(sets) ? sets.reduce((s: number, set: any) => s + (set.weight || 0) * (set.reps || 0), 0) : 0);
+                      }, 0);
                     const caloriesIn = Math.round(totals['macro_calories'] || 0);
                     const burned = Math.round(totals['macro_calories_burned'] || 0);
                     const net = caloriesIn - burned;
@@ -172,7 +178,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
                       `🍺 No Alcohol: ${stats?.no_alcohol_streak || 0} Days`,
                       `🛡️ No Vice: ${stats?.no_vice_streak || 0} Days`, "",
                       "🏃 ACTIVITY",
-                      `💪 Total Weight: ${(stats?.total_volume_today || 0).toLocaleString()} lbs`,
+                      `💪 Total Weight: ${todayVolume.toLocaleString()} lbs`,
                       `👣 Steps: ${(totals['habit_steps'] || 0).toLocaleString()}`,
                       `💪 Exercise: ${totals['habit_exercise_minutes'] || 0}/${profile?.habit_targets?.habit_exercise_minutes || 30} min`,
                       `🚶 Stand: ${totals['habit_stand_hours'] || 0}/${profile?.habit_targets?.habit_stand_hours || 12} hrs`,
