@@ -97,16 +97,36 @@ export default function HabitHeatmap({ history, habitId, label, colorClass, days
         return result;
     }, [daysBack, heatmapData, year, goal]);
 
+    // 3. Calculate current streak (consecutive days from today going backwards)
+    const streak = useMemo(() => {
+        let count = 0;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const d = new Date(today);
+        while (true) {
+            const str = d.toISOString().split('T')[0];
+            if (heatmapData.has(str) && (heatmapData.get(str) || 0) > 0) {
+                count++;
+                d.setDate(d.getDate() - 1);
+            } else {
+                break;
+            }
+        }
+        return count;
+    }, [heatmapData]);
+
     return (
         <div className="bg-zinc-900/50 p-4 rounded-xl border border-zinc-800 mb-4 animate-fade-in">
             <div className="flex justify-between items-center mb-2">
                 <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-widest">{label}</h4>
-                {/* Legend - Simplified for now */}
-                {goal && (
-                    <div className="text-[10px] text-zinc-600 font-mono">
-                        Goal: {goal}
-                    </div>
-                )}
+                <div className="flex items-center gap-3">
+                    {streak > 0 && (
+                        <span className="text-[10px] font-bold text-orange-500">🔥 {streak}d streak</span>
+                    )}
+                    {goal && (
+                        <span className="text-[10px] text-zinc-600 font-mono">Goal: {goal}</span>
+                    )}
+                </div>
             </div>
 
             <div className="flex items-end gap-2">
