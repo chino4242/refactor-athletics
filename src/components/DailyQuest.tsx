@@ -40,7 +40,17 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
   // History State
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [showHistory, setShowHistory] = useState(false);
-  const [consistencyView, setConsistencyView] = useState<'week' | 'month' | 'year'>('year');
+  const [consistencyView, setConsistencyView] = useState<'week' | 'month' | 'year'>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('consistencyView') as 'week' | 'month' | 'year') || 'month';
+    }
+    return 'month';
+  });
+
+  const updateConsistencyView = (v: 'week' | 'month' | 'year') => {
+    setConsistencyView(v);
+    localStorage.setItem('consistencyView', v);
+  };
 
   // Profile State
   const [profile, setProfile] = useState<UserProfileData | null>(initialProfile);
@@ -570,7 +580,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
           <div className="mt-4 animate-fade-in">
             <div className="flex justify-center gap-1 mb-4">
               {(['week', 'month', 'year'] as const).map(v => (
-                <button key={v} onClick={() => setConsistencyView(v)} className={`px-3 py-1 text-[10px] font-bold uppercase rounded ${consistencyView === v ? 'bg-zinc-700 text-white' : 'text-zinc-600 hover:text-zinc-400'}`}>{v}</button>
+                <button key={v} onClick={() => updateConsistencyView(v)} className={`px-3 py-1 text-[10px] font-bold uppercase rounded ${consistencyView === v ? 'bg-zinc-700 text-white' : 'text-zinc-600 hover:text-zinc-400'}`}>{v}</button>
               ))}
             </div>
             <div className="space-y-4">
