@@ -15,7 +15,7 @@ interface TodayTabProps {
 export default function TodayTab({ userId, programs }: TodayTabProps) {
     const [profile, setProfile] = useState<any>(null);
     const [todayScheduled, setTodayScheduled] = useState<any>(null);
-    const [lastWorkout, setLastWorkout] = useState<any>(null);
+    const [lastWorkout, setLastWorkout] = useState<{ date: string; exercises: string[]; totalXp: number; count: number } | null>(null);
     const [todayProgress, setTodayProgress] = useState<any>({
         calories: 0,
         water: 0,
@@ -72,7 +72,15 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                 const history = await getHistory(userId);
                 const workouts = history.filter(item => item.rank_name);
                 if (workouts.length > 0) {
-                    setLastWorkout(workouts[workouts.length - 1]);
+                    const latest = workouts[workouts.length - 1];
+                    const sessionItems = workouts.filter(w => w.date === latest.date);
+                    const names = [...new Set(sessionItems.map(w => (w.exercise_id || '').replace(/_/g, ' ')))];
+                    setLastWorkout({
+                        date: latest.date,
+                        exercises: names,
+                        totalXp: sessionItems.reduce((sum, w) => sum + (w.xp || 0), 0),
+                        count: sessionItems.length,
+                    });
                 }
             } catch (error) {
                 console.error('Failed to load today data:', error);
@@ -234,10 +242,12 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                 </div>
                 {lastWorkout ? (
                     <div className="text-sm text-zinc-300">
-                        <p className="font-bold">{lastWorkout.exercise_name || lastWorkout.exercise_id}</p>
-                        <p className="text-xs text-zinc-500">
-                            {new Date((lastWorkout.timestamp > 10000000000 ? lastWorkout.timestamp : lastWorkout.timestamp * 1000)).toLocaleDateString()}
-                        </p>
+                        <div className="flex justify-between items-center mb-1">
+                            <span className="text-xs text-zinc-500">{lastWorkout.date}</span>
+                            <span className="text-xs text-orange-500 font-bold">+{lastWorkout.totalXp} XP</span>
+                        </div>
+                        <p className="font-bold text-white">{lastWorkout.count} exercise{lastWorkout.count !== 1 ? 's' : ''}</p>
+                        <p className="text-xs text-zinc-500 capitalize leading-relaxed">{lastWorkout.exercises.join(' · ')}</p>
                     </div>
                 ) : (
                     <div className="text-center py-6">
