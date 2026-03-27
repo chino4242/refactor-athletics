@@ -161,6 +161,9 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
                     today.setHours(0, 0, 0, 0);
                     const todayStart = Math.floor(today.getTime() / 1000);
                     const todayXp = history.filter(item => item.timestamp >= todayStart).reduce((sum, item) => sum + (item.xp || 0), 0);
+                    const caloriesIn = Math.round(totals['macro_calories'] || 0);
+                    const burned = Math.round(totals['macro_calories_burned'] || 0);
+                    const net = caloriesIn - burned;
                     const lines = [
                       "REFACTOR ATHLETICS REPORT",
                       `📅 ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
@@ -170,13 +173,21 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
                       `🛡️ No Vice: ${stats?.no_vice_streak || 0} Days`, "",
                       "🏃 ACTIVITY",
                       `💪 Total Weight: ${(stats?.total_volume_today || 0).toLocaleString()} lbs`,
-                      `👣 Steps: ${(totals['habit_steps'] || 0).toLocaleString()}`, "",
+                      `👣 Steps: ${(totals['habit_steps'] || 0).toLocaleString()}`,
+                      `💪 Exercise: ${totals['habit_exercise_minutes'] || 0}/${profile?.habit_targets?.habit_exercise_minutes || 30} min`,
+                      `🚶 Stand: ${totals['habit_stand_hours'] || 0}/${profile?.habit_targets?.habit_stand_hours || 12} hrs`,
+                      `🧘 Mobility: ${totals['habit_mobility'] || 0}/${profile?.habit_targets?.habit_mobility || 15} min`, "",
+                      "😴 RECOVERY",
+                      `💤 Sleep: ${totals['habit_sleep'] || 0}/${profile?.habit_targets?.habit_sleep || 8} hrs`,
+                      `📖 Reading: ${totals['habit_reading'] || 0}/${profile?.habit_targets?.habit_reading || 10} min`, "",
                       "🥗 NUTRITION",
                       `🥩 Protein: ${Math.round(totals['macro_protein'] || 0)}/${profile?.nutrition_targets?.protein || 150}g`,
                       `🍞 Carbs:   ${Math.round(totals['macro_carbs'] || 0)}/${profile?.nutrition_targets?.carbs || 150}g`,
                       `🥑 Fat:     ${Math.round(totals['macro_fat'] || 0)}/${profile?.nutrition_targets?.fat || 60}g`,
-                      `🔥 Calories: ${Math.round(totals['macro_calories'] || 0)}/${profile?.nutrition_targets?.calories || 2000}`,
-                      `💧 Water: ${totals['habit_water'] || 0}/${profile?.nutrition_targets?.water || 100} oz`
+                      `🔥 Calories: ${caloriesIn}/${profile?.nutrition_targets?.calories || 2000}`,
+                      `💧 Water: ${totals['habit_water'] || 0}/${profile?.nutrition_targets?.water || 100} oz`,
+                      `🔥 Burned: ${burned} kcal`,
+                      `📊 Net: ${net > 0 ? '+' : ''}${net} kcal`
                     ];
                     navigator.clipboard.writeText(lines.join('\n'));
                     toast.success("Report copied to clipboard!");
