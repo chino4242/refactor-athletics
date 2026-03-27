@@ -85,18 +85,16 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                         </Link>
 
                         {/* Physique Points */}
-                        <div>
+                        <Link href="/track" className="group">
                             <div className="flex items-center gap-2 mb-2">
-                                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">💪 Physique Points</span>
+                                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider group-hover:text-emerald-400 transition">💪 Physique Points</span>
                                 <InfoTooltip text="Tracks body composition changes over time. Compares your earliest and latest measurements (weight, waist, arms, chest, legs) to score progress toward your goals. Positive = improving, negative = regressing. Log body measurements regularly to see your score change." size={14} />
                             </div>
                             <div className={`text-4xl font-black italic ${physiquePoints.color}`}>
                                 {physiquePoints.score > 0 ? '+' : ''}{physiquePoints.score}
                             </div>
-                            <div className="text-xs text-zinc-500 mt-1">
-                                {physiquePoints.status}
-                            </div>
-                        </div>
+                            <div className="text-[10px] text-emerald-500/70 group-hover:text-emerald-400 mt-1 transition">Log body comp to track trends →</div>
+                        </Link>
 
                         {/* Weight */}
                         <div>
