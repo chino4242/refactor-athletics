@@ -13,7 +13,7 @@ describe('ScreenshotUploader Component', () => {
 
     it('renders upload button', () => {
         render(<ScreenshotUploader type="nutrition" onDataExtracted={mockOnDataExtracted} />);
-        expect(screen.getByText('Upload Screenshot')).toBeInTheDocument();
+        expect(screen.getByText('Upload')).toBeInTheDocument();
     });
 
     it('shows file input with correct accept attribute', () => {

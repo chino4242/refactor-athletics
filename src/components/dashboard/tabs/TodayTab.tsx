@@ -51,6 +51,8 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                             name: todayWorkout.title,
                             type: todayWorkout.type,
                             xp: todayWorkout.xp,
+                            exercises: todayWorkout.exercises || [],
+                            treadmillBlocks: todayWorkout.treadmillBlocks || 0,
                         });
                     }
                 }
@@ -211,7 +213,7 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                     <Link href="/train" className="block">
                         <div className="bg-zinc-800/50 rounded-lg p-3 hover:bg-zinc-800 transition-colors">
                             <p className="text-sm font-bold text-white mb-1">{todayScheduled.name}</p>
-                            <div className="flex items-center gap-3 text-xs text-zinc-500">
+                            <div className="flex items-center gap-3 text-xs text-zinc-500 mb-2">
                                 <span className={`px-2 py-0.5 rounded font-bold ${
                                     todayScheduled.type === 'Strength' ? 'bg-blue-950/50 text-blue-400' :
                                     todayScheduled.type === 'Cardio' ? 'bg-red-950/50 text-red-400' :
@@ -222,6 +224,25 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                                 </span>
                                 <span>⚡ {todayScheduled.xp} XP</span>
                             </div>
+                            {(todayScheduled.exercises?.length > 0 || todayScheduled.treadmillBlocks > 0) && (
+                                <div className="mt-2 pt-2 border-t border-zinc-700/50 space-y-1">
+                                    {todayScheduled.exercises.slice(0, 5).map((name: string, i: number) => (
+                                        <div key={i} className="flex items-center gap-2 text-xs text-zinc-400 capitalize">
+                                            <span className="w-1 h-1 rounded-full bg-zinc-600 shrink-0" />
+                                            {name}
+                                        </div>
+                                    ))}
+                                    {todayScheduled.treadmillBlocks > 0 && (
+                                        <div className="flex items-center gap-2 text-xs text-zinc-400">
+                                            <span className="w-1 h-1 rounded-full bg-zinc-600 shrink-0" />
+                                            🏃 {todayScheduled.treadmillBlocks} treadmill intervals
+                                        </div>
+                                    )}
+                                    {todayScheduled.exercises.length > 5 && (
+                                        <div className="text-[10px] text-zinc-600 pl-3">+{todayScheduled.exercises.length - 5} more</div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </Link>
                 ) : (

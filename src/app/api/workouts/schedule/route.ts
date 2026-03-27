@@ -29,6 +29,8 @@ export async function GET() {
         let title = dayName.charAt(0).toUpperCase() + dayName.slice(1);
         let xpValue = 0;
         let wType = "Strength";
+        let exerciseNames: string[] = [];
+        let treadmillCount = 0;
 
         try {
             const content = fs.readFileSync(path.join(publicWorkoutsDir, filename), 'utf8');
@@ -43,6 +45,15 @@ export async function GET() {
 
             const blocks = processWorkoutText(content, catalog || []);
             xpValue = blocks.reduce((acc, b) => acc + (b.xp_value || 0), 0);
+
+            // Extract exercise names for preview
+            exerciseNames = blocks
+                .filter((b: any) => b.exercise_id || b.name)
+                .map((b: any) => (b.name || b.exercise_id || '').replace(/_/g, ' '))
+                .filter((n: string) => n && !n.toLowerCase().includes('treadmill'));
+            treadmillCount = blocks.filter((b: any) => 
+                (b.name || b.exercise_id || '').toLowerCase().includes('treadmill')
+            ).length;
 
             const contentUpper = content.toUpperCase();
             const hasTread = contentUpper.includes("TREADMILL") || contentUpper.includes("ENGINE");
@@ -61,7 +72,9 @@ export async function GET() {
             title: title,
             order: dayOrder[dayName] !== undefined ? dayOrder[dayName] : 99,
             xp: xpValue,
-            type: wType
+            type: wType,
+            exercises: exerciseNames,
+            treadmillBlocks: treadmillCount
         });
     }
 
