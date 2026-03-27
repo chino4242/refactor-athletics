@@ -337,12 +337,6 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
                 <TestingTimer variant="overlay" />
             </div>
 
-            {/* 🟢 CAREER XP BAR */}
-            <CareerXpBar
-                stats={initialStats}
-                progressGradient={THEMES[currentTheme]?.progressGradient}
-            />
-
             {/* 🟢 DATE NAVIGATION */}
             <div className="bg-zinc-800/50 p-4 rounded-2xl border border-zinc-700/50 backdrop-blur-sm">
                 <div className="flex items-center justify-between gap-4">
