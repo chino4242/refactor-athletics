@@ -761,7 +761,12 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
         firstIndex,
         count: sectionBlocks.length,
         indices,
-        isDone
+        isDone,
+        preview: sectionBlocks.flatMap(b => {
+          if (b.exercises && Array.isArray(b.exercises)) return b.exercises.map((e: any) => e.name || e.text || '');
+          if (b.intervals && Array.isArray(b.intervals)) return ['🏃 Treadmill'];
+          return [b.name || ''];
+        }).filter((n: string, i: number, arr: string[]) => n && arr.indexOf(n) === i).slice(0, 4)
       };
     });
   }, [workoutData, completedIndices]);
@@ -1135,6 +1140,16 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
                     <p className="text-zinc-500 text-xs mt-1 font-mono">
                       {section.count} Blocks
                     </p>
+                    {!isExpanded && section.preview?.length > 0 && (
+                      <div className="mt-2 space-y-0.5">
+                        {section.preview.map((name: string, i: number) => (
+                          <div key={i} className="flex items-center gap-2 text-[11px] text-zinc-500 capitalize">
+                            <span className="w-1 h-1 rounded-full bg-zinc-600 shrink-0" />
+                            {name}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''}`}>
