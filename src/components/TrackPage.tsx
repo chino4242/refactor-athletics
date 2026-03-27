@@ -6,6 +6,7 @@ import LevelUpOverlay from './LevelUpOverlay';
 import CareerXpBar from './profile/CareerXpBar';
 import ProgressMetrics from './ProgressMetrics';
 import BodyCompSummary from './BodyCompSummary';
+import BodyCompositionModal from './BodyCompositionModal';
 import { getHabitProgress } from '../services/api';
 import { BodyCompositionService } from '../services/BodyCompositionService';
 import type { UserStats, UserProfileData } from '@/types';
@@ -442,6 +443,24 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
                 onOpenModal={() => setShowBodyCompModal(true)}
             />
             </div>
+
+            {showBodyCompModal && initialProfile && (
+                <BodyCompositionModal
+                    isOpen={showBodyCompModal}
+                    profile={initialProfile}
+                    setProfile={() => {}}
+                    saveProfile={async (p) => { const { saveProfile: sp } = await import('../services/api'); return sp(p); }}
+                    handleLog={async () => {}}
+                    totals={{}}
+                    loading={null}
+                    setLoading={() => {}}
+                    toast={{ success: () => {}, error: () => {} }}
+                    onClose={() => {
+                        setShowBodyCompModal(false);
+                        BodyCompositionService.getHistory(userId).then(setBodyCompHistory);
+                    }}
+                />
+            )}
 
             {/* SPACER FOR MOBILE NAV */}
             <div className="h-40 md:h-0 w-full shrink-0" />
