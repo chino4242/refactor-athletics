@@ -40,6 +40,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
   // History State
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [consistencyView, setConsistencyView] = useState<'week' | 'month' | 'year'>('year');
 
   // Profile State
   const [profile, setProfile] = useState<UserProfileData | null>(initialProfile);
@@ -566,40 +567,55 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
         </button>
 
         {showHistory && (
-          <div className="mt-4 animate-fade-in space-y-4">
+          <div className="mt-4 animate-fade-in">
+            <div className="flex justify-center gap-1 mb-4">
+              {(['week', 'month', 'year'] as const).map(v => (
+                <button key={v} onClick={() => setConsistencyView(v)} className={`px-3 py-1 text-[10px] font-bold uppercase rounded ${consistencyView === v ? 'bg-zinc-700 text-white' : 'text-zinc-600 hover:text-zinc-400'}`}>{v}</button>
+              ))}
+            </div>
+            <div className="space-y-4">
+            {(() => {
+              const viewProps = consistencyView === 'year'
+                ? { year: 2026, daysBack: 365 }
+                : { daysBack: consistencyView === 'month' ? 30 : 7 };
+              const suffix = consistencyView === 'year' ? '(2026)' : consistencyView === 'month' ? '(30d)' : '(7d)';
+              return <>
             {!isHidden('habit_sleep') && (
-              <HabitHeatmap history={history} habitId="habit_sleep" label="Sleep 7+ Hrs (2026)" colorClass="bg-purple-500 shadow-purple-500/50 shadow-[0_0_5px]" year={2026} />
+              <HabitHeatmap history={history} habitId="habit_sleep" label={`Sleep 7+ Hrs ${suffix}`} colorClass="bg-purple-500 shadow-purple-500/50 shadow-[0_0_5px]" {...viewProps} />
             )}
             {!isHidden('habit_no_alcohol') && (
-              <HabitHeatmap history={history} habitId="habit_no_alcohol" label="No Alcohol (2026)" colorClass="bg-emerald-500 shadow-emerald-500/50 shadow-[0_0_5px]" year={2026} />
+              <HabitHeatmap history={history} habitId="habit_no_alcohol" label={`No Alcohol ${suffix}`} colorClass="bg-emerald-500 shadow-emerald-500/50 shadow-[0_0_5px]" {...viewProps} />
             )}
             {!isHidden('habit_no_vice') && (
-              <HabitHeatmap history={history} habitId="habit_no_vice" label="No Vice (2026)" colorClass="bg-fuchsia-500 shadow-fuchsia-500/50 shadow-[0_0_5px]" year={2026} />
+              <HabitHeatmap history={history} habitId="habit_no_vice" label={`No Vice ${suffix}`} colorClass="bg-fuchsia-500 shadow-fuchsia-500/50 shadow-[0_0_5px]" {...viewProps} />
             )}
             {!isHidden('habit_steps') && (
-              <HabitHeatmap history={history} habitId="habit_steps" label="Steps (2026)" colorClass="bg-orange-500 shadow-orange-500/50 shadow-[0_0_5px]" year={2026} goal={10000} />
+              <HabitHeatmap history={history} habitId="habit_steps" label={`Steps ${suffix}`} colorClass="bg-orange-500 shadow-orange-500/50 shadow-[0_0_5px]" {...viewProps} goal={10000} />
             )}
             {!isHidden('habit_water') && (
-              <HabitHeatmap history={history} habitId="habit_water" label="Water (2026)" colorClass="bg-cyan-500 shadow-cyan-500/50 shadow-[0_0_5px]" year={2026} goal={100} />
+              <HabitHeatmap history={history} habitId="habit_water" label={`Water ${suffix}`} colorClass="bg-cyan-500 shadow-cyan-500/50 shadow-[0_0_5px]" {...viewProps} goal={100} />
             )}
             {!isHidden('habit_journaling') && (
-              <HabitHeatmap history={history} habitId="habit_journaling" label="Journaling (2026)" colorClass="bg-yellow-500 shadow-yellow-500/50 shadow-[0_0_5px]" year={2026} />
+              <HabitHeatmap history={history} habitId="habit_journaling" label={`Journaling ${suffix}`} colorClass="bg-yellow-500 shadow-yellow-500/50 shadow-[0_0_5px]" {...viewProps} />
             )}
             {!isHidden('habit_meditation') && (
-              <HabitHeatmap history={history} habitId="habit_meditation" label="Meditation (2026)" colorClass="bg-indigo-500 shadow-indigo-500/50 shadow-[0_0_5px]" year={2026} goal={10} />
+              <HabitHeatmap history={history} habitId="habit_meditation" label={`Meditation ${suffix}`} colorClass="bg-indigo-500 shadow-indigo-500/50 shadow-[0_0_5px]" {...viewProps} goal={10} />
             )}
             {!isHidden('habit_reading') && (
-              <HabitHeatmap history={history} habitId="habit_reading" label="Reading (2026)" colorClass="bg-blue-500 shadow-blue-500/50 shadow-[0_0_5px]" year={2026} goal={10} />
+              <HabitHeatmap history={history} habitId="habit_reading" label={`Reading ${suffix}`} colorClass="bg-blue-500 shadow-blue-500/50 shadow-[0_0_5px]" {...viewProps} goal={10} />
             )}
             {!isHidden('habit_mobility') && (
-              <HabitHeatmap history={history} habitId="habit_mobility" label="Mobility (2026)" colorClass="bg-pink-500 shadow-pink-500/50 shadow-[0_0_5px]" year={2026} goal={15} />
+              <HabitHeatmap history={history} habitId="habit_mobility" label={`Mobility ${suffix}`} colorClass="bg-pink-500 shadow-pink-500/50 shadow-[0_0_5px]" {...viewProps} goal={15} />
             )}
             {!isHidden('habit_fasting') && (
-              <HabitHeatmap history={history} habitId="habit_fasting" label="Fasting (2026)" colorClass="bg-violet-500 shadow-violet-500/50 shadow-[0_0_5px]" year={2026} goal={16} />
+              <HabitHeatmap history={history} habitId="habit_fasting" label={`Fasting ${suffix}`} colorClass="bg-violet-500 shadow-violet-500/50 shadow-[0_0_5px]" {...viewProps} goal={16} />
             )}
             {!isHidden('habit_bad_habit') && (
-              <HabitHeatmap history={history} habitId="habit_bad_habit" label="Bad Habit (2026)" colorClass="bg-red-500 shadow-red-500/50 shadow-[0_0_5px]" year={2026} />
+              <HabitHeatmap history={history} habitId="habit_bad_habit" label={`Bad Habit ${suffix}`} colorClass="bg-red-500 shadow-red-500/50 shadow-[0_0_5px]" {...viewProps} />
             )}
+              </>;
+            })()}
+            </div>
           </div>
         )}
       </div>
