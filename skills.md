@@ -15,8 +15,10 @@ The application uses **Supabase** (PostgreSQL) as its primary backend.
   - **xp_factor** (numeric): Multiplier for XP calculation (default: 1)
   - **242 exercises ingested** from activity_catalog.json
 - **workouts**: Exercise logs with sets, rank, level, XP (domain-specific table)
-- **nutrition_logs**: Macro tracking (protein, carbs, fat, calories, water) with XP
+- **nutrition_logs**: Macro tracking (protein, carbs, fat, calories, water, calories_burned) with XP
   - **Calories auto-calculated**: protein × 4 + carbs × 4 + fat × 9
+  - **Calorie deficit tracking**: calories_burned as a new macro_type, net calories = in - burned
+  - **NutritionTargets** includes `calories_burned` (daily burn goal) and `net_calorie_target` (deficit target, e.g. -500)
 - **habit_logs**: Daily habits (steps, sleep, etc.) with XP
 - **body_measurements**: Body composition tracking
 - **workout_programs**: Custom workout templates
@@ -59,7 +61,7 @@ The application calculates a user's fitness "Rank" based on their age, sex, body
 
 ### 2.2 Power Level & Player Stats (`src/services/api.ts`)
 There are two distinct progression metrics for a user:
-1. **Player Level**: Driven purely by raw participation. Calculated as `Math.floor(totalXp / 1000) + 1`. Every time a user logs *any* exercise (or habit), they gain XP.
+1. **Player Level**: Driven purely by raw participation. Uses exponential scaling: each level requires `1000 * 1.08^level` XP (fibonacci-ish curve). Early levels come fast, later levels require sustained commitment. Every time a user logs *any* exercise (or habit), they gain XP.
 2. **Power Level (Aggregate Score)**: Driven by *performance*. Calculated by querying ONLY the `workouts` table (not habits/macros), finding the **highest rank level achieved** for *each unique ranked exercise*, and summing `max_level` across all of them. Currently counts ALL exercises; **planned**: filter to only exercises in the user's chosen path (see STORY_MAP.md).
 
 **Important**: Power Level only counts ranked exercises from the `workouts` table. Habits and nutrition do not contribute to Power Level, only to Player Level (XP).

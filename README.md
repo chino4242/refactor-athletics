@@ -27,7 +27,7 @@ Recent architectural changes migrated from a monolithic `history` table to domai
   - Personal info (age, sex, current weight)
   - Goal setting (target weight)
 - **Attribute Balance**: A specialized radar chart categorizes logged exercises into four cardinal points: Strength (STR), Endurance (END), Power (PWR), and Mobility (MOB).
-- **Daily Quests**: Track habits (steps, water, sleep, etc.) and nutrition (macros) with customizable targets and visibility settings.
+- **Daily Quests**: Track habits (steps, water, sleep, day strain, etc.) and nutrition (macros, calories burned, net calories) with customizable targets, visibility settings, and consistency heatmaps with streak tracking.
 - **Workout Programs**: Create custom workout programs with exercises and treadmill blocks, schedule them to specific days.
 - **Arena**: Challenge other users to duels and compete in weekly challenges.
 
@@ -39,7 +39,7 @@ Recent architectural changes migrated from a monolithic `history` table to domai
 - **catalog**: Exercise library with standards, categories, XP factors (242 exercises ingested)
   - Added columns: `standards` (jsonb), `xp_factor` (numeric)
 - **workouts**: Exercise logs with sets, rank, level, XP (replaces old `history` table for workouts)
-- **nutrition_logs**: Macro tracking (protein, carbs, fat, calories, water) with XP
+- **nutrition_logs**: Macro tracking (protein, carbs, fat, calories, water, calories_burned) with XP
   - Calories automatically calculated from macros: protein × 4 + carbs × 4 + fat × 9
 - **habit_logs**: Daily habits (steps, sleep, etc.) with XP
 - **body_measurements**: Body composition tracking (weight, waist, body fat %, etc.)
@@ -157,6 +157,13 @@ This project is optimized for deployment on [Vercel](https://vercel.com/new). En
 - **Weight tracking** in dashboard header (current weight, target weight, progress)
 - **Improved empty states** with motivational messages and CTAs throughout dashboard
 - **Physique Points fix**: Body measurements now upsert per date (no duplicate rows), calculation uses per-metric non-null scanning via shared `calculatePhysiquePoints()` utility
+- **Calorie deficit tracking**: Calories burned input, net calorie summary (daily/weekly), weekly bar chart with deficit target line
+- **XP scaling**: Changed from flat 1000 XP/level to `1000 * 1.08^level` exponential curve
+- **Fitness screenshot**: New screenshot type extracts calories burned, steps, and day strain via Claude
+- **Profile page rebuild**: Three tabs (Settings, Trophies, Milestones) — removed redundant stats sections, added theme picker
+- **Dashboard improvements**: Expertise/Physique Points/Weight cards are clickable links with CTAs, Last Workout shows per-exercise volume summary, Today's Workout shows exercise preview bullets
+- **Consistency heatmaps**: Week/month/year toggle (persisted in localStorage), daily streak counter per habit
+- **Day strain**: New habit for WHOOP-style intensity tracking
 
 ## Testing
 The project uses **Vitest** and **React Testing Library** for testing.

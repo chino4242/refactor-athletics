@@ -48,6 +48,24 @@
 ### For Workouts:
 - ✅ Capture the complete workout summary
 - ✅ Include exercise names, sets, reps, and weights
+
+### 🔥 Fitness / Activity Tracking
+
+1. **Find the Calories Burned Card**
+   - Go to the Track page → Nutrition section
+   - The "Calories Burned" card has an Upload button inline
+
+2. **Upload Screenshot**
+   - Click **Upload** and select a screenshot from:
+     - WHOOP daily strain
+     - Apple Watch activity rings
+     - Garmin/Fitbit daily summary
+     - Any fitness tracker showing calories burned
+
+3. **Review & Confirm**
+   - Calories burned will populate the input field (not auto-saved)
+   - Review and adjust the number if needed, then click **Set**
+   - Steps and day strain are auto-logged if detected
 - ✅ One workout per screenshot works best
 - ❌ Avoid screenshots with overlapping text
 
