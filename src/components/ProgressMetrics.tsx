@@ -9,6 +9,8 @@ interface ProgressMetricsProps {
         player_level?: number;
         total_career_xp?: number;
         power_level?: number;
+        level_progress_percent?: number;
+        xp_to_next_level?: number;
     } | null;
     profile: {
         body_composition_goals?: Record<string, string>;
@@ -28,17 +30,10 @@ interface ProgressMetricsProps {
 export default function ProgressMetrics({ stats, profile, bodyCompHistory }: ProgressMetricsProps) {
     // Calculate XP progress to next level
     const xpProgress = useMemo(() => {
-        const totalXp = stats?.total_career_xp || 0;
-        const currentLevel = stats?.player_level || 1;
-        const xpForCurrentLevel = (currentLevel - 1) * 1000;
-        const xpIntoLevel = totalXp - xpForCurrentLevel;
-        const xpNeeded = 1000;
-        const percentage = Math.min((xpIntoLevel / xpNeeded) * 100, 100);
-        
         return {
-            current: xpIntoLevel,
-            needed: xpNeeded,
-            percentage
+            current: (stats?.total_career_xp || 0),
+            needed: stats?.xp_to_next_level || 0,
+            percentage: stats?.level_progress_percent || 0
         };
     }, [stats]);
 
@@ -60,7 +55,7 @@ export default function ProgressMetrics({ stats, profile, bodyCompHistory }: Pro
                     />
                 </div>
                 <div className="text-xs text-zinc-600 font-mono">
-                    +{xpProgress.current} / {xpProgress.needed} XP
+                    {xpProgress.needed} XP to next
                 </div>
             </div>
 
