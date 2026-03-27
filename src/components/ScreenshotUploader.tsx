@@ -66,19 +66,19 @@ export default function ScreenshotUploader({ type, onDataExtracted }: Screenshot
       />
       <label
         htmlFor={`screenshot-upload-${type}`}
-        className={`flex items-center gap-2 px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg cursor-pointer hover:bg-zinc-700 transition-colors ${
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-zinc-800 border border-zinc-700 rounded-lg cursor-pointer hover:bg-zinc-700 transition-colors min-h-[36px] ${
           uploading ? 'opacity-50 cursor-not-allowed' : ''
         }`}
       >
         {uploading ? (
           <>
-            <Loader2 size={16} className="animate-spin" />
-            <span className="text-sm text-zinc-400">Parsing...</span>
+            <Loader2 size={14} className="animate-spin" />
+            <span className="text-[10px] text-zinc-400">Parsing...</span>
           </>
         ) : (
           <>
-            <Upload size={16} className="text-orange-500" />
-            <span className="text-sm text-zinc-300">Upload Screenshot</span>
+            <Upload size={14} className="text-orange-500" />
+            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wide">Upload</span>
           </>
         )}
       </label>
