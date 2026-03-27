@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import type { UserStats } from '@/types';
 import { Trophy, Zap } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
@@ -71,16 +72,17 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                 <div className="max-w-6xl mx-auto">
                     <div className="grid grid-cols-3 gap-4 mb-4">
                         {/* Expertise */}
-                        <div>
+                        <Link href="/test" className="group">
                             <div className="flex items-center gap-2 mb-2">
                                 <span className="text-xl">{theme.emoji}</span>
-                                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Expertise</span>
-                                <InfoTooltip text={`Your best rank level (1-5) across ${stats?.max_expertise ? stats.max_expertise / 5 : 0} ranked exercises. Max = ${stats?.max_expertise || 0} (${stats?.max_expertise ? stats.max_expertise / 5 : 0} exercises × 5 levels).`} size={14} />
+                                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider group-hover:text-orange-400 transition">Expertise</span>
+                                <InfoTooltip text={`Your best rank level (1-5) across ${stats?.max_expertise ? stats.max_expertise / 5 : 0} ranked exercises. Max = ${stats?.max_expertise || 0} (${stats?.max_expertise ? stats.max_expertise / 5 : 0} exercises × 5 levels). Log your best result on an exercise to earn your rank!`} size={14} />
                             </div>
                             <div className={`text-4xl font-black italic text-transparent bg-clip-text bg-gradient-to-r ${progressGradient}`}>
                                 {powerLevel}<span className="text-lg text-zinc-500">/{stats?.max_expertise || 0}</span>
                             </div>
-                        </div>
+                            <div className="text-[10px] text-orange-500/70 group-hover:text-orange-400 mt-1 transition">Test an exercise to build Expertise →</div>
+                        </Link>
 
                         {/* Physique Points */}
                         <div>
