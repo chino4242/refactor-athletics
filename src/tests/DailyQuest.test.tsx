@@ -287,7 +287,7 @@ describe('DailyQuest Component', () => {
             render(<DailyQuest {...defaultProps} stats={statsWithVolume as any} />);
         });
 
-        const shareBtn = screen.getByText('Share');
+        const shareBtn = screen.getByTitle('Share Daily Report');
         await act(async () => {
             fireEvent.click(shareBtn);
         });

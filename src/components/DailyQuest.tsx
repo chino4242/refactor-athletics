@@ -7,7 +7,7 @@ import HabitHeatmap from './HabitHeatmap';
 import NutritionTracker from './NutritionTracker';
 import WeeklyQuest from './WeeklyQuest';
 import { useToast } from '@/context/ToastContext';
-import { SlidersHorizontal, Footprints, Timer } from 'lucide-react';
+import { SlidersHorizontal, Footprints, Timer, Share2 } from 'lucide-react';
 import HabitSettings from './HabitSettings';
 import BodyCompositionModal from './BodyCompositionModal';
 import HabitCard from './HabitCard';
@@ -155,54 +155,43 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
                 >
                   <SlidersHorizontal size={18} />
                 </button>
+                <button
+                  onClick={() => {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const todayStart = Math.floor(today.getTime() / 1000);
+                    const todayXp = history.filter(item => item.timestamp >= todayStart).reduce((sum, item) => sum + (item.xp || 0), 0);
+                    const lines = [
+                      "REFACTOR ATHLETICS REPORT",
+                      `📅 ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
+                      `⚡ ${todayXp} XP`, "",
+                      "🔥 STREAKS",
+                      `🍺 No Alcohol: ${stats?.no_alcohol_streak || 0} Days`,
+                      `🛡️ No Vice: ${stats?.no_vice_streak || 0} Days`, "",
+                      "🏃 ACTIVITY",
+                      `💪 Total Weight: ${(stats?.total_volume_today || 0).toLocaleString()} lbs`,
+                      `👣 Steps: ${(totals['habit_steps'] || 0).toLocaleString()}`, "",
+                      "🥗 NUTRITION",
+                      `🥩 Protein: ${Math.round(totals['macro_protein'] || 0)}/${profile?.nutrition_targets?.protein || 150}g`,
+                      `🍞 Carbs:   ${Math.round(totals['macro_carbs'] || 0)}/${profile?.nutrition_targets?.carbs || 150}g`,
+                      `🥑 Fat:     ${Math.round(totals['macro_fat'] || 0)}/${profile?.nutrition_targets?.fat || 60}g`,
+                      `🔥 Calories: ${Math.round(totals['macro_calories'] || 0)}/${profile?.nutrition_targets?.calories || 2000}`,
+                      `💧 Water: ${totals['habit_water'] || 0}/${profile?.nutrition_targets?.water || 100} oz`
+                    ];
+                    navigator.clipboard.writeText(lines.join('\n'));
+                    toast.success("Report copied to clipboard!");
+                  }}
+                  className="text-zinc-600 hover:text-white transition-colors p-2 rounded hover:bg-zinc-700/50"
+                  title="Share Daily Report"
+                >
+                  <Share2 size={18} />
+                </button>
               </div>
               <p className="text-xs text-zinc-400 font-medium">Complete these tasks to boost your power.</p>
             </div>
           </div>
         </div>
 
-        <div className="flex gap-2 w-full md:w-auto justify-end overflow-x-auto pb-1 md:pb-0 no-scrollbar">
-          <button
-            onClick={() => {
-              // Calculate today's total XP from history
-              const today = new Date();
-              today.setHours(0, 0, 0, 0);
-              const todayStart = Math.floor(today.getTime() / 1000);
-              
-              const todayXp = history
-                .filter(item => item.timestamp >= todayStart)
-                .reduce((sum, item) => sum + (item.xp || 0), 0);
-              
-              const lines = [
-                "REFACTOR ATHLETICS REPORT",
-                `📅 ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
-                `⚡ ${todayXp} XP`,
-                "",
-                "🔥 STREAKS",
-                `🍺 No Alcohol: ${stats?.no_alcohol_streak || 0} Days`,
-                `🛡️ No Vice: ${stats?.no_vice_streak || 0} Days`,
-                "",
-                "🏃 ACTIVITY",
-                `💪 Total Weight: ${(stats?.total_volume_today || 0).toLocaleString()} lbs`,
-                `👣 Steps: ${(totals['habit_steps'] || 0).toLocaleString()}`,
-                "",
-                "🥗 NUTRITION",
-                `🥩 Protein: ${Math.round(totals['macro_protein'] || 0)}/${profile?.nutrition_targets?.protein || 150}g`,
-                `🍞 Carbs:   ${Math.round(totals['macro_carbs'] || 0)}/${profile?.nutrition_targets?.carbs || 150}g`,
-                `🥑 Fat:     ${Math.round(totals['macro_fat'] || 0)}/${profile?.nutrition_targets?.fat || 60}g`,
-                `🔥 Calories: ${Math.round(totals['macro_calories'] || 0)}/${profile?.nutrition_targets?.calories || 2000}`,
-                `💧 Water: ${totals['habit_water'] || 0}/${profile?.nutrition_targets?.water || 100} oz`
-              ];
-
-              const text = lines.join('\n');
-              navigator.clipboard.writeText(text);
-              toast.success("Report copied to clipboard!");
-            }}
-            className="flex-shrink-0 text-xs font-bold uppercase tracking-wider text-zinc-500 hover:text-white border border-zinc-700 hover:border-zinc-500 px-4 py-2.5 rounded-lg transition-all whitespace-nowrap"
-          >
-            Share
-          </button>
-        </div>
       </div>
 
       {profile && (
