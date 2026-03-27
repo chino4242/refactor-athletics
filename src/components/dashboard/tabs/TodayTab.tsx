@@ -70,9 +70,9 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                 
                 // Get last completed workout from history
                 const history = await getHistory(userId);
-                const workouts = history.filter(item => item.type === 'workout');
+                const workouts = history.filter(item => item.rank_name);
                 if (workouts.length > 0) {
-                    setLastWorkout(workouts[0]);
+                    setLastWorkout(workouts[workouts.length - 1]);
                 }
             } catch (error) {
                 console.error('Failed to load today data:', error);
