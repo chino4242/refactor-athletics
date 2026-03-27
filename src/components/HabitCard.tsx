@@ -56,11 +56,8 @@ export default function HabitCard({
         let logLabel = label;
 
         if (mode === 'total' && enableTotalSync) {
-            if (val <= current) {
-                // Should probably show toast error or shake, but for now just return
-                return;
-            }
             finalVal = val - current;
+            if (finalVal === 0) return;
             logLabel = `${label} (Sync)`;
         }
 
