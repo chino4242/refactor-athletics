@@ -7,7 +7,7 @@
 - [x] API functions updated (read operations)
 - [x] Services updated (BodyCompositionService)
 - [x] Build passing
-- [x] All tests passing (16/16)
+- [x] All tests passing (168/170, 2 skipped)
 - [x] Documentation complete
 
 ---

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Upload, X, Loader2 } from 'lucide-react';
 
 interface ScreenshotUploaderProps {
-  type: 'workout' | 'nutrition' | 'habits';
+  type: 'workout' | 'nutrition' | 'habits' | 'fitness';
   onDataExtracted: (data: any) => void;
 }
 

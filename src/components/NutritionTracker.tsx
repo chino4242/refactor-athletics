@@ -5,16 +5,19 @@ import { saveProfile, getWeeklyProgress } from '../services/api';
 import { logHabitAction } from '@/app/actions';
 import type { UserProfileData, NutritionTargets, HistoryItem } from '@/types';
 import MacroLogModal from './MacroLogModal';
-import { Plus } from 'lucide-react';
+import ScreenshotUploader from './ScreenshotUploader';
+import { Plus, Flame } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, Cell } from 'recharts';
 
 interface NutritionTrackerProps {
     userId: string;
     userProfile: UserProfileData;
-    totals: Record<string, number>; // Current progress from DailyQuest
-    onUpdate: () => void; // Trigger refresh
+    totals: Record<string, number>;
+    onUpdate: () => void;
+    onLogHabit?: (habitId: string, value: number, label: string) => Promise<void>;
 }
 
-export default function NutritionTracker({ userId, userProfile, totals, onUpdate }: NutritionTrackerProps) {
+export default function NutritionTracker({ userId, userProfile, totals, onUpdate, onLogHabit }: NutritionTrackerProps) {
     const [loading, setLoading] = useState(false);
     const [editing, setEditing] = useState(false);
     
@@ -45,6 +48,8 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
 
     // 🟢 NEW: Logging Mode for Macros
     const [showLogModal, setShowLogModal] = useState(false);
+    const [burnInput, setBurnInput] = useState('');
+    const [burnLoading, setBurnLoading] = useState(false);
 
     // Weekly State
     const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
@@ -176,6 +181,48 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
         }
     };
 
+    const handleLogBurn = async () => {
+        const val = Number(burnInput);
+        if (!val || val <= 0) return;
+        setBurnLoading(true);
+        try {
+            const current = totals['macro_calories_burned'] || 0;
+            const diff = val - current;
+            if (diff !== 0) {
+                await logHabitAction(userId, 'macro_calories_burned', diff, userProfile.bodyweight, 'Calories Burned');
+                await new Promise(resolve => setTimeout(resolve, 500));
+                onUpdate();
+            }
+            setBurnInput('');
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setBurnLoading(false);
+        }
+    };
+
+    const handleFitnessData = async (data: any) => {
+        try {
+            if (data.calories_burned && data.calories_burned > 0) {
+                const current = totals['macro_calories_burned'] || 0;
+                const diff = data.calories_burned - current;
+                if (diff !== 0) {
+                    await logHabitAction(userId, 'macro_calories_burned', diff, userProfile.bodyweight, 'Calories Burned');
+                }
+            }
+            if (data.steps && data.steps > 0 && onLogHabit) {
+                await onLogHabit('habit_steps', data.steps, 'Steps');
+            }
+            if (data.day_strain && data.day_strain > 0 && onLogHabit) {
+                await onLogHabit('habit_day_strain', data.day_strain, 'Day Strain');
+            }
+            await new Promise(resolve => setTimeout(resolve, 500));
+            onUpdate();
+        } catch (e) {
+            console.error('Error logging fitness data:', e);
+        }
+    };
+
     // 🟢 Renders either valid daily bar or 7-segment weekly bar
     const renderBar = (label: string, macroKey: string, dailyTarget: number, baseColor: string, unit: string) => {
 
@@ -303,6 +350,26 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
                             className="w-full bg-black p-2 rounded text-white text-center font-bold outline-none border border-zinc-700 focus:border-cyan-500" 
                         />
                     </div>
+                    <div>
+                        <label className="text-xs font-bold text-zinc-500 uppercase">🔥 Burn Target</label>
+                        <input 
+                            type="number" 
+                            inputMode="numeric"
+                            value={targets.calories_burned || 2500} 
+                            onChange={e => setTargets({ ...targets, calories_burned: Number(e.target.value) })} 
+                            className="w-full bg-black p-2 rounded text-white text-center font-bold outline-none border border-zinc-700 focus:border-red-500" 
+                        />
+                    </div>
+                    <div>
+                        <label className="text-xs font-bold text-zinc-500 uppercase">Net Cal Target</label>
+                        <input 
+                            type="number" 
+                            inputMode="numeric"
+                            value={targets.net_calorie_target || -500} 
+                            onChange={e => setTargets({ ...targets, net_calorie_target: Number(e.target.value) })} 
+                            className="w-full bg-black p-2 rounded text-white text-center font-bold outline-none border border-zinc-700 focus:border-purple-500" 
+                        />
+                    </div>
                 </div>
                 <button onClick={handleSaveTargets} disabled={loading} className="w-full bg-zinc-100 hover:bg-white text-black font-black py-3 rounded text-xs uppercase tracking-wider">
                     {loading ? 'Saving...' : 'Save Goals'}
@@ -313,12 +380,12 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
 
     // --- TRACKER VIEW ---
     return (
-        <div className="bg-zinc-900 border border-zinc-700 p-4 rounded-xl relative group">
-            <button onClick={() => setEditing(true)} className="absolute top-2 right-2 p-3 text-[10px] text-zinc-600 hover:text-white transition">EDIT</button>
+        <div className="bg-zinc-900 border border-zinc-700 p-4 rounded-xl">
 
             <div className="flex justify-between items-center mb-4">
                 <h4 className="text-sm font-black text-white italic uppercase flex items-center gap-2">
                     <span>🥗</span> Nutrition
+                    <button onClick={() => setEditing(true)} className="text-[10px] font-bold text-zinc-500 hover:text-white bg-zinc-800 hover:bg-zinc-700 px-2 py-0.5 rounded transition not-italic tracking-wider">EDIT</button>
                 </h4>
 
                 <div className="flex items-center gap-2">
@@ -346,6 +413,121 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
                 {renderBar('Protein', 'macro_protein', targets.protein, 'text-blue-500', 'g')}
                 {renderBar('Water', 'habit_water', targets.water || 100, 'text-cyan-500', 'oz')}
             </div>
+
+            {/* CALORIES BURNED INPUT */}
+            {viewMode === 'daily' && (
+                <div className="mt-3 p-3 bg-zinc-950/50 border border-zinc-800 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-bold text-zinc-400 uppercase flex items-center gap-1">
+                            <Flame size={12} className="text-red-500" /> Calories Burned
+                        </span>
+                        <span className="text-xs font-bold text-red-400">
+                            {Math.round(totals['macro_calories_burned'] || 0)} / {targets.calories_burned || 2500} kcal
+                        </span>
+                    </div>
+                    <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden mb-2">
+                        <div 
+                            className="h-full bg-red-500 transition-all duration-500" 
+                            style={{ width: `${Math.min(((totals['macro_calories_burned'] || 0) / (targets.calories_burned || 2500)) * 100, 100)}%` }} 
+                        />
+                    </div>
+                    <div className="flex gap-2">
+                        <input
+                            type="number"
+                            inputMode="numeric"
+                            value={burnInput}
+                            onChange={e => setBurnInput(e.target.value)}
+                            placeholder={String(totals['macro_calories_burned'] || 0)}
+                            className="flex-1 bg-zinc-900 rounded-lg p-2 text-sm text-white text-center outline-none border border-zinc-800 focus:border-red-500 transition font-bold placeholder:text-zinc-700"
+                        />
+                        <button
+                            onClick={handleLogBurn}
+                            disabled={burnLoading || !burnInput}
+                            className="bg-red-600 hover:bg-red-500 text-white text-xs px-4 rounded-lg font-black uppercase tracking-wide transition disabled:opacity-50"
+                        >
+                            {burnLoading ? '...' : 'Set'}
+                        </button>
+                    </div>
+                    <div className="mt-2">
+                        <ScreenshotUploader type="fitness" onDataExtracted={handleFitnessData} />
+                    </div>
+                </div>
+            )}
+
+            {/* NET CALORIE SUMMARY */}
+            {(() => {
+                const caloriesIn = totals['macro_calories'] || 0;
+                const caloriesBurned = totals['macro_calories_burned'] || 0;
+                const netTarget = targets.net_calorie_target || -500;
+
+                if (viewMode === 'daily') {
+                    const net = Math.round(caloriesIn - caloriesBurned);
+                    const onTarget = net <= netTarget;
+                    return (
+                        <div className={`mt-3 p-3 rounded-lg border ${onTarget ? 'bg-emerald-950/20 border-emerald-800/50' : 'bg-zinc-950/50 border-zinc-800'}`}>
+                            <div className="flex justify-between items-center">
+                                <span className="text-xs font-bold uppercase text-zinc-400">Net Calories</span>
+                                <div className="text-right">
+                                    <span className={`text-lg font-black ${net <= 0 ? 'text-emerald-400' : 'text-zinc-300'}`}>
+                                        {net > 0 ? '+' : ''}{net}
+                                    </span>
+                                    <span className="text-[10px] text-zinc-500 ml-1">/ {netTarget} kcal</span>
+                                </div>
+                            </div>
+                            <div className="flex justify-between text-[10px] text-zinc-500 mt-1">
+                                <span>In: {Math.round(caloriesIn)}</span>
+                                <span>Burned: {Math.round(caloriesBurned)}</span>
+                                <span className={onTarget ? 'text-emerald-400 font-bold' : 'text-zinc-500'}>
+                                    {onTarget ? '✓ On Target' : `${Math.round(net - netTarget)} over`}
+                                </span>
+                            </div>
+                        </div>
+                    );
+                } else {
+                    // Weekly chart
+                    const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                    const dayIndices = [1, 2, 3, 4, 5, 6, 0]; // Mon=1 ... Sun=0
+                    const chartData = dayIndices.map((dayIdx, i) => {
+                        const dayData = weeklyData[dayIdx] || {};
+                        const dayIn = dayData['macro_calories'] || 0;
+                        const dayBurn = dayData['macro_calories_burned'] || 0;
+                        return { name: dayLabels[i], net: Math.round(dayIn - dayBurn) };
+                    });
+                    const weeklyNet = chartData.reduce((sum, d) => sum + d.net, 0);
+
+                    return (
+                        <div className="mt-3 p-3 bg-zinc-950/50 border border-zinc-800 rounded-lg">
+                            <div className="flex justify-between items-center mb-2">
+                                <span className="text-xs font-bold uppercase text-zinc-400">Weekly Net Calories</span>
+                                <span className={`text-sm font-black ${weeklyNet <= netTarget * 7 ? 'text-emerald-400' : 'text-zinc-300'}`}>
+                                    {weeklyNet > 0 ? '+' : ''}{weeklyNet} kcal
+                                </span>
+                            </div>
+                            <div className="h-40 w-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={chartData}>
+                                        <XAxis dataKey="name" tick={{ fill: '#71717a', fontSize: 10 }} axisLine={false} tickLine={false} />
+                                        <YAxis hide />
+                                        <Tooltip
+                                            contentStyle={{ backgroundColor: '#18181b', border: '1px solid #3f3f46', borderRadius: '8px', fontSize: '12px' }}
+                                            itemStyle={{ color: '#fff' }}
+                                            labelStyle={{ color: '#a1a1aa' }}
+                                            formatter={(value: any) => [`${value} kcal`, 'Net']}
+                                        />
+                                        <ReferenceLine y={netTarget} stroke="#6b21a8" strokeDasharray="4 4" label={{ value: 'Target', fill: '#6b21a8', fontSize: 10, position: 'right' }} />
+                                        <ReferenceLine y={0} stroke="#3f3f46" />
+                                        <Bar dataKey="net" radius={[4, 4, 0, 0]}>
+                                            {chartData.map((entry, index) => (
+                                                <Cell key={index} fill={entry.net <= netTarget ? '#10b981' : entry.net <= 0 ? '#22d3ee' : '#ef4444'} />
+                                            ))}
+                                        </Bar>
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+                    );
+                }
+            })()}
 
             <MacroLogModal
                 isOpen={showLogModal}

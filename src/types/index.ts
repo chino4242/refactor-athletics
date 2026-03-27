@@ -22,6 +22,8 @@ export interface NutritionTargets {
     carbs: number;
     fat: number;
     water?: number;
+    calories_burned?: number;
+    net_calorie_target?: number;
 }
 
 export interface WorkoutSet {

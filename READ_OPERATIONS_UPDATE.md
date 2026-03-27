@@ -100,7 +100,7 @@ npm run build
 ✓ Compiled successfully
 ```
 
-### Tests: ✅ All Passing (16/16)
+### Tests: ✅ All Passing (168/170, 2 skipped)
 ```bash
 npm run test
 ✓ time.test.ts (4 tests)

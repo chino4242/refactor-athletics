@@ -258,6 +258,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
                 };
                 loadProfile();
               }}
+              onLogHabit={handleLog}
             />
           )}
 

@@ -62,6 +62,12 @@ export async function POST(request: NextRequest) {
   "stand_hours": 12,
   "sleep": 7.5,
   "water": 100
+}`,
+      fitness: `Extract fitness/activity data from this screenshot. Look for calories burned (active calories + resting/basal calories = total), step count, and day strain or intensity score. Return ONLY valid JSON with this exact structure (use null for any values not found):
+{
+  "calories_burned": 2450,
+  "steps": 10000,
+  "day_strain": 14.2
 }`
     };
 

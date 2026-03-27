@@ -9,7 +9,7 @@ Recent architectural changes migrated from a monolithic `history` table to domai
 ### Core Features
 - **Dynamic Training Catalog**: Exercises (`catalog`) are fetched via Supabase, complete with XP factors, categories (e.g., Metcon, Gymnastics), and standards thresholds.
 - **Rank Calculator**: Computes performance (e.g., Lbs, Sec, Reps) against Age, Sex, and Bodyweight, converting raw results into themed tier rankings (e.g., Rookie, Contender, Legend).
-- **Power Level System**: Aggregates the `max_level_achieved` across all historic exercises, multiplying each by 100 to generate a holistic player strength score.
+- **Power Level System**: Aggregates the highest rank level achieved across all ranked exercises to generate a holistic player strength score.
 - **Dashboard**: Mobile-first home screen with Today, Progress, and Arena tabs featuring:
   - Pull-to-refresh gesture
   - Skeleton loaders
@@ -123,13 +123,13 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 ### Rank Calculation
 Uses Epley formula for weight exercises: `weight * (1 + reps/30)`
 Compares against standards from catalog (age/sex brackets)
-Calculates level (0-6) and rank name ("Peasant" to "Legend")
+Calculates level (0-5) and rank name ("Rookie" to "Legend")
 XP = `level * 50` + set volume XP
 
 ### Power Level Calculation
 Queries ONLY `workouts` table (not habits/macros)
 Finds max level per exercise
-Sum of (max_level × 100) for each exercise
+Sum of max_level for each ranked exercise
 
 ## Development Resources
 - **Developer Guardrails**: Please review `skills.md` for strict architectural guidelines, specifically relating to the math behind Ranks, Power Levels, and Z-Index Stacking Contexts for the mobile UI.
@@ -151,7 +151,7 @@ This project is optimized for deployment on [Vercel](https://vercel.com/new). En
 - Added automatic calorie calculation from macros (protein × 4 + carbs × 4 + fat × 9)
 - Implemented router.refresh() for proper UI updates after profile changes
 - **Implemented PWA functionality** (service worker, manifest, offline support, install prompt)
-- **Added comprehensive test coverage** (138 tests covering critical business logic)
+- **Added comprehensive test coverage** (168 tests covering critical business logic)
 - **Dashboard as home screen** with pull-to-refresh, skeleton loaders, and improved UX
 - **Onboarding wizard** for new user setup with waiver, theme, and path selection
 - **Weight tracking** in dashboard header (current weight, target weight, progress)
@@ -168,7 +168,7 @@ npm test -- <filename>      # Run specific test file
 npm test -- --coverage      # Run with coverage report
 ```
 
-### Test Coverage (138 tests)
+### Test Coverage (168 tests)
 - **Server Actions**: logHabitAction, logTrainingAction, deleteHistoryItemAction
 - **API Functions**: saveProfile, getHabitProgress, getUserStats, getHistory
 - **API Routes**: parse-screenshot (Claude AI integration)
@@ -189,6 +189,9 @@ npm test -- --coverage      # Run with coverage report
 - `src/tests/ProfileCard.test.tsx` - Profile management
 - `src/tests/WorkoutBuilder.test.tsx` - Workout program builder
 - `src/tests/time.test.ts` - Time utility functions
+- `src/tests/physiquePoints.test.ts` - Physique Points calculation
+- `src/tests/logBodyMeasurement.test.ts` - Body measurement upsert logic
+- `src/tests/BodyCompositionModal.test.tsx` - Body composition modal UI
 
 ## Progressive Web App (PWA)
 The application is a fully functional PWA with offline support.

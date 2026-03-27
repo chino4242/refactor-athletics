@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { saveProfile } from '../services/api';
-import type { UserProfileData } from '@/types';
+import type { UserProfileData, NutritionTargets } from '@/types';
 import { Eye, EyeOff } from 'lucide-react';
 
 interface HabitSettingsProps {
@@ -66,7 +66,7 @@ export default function HabitSettings({ isOpen, onClose, userProfile, onUpdate }
                 ...userProfile.nutrition_targets,
                 ...nutritionTargets,
                 water: targets.habit_water
-            };
+            } as NutritionTargets;
 
             // Update hidden habits
             updatedProfile.hidden_habits = hidden;

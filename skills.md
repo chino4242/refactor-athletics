@@ -55,12 +55,12 @@ The application calculates a user's fitness "Rank" based on their age, sex, body
 - **xBW (Times Bodyweight) Calculation**:
   - If `unit === 'xBW'`, the user's `resultValue` is divided by their `bodyweight` before comparing it to the threshold.
   - *Exception*: For `weighted_pullup` and `five_rm_weighted_pull_up`, the `bodyweight` must be ADDED to the `resultValue` first, then divided by `bodyweight`.
-- **Rank Levels**: Map levels `0` through `5` onto Theme Names (e.g., Peasant, Rookie, Amateur, Contender, Pro, Champion, Legend).
+- **Rank Levels**: Map levels `0` through `5` onto Theme Names. Level 0 = unranked ("Peasant" fallback), Levels 1-5 map to theme-specific rank names (e.g., Rookie, Amateur, Contender, Pro, Champion/Legend). The `levels` array in standards contains 5 thresholds (indices 0-4), producing `userLevel` 0-5.
 
 ### 2.2 Power Level & Player Stats (`src/services/api.ts`)
 There are two distinct progression metrics for a user:
 1. **Player Level**: Driven purely by raw participation. Calculated as `Math.floor(totalXp / 1000) + 1`. Every time a user logs *any* exercise (or habit), they gain XP.
-2. **Power Level (Aggregate Score)**: Driven by *performance*. Calculated by querying ONLY the `workouts` table (not habits/macros), finding the **highest rank level achieved** for *each unique exercise*, and summing `100 * max_level` across all of them.
+2. **Power Level (Aggregate Score)**: Driven by *performance*. Calculated by querying ONLY the `workouts` table (not habits/macros), finding the **highest rank level achieved** for *each unique ranked exercise*, and summing `max_level` across all of them. Currently counts ALL exercises; **planned**: filter to only exercises in the user's chosen path (see STORY_MAP.md).
 
 **Important**: Power Level only counts ranked exercises from the `workouts` table. Habits and nutrition do not contribute to Power Level, only to Player Level (XP).
 
@@ -72,14 +72,6 @@ There are two distinct progression metrics for a user:
   - **Target Weight**: Stored in `body_composition_goals.target_weight` (string format)
 - **Program API** (`src/services/programApi.ts`): Workout program CRUD operations
 - **Shared Utilities** (`src/utils/physiquePoints.ts`): `calculatePhysiquePoints()` — used by TrackPage, ProgressMetrics, DashboardHeader, and BodyCompositionModal
-
-### 2.4 Attribute Balance Radar
-The Radar chart in `PowerRadar.tsx` requires exactly 4 cardinal points: **STR**, **END**, **PWR**, **MOB**.
-Since the `catalog` ingested over 240 specific exercise sub-categories, `src/hooks/useTrophies.ts` maps them explicitly to ensure visual balance:
-- `"Cardio"` / `"Endurance"` -> **Endurance & Speed**
-- `"Metcon"` / `"Power"` -> **Power & Capacity**
-- `"Mobility"` / `"Flexibility"` -> **Mobility**
-- `"Strength"` / `"Gymnastics"` / `"Weightlifting"` -> **Strength**
 
 ### 2.4 Attribute Balance Radar
 The Radar chart in `PowerRadar.tsx` requires exactly 4 cardinal points: **STR**, **END**, **PWR**, **MOB**.
@@ -170,12 +162,12 @@ Example:
 
 ## 5. Testing & Quality Assurance
 
-### 4.1 Test Framework
+### 5.1 Test Framework
 - **Vitest** for unit and integration tests
 - **React Testing Library** for component tests
-- **138 tests** covering critical business logic and user flows
+- **168 tests** covering critical business logic and user flows
 
-### 4.2 Test Coverage Areas
+### 5.2 Test Coverage Areas
 - **Server Actions**: logHabitAction, logTrainingAction, deleteHistoryItemAction
 - **API Functions**: saveProfile, getHabitProgress, getUserStats, getHistory
 - **API Routes**: parse-screenshot (Claude AI integration)
@@ -183,14 +175,14 @@ Example:
 - **Business Logic**: Rank calculation (Epley formula, xBW comparison, level assignment)
 - **Data Aggregation**: History from 4 domain-specific tables
 
-### 4.3 Testing Patterns
+### 5.3 Testing Patterns
 - Mock Supabase client with proper method chaining
 - Use `vi.hoisted()` for external SDK mocks (e.g., Anthropic)
 - Test business logic separately from UI interactions
 - Use `waitFor()` for async operations
 - Mock `window.confirm` and `window.alert` for user interactions
 
-### 4.4 Running Tests
+### 5.4 Running Tests
 ```bash
 npm test                    # Run all tests
 npm test -- <filename>      # Run specific test file
