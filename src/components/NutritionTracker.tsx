@@ -203,12 +203,9 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
 
     const handleFitnessData = async (data: any) => {
         try {
+            // Populate input for review — don't auto-log calories burned
             if (data.calories_burned && data.calories_burned > 0) {
-                const current = totals['macro_calories_burned'] || 0;
-                const diff = data.calories_burned - current;
-                if (diff !== 0) {
-                    await logHabitAction(userId, 'macro_calories_burned', diff, userProfile.bodyweight, 'Calories Burned');
-                }
+                setBurnInput(String(Math.round(data.calories_burned)));
             }
             if (data.steps && data.steps > 0 && onLogHabit) {
                 await onLogHabit('habit_steps', data.steps, 'Steps');
@@ -216,7 +213,6 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
             if (data.day_strain && data.day_strain > 0 && onLogHabit) {
                 await onLogHabit('habit_day_strain', data.day_strain, 'Day Strain');
             }
-            await new Promise(resolve => setTimeout(resolve, 500));
             onUpdate();
         } catch (e) {
             console.error('Error logging fitness data:', e);
