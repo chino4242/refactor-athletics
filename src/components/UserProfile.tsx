@@ -1,25 +1,20 @@
 "use client";
 
-import { useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { type HistoryItem } from '../services/api';
 import { deleteHistoryItemAction } from '@/app/actions';
-
 
 import { useUserProfileData } from '../hooks/useUserProfileData';
 import { useTrophies } from '../hooks/useTrophies';
 import { useToast } from '../context/ToastContext';
+import { useTheme } from '../context/ThemeContext';
+import { THEMES } from '../data/themes';
 
-import CareerXpBar from './profile/CareerXpBar';
 import ProfileCard from './profile/ProfileCard';
-
-import PowerRadar from './profile/PowerRadar';
 import TrophyList from './profile/TrophyList';
 import MilestoneTable from './profile/MilestoneTable';
-import StatsOverview from './profile/StatsOverview';
 import ConfirmModal from './ConfirmModal';
 import WeeklyReview from './WeeklyReview';
-
-import { useState } from 'react';
 
 interface UserProfileProps {
   displayName: string;
@@ -50,6 +45,7 @@ export default function UserProfile({
   const { history, stats, initialGoalWeight, loadUserData } = useUserProfileData(userId);
   const { groupedTrophies, categoryStats } = useTrophies(history, exercises);
   const toast = useToast();
+  const { currentTheme: activeTheme, setCurrentTheme } = useTheme();
   const [itemToDelete, setItemToDelete] = useState<HistoryItem | null>(null);
 
   // --- HANDLERS ---
@@ -86,11 +82,11 @@ export default function UserProfile({
 
 
   // --- TAB STATE ---
-  const [activeTab, setActiveTab] = useState<'stats' | 'milestones'>('stats');
+  const [activeTab, setActiveTab] = useState<'settings' | 'trophies' | 'milestones'>('settings');
   const [showWeeklyReview, setShowWeeklyReview] = useState(false);
 
   return (
-    <div className="w-full max-w-4xl mx-auto animate-fade-in-up space-y-8">
+    <div className="w-full max-w-4xl mx-auto animate-fade-in-up space-y-6 p-4">
 
       {showWeeklyReview && (
         <WeeklyReview
@@ -99,93 +95,97 @@ export default function UserProfile({
         />
       )}
 
-      <div className="mb-8">
-        <ProfileCard
-          displayName={displayName}
-          userId={userId}
-          age={age}
-          sex={sex}
-          currentWeight={currentWeight}
-          goalWeight={initialGoalWeight}
-          level={stats?.player_level || 1}
-          onProfileUpdate={handleProfileUpdate}
-          onReload={loadUserData}
-        />
-      </div>
-
-      {/* THE VAULT (Elevated) */}
-      <div className="animate-fade-in-up delay-100">
-        <PowerRadar stats={stats} categoryStats={categoryStats} />
+      {/* HEADER */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-black uppercase tracking-widest">{displayName}</h1>
+          <p className="text-xs text-zinc-500">LVL {stats?.player_level || 1} · {stats?.total_career_xp || 0} XP</p>
+        </div>
+        <button
+          onClick={() => setShowWeeklyReview(true)}
+          className="p-3 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-600 transition text-sm"
+          title="Weekly Report"
+        >
+          📜
+        </button>
       </div>
 
       {/* TABS */}
       <div className="flex gap-2 p-1 bg-zinc-900/50 rounded-xl border border-zinc-800">
-        <button
-          onClick={() => setActiveTab('stats')}
-          className={`flex-1 py-3 px-2 rounded-lg font-black italic uppercase tracking-wider transition-all text-[10px] md:text-sm ${activeTab === 'stats'
-            ? 'bg-zinc-800 text-white shadow-lg border border-zinc-700'
-            : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'
+        {(['settings', 'trophies', 'milestones'] as const).map(tab => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`flex-1 py-3 px-2 rounded-lg font-black italic uppercase tracking-wider transition-all text-[10px] md:text-sm ${
+              activeTab === tab
+                ? tab === 'milestones' ? 'bg-emerald-600/20 text-emerald-500 border border-emerald-500/30' : 'bg-zinc-800 text-white border border-zinc-700'
+                : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'
             }`}
-        >
-          Stats & Trophies
-        </button>
-        <button
-          onClick={() => setActiveTab('milestones')}
-          className={`flex-1 py-3 px-2 rounded-lg font-black italic uppercase tracking-wider transition-all text-[10px] md:text-sm ${activeTab === 'milestones'
-            ? 'bg-emerald-600/20 text-emerald-500 shadow-lg border border-emerald-500/30'
-            : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'
-            }`}
-        >
-          Milestones
-        </button>
-
-        {/* Weekly Report Trigger */}
-        <button
-          onClick={() => setShowWeeklyReview(true)}
-          className="flex-shrink-0 py-3 px-3 rounded-lg font-black italic uppercase tracking-wider transition-all text-[10px] md:text-sm text-zinc-400 hover:text-white hover:bg-zinc-800/50 flex items-center gap-2 border border-transparent hover:border-zinc-700"
-        >
-          <span className="text-lg">📜</span>
-          <span className="hidden md:inline">Weekly Report</span>
-        </button>
+          >
+            {tab === 'settings' ? '⚙️ Settings' : tab === 'trophies' ? '🏆 Trophies' : '🎯 Milestones'}
+          </button>
+        ))}
       </div>
 
-      {activeTab === 'stats' && (
-        <div className="space-y-12 animate-fade-in-up">
-          {/* SECTION 1: PROFILE & TRACKING */}
-          <div>
-            <CareerXpBar stats={stats} />
-          </div>
+      {activeTab === 'settings' && (
+        <div className="space-y-6 animate-fade-in-up">
+          <ProfileCard
+            displayName={displayName}
+            userId={userId}
+            age={age}
+            sex={sex}
+            currentWeight={currentWeight}
+            goalWeight={initialGoalWeight}
+            level={stats?.player_level || 1}
+            onProfileUpdate={handleProfileUpdate}
+            onReload={loadUserData}
+          />
 
-          {/* STATS OVERVIEW */}
-          <div className="mb-0">
-            <StatsOverview stats={stats} />
+          {/* Theme Picker */}
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+            <h2 className="text-sm font-black uppercase tracking-widest mb-4">🎨 Theme</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {Object.entries(THEMES).map(([key, theme]) => (
+                <button
+                  key={key}
+                  onClick={() => setCurrentTheme(key)}
+                  className={`relative rounded-xl overflow-hidden border-2 transition-all aspect-video ${activeTheme === key
+                    ? 'border-emerald-400 shadow-[0_0_20px_rgba(52,211,153,0.4)]'
+                    : 'border-zinc-700 hover:border-zinc-500'
+                  }`}
+                >
+                  <img src={`/themes/${key}/banner.png`} alt={theme.displayName} className="w-full h-full object-cover opacity-70" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                  <div className="absolute bottom-2 left-2 right-2">
+                    <p className="text-white text-xs font-black uppercase tracking-wider leading-tight">{theme.emoji} {theme.displayName}</p>
+                  </div>
+                  {activeTheme === key && (
+                    <div className="absolute top-2 right-2 w-5 h-5 bg-emerald-400 rounded-full flex items-center justify-center">
+                      <span className="text-black text-xs font-black">✓</span>
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
+        </div>
+      )}
 
-          {/* SECTION 2: TROPHIES */}
-          <div>
-            <h2 className="text-2xl font-black italic text-zinc-500 mb-6 flex items-center gap-3">
-              <span className="w-8 h-1 bg-orange-600 rounded-full"></span>
-              TROPHY COLLECTION
-            </h2>
-
-            <TrophyList
-              groupedTrophies={groupedTrophies}
-              categoryStats={categoryStats}
-              sex={sex}
-              currentTheme={currentTheme}
-              onDelete={handleDeleteClick}
-              getExerciseName={getExerciseName}
-            />
-          </div>
+      {activeTab === 'trophies' && (
+        <div className="space-y-6 animate-fade-in-up">
+          <TrophyList
+            groupedTrophies={groupedTrophies}
+            categoryStats={categoryStats}
+            sex={sex}
+            currentTheme={currentTheme}
+            onDelete={handleDeleteClick}
+            getExerciseName={getExerciseName}
+          />
         </div>
       )}
 
       {activeTab === 'milestones' && (
         <div className="animate-fade-in-up">
-          <h2 className="text-2xl font-black italic text-zinc-500 mb-6 flex items-center gap-3">
-            <span className="w-8 h-1 bg-emerald-600 rounded-full"></span>
-            NEXT MILESTONES
-          </h2>
           <div className="text-sm text-zinc-400 mb-6">
             Targets to reach the next Rank level based on your current stats.
           </div>
@@ -198,12 +198,10 @@ export default function UserProfile({
         </div>
       )}
 
-
-
       <ConfirmModal
         isOpen={!!itemToDelete}
         title="Delete Record?"
-        message={`Are you sure you want to delete this record? This action cannot be undone.`}
+        message="Are you sure you want to delete this record? This action cannot be undone."
         onConfirm={confirmDelete}
         onCancel={() => setItemToDelete(null)}
       />
