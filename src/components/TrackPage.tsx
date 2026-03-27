@@ -396,11 +396,13 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
             </div>
 
             {/* 🟢 PROGRESS METRICS */}
+            <div id="expertise">
             <ProgressMetrics 
                 stats={initialStats}
                 profile={initialProfile}
                 bodyCompHistory={bodyCompHistory}
             />
+            </div>
 
             {/* 🟢 LEVEL UP OVERLAY - ALWAYS VISIBLE ON TOP */}
             {showLevelUp && (
@@ -432,12 +434,14 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
             </div>
 
             {/* 🟢 BODY COMPOSITION SUMMARY */}
+            <div id="body-comp">
             <BodyCompSummary 
                 profile={initialProfile}
                 bodyCompHistory={bodyCompHistory}
                 physiquePoints={physiquePoints}
                 onOpenModal={() => setShowBodyCompModal(true)}
             />
+            </div>
 
             {/* SPACER FOR MOBILE NAV */}
             <div className="h-40 md:h-0 w-full shrink-0" />

@@ -85,7 +85,7 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                         </Link>
 
                         {/* Physique Points */}
-                        <Link href="/track" className="group">
+                        <Link href="/track#body-comp" className="group">
                             <div className="flex items-center gap-2 mb-2">
                                 <span className="text-xl">💪</span>
                                 <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider group-hover:text-emerald-400 transition">Physique Points</span>
@@ -98,7 +98,7 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                         </Link>
 
                         {/* Weight */}
-                        <Link href="/track" className="group">
+                        <Link href="/track#body-comp" className="group">
                             <div className="flex items-center gap-2 mb-2">
                                 <span className="text-xl">⚖️</span>
                                 <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider group-hover:text-cyan-400 transition">Weight</span>
