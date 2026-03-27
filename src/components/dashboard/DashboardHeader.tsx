@@ -98,10 +98,10 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                         </Link>
 
                         {/* Weight */}
-                        <div>
+                        <Link href="/track" className="group">
                             <div className="flex items-center gap-2 mb-2">
                                 <span className="text-xl">⚖️</span>
-                                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Weight</span>
+                                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider group-hover:text-cyan-400 transition">Weight</span>
                             </div>
                             {(() => {
                                 const target = userProfile?.body_composition_goals?.target_weight;
@@ -132,7 +132,8 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                                     </>
                                 );
                             })()}
-                        </div>
+                            <div className="text-[10px] text-cyan-500/70 group-hover:text-cyan-400 mt-1 transition">Update weight →</div>
+                        </Link>
                     </div>
 
                     {/* Player Level & XP */}
