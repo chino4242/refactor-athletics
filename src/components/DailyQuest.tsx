@@ -162,8 +162,6 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
         </div>
 
         <div className="flex gap-2 w-full md:w-auto justify-end overflow-x-auto pb-1 md:pb-0 no-scrollbar">
-          <ScreenshotUploader type="habits" onDataExtracted={handleHabitData} />
-
           <button
             onClick={() => {
               // Calculate today's total XP from history
@@ -266,6 +264,9 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
           )}
 
           {/* HABITS GRID */}
+          <div className="flex justify-end mb-2">
+            <ScreenshotUploader type="habits" onDataExtracted={handleHabitData} />
+          </div>
           <div className="grid grid-cols-2 gap-2">
             {!isHidden('habit_sleep') && (
               <HabitCard

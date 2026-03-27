@@ -78,7 +78,9 @@ export default function ScreenshotUploader({ type, onDataExtracted }: Screenshot
         ) : (
           <>
             <Upload size={14} className="text-orange-500" />
-            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wide">Upload</span>
+            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wide">
+              {type === 'habits' ? '📱 Upload Habits' : 'Upload'}
+            </span>
           </>
         )}
       </label>
