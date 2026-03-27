@@ -274,8 +274,18 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
     }
 
     const finalExpertise = expertiseScore > 0 ? expertiseScore : 0;
-    const playerLevel = Math.floor(totalXp / 1000) + 1;
-    const level_progress_percent = ((totalXp % 1000) / 1000) * 100;
+
+    // XP scaling: 1000 * 1.08^level (fibonacci-ish curve)
+    const xpForLevel = (lvl: number) => Math.floor(1000 * Math.pow(1.08, lvl));
+    let cumulativeXp = 0;
+    let playerLevel = 1;
+    while (cumulativeXp + xpForLevel(playerLevel) <= totalXp) {
+        cumulativeXp += xpForLevel(playerLevel);
+        playerLevel++;
+    }
+    const xpIntoLevel = totalXp - cumulativeXp;
+    const xpNeeded = xpForLevel(playerLevel);
+    const level_progress_percent = (xpIntoLevel / xpNeeded) * 100;
 
     // Simple streak calculation: check if user logged alcohol/vice today
     // If no logs or value = 0, streak = 1 (today counts)
@@ -309,7 +319,7 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
         total_career_xp: totalXp,
         player_level: playerLevel,
         level_progress_percent: level_progress_percent,
-        xp_to_next_level: 1000 - (totalXp % 1000),
+        xp_to_next_level: xpNeeded - xpIntoLevel,
         no_alcohol_streak: alcoholStreak,
         no_vice_streak: viceStreak,
     };

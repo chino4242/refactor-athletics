@@ -286,9 +286,9 @@ describe('API Functions', () => {
 
             const result = await getUserStats('user-123');
 
-            expect(result?.player_level).toBe(3); // floor(2500 / 1000) + 1
-            expect(result?.level_progress_percent).toBe(50);
-            expect(result?.xp_to_next_level).toBe(500);
+            expect(result?.player_level).toBe(3); // 2500 XP: L1=1080, L2=1166 (cum 2246), working on L3
+            expect(result?.level_progress_percent).toBeCloseTo(20.17, 0);
+            expect(result?.xp_to_next_level).toBe(1005);
         });
 
         it('includes XP from all sources', async () => {
