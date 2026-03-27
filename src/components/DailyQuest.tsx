@@ -163,14 +163,6 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
 
         <div className="flex gap-2 w-full md:w-auto justify-end overflow-x-auto pb-1 md:pb-0 no-scrollbar">
           <ScreenshotUploader type="habits" onDataExtracted={handleHabitData} />
-          
-          <button
-            onClick={() => setShowBodyComp(true)}
-            className="flex-shrink-0 text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded-lg transition-all flex items-center gap-2 text-zinc-500 hover:text-white border border-zinc-700 hover:border-zinc-500 whitespace-nowrap"
-          >
-            <span className="text-lg">⚖️</span>
-            Body Comp
-          </button>
 
           <button
             onClick={() => {
