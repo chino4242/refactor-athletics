@@ -434,18 +434,16 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
                             value={burnInput}
                             onChange={e => setBurnInput(e.target.value)}
                             placeholder={String(totals['macro_calories_burned'] || 0)}
-                            className="flex-1 bg-zinc-900 rounded-lg p-2 text-sm text-white text-center outline-none border border-zinc-800 focus:border-red-500 transition font-bold placeholder:text-zinc-700"
+                            className="flex-1 min-w-0 bg-zinc-900 rounded-lg p-2 text-sm text-white text-center outline-none border border-zinc-800 focus:border-red-500 transition font-bold placeholder:text-zinc-700"
                         />
+                        <ScreenshotUploader type="fitness" onDataExtracted={handleFitnessData} />
                         <button
                             onClick={handleLogBurn}
                             disabled={burnLoading || !burnInput}
-                            className="bg-red-600 hover:bg-red-500 text-white text-xs px-4 rounded-lg font-black uppercase tracking-wide transition disabled:opacity-50"
+                            className="bg-red-600 hover:bg-red-500 text-white text-xs px-3 rounded-lg font-black uppercase tracking-wide transition disabled:opacity-50"
                         >
                             {burnLoading ? '...' : 'Set'}
                         </button>
-                    </div>
-                    <div className="mt-2">
-                        <ScreenshotUploader type="fitness" onDataExtracted={handleFitnessData} />
                     </div>
                 </div>
             )}
