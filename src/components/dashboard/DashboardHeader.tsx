@@ -43,9 +43,9 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
     
     const powerLevel = stats?.power_level || 0;
     const totalXp = stats?.total_career_xp || stats?.total_xp || 0;
-    const playerLevel = Math.floor(totalXp / 1000) + 1;
-    const xpProgress = totalXp % 1000;
-    const xpPercent = (xpProgress / 1000) * 100;
+    const playerLevel = stats?.player_level || 1;
+    const xpToNext = stats?.xp_to_next_level || 0;
+    const xpPercent = stats?.level_progress_percent || 0;
 
     // Calculate refactor score
     const physiquePoints = useMemo(() => {
@@ -143,7 +143,7 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                                 </span>
                             </div>
                             <span className="text-xs text-zinc-500">
-                                {xpProgress} / 1000 XP
+                                {xpToNext} XP to next
                             </span>
                         </div>
                         <div className="w-full bg-zinc-800 rounded-full h-2 overflow-hidden">
