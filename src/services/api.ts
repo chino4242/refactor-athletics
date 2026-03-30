@@ -25,6 +25,7 @@ export const getProfile = async (userId: string): Promise<UserProfileData | null
         goal_weight: data.goal_weight,
         is_onboarded: data.is_onboarded,
         selected_theme: data.selected_theme,
+        experience_mode: data.experience_mode,
         timezone: data.timezone,
         display_name: data.display_name,
         nutrition_targets: data.nutrition_targets,
@@ -47,6 +48,7 @@ export const saveProfile = async (profile: UserProfileData): Promise<any> => {
     if (profile.is_onboarded !== undefined) payload.is_onboarded = profile.is_onboarded;
     if (profile.selected_theme !== undefined) payload.selected_theme = profile.selected_theme;
     if (profile.selected_path !== undefined) payload.selected_path = profile.selected_path;
+    if (profile.experience_mode !== undefined) payload.experience_mode = profile.experience_mode;
     if (profile.waiver_accepted_at !== undefined) payload.waiver_accepted_at = profile.waiver_accepted_at;
     if (profile.timezone !== undefined) payload.timezone = profile.timezone;
     if (profile.display_name !== undefined) payload.display_name = profile.display_name;
@@ -54,6 +56,7 @@ export const saveProfile = async (profile: UserProfileData): Promise<any> => {
     if (profile.hidden_habits !== undefined) payload.hidden_habits = profile.hidden_habits;
     if (profile.habit_targets !== undefined) payload.habit_targets = profile.habit_targets;
     if (profile.body_composition_goals !== undefined) payload.body_composition_goals = profile.body_composition_goals;
+    if (profile.available_equipment !== undefined) payload.available_equipment = profile.available_equipment;
 
     const { error } = await supabase
         .from('users')

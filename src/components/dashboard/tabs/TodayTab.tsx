@@ -6,6 +6,7 @@ import { Calendar, Dumbbell, ChevronRight } from 'lucide-react';
 import type { Workout } from '@/types';
 import { getHistory, getHabitProgress } from '@/services/api';
 import { createClient } from '@/utils/supabase/client';
+import { useExperienceMode } from '@/context/ExperienceModeContext';
 
 interface TodayTabProps {
     userId: string;
@@ -13,6 +14,7 @@ interface TodayTabProps {
 }
 
 export default function TodayTab({ userId, programs }: TodayTabProps) {
+    const { isClassic } = useExperienceMode();
     const [profile, setProfile] = useState<any>(null);
     const [todayScheduled, setTodayScheduled] = useState<any>(null);
     const [lastWorkout, setLastWorkout] = useState<{ date: string; totalXp: number; lifts: { name: string; volume: number }[]; treadmillSets: number } | null>(null);
@@ -137,7 +139,7 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                     <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
                             <span className="text-lg">🎯</span>
-                            <h3 className="text-sm font-bold text-white uppercase tracking-wider">Daily Quests</h3>
+                            <h3 className="text-sm font-bold text-white uppercase tracking-wider">{isClassic ? 'Today\'s Targets' : 'Daily Quests'}</h3>
                         </div>
                         <ChevronRight size={16} className="text-zinc-500" />
                     </div>
@@ -200,21 +202,19 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                 </Link>
             )}
 
-            {/* Today's Scheduled Workout */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-                <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
+            {/* Today's Workout + Last Workout - Side by Side */}
+            <div className="grid grid-cols-2 gap-3">
+                {/* Today's Scheduled Workout */}
+                <Link href="/train" className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-700 transition-colors block">
+                    <div className="flex items-center gap-2 mb-3">
                         <span className="text-lg">📅</span>
-                        <h3 className="text-sm font-bold text-white uppercase tracking-wider">Today's Workout</h3>
+                        <h3 className="text-xs font-bold text-white uppercase tracking-wider">Today</h3>
                     </div>
-                    {/* View All link hidden until v2 */}
-                </div>
-                {todayScheduled ? (
-                    <Link href="/train" className="block">
-                        <div className="bg-zinc-800/50 rounded-lg p-3 hover:bg-zinc-800 transition-colors">
-                            <p className="text-sm font-bold text-white mb-1">{todayScheduled.name}</p>
-                            <div className="flex items-center gap-3 text-xs text-zinc-500 mb-2">
-                                <span className={`px-2 py-0.5 rounded font-bold ${
+                    {todayScheduled ? (
+                        <div>
+                            <p className="text-sm font-bold text-white mb-1 truncate">{todayScheduled.name}</p>
+                            <div className="flex items-center gap-2 text-xs text-zinc-500 mb-2">
+                                <span className={`px-1.5 py-0.5 rounded font-bold text-[10px] ${
                                     todayScheduled.type === 'Strength' ? 'bg-blue-950/50 text-blue-400' :
                                     todayScheduled.type === 'Cardio' ? 'bg-red-950/50 text-red-400' :
                                     todayScheduled.type === 'Hybrid' ? 'bg-purple-950/50 text-purple-400' :
@@ -222,90 +222,63 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                                 }`}>
                                     {todayScheduled.type}
                                 </span>
-                                <span>⚡ {todayScheduled.xp} XP</span>
+                                <span className="text-[10px]">⚡ {todayScheduled.xp} {isClassic ? 'pts' : 'XP'}</span>
                             </div>
-                            {(todayScheduled.exercises?.length > 0 || todayScheduled.treadmillBlocks > 0) && (
-                                <div className="mt-2 pt-2 border-t border-zinc-700/50 space-y-1">
-                                    {todayScheduled.exercises.slice(0, 5).map((name: string, i: number) => (
-                                        <div key={i} className="flex items-center gap-2 text-xs text-zinc-400 capitalize">
+                            {todayScheduled.exercises?.length > 0 && (
+                                <div className="space-y-0.5 border-t border-zinc-800 pt-2">
+                                    {todayScheduled.exercises.slice(0, 3).map((name: string, i: number) => (
+                                        <div key={i} className="flex items-center gap-1.5 text-[10px] text-zinc-500 capitalize truncate">
                                             <span className="w-1 h-1 rounded-full bg-zinc-600 shrink-0" />
                                             {name}
                                         </div>
                                     ))}
-                                    {todayScheduled.treadmillBlocks > 0 && (
-                                        <div className="flex items-center gap-2 text-xs text-zinc-400">
-                                            <span className="w-1 h-1 rounded-full bg-zinc-600 shrink-0" />
-                                            🏃 {todayScheduled.treadmillBlocks} treadmill intervals
-                                        </div>
-                                    )}
-                                    {todayScheduled.exercises.length > 5 && (
-                                        <div className="text-[10px] text-zinc-600 pl-3">+{todayScheduled.exercises.length - 5} more</div>
+                                    {todayScheduled.exercises.length > 3 && (
+                                        <div className="text-[10px] text-zinc-600">+{todayScheduled.exercises.length - 3} more</div>
                                     )}
                                 </div>
                             )}
                         </div>
-                    </Link>
-                ) : (
-                    <div className="text-center py-6">
-                        <div className="text-4xl mb-3">📅</div>
-                        <p className="text-sm text-zinc-400 mb-3">Rest day! No workout scheduled.</p>
-                        <Link 
-                            href="/train" 
-                            className="inline-flex items-center gap-1 text-xs text-orange-500 hover:text-orange-400 font-semibold"
-                        >
-                            Browse Workouts
-                            <ChevronRight size={14} />
-                        </Link>
-                    </div>
-                )}
-            </div>
+                    ) : (
+                        <div className="text-center py-2">
+                            <p className="text-xs text-zinc-500">Rest day 😴</p>
+                        </div>
+                    )}
+                </Link>
 
-            {/* Last Completed Workout */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-                <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
+                {/* Last Completed Workout */}
+                <Link href="/track" className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-700 transition-colors block">
+                    <div className="flex items-center gap-2 mb-3">
                         <span className="text-lg">💪</span>
-                        <h3 className="text-sm font-bold text-white uppercase tracking-wider">Last Workout</h3>
+                        <h3 className="text-xs font-bold text-white uppercase tracking-wider">Last Workout</h3>
                     </div>
-                    <Link href="/track" className="text-xs text-orange-500 hover:text-orange-400 flex items-center gap-1">
-                        View History
-                        <ChevronRight size={14} />
-                    </Link>
-                </div>
-                {lastWorkout ? (
-                    <div className="text-sm text-zinc-300">
-                        <div className="flex justify-between items-center mb-2">
-                            <span className="text-xs text-zinc-500">{lastWorkout.date}</span>
-                            <span className="text-xs text-orange-500 font-bold">+{lastWorkout.totalXp} XP</span>
+                    {lastWorkout ? (
+                        <div>
+                            <div className="flex justify-between items-center mb-2">
+                                <span className="text-[10px] text-zinc-500">{lastWorkout.date}</span>
+                                <span className="text-[10px] text-orange-500 font-bold">+{lastWorkout.totalXp} {isClassic ? 'pts' : 'XP'}</span>
+                            </div>
+                            <div className="space-y-0.5">
+                                {lastWorkout.lifts.slice(0, 3).map(l => (
+                                    <div key={l.name} className="flex justify-between text-[10px]">
+                                        <span className="text-zinc-400 capitalize truncate mr-2">{l.name}</span>
+                                        <span className="text-white font-bold shrink-0">{l.volume.toLocaleString()} lbs</span>
+                                    </div>
+                                ))}
+                                {lastWorkout.lifts.length > 3 && (
+                                    <div className="text-[10px] text-zinc-600">+{lastWorkout.lifts.length - 3} more</div>
+                                )}
+                                {lastWorkout.treadmillSets > 0 && (
+                                    <div className="text-[10px] text-zinc-400">🏃 {lastWorkout.treadmillSets} intervals</div>
+                                )}
+                            </div>
                         </div>
-                        <div className="space-y-1">
-                            {lastWorkout.lifts.map(l => (
-                                <div key={l.name} className="flex justify-between text-xs">
-                                    <span className="text-zinc-400 capitalize">{l.name}</span>
-                                    <span className="text-white font-bold">{l.volume.toLocaleString()} lbs</span>
-                                </div>
-                            ))}
-                            {lastWorkout.treadmillSets > 0 && (
-                                <div className="flex justify-between text-xs">
-                                    <span className="text-zinc-400">🏃 Treadmill</span>
-                                    <span className="text-white font-bold">{lastWorkout.treadmillSets} intervals</span>
-                                </div>
-                            )}
+                    ) : (
+                        <div className="text-center py-2">
+                            <p className="text-xs text-zinc-500">No workouts yet</p>
+                            <p className="text-[10px] text-orange-500 mt-1">Log your first →</p>
                         </div>
-                    </div>
-                ) : (
-                    <div className="text-center py-6">
-                        <div className="text-4xl mb-3">🚀</div>
-                        <p className="text-sm text-zinc-400 mb-3">Start your fitness journey!</p>
-                        <Link 
-                            href="/train" 
-                            className="inline-flex items-center gap-1 text-xs text-orange-500 hover:text-orange-400 font-semibold"
-                        >
-                            Log Your First Workout
-                            <ChevronRight size={14} />
-                        </Link>
-                    </div>
-                )}
+                    )}
+                </Link>
             </div>
         </div>
     );

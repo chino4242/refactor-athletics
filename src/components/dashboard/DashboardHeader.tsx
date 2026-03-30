@@ -5,6 +5,7 @@ import Link from 'next/link';
 import type { UserStats } from '@/types';
 import { Trophy, Zap } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
+import { useExperienceMode } from '@/context/ExperienceModeContext';
 import { THEMES } from '@/data/themes';
 import { BodyCompositionService } from '@/services/BodyCompositionService';
 import { createClient } from '@/utils/supabase/client';
@@ -21,6 +22,7 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
     const [bodyCompHistory, setBodyCompHistory] = useState<any[]>([]);
     const [userProfile, setUserProfile] = useState<any>(null);
     const { currentTheme } = useTheme();
+    const { isClassic } = useExperienceMode();
     const theme = THEMES[currentTheme] || THEMES['athlete'];
     const progressGradient = theme.progressGradient || 'from-orange-600 to-red-600';
     
@@ -56,7 +58,7 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
     return (
         <div className="relative">
             {/* Theme Banner Image */}
-            {mounted && (
+            {mounted && !isClassic && (
                 <div className="relative h-48 overflow-hidden">
                     <img 
                         src={`/themes/${currentTheme}/banner.png`}
@@ -71,24 +73,26 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
             <div className="bg-gradient-to-br from-zinc-900 via-zinc-900 to-zinc-800 border-b border-zinc-800 p-6">
                 <div className="max-w-6xl mx-auto">
                     <div className="grid grid-cols-3 gap-4 mb-4">
-                        {/* Expertise */}
-                        <Link href="/test" className="group">
-                            <div className="flex items-center gap-2 mb-2">
-                                <span className="text-xl">{theme.emoji}</span>
-                                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider group-hover:text-orange-400 transition">Expertise</span>
-                                <InfoTooltip text={`Your best rank level (1-5) across ${stats?.max_expertise ? stats.max_expertise / 5 : 0} ranked exercises. Max = ${stats?.max_expertise || 0} (${stats?.max_expertise ? stats.max_expertise / 5 : 0} exercises × 5 levels). Log your best result on an exercise to earn your rank!`} size={14} />
+                        {/* Expertise / Fitness Score */}
+                        <Link href="/test" className="group text-center">
+                            <div className="flex items-center justify-center gap-2 mb-2">
+                                <span className="text-xl">{isClassic ? '📊' : theme.emoji}</span>
+                                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider group-hover:text-orange-400 transition">{isClassic ? 'Fitness Score' : 'Expertise'}</span>
+                                <InfoTooltip text={isClassic
+                                    ? `Your fitness score across ${stats?.max_expertise ? stats.max_expertise / 5 : 0} exercises. Test an exercise to see where you stand.`
+                                    : `Your best rank level (1-5) across ${stats?.max_expertise ? stats.max_expertise / 5 : 0} ranked exercises. Max = ${stats?.max_expertise || 0} (${stats?.max_expertise ? stats.max_expertise / 5 : 0} exercises × 5 levels). Log your best result on an exercise to earn your rank!`} size={14} />
                             </div>
                             <div className={`text-4xl font-black italic text-transparent bg-clip-text bg-gradient-to-r ${progressGradient}`}>
                                 {powerLevel}<span className="text-lg text-zinc-500">/{stats?.max_expertise || 0}</span>
                             </div>
-                            <div className="text-[10px] text-orange-500/70 group-hover:text-orange-400 mt-1 transition">Test an exercise to build Expertise →</div>
+                            <div className="text-[10px] text-orange-500/70 group-hover:text-orange-400 mt-1 transition">{isClassic ? 'Test an exercise to track progress →' : 'Test an exercise to build Expertise →'}</div>
                         </Link>
 
                         {/* Physique Points */}
-                        <Link href="/track#body-comp" className="group">
-                            <div className="flex items-center gap-2 mb-2">
+                        <Link href="/track#body-comp" className="group text-center">
+                            <div className="flex items-center justify-center gap-2 mb-2">
                                 <span className="text-xl">💪</span>
-                                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider group-hover:text-emerald-400 transition">Physique Points</span>
+                                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider group-hover:text-emerald-400 transition">{isClassic ? 'Body Composition Progress' : 'Physique Points'}</span>
                                 <InfoTooltip text="Tracks body composition changes over time. Compares your earliest and latest measurements (weight, waist, arms, chest, legs) to score progress toward your goals. Positive = improving, negative = regressing. Log body measurements regularly to see your score change." size={14} />
                             </div>
                             <div className={`text-4xl font-black italic ${physiquePoints.color}`}>
@@ -98,8 +102,8 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                         </Link>
 
                         {/* Weight */}
-                        <Link href="/track#body-comp" className="group">
-                            <div className="flex items-center gap-2 mb-2">
+                        <Link href="/track#body-comp" className="group text-center">
+                            <div className="flex items-center justify-center gap-2 mb-2">
                                 <span className="text-xl">⚖️</span>
                                 <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider group-hover:text-cyan-400 transition">Weight</span>
                             </div>
@@ -146,7 +150,7 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                                 </span>
                             </div>
                             <span className="text-xs text-zinc-500">
-                                {xpToNext} XP to next
+                                {xpToNext} {isClassic ? 'pts to next' : 'XP to next'}
                             </span>
                         </div>
                         <div className="w-full bg-zinc-800 rounded-full h-2 overflow-hidden">

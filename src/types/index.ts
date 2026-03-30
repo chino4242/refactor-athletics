@@ -7,6 +7,7 @@ export interface UserProfileData {
     is_onboarded?: boolean;
     selected_theme?: string;
     selected_path?: string;
+    experience_mode?: 'rpg' | 'classic';
     waiver_accepted_at?: string;
     timezone?: string;
     display_name?: string;
@@ -14,6 +15,7 @@ export interface UserProfileData {
     hidden_habits?: string[];
     habit_targets?: Record<string, number>;
     body_composition_goals?: Record<string, string>;
+    available_equipment?: string[];
 }
 
 export interface NutritionTargets {
@@ -187,3 +189,39 @@ export interface MilestoneResponse {
     current_value: number;
     next_milestone: number | null;
 }
+
+// Group / Party Types
+export interface Group {
+    id: string;
+    name: string;
+    leader_id: string;
+    invite_code: string;
+    created_at: string;
+}
+
+export interface GroupMember {
+    group_id: string;
+    user_id: string;
+    joined_at: string;
+    display_name?: string;
+}
+
+export interface GroupChallenge {
+    id: string;
+    group_id: string;
+    metric: string;
+    target: number;
+    week_start: string;
+    completed: boolean;
+    completed_at?: string;
+    created_at: string;
+}
+
+export type ChallengeMetric = 'steps' | 'active_minutes' | 'workouts' | 'water_days';
+
+export const CHALLENGE_PRESETS: Record<ChallengeMetric, { label: string; emoji: string; unit: string; defaultTarget: number }> = {
+    steps: { label: 'Total Steps', emoji: '🚶', unit: 'steps', defaultTarget: 500000 },
+    active_minutes: { label: 'Active Minutes', emoji: '⏱️', unit: 'min', defaultTarget: 600 },
+    workouts: { label: 'Workouts Completed', emoji: '🏋️', unit: 'workouts', defaultTarget: 20 },
+    water_days: { label: 'Hydration Days', emoji: '💧', unit: 'days', defaultTarget: 35 },
+};

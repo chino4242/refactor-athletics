@@ -15,6 +15,7 @@ const geistMono = Geist_Mono({
 import TopHeader from "@/components/layout/TopHeader";
 import MobileNav from "@/components/layout/MobileNav";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { ExperienceModeProvider } from "@/context/ExperienceModeContext";
 import { ToastProvider } from "@/context/ToastContext";
 import ToastContainer from "@/components/ui/Toast";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
@@ -53,6 +54,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased selection:bg-orange-500/30`}
       >
         <ThemeProvider>
+          <ExperienceModeProvider>
           <ToastProvider>
             <ServiceWorkerRegistration />
             <InstallPrompt />
@@ -67,6 +69,7 @@ export default function RootLayout({
             </div>
             <ToastContainer />
           </ToastProvider>
+          </ExperienceModeProvider>
         </ThemeProvider>
       </body>
     </html>

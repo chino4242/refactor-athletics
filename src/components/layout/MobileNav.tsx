@@ -2,9 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useExperienceMode } from '@/context/ExperienceModeContext';
 
 export default function MobileNav() {
     const pathname = usePathname();
+    const { isClassic } = useExperienceMode();
 
     const isActive = (path: string) => {
         if (path === '/dashboard' && (pathname === '/' || pathname === '/dashboard')) return 'text-orange-500 bg-orange-500/10';
@@ -27,8 +29,8 @@ export default function MobileNav() {
                     <span className="text-xs font-bold uppercase tracking-wider">Train</span>
                 </Link>
                 <Link href="/arena" className={`flex flex-col items-center justify-center gap-1 transition-colors ${isActive('/arena')}`}>
-                    <span className="text-xl">⚔️</span>
-                    <span className="text-xs font-bold uppercase tracking-wider">Arena</span>
+                    <span className="text-xl">{isClassic ? '👥' : '⚔️'}</span>
+                    <span className="text-xs font-bold uppercase tracking-wider">{isClassic ? 'Social' : 'Arena'}</span>
                 </Link>
                 <Link href="/profile" className={`flex flex-col items-center justify-center gap-1 transition-colors ${isActive('/profile')}`}>
                     <span className="text-xl">🏆</span>

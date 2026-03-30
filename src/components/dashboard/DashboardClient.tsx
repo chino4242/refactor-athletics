@@ -9,6 +9,8 @@ import DashboardTabs from './DashboardTabs';
 import DashboardSkeleton from './DashboardSkeleton';
 import QuickActionButton from './QuickActionButton';
 import { Plus } from 'lucide-react';
+import { createClient } from '@/utils/supabase/client';
+import { useExperienceMode } from '@/context/ExperienceModeContext';
 
 interface DashboardClientProps {
     userId: string;
@@ -21,6 +23,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
     const [loading, setLoading] = useState(true);
     const [showQuickActions, setShowQuickActions] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
+    const { setMode } = useExperienceMode();
     
     // Pull to refresh state
     const [pullDistance, setPullDistance] = useState(0);
@@ -29,11 +32,15 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
 
     const loadData = async () => {
         try {
-            const [statsData, duelsData, programsData] = await Promise.all([
+            const supabase = createClient();
+            const [statsData, duelsData, programsData, profileData] = await Promise.all([
                 getUserStats(userId).catch(e => { console.error('Stats error:', e); return null; }),
                 getActiveDuels(userId).catch(e => { console.error('Duels error:', e); return []; }),
                 getWorkouts(userId).catch(e => { console.error('Programs error:', e); return []; }),
+                supabase.from('users').select('experience_mode').eq('id', userId).single(),
             ]);
+            const dbMode = profileData?.data?.experience_mode;
+            if (dbMode === 'rpg' || dbMode === 'classic') setMode(dbMode);
             console.log('Dashboard loaded:', { statsData, duelsData: duelsData?.length, programsData: programsData?.length });
             setStats(statsData);
             setActiveDuels(duelsData || []);

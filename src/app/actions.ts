@@ -119,6 +119,17 @@ export async function logTrainingAction(
     const catalogItem = catalogResult.data;
     const age = profileResult.data?.age || 25;
     const xpFactor = catalogItem ? (catalogItem.xp_factor || 1) : 1;
+    const normalizationFactor = catalogItem?.normalization_factor || 1.0;
+    const normalizesTo = catalogItem?.normalizes_to;
+
+    // If this exercise normalizes to a base exercise, fetch that exercise's standards
+    let standards = catalogItem?.standards || {};
+    if (normalizesTo && (!standards.brackets || Object.keys(standards).length === 0)) {
+        const { data: baseExercise } = await supabase.from('catalog').select('standards').eq('id', normalizesTo).single();
+        if (baseExercise?.standards?.brackets) {
+            standards = baseExercise.standards;
+        }
+    }
 
     // Find best set for rank calculation
     let bestValue = 0;
@@ -148,14 +159,16 @@ export async function logTrainingAction(
         }
     }
 
-    // Calculate rank
-    const standards = catalogItem?.standards || {};
+    // Calculate rank using standards (may come from base exercise via normalizes_to)
     const scoring = standards.scoring || 'higher_is_better';
     const isXBW = standards.unit === 'xBW';
     
-    let finalValue = bestValue;
+    // Apply normalization factor (e.g., dumbbell 1.15x, smith 0.85x)
+    let normalizedValue = bestValue * normalizationFactor;
+    
+    let finalValue = normalizedValue;
     if (exerciseId === 'weighted_pullup' || exerciseId === 'five_rm_weighted_pull_up') {
-        finalValue = bestValue + bodyweight;
+        finalValue = normalizedValue + bodyweight;
     }
     const comparisonValue = isXBW ? finalValue / bodyweight : finalValue;
 

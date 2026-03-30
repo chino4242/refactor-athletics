@@ -10,10 +10,15 @@ The application uses **Supabase** (PostgreSQL) as its primary backend.
   - **body_composition_goals** (jsonb): Stores user goals including `target_weight` (stored as string)
   - **waiver_accepted_at** (timestamptz): Timestamp of liability waiver acceptance
   - **selected_path** (text): Training path (hybrid, strength, endurance, mobility)
+  - **experience_mode** (text): 'rpg' or 'classic' — drives UI label swaps via `ExperienceModeContext`
+  - **available_equipment** (jsonb): Array of equipment IDs user has access to (e.g., `["barbell", "dumbbells", "treadmill"]`)
 - **catalog**: Exercise library with standards, categories, and XP factors
   - **standards** (jsonb): Contains `brackets` (age/sex-based thresholds), `scoring` (higher_is_better/lower_is_better), and `unit` (lbs, sec, reps, xBW)
   - **xp_factor** (numeric): Multiplier for XP calculation (default: 1)
-  - **242 exercises ingested** from activity_catalog.json
+  - **required_equipment** (jsonb): Array of equipment IDs needed for this exercise
+  - **normalization_factor** (numeric): Equipment conversion factor (default: 1.0). Dumbbells = 1.15, Smith = 0.85
+  - **normalizes_to** (text): ID of the base exercise whose standards to use for rank comparison
+  - **242+ exercises ingested** from activity_catalog.json (including smith machine variants)
 - **workouts**: Exercise logs with sets, rank, level, XP (domain-specific table)
 - **nutrition_logs**: Macro tracking (protein, carbs, fat, calories, water, calories_burned) with XP
   - **Calories auto-calculated**: protein × 4 + carbs × 4 + fat × 9
@@ -26,6 +31,9 @@ The application uses **Supabase** (PostgreSQL) as its primary backend.
 - **program_schedule**: Assigns programs to calendar days
 - **duels**: User vs user challenges
 - **challenges**: Weekly community challenges
+- **groups**: Party/group system with invite codes and leader management
+- **group_members**: Group membership (many-to-many, user_id + group_id)
+- **group_challenges**: Weekly collaborative challenges per group (metric, target, week_start)
 
 ### 1.2 Row Level Security (RLS)
 RLS is active on all tables:
@@ -43,6 +51,11 @@ RLS is active on all tables:
 5. `20260228120000_add_catalog_columns.sql` - Added `standards` (jsonb) and `xp_factor` (numeric) columns to catalog table
 6. `20260313_waiver_acceptance.sql` - Added `waiver_accepted_at` (timestamptz) to users table
 7. `20260313_selected_path.sql` - Added `selected_path` (text, default 'hybrid') to users table
+8. `20260330_experience_mode.sql` - Added `experience_mode` (text, default 'rpg') to users table
+9. `20260330_available_equipment.sql` - Added `available_equipment` (jsonb, default '[]') to users table
+10. `20260330_groups.sql` - Groups, group_members, group_challenges tables with RLS
+11. `20260330_catalog_equipment.sql` - Added `required_equipment` (jsonb) to catalog, populated mappings
+12. `20260330_normalization_factors.sql` - Added `normalization_factor`, `normalizes_to` to catalog; smith machine variants
 
 **Note**: After running migrations that modify table schemas, Supabase's PostgREST API server caches the old schema. You must either:
 - Restart the Supabase project (Settings → General → Restart project)
@@ -58,6 +71,19 @@ The application calculates a user's fitness "Rank" based on their age, sex, body
   - If `unit === 'xBW'`, the user's `resultValue` is divided by their `bodyweight` before comparing it to the threshold.
   - *Exception*: For `weighted_pullup` and `five_rm_weighted_pull_up`, the `bodyweight` must be ADDED to the `resultValue` first, then divided by `bodyweight`.
 - **Rank Levels**: Map levels `0` through `5` onto Theme Names. Level 0 = unranked ("Peasant" fallback), Levels 1-5 map to theme-specific rank names (e.g., Rookie, Amateur, Contender, Pro, Champion/Legend). The `levels` array in standards contains 5 thresholds (indices 0-4), producing `userLevel` 0-5.
+
+### 2.1.1 Equipment Normalization
+Exercise variants (dumbbell, smith machine) normalize to barbell-equivalent values before rank comparison:
+- **Barbell**: `normalization_factor` = 1.0 (baseline — thresholds are written for barbell)
+- **Dumbbells**: `normalization_factor` = 1.15 (harder due to stabilization; `weight × 2 × 1.15`)
+- **Smith Machine**: `normalization_factor` = 0.85 (easier due to guided path)
+
+When an exercise has `normalizes_to` set (e.g., `smith_bench_press` → `bench_press`), the rank engine:
+1. Fetches the base exercise's standards (brackets/thresholds)
+2. Multiplies `bestValue × normalization_factor` to get barbell-equivalent
+3. Compares the normalized value against the base exercise's thresholds
+
+This allows users to log their actual weight on any equipment variant and get a fair rank comparison.
 
 ### 2.2 Power Level & Player Stats (`src/services/api.ts`)
 There are two distinct progression metrics for a user:
@@ -131,17 +157,19 @@ The dashboard (`/dashboard`) is the default landing page after login, featuring 
 - **Empty States**: Motivational messages with CTAs for all empty sections
 
 ### 4.3 Onboarding Wizard
-New users see a 6-step wizard before accessing the dashboard:
+New users see an 8-step wizard before accessing the dashboard:
 1. **Liability Waiver**: Assumption of risk and waiver of liability (must accept to proceed)
-2. **Introduction**: Explains Refactor Athletics concept (fitness RPG, Power Level, ranked standards)
-3. **Theme Selection**: Choose from 5 themes (Athlete, Draconic, Samurai, Apex Predator, Viking)
-4. **Path Selection**: Choose training path (Hybrid, Strength, Endurance, Mobility)
-5. **Personal Info**: Age, sex, current weight
-6. **Goal Setting**: Target weight
+2. **Experience Mode**: "What brings you here?" — choose RPG ("Compete & Level Up") or Classic ("Track & Improve")
+3. **Introduction**: Explains Refactor Athletics concept (adapts text based on chosen mode)
+4. **Theme Selection**: Choose from 5 themes (RPG only — skipped for Classic users)
+5. **Path Selection**: Choose training path (RPG) or view General Wellness overview (Classic)
+6. **Personal Info**: Age, sex (with "prefer not to say" option), current weight
+7. **Goal Setting**: Target weight
+8. **Equipment Checklist**: Select available equipment (barbell, dumbbells, kettlebells, smith machine, pull-up bar, bench, squat rack, cables, treadmill, rower, assault bike, ski erg, resistance bands, yoga mat, rings, plyo box, outdoor running, bodyweight only)
 
-After completion, `is_onboarded` flag is set to true, `waiver_accepted_at` timestamp is saved, and user sees normal dashboard.
+After completion, `is_onboarded` flag is set to true, `waiver_accepted_at` timestamp is saved, `experience_mode` is stored in both the database and localStorage, and user sees normal dashboard.
 
-Existing users who haven't accepted the waiver see a blocking `WaiverModal` overlay on the dashboard until they accept.
+Classic mode skips step 4 (theme selection). The step flow is dynamic based on `experienceMode` state.
 
 ### 4.4 Empty State Design Pattern
 All empty states follow this pattern:
@@ -222,9 +250,53 @@ See `PWA_SETUP.md` for detailed implementation guide.
 - **Z-Index Stacking Contexts**: Be careful with sibling `relative z-10` containers. If a dropdown menu (e.g., App Settings on the Profile Card) is placed inside a `z-10` container, the sibling container must have a lower z-index (or the parent must be elevated to `z-20`) so floating elements can escape the bounding box and remain clickable on mobile.
 - **Styling**: Tailwind CSS is used globally. Favor dark, premium gradients (`bg-zinc-900`, `from-orange-600 to-red-600`) and glowing accents (`drop-shadow-[0_0_30px_rgba(249,115,22,0.4)]`).
 
-## 8. Future Features & Design Documents
+## 8. Experience Modes
 
-### 8.1 Character Creation System
+### 8.1 RPG vs Classic
+The app supports two experience modes, selected during onboarding and stored in `users.experience_mode`:
+- **RPG Mode** (`'rpg'`): Full gamification — themes, rank names, XP, "Daily Quests", "Arena", "Party", theme banner
+- **Classic Mode** (`'classic'`): Clean, minimal UI — no theme banner, neutral labels throughout
+
+### 8.2 Label Mapping
+All mode-aware labels are driven by `ExperienceModeContext` (`src/context/ExperienceModeContext.tsx`):
+
+| RPG Mode | Classic Mode | Component |
+|---|---|---|
+| Expertise | Fitness Score | DashboardHeader |
+| Physique Points | Body Composition Progress | DashboardHeader |
+| XP | pts | DashboardHeader, TodayTab |
+| Daily Quests | Today's Targets | TodayTab |
+| ⚔️ Arena | 👥 Social | MobileNav, DashboardTabs |
+| Expertise Contributors | Performance Breakdown | ProgressTab |
+| Trophy Case | View All | ProgressTab |
+| Total XP | Total Points | ProgressTab |
+| Aggregate Score / EXPERTISE | Overall / FITNESS SCORE | PowerRadar |
+| Join Your Party | Join a Group | GroupCard |
+| Party Quest | Weekly Challenge | GroupCard |
+
+### 8.3 Context Hydration
+`ExperienceModeProvider` checks localStorage first for instant render, then falls back to a database query. `DashboardClient` also fetches `experience_mode` from the users table and syncs it to the context on load.
+
+## 9. Groups & Weekly Challenges
+
+### 9.1 Group System
+- **Groups** (`src/services/groupApi.ts`): Create/join/leave groups via invite codes
+- **Group Card** (`src/components/GroupCard.tsx`): Full UI for group management and challenge tracking
+- Leaders can set weekly challenges from 4 presets: Steps, Active Minutes, Workouts, Hydration Days
+- Progress is aggregated from `habit_logs` and `workouts` tables across all group members
+- RPG and Classic users can be in the same group — only labels differ
+
+### 9.2 Challenge Presets
+| Metric | Default Target | Data Source |
+|---|---|---|
+| Steps | 500,000 | `habit_logs` (habit_steps) |
+| Active Minutes | 600 | `workouts` count × 30 |
+| Workouts | 20 | `workouts` count |
+| Hydration Days | 35 | `habit_logs` (habit_water) unique days |
+
+## 10. Future Features & Design Documents
+
+### 10.1 Character Creation System
 A comprehensive RPG-style character creation and customization system is planned. See `CHARACTER_CREATION_DESIGN.md` for full specifications including:
 - SVG base bodies + PNG gear overlays approach
 - Database schema for character config and gear catalog

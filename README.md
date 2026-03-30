@@ -19,25 +19,44 @@ Recent architectural changes migrated from a monolithic `history` table to domai
   - Current and target weight display
   - Today's scheduled workout
   - Improved empty states with CTAs
-- **Onboarding Wizard**: 6-step guided setup for new users:
+- **Onboarding Wizard**: 8-step guided setup for new users:
   - Liability waiver acceptance (required before proceeding)
-  - Introduction to Refactor Athletics concept
-  - Theme selection (Athlete, Draconic, Samurai, Apex Predator, Viking)
-  - Training path selection (Hybrid, Strength, Endurance, Mobility)
-  - Personal info (age, sex, current weight)
+  - Experience mode selection (RPG or Classic)
+  - Introduction to Refactor Athletics (adapts to chosen mode)
+  - Theme selection (RPG only: Athlete, Draconic, Samurai, Apex Predator, Viking)
+  - Training path selection (RPG) or General Wellness overview (Classic)
+  - Personal info (age, sex with "prefer not to say" option, current weight)
   - Goal setting (target weight)
+  - Equipment checklist (barbell, dumbbells, kettlebells, smith machine, etc.)
 - **Attribute Balance**: A specialized radar chart categorizes logged exercises into four cardinal points: Strength (STR), Endurance (END), Power (PWR), and Mobility (MOB).
 - **Daily Quests**: Track habits (steps, water, sleep, day strain, etc.) and nutrition (macros, calories burned, net calories) with customizable targets, visibility settings, and consistency heatmaps with streak tracking.
 - **Workout Programs**: Create custom workout programs with exercises and treadmill blocks, schedule them to specific days.
 - **Arena**: Challenge other users to duels and compete in weekly challenges.
+
+## Experience Modes
+The app supports two experience modes, selected during onboarding:
+- **RPG Mode**: Full gamification — themes, rank names, XP, character system, "Daily Quests", "Arena", "Party" terminology
+- **Classic Mode**: Clean, minimal UI — "Fitness Score" instead of "Expertise", "Today's Targets" instead of "Daily Quests", "Social" instead of "Arena", no theme banner
+
+All labels are driven by `ExperienceModeContext`. The underlying data, math, and progression systems are identical — only the presentation layer changes. Users can be in the same group regardless of mode.
+
+## Equipment Normalization
+Exercise variants (dumbbell, smith machine) normalize to barbell-equivalent values before rank comparison:
+- **Barbell**: factor 1.0 (baseline)
+- **Dumbbells**: factor 1.15 (harder due to stabilization — `weight × 2 × 1.15`)
+- **Smith Machine**: factor 0.85 (easier due to guided path)
+
+Each catalog entry has `normalization_factor` and `normalizes_to` (base exercise ID for standards lookup). The rank engine applies `bestValue × normalization_factor` before comparing against thresholds.
 
 ## Database Schema
 
 ### Core Tables
 - **users**: User profiles with age, sex, bodyweight, nutrition targets, habit targets, hidden habits
   - Added columns: `body_composition_goals` (jsonb) for storing target weight and other goals
-- **catalog**: Exercise library with standards, categories, XP factors (242 exercises ingested)
+  - Added columns: `experience_mode` (text, 'rpg' or 'classic'), `available_equipment` (jsonb array)
+- **catalog**: Exercise library with standards, categories, XP factors (242+ exercises ingested)
   - Added columns: `standards` (jsonb), `xp_factor` (numeric)
+  - Added columns: `required_equipment` (jsonb array), `normalization_factor` (numeric), `normalizes_to` (text)
 - **workouts**: Exercise logs with sets, rank, level, XP (replaces old `history` table for workouts)
 - **nutrition_logs**: Macro tracking (protein, carbs, fat, calories, water, calories_burned) with XP
   - Calories automatically calculated from macros: protein × 4 + carbs × 4 + fat × 9
@@ -48,6 +67,9 @@ Recent architectural changes migrated from a monolithic `history` table to domai
 - **program_schedule**: Assigns programs to calendar days
 - **duels**: User vs user challenges
 - **challenges**: Weekly community challenges
+- **groups**: Party/group system with invite codes
+- **group_members**: Group membership (many-to-many)
+- **group_challenges**: Weekly collaborative challenges per group
 
 ### Key Indexes
 - `(user_id, date)` on all log tables for fast daily queries
@@ -88,6 +110,11 @@ Apply migrations in order:
 5. `20260228120000_add_catalog_columns.sql` - Add catalog columns (standards, xp_factor)
 6. `20260313_waiver_acceptance.sql` - Add waiver acceptance tracking
 7. `20260313_selected_path.sql` - Add training path selection
+8. `20260330_experience_mode.sql` - Add experience mode (rpg/classic)
+9. `20260330_available_equipment.sql` - Add user equipment preferences
+10. `20260330_groups.sql` - Groups, members, and group challenges
+11. `20260330_catalog_equipment.sql` - Add required_equipment to catalog
+12. `20260330_normalization_factors.sql` - Equipment normalization and smith machine variants
 
 Run in Supabase SQL Editor or via CLI:
 ```bash

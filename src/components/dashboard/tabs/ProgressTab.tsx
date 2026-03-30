@@ -8,6 +8,7 @@ import PowerRadar from '@/components/profile/PowerRadar';
 import { getHistory, getTrainingCatalog } from '@/services/api';
 import { useTrophies } from '@/hooks/useTrophies';
 import { useTheme } from '@/context/ThemeContext';
+import { useExperienceMode } from '@/context/ExperienceModeContext';
 import { THEMES } from '@/data/themes';
 import { createClient } from '@/utils/supabase/client';
 
@@ -25,6 +26,7 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
     const [userProfile, setUserProfile] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const { currentTheme } = useTheme();
+    const { isClassic } = useExperienceMode();
 
     useEffect(() => {
         const loadHistory = async () => {
@@ -180,10 +182,10 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                 <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                         <span className="text-lg">💪</span>
-                        <h3 className="text-sm font-bold text-white uppercase tracking-wider">Expertise Contributors</h3>
+                        <h3 className="text-sm font-bold text-white uppercase tracking-wider">{isClassic ? 'Performance Breakdown' : 'Expertise Contributors'}</h3>
                     </div>
                     <Link href="/profile" className="text-xs text-orange-500 hover:text-orange-400 flex items-center gap-1">
-                        Trophy Case
+                        {isClassic ? 'View All' : 'Trophy Case'}
                         <ChevronRight size={14} />
                     </Link>
                 </div>
@@ -193,7 +195,7 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                     <div className="text-center py-8">
                         <div className="text-5xl mb-4">🏆</div>
                         <p className="text-sm text-zinc-400 mb-2">No exercises completed yet</p>
-                        <p className="text-xs text-zinc-500 mb-4">Complete workouts to build your Expertise</p>
+                        <p className="text-xs text-zinc-500 mb-4">{isClassic ? 'Complete workouts to see your performance' : 'Complete workouts to build your Expertise'}</p>
                         <Link 
                             href="/train" 
                             className="inline-flex items-center gap-1 text-xs text-orange-500 hover:text-orange-400 font-semibold"
@@ -329,7 +331,7 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                         <p className="text-2xl font-black italic text-white">{stats.exercises_tracked || 0}</p>
                     </div>
                     <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-                        <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Total XP</p>
+                        <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">{isClassic ? 'Total Points' : 'Total XP'}</p>
                         <p className="text-2xl font-black italic text-white">{(stats.total_career_xp || stats.total_xp || 0).toLocaleString()}</p>
                     </div>
                 </div>

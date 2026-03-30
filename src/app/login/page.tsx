@@ -1,5 +1,4 @@
 import { login, signup } from './actions';
-import Image from 'next/image';
 
 export default async function LoginPage({
     searchParams,
@@ -12,16 +11,18 @@ export default async function LoginPage({
         <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
             <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-3xl p-8 relative overflow-hidden">
                 {/* Background Glow */}
-                <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 blur-[100px] rounded-full pointer-events-none"></div>
-                <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-500/10 blur-[100px] rounded-full pointer-events-none"></div>
+                <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 blur-[100px] rounded-full pointer-events-none"></div>
+                <div className="absolute bottom-0 left-0 w-64 h-64 bg-red-500/10 blur-[100px] rounded-full pointer-events-none"></div>
 
                 <div className="relative z-10">
-                    <div className="flex flex-col items-center mb-10">
-                        <div className="w-16 h-16 bg-zinc-950 border border-zinc-800 rounded-2xl flex items-center justify-center mb-4 shadow-[0_0_30px_rgba(16,185,129,0.2)]">
-                            <span className="text-3xl">⚔️</span>
-                        </div>
-                        <h1 className="text-3xl font-black italic text-white tracking-widest uppercase">The Arena</h1>
-                        <p className="text-zinc-500 font-mono text-xs uppercase tracking-widest mt-2">v2.0 Next.js</p>
+                    <div className="flex flex-col items-center mb-6">
+                        <h1 className="text-3xl font-black text-white tracking-tight uppercase">
+                            Refactor <span className="text-orange-500">Athletics</span>
+                        </h1>
+                        <div className="w-12 h-0.5 bg-gradient-to-r from-orange-600 to-red-600 rounded-full mt-3 mb-4"></div>
+                        <p className="text-zinc-400 text-sm text-center leading-relaxed max-w-xs">
+                            Track your workouts, build consistency, and watch your progress compound — whether you&apos;re chasing personal bests or leveling up your character.
+                        </p>
                     </div>
 
                     {params?.message && (
@@ -38,8 +39,8 @@ export default async function LoginPage({
                                 name="email"
                                 type="email"
                                 required
-                                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white focus:outline-none focus:border-emerald-500 transition-colors font-mono"
-                                placeholder="gladiator@example.com"
+                                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white focus:outline-none focus:border-orange-500 transition-colors"
+                                placeholder="you@example.com"
                             />
                         </div>
                         <div>
@@ -49,7 +50,7 @@ export default async function LoginPage({
                                 name="password"
                                 type="password"
                                 required
-                                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white focus:outline-none focus:border-emerald-500 transition-colors font-mono"
+                                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white focus:outline-none focus:border-orange-500 transition-colors"
                                 placeholder="••••••••"
                             />
                         </div>
@@ -57,18 +58,15 @@ export default async function LoginPage({
                         <div className="pt-4 space-y-3">
                             <button
                                 formAction={login}
-                                className="w-full bg-white text-black font-black uppercase tracking-widest text-sm py-4 rounded-xl hover:bg-zinc-200 transition-all flex items-center justify-center gap-2"
+                                className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white font-black uppercase tracking-widest text-sm py-4 rounded-xl hover:from-orange-500 hover:to-red-500 transition-all shadow-[0_0_20px_rgba(249,115,22,0.3)]"
                             >
-                                Enter Arena
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                </svg>
+                                Begin Your Journey
                             </button>
                             <button
                                 formAction={signup}
-                                className="w-full bg-transparent border border-zinc-700 text-zinc-400 font-bold uppercase tracking-widest text-xs py-4 rounded-xl hover:border-zinc-500 hover:text-white transition-all"
+                                className="w-full bg-transparent border border-zinc-700 text-zinc-400 font-bold uppercase tracking-widest text-xs py-4 rounded-xl hover:border-orange-500/50 hover:text-white transition-all"
                             >
-                                Register New Profile
+                                Create Account
                             </button>
                         </div>
                     </form>
@@ -76,7 +74,7 @@ export default async function LoginPage({
             </div>
 
             <p className="mt-8 text-[10px] text-zinc-600 font-mono uppercase tracking-widest">
-                Protected by Next.js & Supabase
+                Built with Next.js & Supabase
             </p>
         </div>
     );

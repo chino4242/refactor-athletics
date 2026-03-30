@@ -1,5 +1,6 @@
 import { type UserStats } from '../../services/api';
 import InfoTooltip from '../common/InfoTooltip';
+import { useExperienceMode } from '@/context/ExperienceModeContext';
 
 interface PowerRadarProps {
     stats: UserStats | null;
@@ -7,6 +8,7 @@ interface PowerRadarProps {
 }
 
 export default function PowerRadar({ stats, categoryStats }: PowerRadarProps) {
+    const { isClassic } = useExperienceMode();
     // --- CHART CONFIGS ---
     const radarData = [
         { label: "END", full: "Endurance", value: categoryStats["Endurance & Speed"] || 0 }, // 12 o'clock
@@ -30,10 +32,12 @@ export default function PowerRadar({ stats, categoryStats }: PowerRadarProps) {
                     <div className="absolute top-0 right-0 -mt-4 -mr-4 w-40 h-40 bg-orange-500/5 rounded-full blur-3xl"></div>
                     <div className="relative z-10 flex items-center justify-between">
                         <div>
-                            <h3 className="text-orange-500 font-bold uppercase tracking-widest text-xs mb-2">Aggregate Score</h3>
+                            <h3 className="text-orange-500 font-bold uppercase tracking-widest text-xs mb-2">{isClassic ? 'Overall' : 'Aggregate Score'}</h3>
                             <h2 className="text-4xl md:text-5xl font-black italic text-white tracking-tighter flex items-center">
-                                EXPERTISE
-                                <InfoTooltip text={`Your best rank level (1-5) across ${stats?.max_expertise ? stats.max_expertise / 5 : 0} ranked exercises. Max = ${stats?.max_expertise || 0} (${stats?.max_expertise ? stats.max_expertise / 5 : 0} exercises × 5 levels).`} size={24} />
+                                {isClassic ? 'FITNESS SCORE' : 'EXPERTISE'}
+                                <InfoTooltip text={isClassic
+                                    ? `Your fitness score across ${stats?.max_expertise ? stats.max_expertise / 5 : 0} exercises. Test an exercise to see where you stand.`
+                                    : `Your best rank level (1-5) across ${stats?.max_expertise ? stats.max_expertise / 5 : 0} ranked exercises. Max = ${stats?.max_expertise || 0} (${stats?.max_expertise ? stats.max_expertise / 5 : 0} exercises × 5 levels).`} size={24} />
                             </h2>
                         </div>
                         <div className="text-right">

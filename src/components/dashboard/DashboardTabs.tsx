@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { UserStats, DuelResponse, Workout } from '@/types';
 import { useTheme } from '@/context/ThemeContext';
+import { useExperienceMode } from '@/context/ExperienceModeContext';
 import { THEMES } from '@/data/themes';
 import TodayTab from './tabs/TodayTab';
 import ArenaTab from './tabs/ArenaTab';
@@ -18,6 +19,7 @@ interface DashboardTabsProps {
 
 export default function DashboardTabs({ userId, stats, hasActiveDuels, activeDuels, programs }: DashboardTabsProps) {
     const { currentTheme } = useTheme();
+    const { isClassic } = useExperienceMode();
     const theme = THEMES[currentTheme] || THEMES['athlete'];
     const progressGradient = theme.progressGradient || 'from-orange-600 to-red-600';
     
@@ -31,7 +33,7 @@ export default function DashboardTabs({ userId, stats, hasActiveDuels, activeDue
     // Tab icons
     const tabIcons: Record<string, string> = {
         'Today': '📅',
-        'Arena': '⚔️',
+        'Arena': isClassic ? '👥' : '⚔️',
         'Progress': '📊',
     };
 
