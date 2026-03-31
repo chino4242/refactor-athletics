@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { saveProfile } from '@/services/api';
 import { useToast } from '@/context/ToastContext';
 import { useTheme } from '@/context/ThemeContext';
+import { useExperienceMode } from '@/context/ExperienceModeContext';
 import { THEMES } from '@/data/themes';
 import { Settings, User, Target, Palette, ChevronLeft } from 'lucide-react';
 import type { UserProfileData } from '@/types';
@@ -18,7 +19,9 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
     const router = useRouter();
     const toast = useToast();
     const { currentTheme, setCurrentTheme } = useTheme();
+    const { isClassic } = useExperienceMode();
     const [loading, setLoading] = useState(false);
+    const [showThemes, setShowThemes] = useState(false);
 
     // Profile fields
     const [displayName, setDisplayName] = useState(initialProfile?.display_name || '');
@@ -81,6 +84,20 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
 
             <div className="space-y-6">
                 {/* Theme Picker */}
+                {(isClassic && !showThemes) ? (
+                <button
+                    onClick={() => setShowThemes(true)}
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-4 text-left hover:border-zinc-700 transition"
+                >
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <Palette size={16} className="text-zinc-500" />
+                            <span className="text-sm text-zinc-400">Customize Theme</span>
+                        </div>
+                        <span className="text-xs text-zinc-600">Optional</span>
+                    </div>
+                </button>
+                ) : (
                 <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
                     <div className="flex items-center gap-2 mb-5">
                         <Palette size={16} className="text-purple-400" />
@@ -119,6 +136,7 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                         ))}
                     </div>
                 </div>
+                )}
 
                 {/* Profile Section */}
                 <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">

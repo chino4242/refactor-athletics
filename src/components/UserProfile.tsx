@@ -8,6 +8,7 @@ import { useUserProfileData } from '../hooks/useUserProfileData';
 import { useTrophies } from '../hooks/useTrophies';
 import { useToast } from '../context/ToastContext';
 import { useTheme } from '../context/ThemeContext';
+import { useExperienceMode } from '../context/ExperienceModeContext';
 import { THEMES } from '../data/themes';
 
 import ProfileCard from './profile/ProfileCard';
@@ -46,6 +47,7 @@ export default function UserProfile({
   const { groupedTrophies, categoryStats } = useTrophies(history, exercises);
   const toast = useToast();
   const { currentTheme: activeTheme, setCurrentTheme } = useTheme();
+  const { isClassic } = useExperienceMode();
   const [itemToDelete, setItemToDelete] = useState<HistoryItem | null>(null);
 
   // --- HANDLERS ---
@@ -83,6 +85,7 @@ export default function UserProfile({
 
   // --- TAB STATE ---
   const [activeTab, setActiveTab] = useState<'settings' | 'trophies' | 'milestones'>('settings');
+  const [showThemes, setShowThemes] = useState(false);
   const [showWeeklyReview, setShowWeeklyReview] = useState(false);
 
   return (
@@ -142,6 +145,20 @@ export default function UserProfile({
           />
 
           {/* Theme Picker */}
+          {(isClassic && !showThemes) ? (
+          <button
+              onClick={() => setShowThemes(true)}
+              className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-4 text-left hover:border-zinc-700 transition"
+          >
+              <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                      <span>🎨</span>
+                      <span className="text-sm text-zinc-400">Customize Theme</span>
+                  </div>
+                  <span className="text-xs text-zinc-600">Optional</span>
+              </div>
+          </button>
+          ) : (
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
             <h2 className="text-sm font-black uppercase tracking-widest mb-4">🎨 Theme</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -168,6 +185,7 @@ export default function UserProfile({
               ))}
             </div>
           </div>
+          )}
         </div>
       )}
 
