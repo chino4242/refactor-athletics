@@ -211,17 +211,36 @@ export interface GroupChallenge {
     group_id: string;
     metric: string;
     target: number;
+    name?: string;
     week_start: string;
+    start_date: string;
+    end_date: string;
+    created_by?: string;
     completed: boolean;
     completed_at?: string;
+    mvp_user_id?: string;
+    results?: Record<string, number>;
     created_at: string;
+}
+
+export interface UserBadge {
+    id: string;
+    user_id: string;
+    badge_type: string;
+    challenge_id?: string;
+    metadata?: Record<string, any>;
+    earned_at: string;
 }
 
 export type ChallengeMetric = 'steps' | 'active_minutes' | 'workouts' | 'water_days';
 
 export const CHALLENGE_PRESETS: Record<ChallengeMetric, { label: string; emoji: string; unit: string; defaultTarget: number }> = {
-    steps: { label: 'Total Steps', emoji: '🚶', unit: 'steps', defaultTarget: 500000 },
+    steps: { label: 'Total Steps', emoji: '🚶', unit: 'steps', defaultTarget: 100000 },
     active_minutes: { label: 'Active Minutes', emoji: '⏱️', unit: 'min', defaultTarget: 600 },
     workouts: { label: 'Workouts Completed', emoji: '🏋️', unit: 'workouts', defaultTarget: 20 },
     water_days: { label: 'Hydration Days', emoji: '💧', unit: 'days', defaultTarget: 35 },
 };
+
+export const BADGE_TYPES = {
+    GROUP_CHALLENGE_MVP: 'group_challenge_mvp',
+} as const;

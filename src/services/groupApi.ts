@@ -1,9 +1,12 @@
 import { createClient } from '@/utils/supabase/client';
-import type { Group, GroupMember, GroupChallenge } from '@/types';
+import type { Group, GroupMember, GroupChallenge, UserBadge, ChallengeMetric } from '@/types';
+import { BADGE_TYPES } from '@/types';
 
 function generateInviteCode(): string {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
+
+// ── Group CRUD ──
 
 export async function createGroup(userId: string, name: string): Promise<Group> {
     const supabase = createClient();
@@ -51,56 +54,93 @@ export async function leaveGroup(userId: string, groupId: string): Promise<void>
     await supabase.from('group_members').delete().eq('group_id', groupId).eq('user_id', userId);
 }
 
-export async function getUserGroup(userId: string): Promise<{ group: Group; members: GroupMember[]; challenge: GroupChallenge | null } | null> {
+// ── Multi-Group Support ──
+
+export interface GroupWithDetails {
+    group: Group;
+    members: GroupMember[];
+    activeChallenge: GroupChallenge | null;
+}
+
+export async function getUserGroups(userId: string): Promise<GroupWithDetails[]> {
     const supabase = createClient();
 
-    // Find user's group
-    const { data: membership } = await supabase
+    // Get all groups user belongs to
+    const { data: memberships } = await supabase
         .from('group_members')
         .select('group_id')
-        .eq('user_id', userId)
-        .limit(1)
-        .single();
+        .eq('user_id', userId);
 
-    if (!membership) return null;
+    if (!memberships || memberships.length === 0) return [];
 
-    // Get group, members, and current week's challenge in parallel
-    const weekStart = getWeekStart();
-    const [groupRes, membersRes, challengeRes] = await Promise.all([
-        supabase.from('groups').select('*').eq('id', membership.group_id).single(),
-        supabase.from('group_members').select('group_id, user_id, joined_at').eq('group_id', membership.group_id),
-        supabase.from('group_challenges').select('*').eq('group_id', membership.group_id).eq('week_start', weekStart).single(),
+    const groupIds = memberships.map(m => m.group_id);
+    const now = new Date().toISOString().split('T')[0];
+
+    // Fetch groups, all members, and active challenges in parallel
+    const [groupsRes, membersRes, challengesRes] = await Promise.all([
+        supabase.from('groups').select('*').in('id', groupIds),
+        supabase.from('group_members').select('group_id, user_id, joined_at').in('group_id', groupIds),
+        supabase.from('group_challenges').select('*').in('group_id', groupIds).gte('end_date', now).eq('completed', false).order('created_at', { ascending: false }),
     ]);
 
-    if (!groupRes.data) return null;
-
-    // Get display names for members
-    const memberIds = (membersRes.data || []).map(m => m.user_id);
+    // Get display names for all members
+    const allMemberIds = [...new Set((membersRes.data || []).map(m => m.user_id))];
     const { data: profiles } = await supabase
         .from('users')
         .select('id, display_name')
-        .in('id', memberIds);
+        .in('id', allMemberIds);
 
     const profileMap = new Map((profiles || []).map(p => [p.id, p.display_name]));
-    const members = (membersRes.data || []).map(m => ({
+
+    const groups = groupsRes.data || [];
+    const allMembers = (membersRes.data || []).map(m => ({
         ...m,
         display_name: profileMap.get(m.user_id) || 'Unknown',
     }));
+    const challenges = challengesRes.data || [];
 
-    return {
-        group: groupRes.data,
-        members,
-        challenge: challengeRes.data || null,
-    };
+    return groups.map(group => ({
+        group,
+        members: allMembers.filter(m => m.group_id === group.id),
+        activeChallenge: challenges.find(c => c.group_id === group.id) || null,
+    }));
 }
 
-export async function createChallenge(groupId: string, metric: string, target: number): Promise<GroupChallenge> {
+// Backward compat — returns first group
+export async function getUserGroup(userId: string): Promise<{ group: Group; members: GroupMember[]; challenge: GroupChallenge | null } | null> {
+    const groups = await getUserGroups(userId);
+    if (groups.length === 0) return null;
+    const first = groups[0];
+    return { group: first.group, members: first.members, challenge: first.activeChallenge };
+}
+
+// ── Group Challenges ──
+
+export interface CreateGroupChallengeParams {
+    groupId: string;
+    createdBy: string;
+    metric: ChallengeMetric;
+    target: number;
+    name: string;
+    startDate: string; // YYYY-MM-DD
+    endDate: string;   // YYYY-MM-DD
+}
+
+export async function createGroupChallenge(params: CreateGroupChallengeParams): Promise<GroupChallenge> {
     const supabase = createClient();
-    const weekStart = getWeekStart();
 
     const { data, error } = await supabase
         .from('group_challenges')
-        .upsert({ group_id: groupId, metric, target, week_start: weekStart })
+        .insert({
+            group_id: params.groupId,
+            created_by: params.createdBy,
+            metric: params.metric,
+            target: params.target,
+            name: params.name,
+            start_date: params.startDate,
+            end_date: params.endDate,
+            week_start: params.startDate, // backward compat
+        })
         .select()
         .single();
 
@@ -108,20 +148,11 @@ export async function createChallenge(groupId: string, metric: string, target: n
     return data;
 }
 
-export async function getGroupChallengeProgress(groupId: string): Promise<Record<string, number>> {
+export async function getGroupChallengeProgress(groupId: string, challenge: GroupChallenge): Promise<Record<string, number>> {
     const supabase = createClient();
-    const weekStart = getWeekStart();
-    const weekStartTs = Math.floor(new Date(weekStart).getTime() / 1000);
 
-    // Get challenge
-    const { data: challenge } = await supabase
-        .from('group_challenges')
-        .select('*')
-        .eq('group_id', groupId)
-        .eq('week_start', weekStart)
-        .single();
-
-    if (!challenge) return {};
+    const startTs = Math.floor(new Date(challenge.start_date + 'T00:00:00').getTime() / 1000);
+    const endTs = Math.floor(new Date(challenge.end_date + 'T23:59:59').getTime() / 1000);
 
     // Get all members
     const { data: members } = await supabase
@@ -134,13 +165,17 @@ export async function getGroupChallengeProgress(groupId: string): Promise<Record
     const memberIds = members.map(m => m.user_id);
     const progress: Record<string, number> = {};
 
+    // Initialize all members to 0
+    memberIds.forEach(id => { progress[id] = 0; });
+
     if (challenge.metric === 'steps') {
         const { data } = await supabase
             .from('habit_logs')
             .select('user_id, value')
             .in('user_id', memberIds)
             .eq('habit_id', 'habit_steps')
-            .gte('timestamp', weekStartTs);
+            .gte('timestamp', startTs)
+            .lte('timestamp', endTs);
 
         (data || []).forEach(row => {
             progress[row.user_id] = (progress[row.user_id] || 0) + (row.value || 0);
@@ -150,18 +185,19 @@ export async function getGroupChallengeProgress(groupId: string): Promise<Record
             .from('workouts')
             .select('user_id')
             .in('user_id', memberIds)
-            .gte('timestamp', weekStartTs);
+            .gte('timestamp', startTs)
+            .lte('timestamp', endTs);
 
         (data || []).forEach(row => {
             progress[row.user_id] = (progress[row.user_id] || 0) + 1;
         });
     } else if (challenge.metric === 'active_minutes') {
-        // Count workouts × 30 min as a rough estimate
         const { data } = await supabase
             .from('workouts')
             .select('user_id')
             .in('user_id', memberIds)
-            .gte('timestamp', weekStartTs);
+            .gte('timestamp', startTs)
+            .lte('timestamp', endTs);
 
         (data || []).forEach(row => {
             progress[row.user_id] = (progress[row.user_id] || 0) + 30;
@@ -172,9 +208,9 @@ export async function getGroupChallengeProgress(groupId: string): Promise<Record
             .select('user_id, date')
             .in('user_id', memberIds)
             .eq('habit_id', 'habit_water')
-            .gte('timestamp', weekStartTs);
+            .gte('timestamp', startTs)
+            .lte('timestamp', endTs);
 
-        // Count unique days per user
         const daysSeen = new Map<string, Set<string>>();
         (data || []).forEach(row => {
             if (!daysSeen.has(row.user_id)) daysSeen.set(row.user_id, new Set());
@@ -186,10 +222,123 @@ export async function getGroupChallengeProgress(groupId: string): Promise<Record
     return progress;
 }
 
+// ── Lazy Completion & MVP ──
+
+export async function finalizeGroupChallenge(challenge: GroupChallenge, progress: Record<string, number>): Promise<GroupChallenge> {
+    const supabase = createClient();
+
+    const total = Object.values(progress).reduce((sum, v) => sum + v, 0);
+    const completed = total >= challenge.target;
+
+    // Find MVP (highest individual contributor)
+    let mvpUserId: string | null = null;
+    let maxContribution = 0;
+    for (const [userId, value] of Object.entries(progress)) {
+        if (value > maxContribution) {
+            maxContribution = value;
+            mvpUserId = userId;
+        }
+    }
+
+    const { data, error } = await supabase
+        .from('group_challenges')
+        .update({
+            completed,
+            completed_at: new Date().toISOString(),
+            mvp_user_id: completed ? mvpUserId : null,
+            results: progress,
+        })
+        .eq('id', challenge.id)
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    // Award MVP badge if challenge was completed
+    if (completed && mvpUserId) {
+        await awardBadge(mvpUserId, BADGE_TYPES.GROUP_CHALLENGE_MVP, challenge.id, {
+            group_id: challenge.group_id,
+            metric: challenge.metric,
+            contribution: maxContribution,
+            target: challenge.target,
+        });
+    }
+
+    return data;
+}
+
+export function isChallengeExpired(challenge: GroupChallenge): boolean {
+    const endOfDay = new Date(challenge.end_date + 'T23:59:59');
+    return new Date() > endOfDay;
+}
+
+// ── Badges ──
+
+export async function awardBadge(userId: string, badgeType: string, challengeId: string, metadata: Record<string, any> = {}): Promise<void> {
+    const supabase = createClient();
+    await supabase.from('user_badges').insert({
+        user_id: userId,
+        badge_type: badgeType,
+        challenge_id: challengeId,
+        metadata,
+    });
+}
+
+export async function getUserBadges(userId: string): Promise<UserBadge[]> {
+    const supabase = createClient();
+    const { data } = await supabase
+        .from('user_badges')
+        .select('*')
+        .eq('user_id', userId)
+        .order('earned_at', { ascending: false });
+    return data || [];
+}
+
+export async function getBadgeCount(userId: string, badgeType: string): Promise<number> {
+    const supabase = createClient();
+    const { count } = await supabase
+        .from('user_badges')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('badge_type', badgeType);
+    return count || 0;
+}
+
+// ── Challenge History ──
+
+export async function getGroupChallengeHistory(groupId: string): Promise<GroupChallenge[]> {
+    const supabase = createClient();
+    const { data } = await supabase
+        .from('group_challenges')
+        .select('*')
+        .eq('group_id', groupId)
+        .eq('completed', true)
+        .order('end_date', { ascending: false })
+        .limit(20);
+    return data || [];
+}
+
+// Legacy compat
+export async function createChallenge(groupId: string, metric: string, target: number): Promise<GroupChallenge> {
+    const weekStart = getWeekStart();
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+
+    return createGroupChallenge({
+        groupId,
+        createdBy: '', // legacy — no created_by
+        metric: metric as ChallengeMetric,
+        target,
+        name: `Weekly ${metric} challenge`,
+        startDate: weekStart,
+        endDate: weekEnd.toISOString().split('T')[0],
+    });
+}
+
 function getWeekStart(): string {
     const now = new Date();
     const day = now.getDay();
-    const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Monday
+    const diff = now.getDate() - day + (day === 0 ? -6 : 1);
     const monday = new Date(now.setDate(diff));
     return monday.toISOString().split('T')[0];
 }
