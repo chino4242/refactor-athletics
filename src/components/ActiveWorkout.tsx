@@ -9,6 +9,7 @@ import { Play, Pause, SkipForward, RotateCcw, Calendar, CheckCircle, Info, Timer
 import ChecklistView from './ChecklistView';
 import { logWorkoutBlockAction, logTrainingAction } from '@/app/actions';
 import { getProfile } from '@/services/api';
+import { v4 as uuidv4 } from 'uuid';
 
 // --- SAFELIST CONSTANT REMOVED ---
 
@@ -710,12 +711,15 @@ interface ActiveWorkoutProps {
 }
 
 import ProtocolBriefing from './ProtocolBriefing';
+import WorkoutReport from './WorkoutReport';
+import EngineSelector from './EngineSelector';
 
 export default function ActiveWorkout({ userId, onLogComplete, initialDate }: ActiveWorkoutProps) {
   const [blockIndex, setBlockIndex] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [workoutData, setWorkoutData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [sessionId] = useState(() => uuidv4());
 
   // 🟢 NEW: Mission HUB State
   const [viewMode, setViewMode] = useState<'HUB' | 'WORKOUT'>('HUB');
@@ -740,6 +744,7 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
   // Block completion results & continue/stop prompt
   const [blockResults, setBlockResults] = useState<any[] | null>(null);
   const [showBlockComplete, setShowBlockComplete] = useState(false);
+  const [engineChoice, setEngineChoice] = useState<Record<number, 'hiit' | 'zone2' | null>>({});
 
   // 🟢 NEW: Briefing State
   const [briefingData, setBriefingData] = useState<any[] | null>(null);
@@ -933,7 +938,7 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
             if (catalogItem) {
               try {
                 const result = await logTrainingAction(
-                  userId, catalogItem.id, userProfile.bodyweight, userProfile.sex, ex.sets
+                  userId, catalogItem.id, userProfile.bodyweight, userProfile.sex, ex.sets, sessionId
                 );
                 const hasStandards = !!catalogItem.standards?.brackets;
                 const isPR = checkPR(catalogItem.id, result.raw_value || 0);
@@ -949,7 +954,7 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
             } else {
               // No catalog match — log as generic block exercise with default xp_factor of 1.0
               const setXp = ex.sets.reduce((sum: number, s: any) => sum + Math.floor((s.reps || 10) * 1.0), 0);
-              await logWorkoutBlockAction(userId, ex.name, `${ex.sets.length} Sets`, setXp, 'Strength', ex.sets);
+              await logWorkoutBlockAction(userId, ex.name, `${ex.sets.length} Sets`, setXp, 'Strength', ex.sets, sessionId);
               results.push({ name: ex.name, xp_earned: setXp, level: 0, rank_name: null, value: `${ex.sets.length} Sets`, hasStandards: false, isPR: false });
             }
           }
@@ -965,7 +970,8 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
             userId, currentBlock.name, currentBlock.description || `${currentBlock.sets || 1} Sets`,
             currentBlock.xp_value,
             currentBlock.type === 'card' || currentBlock.name.includes('Tread') ? 'Cardio' : 'Strength',
-            exercisesData
+            exercisesData,
+            sessionId
           );
           if (onLogComplete) onLogComplete();
         }
@@ -1020,9 +1026,25 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
   // Render correct view based on block type
   let mainView;
 
-  // (Empty check handled in main view logic below)
-
-
+  // Zone 2 block generator
+  const generateZone2Block = (minutes: number): any => ({
+    name: `Zone 2 Steady State (${minutes} min)`,
+    type: 'timer',
+    section: 'Engine',
+    xp_value: Math.floor(minutes * 6),
+    intervals: Array.from({ length: Math.ceil(minutes / 10) }, (_, i) => {
+      const remaining = minutes - i * 10;
+      const chunkMin = Math.min(10, remaining);
+      return {
+        type: 'interval',
+        seconds: chunkMin * 60,
+        zone: 'Base Pace',
+        color: 'bg-green-500',
+        note: 'Zone 2 — conversational pace',
+        raw_text: `${chunkMin} min Base (Zone 2)`,
+      };
+    }),
+  });
 
   // RENDER: Block completion results with continue/stop
   if (showBlockComplete && blockResults) {
@@ -1080,14 +1102,11 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
 
   if (isComplete) {
     return (
-      <div className="w-full max-w-md mx-auto h-[600px] bg-zinc-900 rounded-3xl flex flex-col items-center justify-center text-center p-8 border border-green-500/30">
-        <div className="text-6xl mb-4">🏆</div>
-        <h1 className="text-4xl font-black italic text-white mb-2">WORKOUT COMPLETE</h1>
-        <p className="text-zinc-400 mb-8">Excellent work today.</p>
-        <button onClick={() => window.location.reload()} className="bg-white text-black font-bold py-3 px-8 rounded-xl uppercase tracking-wider">
-          Exit
-        </button>
-      </div>
+      <WorkoutReport
+        sessionId={sessionId}
+        userId={userId}
+        onExit={() => window.location.reload()}
+      />
     );
   }
 
@@ -1248,7 +1267,7 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
 
   // Render correct view based on block type
 
-  // 🟢 NEW: Handle Granular Interval Logging
+  // Handle Granular Interval Logging
   const handleIntervalComplete = async (intervalData: any, xpShare: number) => {
     if (!userId || !currentBlock) return;
 
@@ -1256,10 +1275,12 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
       console.log(`Submitting Interval XP: ${intervalData.zone || intervalData.text} (${xpShare} XP)`);
       await logWorkoutBlockAction(
         userId,
-        `${currentBlock.name} - ${intervalData.zone || "Interval"}`, // "Treadmill Warmup - Push Pace"
+        `${currentBlock.name} - ${intervalData.zone || "Interval"}`,
         intervalData.text || intervalData.raw_text || "Interval",
         xpShare,
-        'Cardio'
+        'Cardio',
+        undefined,
+        sessionId
       );
       // Refresh parent history
       if (onLogComplete) onLogComplete();
@@ -1317,16 +1338,36 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
       />
     )
   } else {
-    mainView = (
-      <TimerView
-        key={blockIndex}
-        block={currentBlock}
-        blockIndex={blockIndex}
-        totalBlocks={workoutData.length}
-        onBlockComplete={handleBlockComplete}
-        onIntervalComplete={handleIntervalComplete} // 🟢 NEW
-      />
-    );
+    // Timer block — show engine selector if user hasn't chosen yet
+    const choice = engineChoice[blockIndex];
+    if (choice === null || choice === undefined) {
+      mainView = (
+        <EngineSelector
+          key={`engine-${blockIndex}`}
+          onSelect={(type, duration) => {
+            setEngineChoice(prev => ({ ...prev, [blockIndex]: type }));
+            if (type === 'zone2' && duration) {
+              const zone2Block = generateZone2Block(duration);
+              const newData = [...workoutData];
+              newData[blockIndex] = { ...zone2Block, section: currentBlock.section };
+              setWorkoutData(newData);
+            }
+          }}
+        />
+      );
+    } else {
+      const activeBlock = workoutData[blockIndex];
+      mainView = (
+        <TimerView
+          key={blockIndex}
+          block={activeBlock}
+          blockIndex={blockIndex}
+          totalBlocks={workoutData.length}
+          onBlockComplete={handleBlockComplete}
+          onIntervalComplete={handleIntervalComplete}
+        />
+      );
+    }
   }
 
   return (

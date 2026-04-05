@@ -459,6 +459,45 @@ export const logWorkoutBlock = async (
 
 export const getActiveChallenge = async (userId: string): Promise<Challenge | null> => null;
 
+// --- Workout Session ---
+
+export interface SessionWorkout {
+    exercise_id: string;
+    value: string;
+    raw_value: number;
+    sets: any[];
+    level: number;
+    xp: number;
+    rank_name: string | null;
+}
+
+export const getSessionWorkouts = async (sessionId: string): Promise<SessionWorkout[]> => {
+    const supabase = createClient();
+    const { data } = await supabase
+        .from('workouts')
+        .select('exercise_id, value, raw_value, sets, level, xp, rank_name')
+        .eq('session_id', sessionId)
+        .order('timestamp', { ascending: true });
+    return data || [];
+};
+
+export const getExercisePRs = async (userId: string, exerciseIds: string[]): Promise<Record<string, number>> => {
+    if (exerciseIds.length === 0) return {};
+    const supabase = createClient();
+    const { data } = await supabase
+        .from('workouts')
+        .select('exercise_id, sets')
+        .eq('user_id', userId)
+        .in('exercise_id', exerciseIds);
+
+    const prs: Record<string, number> = {};
+    (data || []).forEach(row => {
+        const maxWeight = (row.sets || []).reduce((best: number, s: any) => Math.max(best, s.weight || 0), 0);
+        if (maxWeight > (prs[row.exercise_id] || 0)) prs[row.exercise_id] = maxWeight;
+    });
+    return prs;
+};
+
 // --- Arena / Duels ---
 export type { DuelResponse, Challenge, ChallengeGoal } from '@/types';
 

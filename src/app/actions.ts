@@ -105,7 +105,8 @@ export async function logTrainingAction(
     exerciseId: string,
     bodyweight: number,
     sex: string,
-    sets: any[]
+    sets: any[],
+    sessionId?: string
 ) {
     console.log("logTrainingAction called with:", { userId, exerciseId, bodyweight, sex, sets });
     const supabase = await createClient();
@@ -219,7 +220,8 @@ export async function logTrainingAction(
         sets: sets,
         level: userLevel,
         xp: totalXp,
-        rank_name: rankName
+        rank_name: rankName,
+        ...(sessionId ? { session_id: sessionId } : {})
     };
 
     console.log("Saving workout:", workoutData);
@@ -249,7 +251,8 @@ export async function logWorkoutBlockAction(
     details: string,
     xp: number,
     activityType: string = "Strength",
-    exercises?: any[]
+    exercises?: any[],
+    sessionId?: string
 ) {
     const supabase = await createClient();
     const ts = Math.floor(Date.now() / 1000);
@@ -267,7 +270,8 @@ export async function logWorkoutBlockAction(
             sets: exercises || [],
             level: 0,
             xp: xp,
-            rank_name: activityType
+            rank_name: activityType,
+            ...(sessionId ? { session_id: sessionId } : {})
         });
 
     if (error) throw error;
