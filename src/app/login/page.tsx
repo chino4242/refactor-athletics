@@ -3,7 +3,7 @@ import { login, signup } from './actions';
 export default async function LoginPage({
     searchParams,
 }: {
-    searchParams?: Promise<{ message?: string }>
+    searchParams?: Promise<{ message?: string; redirect?: string }>
 }) {
     const params = await searchParams;
 
@@ -32,6 +32,7 @@ export default async function LoginPage({
                     )}
 
                     <form className="space-y-5 flex flex-col px-2">
+                        {params?.redirect && <input type="hidden" name="redirect" value={params.redirect} />}
                         <div>
                             <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1 mb-2 block">Email</label>
                             <input

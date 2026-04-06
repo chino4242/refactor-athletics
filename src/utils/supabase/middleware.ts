@@ -38,9 +38,11 @@ export async function updateSession(request: NextRequest) {
     const isAuthRoute = request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/register') || request.nextUrl.pathname.startsWith('/auth');
 
     if (!user && !isAuthRoute) {
-        // no user, potentially respond by redirecting the user to the login page
+        // no user, redirect to login with original URL preserved
         const url = request.nextUrl.clone()
+        const redirectTo = request.nextUrl.pathname + request.nextUrl.search
         url.pathname = '/login'
+        url.searchParams.set('redirect', redirectTo)
         return NextResponse.redirect(url)
     }
 
