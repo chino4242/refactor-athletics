@@ -20,6 +20,11 @@ function ExerciseView({ block, onComplete, fullHistory, catalog }: any) {
   const [isResting, setIsResting] = useState(false);
   const totalSets = block.sets || 1;
   const [weights, setWeights] = useState<string[]>(Array(totalSets).fill(''));
+  const [repsInputs, setRepsInputs] = useState<string[]>(() => {
+    if (block.reps_list) return block.reps_list.map((r: number | null) => r != null ? String(r) : '');
+    const parsed = parseInt(String(block.reps_per_set), 10);
+    return Array(totalSets).fill(parsed > 0 ? String(parsed) : '');
+  });
 
   const [showHistoryModal, setShowHistoryModal] = useState(false); // 🟢 NEW
 
@@ -146,39 +151,57 @@ function ExerciseView({ block, onComplete, fullHistory, catalog }: any) {
                   : 'bg-zinc-800 border-zinc-700'
                   }`}
               >
-                {/* Weight Input */}
-                <div className="flex flex-col mr-4">
-                  <span className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Weight</span>
-                  <div className="flex gap-1">
+                {/* Weight + Reps Inputs */}
+                <div className="flex flex-col mr-4 gap-2">
+                  <div>
+                    <span className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Weight</span>
+                    <div className="flex gap-1">
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        placeholder="lbs"
+                        value={weights[i]}
+                        onChange={(e) => updateWeight(i, e.target.value)}
+                        className="bg-zinc-900 text-white border border-zinc-600 rounded p-2 w-20 text-center font-mono text-sm focus:border-orange-500 focus:outline-none"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <div className="flex flex-col gap-0.5">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateWeight(i, String(parseFloat(weights[i] || '0') + 5));
+                          }}
+                          className="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white text-[10px] font-bold px-1.5 py-0.5 rounded transition-all"
+                        >
+                          +5
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateWeight(i, String(Math.max(0, parseFloat(weights[i] || '0') - 5)));
+                          }}
+                          className="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white text-[10px] font-bold px-1.5 py-0.5 rounded transition-all"
+                        >
+                          -5
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Reps</span>
                     <input
                       type="text"
-                      inputMode="decimal"
-                      placeholder="lbs"
-                      value={weights[i]}
-                      onChange={(e) => updateWeight(i, e.target.value)}
+                      inputMode="numeric"
+                      placeholder={repsInputs[i] || '?'}
+                      value={repsInputs[i]}
+                      onChange={(e) => {
+                        const next = [...repsInputs];
+                        next[i] = e.target.value;
+                        setRepsInputs(next);
+                      }}
                       className="bg-zinc-900 text-white border border-zinc-600 rounded p-2 w-20 text-center font-mono text-sm focus:border-orange-500 focus:outline-none"
                       onClick={(e) => e.stopPropagation()}
                     />
-                    <div className="flex flex-col gap-0.5">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          updateWeight(i, String(parseFloat(weights[i] || '0') + 5));
-                        }}
-                        className="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white text-[10px] font-bold px-1.5 py-0.5 rounded transition-all"
-                      >
-                        +5
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          updateWeight(i, String(Math.max(0, parseFloat(weights[i] || '0') - 5)));
-                        }}
-                        className="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white text-[10px] font-bold px-1.5 py-0.5 rounded transition-all"
-                      >
-                        -5
-                      </button>
-                    </div>
                   </div>
                 </div>
 
@@ -190,11 +213,6 @@ function ExerciseView({ block, onComplete, fullHistory, catalog }: any) {
                     <span className={`font-bold font-mono ${isDone ? 'line-through opacity-70' : 'text-zinc-300 group-hover:text-white'}`}>
                       SET {i + 1}
                     </span>
-                    {setReps && (
-                      <span className={`text-xs ${isDone ? 'opacity-60' : 'text-zinc-500'}`}>
-                        {setReps} Reps
-                      </span>
-                    )}
                   </div>
 
                   <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${isDone ? 'bg-green-500 border-green-500' : 'border-zinc-500 group-hover:border-zinc-400'
@@ -240,7 +258,7 @@ function ExerciseView({ block, onComplete, fullHistory, catalog }: any) {
               name: block.name,
               sets: completedSets.map(i => ({
                 weight: parseFloat(weights[i] || '0'),
-                reps: parseInt(String(block.reps_list ? block.reps_list[i] : block.reps_per_set), 10) || 10
+                reps: parseInt(repsInputs[i], 10) || 10
               }))
             }];
             onComplete(false, exercisesPayload);
@@ -415,6 +433,7 @@ function SupersetView({ block, onComplete, fullHistory, catalog }: any) {
   // Structure: { "exercise_index": [completed_set_indices] }
   const [completedSets, setCompletedSets] = useState<Record<number, number[]>>({});
   const [weights, setWeights] = useState<Record<string, string>>({}); // Key: "exIdx-setIdx"
+  const [reps, setReps] = useState<Record<string, string>>({}); // Key: "exIdx-setIdx"
 
   // 🟢 NEW: Active History Modal
   const [selectedExerciseForHistory, setSelectedExerciseForHistory] = useState<CatalogItem | null>(null);
@@ -563,6 +582,9 @@ function SupersetView({ block, onComplete, fullHistory, catalog }: any) {
                 {exercises.map((ex: any, exIdx: number) => {
                   const isDone = (completedSets[exIdx] || []).includes(setIdx);
                   const weightKey = `${exIdx}-${setIdx}`;
+                  const repsKey = `${exIdx}-${setIdx}`;
+                  const targetReps = ex.reps_list ? ex.reps_list[setIdx] : null;
+                  const defaultReps = targetReps != null ? String(targetReps) : '';
 
                   // Find catalog item
                   const catalogItem = catalog?.find((c: any) => c.name.toLowerCase() === ex.name.toLowerCase());
@@ -571,16 +593,32 @@ function SupersetView({ block, onComplete, fullHistory, catalog }: any) {
                     <div key={exIdx} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${isDone ? 'bg-green-500/10 border-green-500/40' : 'bg-zinc-800 border-zinc-700'
                       }`}>
 
-                      {/* Weight Input */}
-                      <div className="flex flex-col w-12">
-                        <input
-                          type="text"
-                          placeholder="lbs"
-                          value={weights[weightKey] || ''}
-                          onChange={(e) => updateWeight(exIdx, setIdx, e.target.value)}
-                          className="bg-zinc-900 text-white border border-zinc-600 rounded px-1 py-1 text-center text-xs w-full focus:outline-none focus:border-purple-500"
-                          onClick={(e) => e.stopPropagation()}
-                        />
+                      {/* Weight + Reps Inputs */}
+                      <div className="flex gap-1 shrink-0">
+                        <div className="flex flex-col w-12">
+                          <span className="text-[8px] text-zinc-600 text-center mb-0.5">LBS</span>
+                          <input
+                            type="text"
+                            inputMode="decimal"
+                            placeholder="—"
+                            value={weights[weightKey] || ''}
+                            onChange={(e) => updateWeight(exIdx, setIdx, e.target.value)}
+                            className="bg-zinc-900 text-white border border-zinc-600 rounded px-1 py-1 text-center text-xs w-full focus:outline-none focus:border-purple-500"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </div>
+                        <div className="flex flex-col w-10">
+                          <span className="text-[8px] text-zinc-600 text-center mb-0.5">REPS</span>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            placeholder={defaultReps || '?'}
+                            value={reps[repsKey] ?? defaultReps}
+                            onChange={(e) => setReps(prev => ({ ...prev, [repsKey]: e.target.value }))}
+                            className="bg-zinc-900 text-white border border-zinc-600 rounded px-1 py-1 text-center text-xs w-full focus:outline-none focus:border-purple-500"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </div>
                       </div>
 
                       {/* Clickable Area */}
@@ -591,9 +629,6 @@ function SupersetView({ block, onComplete, fullHistory, catalog }: any) {
                         <div className="flex flex-col">
                           <span className={`font-bold text-sm leading-tight ${isDone ? 'text-zinc-400 line-through' : 'text-white'}`}>
                             {ex.name}
-                          </span>
-                          <span className="text-[10px] text-zinc-500 font-mono">
-                            {ex.reps} Reps
                           </span>
                         </div>
 
@@ -656,20 +691,19 @@ function SupersetView({ block, onComplete, fullHistory, catalog }: any) {
             // Construct detailed payload for Superset
             // exercises is a list of exercise objects
             const exercisesPayload = exercises.map((ex: any, exIdx: number) => {
-              // sets for this exercise
               const setsData = [];
               for (let i = 0; i < totalSets; i++) {
                 if ((completedSets[exIdx] || []).includes(i)) {
+                  const repsKey = `${exIdx}-${i}`;
+                  const targetReps = ex.reps_list ? ex.reps_list[i] : null;
+                  const enteredReps = reps[repsKey] ?? (targetReps != null ? String(targetReps) : '');
                   setsData.push({
                     weight: parseFloat(weights[`${exIdx}-${i}`] || '0'),
-                    reps: parseInt(String(ex.reps), 10) || 10
+                    reps: parseInt(enteredReps, 10) || 10
                   });
                 }
               }
-              return {
-                name: ex.name,
-                sets: setsData
-              };
+              return { name: ex.name, sets: setsData };
             });
             onComplete(false, exercisesPayload);
           }}

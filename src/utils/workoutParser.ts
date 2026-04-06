@@ -1,4 +1,5 @@
 import { CatalogItem } from '@/types';
+import { parseReps } from './parseReps';
 
 function findXpFactor(exerciseName: string, catalog: CatalogItem[]): number {
     const cleanName = exerciseName.replace(/^\d+\.\s*/, '').toLowerCase().trim();
@@ -227,19 +228,18 @@ function parseStrengthSection(text: string, sectionName = "Strength Protocol", c
                 const restSecs = restMatch ? parseInt(restMatch[1], 10) : 0;
 
                 let repsDisplay = "10";
-                let repsList: number[] | null = null;
+                let repsList: (number | null)[] | null = null;
 
                 const repMatch = line.match(/x\s*([\d,\s]+)\s*reps/i);
                 if (repMatch) {
                     repsDisplay = repMatch[1];
-                    if (repsDisplay.includes(',')) {
-                        repsList = repsDisplay.split(',').map(r => parseInt(r.trim(), 10)).filter(n => !isNaN(n));
-                    }
+                    repsList = parseReps(repsDisplay, sets);
                 }
 
                 let totalXp = Math.floor(sets * 10 * xpFactor);
                 if (repsList && repsList.length > 0) {
-                    totalXp = Math.floor(repsList.reduce((a, b) => a + b, 0) * xpFactor);
+                    const repsSum = repsList.reduce((a: number, b) => a + (b || 10), 0);
+                    totalXp = Math.floor(repsSum * xpFactor);
                 }
 
                 let displayPrefix = `${exerciseIdx}.`;
@@ -289,11 +289,13 @@ function parseStrengthSection(text: string, sectionName = "Strength Protocol", c
                         for (let i = 0; i < parts.length; i++) {
                             if (i < lastBlock.exercises.length) {
                                 lastBlock.exercises[i].reps = parts[i].trim();
+                                lastBlock.exercises[i].reps_list = parseReps(parts[i].trim(), lastBlock.sets);
                             }
                         }
                     } else {
                         for (const ex of lastBlock.exercises) {
                             ex.reps = repsContent.trim();
+                            ex.reps_list = parseReps(repsContent.trim(), lastBlock.sets);
                         }
                     }
                 } else if (lastBlock.type === 'superset' && (line.startsWith('◦') || line.startsWith('•'))) {
