@@ -239,8 +239,8 @@ function ExerciseView({ block, onComplete, fullHistory, catalog }: any) {
             const exercisesPayload = [{
               name: block.name,
               sets: completedSets.map(i => ({
-                weight: parseFloat(weights[i] || '0'), // Default 0 if empty
-                reps: block.reps_list ? block.reps_list[i] : (typeof block.reps_per_set === 'number' ? block.reps_per_set : 0) // Try to resolve reps
+                weight: parseFloat(weights[i] || '0'),
+                reps: parseInt(String(block.reps_list ? block.reps_list[i] : block.reps_per_set), 10) || 10
               }))
             }];
             onComplete(false, exercisesPayload);
@@ -662,7 +662,7 @@ function SupersetView({ block, onComplete, fullHistory, catalog }: any) {
                 if ((completedSets[exIdx] || []).includes(i)) {
                   setsData.push({
                     weight: parseFloat(weights[`${exIdx}-${i}`] || '0'),
-                    reps: ex.reps // Assuming fixed reps per exercise in superset for now
+                    reps: parseInt(String(ex.reps), 10) || 10
                   });
                 }
               }
