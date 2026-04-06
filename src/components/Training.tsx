@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 // Verified
 
+import EquipmentVariantPicker, { getEquipmentVariants } from './EquipmentVariantPicker';
 import { type WorkoutSet, type HistoryItem, type CatalogItem } from '../services/api';
 import { logTrainingAction, deleteHistoryItemAction } from '@/app/actions';
 import ActiveWorkout from './ActiveWorkout'; // 👈 Imported
@@ -147,12 +148,7 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
   const currentExercise = catalog.find(e => e.id === selectedExerciseId);
 
   // Equipment variant lookup
-  const equipmentVariants = useMemo(() => {
-    if (!currentExercise) return [];
-    const baseId = currentExercise.normalizes_to || currentExercise.id;
-    const variants = catalog.filter(e => e.id === baseId || e.normalizes_to === baseId);
-    return variants.length > 1 ? variants : [];
-  }, [currentExercise, catalog]);
+  const equipmentVariants = useMemo(() => getEquipmentVariants(currentExercise?.name || '', catalog), [currentExercise, catalog]);
 
   const type = currentExercise?.type || 'weight_reps';
   // 🟢 NEW: Check for Calories Unit
@@ -468,23 +464,11 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
 
             {/* EQUIPMENT VARIANT PICKER */}
             {equipmentVariants.length > 0 && (
-              <div className="flex gap-1.5 flex-wrap">
-                {equipmentVariants.map(v => {
-                  const equip = v.required_equipment?.[0] || 'barbell';
-                  const label = equip === 'smith_machine' ? '🔧 Smith' : equip === 'dumbbells' ? '🔩 DB' : '🏋️ BB';
-                  return (
-                    <button
-                      key={v.id}
-                      onClick={() => { setSelectedExerciseId(v.id); setSearchTerm(v.name); }}
-                      className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition ${
-                        v.id === selectedExerciseId
-                          ? 'bg-orange-500 text-black'
-                          : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
-                      }`}
-                    >{label}</button>
-                  );
-                })}
-              </div>
+              <EquipmentVariantPicker
+                variants={equipmentVariants}
+                selectedId={selectedExerciseId}
+                onSelect={(v) => { setSelectedExerciseId(v.id); setSearchTerm(v.name); }}
+              />
             )}
 
             {/* INPUTS */}
