@@ -7,7 +7,7 @@ import HabitHeatmap from './HabitHeatmap';
 import NutritionTracker from './NutritionTracker';
 import WeeklyQuest from './WeeklyQuest';
 import { useToast } from '@/context/ToastContext';
-import { SlidersHorizontal, Footprints, Timer, Share2 } from 'lucide-react';
+import { SlidersHorizontal, Footprints, Timer, Share2, ChevronDown } from 'lucide-react';
 import HabitSettings from './HabitSettings';
 import BodyCompositionModal from './BodyCompositionModal';
 import HabitCard from './HabitCard';
@@ -36,6 +36,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
   // Edit Mode for Toggling Habits
   const [showSettings, setShowSettings] = useState(false);
   const [showBodyComp, setShowBodyComp] = useState(false);
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({ habits: true, nutrition: false });
 
   // History State
   const [history, setHistory] = useState<HistoryItem[]>([]);
@@ -244,11 +245,20 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
         />
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="space-y-3">
 
         {/* 1. NUTRITION & BASICS */}
-        <div className="space-y-3">
-          <div className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Nutrition & Sleep</div>
+        <div>
+          <button
+            onClick={() => setExpandedSections(prev => ({ ...prev, nutrition: !prev.nutrition }))}
+            className="w-full flex items-center justify-between py-2"
+          >
+            <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">🥗 Nutrition & Sleep</span>
+            <ChevronDown size={16} className={`text-zinc-600 transition-transform ${expandedSections.nutrition ? 'rotate-180' : ''}`} />
+          </button>
+
+          {expandedSections.nutrition && (
+            <div className="space-y-3 animate-fade-in">
 
           {profile && (
             <NutritionTracker
@@ -268,8 +278,22 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
               onLogHabit={handleLog}
             />
           )}
+            </div>
+          )}
+        </div>
 
-          {/* HABITS GRID */}
+        {/* 2. HABITS */}
+        <div>
+          <button
+            onClick={() => setExpandedSections(prev => ({ ...prev, habits: !prev.habits }))}
+            className="w-full flex items-center justify-between py-2"
+          >
+            <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">⚔️ Habits</span>
+            <ChevronDown size={16} className={`text-zinc-600 transition-transform ${expandedSections.habits ? 'rotate-180' : ''}`} />
+          </button>
+
+          {expandedSections.habits && (
+            <div className="space-y-3 animate-fade-in">
           <div className="flex justify-end mb-2">
             <ScreenshotUploader type="habits" onDataExtracted={handleHabitData} />
           </div>
@@ -353,10 +377,9 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
               />
             )}
           </div>
-        </div>
 
         {/* 3. RECOVERY & ACTIVITY */}
-        <div className="space-y-3">
+        <div className="space-y-3 mt-3">
           <div className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Recovery & Mindset</div>
 
           {!isHidden('habit_journaling') && (
@@ -541,28 +564,11 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
             />
           )}
 
-          {/* 🟢 CUSTOM CHALLENGE SLOT */}
-          {/* <div className="pt-2">
-            {!activeChallenge && (
-              <button
-                onClick={onStartChallenge}
-                className="w-full bg-gradient-to-r from-yellow-900/20 to-transparent border border-yellow-500/20 hover:border-yellow-500/50 hover:from-yellow-900/30 p-4 rounded-xl flex items-center justify-center gap-3 text-yellow-600 hover:text-yellow-400 transition-all group shadow-lg shadow-black/20"
-              >
-                <span className="text-xl group-hover:scale-110 transition-transform filter drop-shadow-md">🏆</span>
-                <span className="font-black uppercase tracking-widest text-xs">Start a Custom Challenge</span>
-              </button>
-            )}
-
-            {activeChallenge && (
-              <ActiveChallengeCard
-                challenge={activeChallenge}
-                userId={userId}
-                onUpdate={onChallengeUpdate}
-              />
-            )}
-          </div> */}
-
+            </div>
+            </div>
+          )}
         </div>
+
       </div>
 
       {/* CONSISTENCY TOGGLE */}

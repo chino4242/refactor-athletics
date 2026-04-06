@@ -10,9 +10,6 @@ import BodyCompositionModal from './BodyCompositionModal';
 import { getHabitProgress } from '../services/api';
 import { BodyCompositionService } from '../services/BodyCompositionService';
 import type { UserStats, UserProfileData } from '@/types';
-import { useTheme } from '@/context/ThemeContext';
-import { THEMES } from '@/data/themes';
-import TestingTimer from './TestingTimer';
 import WeeklyReview from './WeeklyReview';
 import { calculatePhysiquePoints } from '@/utils/physiquePoints';
 import YesterdayRetroModal from './YesterdayRetroModal';
@@ -27,8 +24,6 @@ interface TrackPageProps {
 }
 
 export default function TrackPage({ userId, bodyweight, initialProfile, initialStats, onLogComplete }: TrackPageProps) {
-    const { currentTheme } = useTheme();
-    const [isMounted, setIsMounted] = useState(false);
 
     // Date navigation state
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -98,11 +93,6 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
         window.addEventListener('keydown', handleKeyPress);
         return () => window.removeEventListener('keydown', handleKeyPress);
     }, [selectedDate, isFuture]);
-
-    // Wait for client-side hydration
-    useEffect(() => {
-        setIsMounted(true);
-    }, []);
 
     // --- STATE ---
     const [currentLevel, setCurrentLevel] = useState<number>(() => {
@@ -319,75 +309,32 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
                 />
             )} */}
 
-            {/* 🟢 THEME BANNER */}
-            <div className="w-full relative bg-zinc-900 rounded-2xl overflow-hidden shadow-2xl border border-zinc-800">
-                {isMounted ? (
-                    <img
-                        src={`/themes/${currentTheme}/banner.png`}
-                        alt="Theme Banner"
-                        className="w-full h-auto block object-cover max-h-48 md:max-h-96"
-                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                    />
-                ) : (
-                    <div className="w-full h-48 md:h-96 bg-zinc-900 animate-pulse" />
-                )}
-                <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-zinc-950 to-transparent"></div>
-
-                {/* 🟢 TESTING TIMER OVERLAY */}
-                <TestingTimer variant="overlay" />
-            </div>
-
             {/* 🟢 DATE NAVIGATION */}
-            <div className="bg-zinc-800/50 p-4 rounded-2xl border border-zinc-700/50 backdrop-blur-sm">
-                <div className="flex items-center justify-between gap-4">
-                    <button
-                        onClick={goToPreviousDay}
-                        className="px-4 py-2 rounded-lg bg-zinc-900 border border-zinc-700 hover:border-orange-500 hover:bg-orange-500/10 transition-all text-white font-bold"
-                        title="Previous day (←)"
-                    >
-                        ← Prev
-                    </button>
-                    
-                    <div className="flex flex-col items-center gap-1">
-                        <div className="text-lg font-black text-white">
-                            {selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                        </div>
-                        <div className="text-xs font-medium">
-                            {isToday ? (
-                                <span className="text-emerald-400">📅 Today</span>
-                            ) : isFuture ? (
-                                <span className="text-zinc-500">🔮 Future Date</span>
-                            ) : (
-                                <span className="text-orange-400">📜 Past Date</span>
-                            )}
-                        </div>
-                        {!isToday && (
-                            <button
-                                onClick={goToToday}
-                                className="text-xs text-orange-500 hover:text-orange-400 font-semibold"
-                                title="Jump to today (T)"
-                            >
-                                Jump to Today
-                            </button>
-                        )}
-                        <div className="text-[10px] text-zinc-600 mt-1">
-                            Use ← → keys or T for today
-                        </div>
-                    </div>
-
-                    <button
-                        onClick={goToNextDay}
-                        disabled={isFuture}
-                        className={`px-4 py-2 rounded-lg font-bold transition-all ${
-                            isFuture 
-                                ? 'bg-zinc-900/50 border border-zinc-800 text-zinc-600 cursor-not-allowed'
-                                : 'bg-zinc-900 border border-zinc-700 hover:border-orange-500 hover:bg-orange-500/10 text-white'
-                        }`}
-                        title="Next day (→)"
-                    >
-                        Next →
-                    </button>
-                </div>
+            <div className="flex items-center justify-between px-2 py-2">
+                <button
+                    onClick={goToPreviousDay}
+                    className="p-2 text-zinc-400 hover:text-white transition"
+                >
+                    ←
+                </button>
+                <button
+                    onClick={isToday ? undefined : goToToday}
+                    className={`text-center ${!isToday ? 'active:opacity-70' : ''}`}
+                >
+                    <span className="text-sm font-black text-white">
+                        {isToday ? 'Today' : selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                    </span>
+                    {!isToday && (
+                        <span className="block text-[10px] text-orange-500 font-bold">Tap for today</span>
+                    )}
+                </button>
+                <button
+                    onClick={goToNextDay}
+                    disabled={isFuture}
+                    className={`p-2 transition ${isFuture ? 'text-zinc-700' : 'text-zinc-400 hover:text-white'}`}
+                >
+                    →
+                </button>
             </div>
 
             {/* 🟢 PROGRESS METRICS */}
