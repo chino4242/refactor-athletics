@@ -145,6 +145,15 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
 
   // --- 3. INPUT HELPERS ---
   const currentExercise = catalog.find(e => e.id === selectedExerciseId);
+
+  // Equipment variant lookup
+  const equipmentVariants = useMemo(() => {
+    if (!currentExercise) return [];
+    const baseId = currentExercise.normalizes_to || currentExercise.id;
+    const variants = catalog.filter(e => e.id === baseId || e.normalizes_to === baseId);
+    return variants.length > 1 ? variants : [];
+  }, [currentExercise, catalog]);
+
   const type = currentExercise?.type || 'weight_reps';
   // 🟢 NEW: Check for Calories Unit
   const unit = currentExercise?.standards?.unit || currentExercise?.unit;
@@ -456,6 +465,27 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
                 </div>
               </div>
             </div>
+
+            {/* EQUIPMENT VARIANT PICKER */}
+            {equipmentVariants.length > 0 && (
+              <div className="flex gap-1.5 flex-wrap">
+                {equipmentVariants.map(v => {
+                  const equip = v.required_equipment?.[0] || 'barbell';
+                  const label = equip === 'smith_machine' ? '🔧 Smith' : equip === 'dumbbells' ? '🔩 DB' : '🏋️ BB';
+                  return (
+                    <button
+                      key={v.id}
+                      onClick={() => { setSelectedExerciseId(v.id); setSearchTerm(v.name); }}
+                      className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition ${
+                        v.id === selectedExerciseId
+                          ? 'bg-orange-500 text-black'
+                          : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                      }`}
+                    >{label}</button>
+                  );
+                })}
+              </div>
+            )}
 
             {/* INPUTS */}
             <div className="space-y-3 mb-8">

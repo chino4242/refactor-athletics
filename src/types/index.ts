@@ -149,6 +149,9 @@ export interface CatalogItem {
     description?: string;
     unit?: string;
     xp_factor?: number;
+    normalization_factor?: number;
+    normalizes_to?: string;
+    required_equipment?: string[];
     standards?: {
         unit?: string;
         scoring?: string;
