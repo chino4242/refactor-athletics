@@ -1,4 +1,5 @@
-const METRICS = ['waist', 'arms', 'legs', 'chest', 'shoulders', 'weight'] as const;
+const METRICS = ['waist', 'arms', 'legs', 'chest', 'shoulders', 'weight',
+    'left_arm_muscle', 'right_arm_muscle', 'trunk_muscle', 'left_leg_muscle', 'right_leg_muscle'] as const;
 
 export function calculatePhysiquePoints(
     bodyCompHistory: Array<Record<string, any>>,

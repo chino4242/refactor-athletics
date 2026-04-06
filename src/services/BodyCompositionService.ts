@@ -9,6 +9,12 @@ export interface BodyCompositionEntry {
     chest?: number;
     legs?: number;
     shoulders?: number;
+    left_arm_muscle?: number;
+    right_arm_muscle?: number;
+    trunk_muscle?: number;
+    left_leg_muscle?: number;
+    right_leg_muscle?: number;
+    measurement_mode?: string;
     [key: string]: string | number | undefined;
 }
 
@@ -33,7 +39,13 @@ export const BodyCompositionService = {
             arms: row.arms,
             chest: row.chest,
             legs: row.legs,
-            shoulders: row.shoulders
+            shoulders: row.shoulders,
+            left_arm_muscle: row.left_arm_muscle,
+            right_arm_muscle: row.right_arm_muscle,
+            trunk_muscle: row.trunk_muscle,
+            left_leg_muscle: row.left_leg_muscle,
+            right_leg_muscle: row.right_leg_muscle,
+            measurement_mode: row.measurement_mode,
         }));
     },
 

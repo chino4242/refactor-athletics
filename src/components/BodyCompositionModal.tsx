@@ -38,6 +38,7 @@ export default function BodyCompositionModal({
     const [history, setHistory] = useState<BodyCompositionEntry[]>([]);
     const [physiquePoints, setPhysiquePoints] = useState<number>(0);
     const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+    const [mode, setMode] = useState<'tape' | 'hume'>('tape');
 
     // Initial Load
     useEffect(() => {
@@ -61,7 +62,8 @@ export default function BodyCompositionModal({
             // 1. Log to DB separate table
             const today = new Date().toISOString().split('T')[0];
             await BodyCompositionService.logMeasurements(profile.user_id, today, {
-                [metricId]: value
+                [metricId]: value,
+                measurement_mode: mode,
             });
 
             // 2. Refresh History to update graph/score
@@ -144,6 +146,19 @@ export default function BodyCompositionModal({
                     </button>
                 </div>
 
+                {/* Mode Toggle */}
+                <div className="flex border-b border-zinc-800 shrink-0">
+                    {([['tape', '📏 Tape Measure'], ['hume', '🔬 Hume Pod']] as const).map(([id, label]) => (
+                        <button
+                            key={id}
+                            onClick={() => setMode(id)}
+                            className={`flex-1 py-3 text-xs font-bold uppercase tracking-widest transition-all ${mode === id ? 'text-white border-b-2 border-emerald-500 bg-zinc-800/50' : 'text-zinc-500 hover:text-zinc-300'}`}
+                        >
+                            {label}
+                        </button>
+                    ))}
+                </div>
+
                 {/* Content - Two Columns */}
                 <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
 
@@ -166,14 +181,20 @@ export default function BodyCompositionModal({
                             loading={loading === 'weight'}
                         />
 
-                        {/* BODY PARTS */}
-                        {[
+                        {/* BODY PARTS - Mode Dependent */}
+                        {(mode === 'tape' ? [
                             { id: 'waist', label: 'Waist' },
                             { id: 'arms', label: 'Arms' },
                             { id: 'chest', label: 'Chest' },
                             { id: 'legs', label: 'Legs' },
                             { id: 'shoulders', label: 'Shoulders' },
-                        ].map(part => (
+                        ] : [
+                            { id: 'left_arm_muscle', label: 'Left Arm' },
+                            { id: 'right_arm_muscle', label: 'Right Arm' },
+                            { id: 'trunk_muscle', label: 'Trunk' },
+                            { id: 'left_leg_muscle', label: 'Left Leg' },
+                            { id: 'right_leg_muscle', label: 'Right Leg' },
+                        ]).map(part => (
                             <MeasurementRow
                                 key={part.id}
                                 label={part.label}
@@ -187,6 +208,7 @@ export default function BodyCompositionModal({
                                 }}
                                 onLog={(val) => handleMeasurementLog(part.id, val, `${part.label}`)}
                                 loading={loading === part.id}
+                                unit={mode === 'hume' ? 'lbs' : 'in'}
                             />
                         ))}
                     </div>
@@ -195,7 +217,10 @@ export default function BodyCompositionModal({
                     <div className="w-full md:w-2/3 p-6 overflow-y-auto custom-scrollbar bg-black/20">
                         <div className="grid grid-cols-1 gap-6">
                             {/* Simple Graphs Loop */}
-                            {['weight', 'waist', 'arms', 'legs', 'chest', 'shoulders'].map(metric => {
+                            {(mode === 'tape'
+                                ? ['weight', 'waist', 'arms', 'legs', 'chest', 'shoulders']
+                                : ['weight', 'left_arm_muscle', 'right_arm_muscle', 'trunk_muscle', 'left_leg_muscle', 'right_leg_muscle']
+                            ).map(metric => {
                                 // Filter data where metric exists
                                 const chartData = history.filter(h => h[metric] !== undefined && h[metric] !== null && Number(h[metric]) > 0);
                                 if (chartData.length < 2) return null; // Don't show empty charts
