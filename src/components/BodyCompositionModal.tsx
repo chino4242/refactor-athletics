@@ -38,10 +38,18 @@ export default function BodyCompositionModal({
     const [history, setHistory] = useState<BodyCompositionEntry[]>([]);
     const [physiquePoints, setPhysiquePoints] = useState<number>(0);
     const [isLoadingHistory, setIsLoadingHistory] = useState(false);
-    const [mode, setMode] = useState<'tape' | 'hume'>('tape');
+    const [mode, setMode] = useState<'tape' | 'muscle'>(profile.measurement_mode || 'tape');
     const [localProfile, setLocalProfile] = useState(profile);
 
     useEffect(() => { setLocalProfile(profile); }, [profile]);
+
+    const switchMode = async (newMode: 'tape' | 'muscle') => {
+        setMode(newMode);
+        const updated = { ...localProfile, measurement_mode: newMode };
+        setLocalProfile(updated);
+        setProfile(updated);
+        await saveProfile(updated);
+    };
 
     // Initial Load
     useEffect(() => {
@@ -151,10 +159,10 @@ export default function BodyCompositionModal({
 
                 {/* Mode Toggle */}
                 <div className="flex border-b border-zinc-800 shrink-0">
-                    {([['tape', '📏 Tape Measure'], ['hume', '🔬 Hume Pod']] as const).map(([id, label]) => (
+                    {([['tape', '📏 Tape (inches)'], ['muscle', '💪 Muscle Mass (lbs)']] as const).map(([id, label]) => (
                         <button
                             key={id}
-                            onClick={() => setMode(id)}
+                            onClick={() => switchMode(id)}
                             className={`flex-1 py-3 text-xs font-bold uppercase tracking-widest transition-all ${mode === id ? 'text-white border-b-2 border-emerald-500 bg-zinc-800/50' : 'text-zinc-500 hover:text-zinc-300'}`}
                         >
                             {label}
@@ -200,7 +208,7 @@ export default function BodyCompositionModal({
                             <MeasurementRow
                                 key={part.id}
                                 label={part.label}
-                                currentGoal={localProfile?.body_composition_goals?.[part.id] || "Maintain"}
+                                currentGoal={localProfile?.body_composition_goals?.[part.id] || (mode === 'muscle' ? 'Grow' : part.id === 'waist' ? 'Shrink' : 'Maintain')}
                                 currentValue={getLatestValue(part.id)}
                                 onGoalChange={async (goal) => {
                                     const updated = { ...localProfile, body_composition_goals: { ...localProfile?.body_composition_goals, [part.id]: goal } };
@@ -211,7 +219,7 @@ export default function BodyCompositionModal({
                                 }}
                                 onLog={(val) => handleMeasurementLog(part.id, val, `${part.label}`)}
                                 loading={loading === part.id}
-                                unit={mode === 'hume' ? 'lbs' : 'in'}
+                                unit={mode === 'muscle' ? 'lbs' : 'in'}
                             />
                         ))}
                     </div>

@@ -32,6 +32,7 @@ export const getProfile = async (userId: string): Promise<UserProfileData | null
         hidden_habits: data.hidden_habits,
         habit_targets: data.habit_targets,
         body_composition_goals: data.body_composition_goals,
+        measurement_mode: data.measurement_mode,
     };
 };
 
@@ -57,6 +58,7 @@ export const saveProfile = async (profile: UserProfileData): Promise<any> => {
     if (profile.habit_targets !== undefined) payload.habit_targets = profile.habit_targets;
     if (profile.body_composition_goals !== undefined) payload.body_composition_goals = profile.body_composition_goals;
     if (profile.available_equipment !== undefined) payload.available_equipment = profile.available_equipment;
+    if (profile.measurement_mode !== undefined) payload.measurement_mode = profile.measurement_mode;
 
     const { error } = await supabase
         .from('users')
