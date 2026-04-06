@@ -42,7 +42,7 @@ export default function ScreenshotUploader({ type, subtype, onDataExtracted }: S
       console.log('Response data:', result);
 
       if (result.success) {
-        onDataExtracted(result.data);
+        onDataExtracted({ ...result.data, _image_description: result.image_description });
         setPreview(null);
       } else {
         console.error('Parse failed:', result.error);

@@ -92,6 +92,27 @@ export async function POST(request: NextRequest) {
 
     console.log('Calling Claude API...');
 
+    // Fetch few-shot examples for this type
+    const promptKey = (type === 'body_comp' ? `body_comp_${subtype || 'tape'}` : type) as keyof typeof prompts;
+    let basePrompt = prompts[promptKey] || prompts.workout;
+    let fewShotBlock = '';
+
+    try {
+      const examplesRes = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/screenshot-examples?type=${promptKey}`);
+      const { examples } = await examplesRes.json();
+      if (examples?.length) {
+        fewShotBlock = '\n\nHere are examples of previous screenshots and their correct extractions:\n' +
+          examples.map((ex: any, i: number) =>
+            `Example ${i + 1}:\nScreenshot description: ${ex.image_description}\nCorrect output: ${JSON.stringify(ex.corrected_json)}`
+          ).join('\n\n');
+      }
+    } catch (e) {
+      console.error('Failed to fetch few-shot examples:', e);
+    }
+
+    const fullPrompt = basePrompt + fewShotBlock +
+      '\n\nAlso include an "image_description" field (1-2 sentences describing the screenshot layout and what app/device it came from) in your JSON response.';
+
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 1024,
@@ -109,7 +130,7 @@ export async function POST(request: NextRequest) {
             },
             {
               type: 'text',
-              text: prompts[(type === 'body_comp' ? `body_comp_${subtype || 'tape'}` : type) as keyof typeof prompts] || prompts.workout,
+              text: fullPrompt,
             },
           ],
         },
@@ -123,11 +144,12 @@ export async function POST(request: NextRequest) {
     console.log('Extracted text:', text);
     
     const jsonMatch = text.match(/\{[\s\S]*\}/);
-    const data = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
+    const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
+    const { image_description, ...data } = parsed;
 
     console.log('Parsed data:', data);
 
-    return NextResponse.json({ success: true, data });
+    return NextResponse.json({ success: true, data, image_description: image_description || '' });
   } catch (error) {
     console.error('Error parsing screenshot:', error);
     return NextResponse.json({ 
