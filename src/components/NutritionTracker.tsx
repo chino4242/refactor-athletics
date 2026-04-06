@@ -436,7 +436,7 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
                             placeholder={String(totals['macro_calories_burned'] || 0)}
                             className="flex-1 min-w-0 bg-zinc-900 rounded-lg p-2 text-sm text-white text-center outline-none border border-zinc-800 focus:border-red-500 transition font-bold placeholder:text-zinc-700"
                         />
-                        <ScreenshotUploader type="fitness" onDataExtracted={handleFitnessData} />
+                        <ScreenshotUploader type="fitness" userId={userId} onDataExtracted={handleFitnessData} />
                         <button
                             onClick={handleLogBurn}
                             disabled={burnLoading || !burnInput}
@@ -528,6 +528,7 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
                 onClose={() => setShowLogModal(false)}
                 onLog={handleLogMacro}
                 totals={totals}
+                userId={userId}
             />
         </div>
     );

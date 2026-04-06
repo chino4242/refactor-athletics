@@ -401,7 +401,7 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
 
               {/* Screenshot Upload */}
               <div className="w-full md:w-auto">
-                <ScreenshotUploader type="workout" onDataExtracted={handleWorkoutData} />
+                <ScreenshotUploader type="workout" userId={userId} onDataExtracted={handleWorkoutData} />
               </div>
 
               {/* SEARCHABLE DROPDOWN */}

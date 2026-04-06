@@ -70,7 +70,7 @@ describe('ScreenshotUploader Component', () => {
         const mockData = { protein: 150, carbs: 200, fat: 60 };
         (global.fetch as any).mockResolvedValueOnce({
             status: 200,
-            json: async () => ({ success: true, data: mockData }),
+            json: async () => ({ success: true, data: mockData, image_description: '' }),
         });
 
         render(<ScreenshotUploader type="nutrition" onDataExtracted={mockOnDataExtracted} />);
@@ -80,8 +80,16 @@ describe('ScreenshotUploader Component', () => {
 
         fireEvent.change(input, { target: { files: [file] } });
 
+        // Review step should appear for flat types
         await waitFor(() => {
-            expect(mockOnDataExtracted).toHaveBeenCalledWith(mockData);
+            expect(screen.getByText('Review Extracted Data')).toBeInTheDocument();
+        });
+
+        // Click Confirm
+        fireEvent.click(screen.getByText('Confirm'));
+
+        await waitFor(() => {
+            expect(mockOnDataExtracted).toHaveBeenCalledWith({ protein: 150, carbs: 200, fat: 60 });
         });
     });
 

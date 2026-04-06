@@ -41,8 +41,6 @@ export default function BodyCompositionModal({
     const [isLoadingHistory, setIsLoadingHistory] = useState(false);
     const [localProfile, setLocalProfile] = useState(profile);
     const mode = localProfile.measurement_mode || 'tape';
-    const [reviewData, setReviewData] = useState<Record<string, string> | null>(null);
-    const [imageDescription, setImageDescription] = useState('');
 
     useEffect(() => { setLocalProfile(profile); }, [profile]);
 
@@ -160,80 +158,30 @@ export default function BodyCompositionModal({
                         <ScreenshotUploader
                             type="body_comp"
                             subtype={mode}
-                            onDataExtracted={(data) => {
-                                const { _image_description, ...values } = data;
-                                setImageDescription(_image_description || '');
-                                const fields = mode === 'muscle'
-                                    ? ['weight', 'left_arm_muscle', 'right_arm_muscle', 'trunk_muscle', 'left_leg_muscle', 'right_leg_muscle']
-                                    : ['weight', 'waist', 'arms', 'chest', 'legs', 'shoulders'];
-                                const review: Record<string, string> = {};
-                                fields.forEach(f => { if (values[f] != null) review[f] = String(values[f]); });
-                                setReviewData(review);
+                            userId={localProfile.user_id}
+                            onDataExtracted={async (data) => {
+                                const measurements = data as Record<string, number>;
+                                if (!Object.keys(measurements).length) return;
+                                try {
+                                    setLoading('screenshot');
+                                    const today = new Date().toISOString().split('T')[0];
+                                    await BodyCompositionService.logMeasurements(localProfile.user_id, today, { ...measurements, measurement_mode: mode });
+                                    if (measurements.weight) {
+                                        const updated = { ...localProfile, bodyweight: measurements.weight };
+                                        await saveProfile(updated);
+                                        setLocalProfile(updated);
+                                        setProfile(updated);
+                                    }
+                                    await loadHistory();
+                                    toast.success(`Logged ${Object.keys(measurements).length} measurements`);
+                                } catch (e) {
+                                    console.error(e);
+                                    toast.error('Failed to save');
+                                } finally {
+                                    setLoading(null);
+                                }
                             }}
                         />
-                        {reviewData && (
-                            <div className="bg-zinc-800/80 border border-emerald-800/50 rounded-xl p-3 space-y-2">
-                                <p className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">Review Extracted Data</p>
-                                {Object.entries(reviewData).map(([key, val]) => (
-                                    <div key={key} className="flex items-center gap-2">
-                                        <span className="text-[10px] text-zinc-400 uppercase w-24 truncate">{key.replace(/_/g, ' ')}</span>
-                                        <input
-                                            type="number"
-                                            step="0.1"
-                                            value={val}
-                                            onChange={(e) => setReviewData({ ...reviewData, [key]: e.target.value })}
-                                            className="flex-1 bg-zinc-950 border border-zinc-700 rounded px-2 py-1 text-sm text-white text-center outline-none focus:border-emerald-600"
-                                        />
-                                    </div>
-                                ))}
-                                <div className="flex gap-2 pt-1">
-                                    <button
-                                        onClick={() => setReviewData(null)}
-                                        className="flex-1 text-[10px] text-zinc-400 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700 font-bold uppercase"
-                                    >Cancel</button>
-                                    <button
-                                        onClick={async () => {
-                                            const measurements: Record<string, number> = {};
-                                            Object.entries(reviewData).forEach(([k, v]) => { if (v) measurements[k] = Number(v); });
-                                            if (!Object.keys(measurements).length) return;
-                                            try {
-                                                setLoading('screenshot');
-                                                const today = new Date().toISOString().split('T')[0];
-                                                await BodyCompositionService.logMeasurements(localProfile.user_id, today, { ...measurements, measurement_mode: mode });
-                                                if (measurements.weight) {
-                                                    const updated = { ...localProfile, bodyweight: measurements.weight };
-                                                    await saveProfile(updated);
-                                                    setLocalProfile(updated);
-                                                    setProfile(updated);
-                                                }
-                                                if (imageDescription) {
-                                                    fetch('/api/screenshot-examples', {
-                                                        method: 'POST',
-                                                        headers: { 'Content-Type': 'application/json' },
-                                                        body: JSON.stringify({
-                                                            user_id: localProfile.user_id,
-                                                            screenshot_type: `body_comp_${mode}`,
-                                                            image_description: imageDescription,
-                                                            corrected_json: measurements,
-                                                        }),
-                                                    }).catch(console.error);
-                                                }
-                                                await loadHistory();
-                                                toast.success(`Logged ${Object.keys(measurements).length} measurements`);
-                                                setReviewData(null);
-                                            } catch (e) {
-                                                console.error(e);
-                                                toast.error('Failed to save');
-                                            } finally {
-                                                setLoading(null);
-                                            }
-                                        }}
-                                        disabled={loading === 'screenshot'}
-                                        className="flex-1 text-[10px] text-white py-1.5 rounded bg-emerald-600 hover:bg-emerald-500 font-bold uppercase disabled:opacity-50"
-                                    >Confirm & Log</button>
-                                </div>
-                            </div>
-                        )}
                         {/* WEIGHT */}
                         <MeasurementRow
                             label="Weight"

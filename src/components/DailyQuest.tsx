@@ -295,7 +295,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
           {expandedSections.habits && (
             <div className="space-y-3 animate-fade-in">
           <div className="flex justify-end mb-2">
-            <ScreenshotUploader type="habits" onDataExtracted={handleHabitData} />
+            <ScreenshotUploader type="habits" userId={userId} onDataExtracted={handleHabitData} />
           </div>
           <div className="grid grid-cols-2 gap-2">
             {!isHidden('habit_sleep') && (

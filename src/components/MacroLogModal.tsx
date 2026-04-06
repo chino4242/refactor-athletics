@@ -10,9 +10,10 @@ interface MacroLogModalProps {
     onClose: () => void;
     onLog: (type: 'calories' | 'protein' | 'carbs' | 'fat' | 'water', value: number) => Promise<void>;
     totals: Record<string, number>;
+    userId?: string;
 }
 
-export default function MacroLogModal({ isOpen, onClose, onLog, totals }: MacroLogModalProps) {
+export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }: MacroLogModalProps) {
     const [mounted, setMounted] = useState(false);
 
     // Values
@@ -93,7 +94,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals }: MacroL
 
                 {/* Screenshot Upload */}
                 <div className="p-4 border-b border-zinc-800/50">
-                    <ScreenshotUploader type="nutrition" onDataExtracted={handleNutritionData} />
+                    <ScreenshotUploader type="nutrition" userId={userId} onDataExtracted={handleNutritionData} />
                 </div>
 
                 {/* Current Totals Display */}
