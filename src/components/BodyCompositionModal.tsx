@@ -39,19 +39,22 @@ export default function BodyCompositionModal({
     const [physiquePoints, setPhysiquePoints] = useState<number>(0);
     const [isLoadingHistory, setIsLoadingHistory] = useState(false);
     const [mode, setMode] = useState<'tape' | 'hume'>('tape');
+    const [localProfile, setLocalProfile] = useState(profile);
+
+    useEffect(() => { setLocalProfile(profile); }, [profile]);
 
     // Initial Load
     useEffect(() => {
-        if (isOpen && profile?.user_id) {
+        if (isOpen && localProfile?.user_id) {
             loadHistory();
         }
-    }, [isOpen, profile?.user_id]);
+    }, [isOpen, localProfile?.user_id]);
 
     const loadHistory = async () => {
         setIsLoadingHistory(true);
-        const data = await BodyCompositionService.getHistory(profile.user_id);
+        const data = await BodyCompositionService.getHistory(localProfile.user_id);
         setHistory(data);
-        const result = calculatePhysiquePoints(data, profile.body_composition_goals || {});
+        const result = calculatePhysiquePoints(data, localProfile.body_composition_goals || {});
         setPhysiquePoints(result.score);
         setIsLoadingHistory(false);
     };
@@ -61,7 +64,7 @@ export default function BodyCompositionModal({
         try {
             // 1. Log to DB separate table
             const today = new Date().toISOString().split('T')[0];
-            await BodyCompositionService.logMeasurements(profile.user_id, today, {
+            await BodyCompositionService.logMeasurements(localProfile.user_id, today, {
                 [metricId]: value,
                 measurement_mode: mode,
             });
@@ -90,7 +93,7 @@ export default function BodyCompositionModal({
 
             // 4. Update Profile Bodyweight if it's weight
             if (metricId === 'weight') {
-                const updated = { ...profile, bodyweight: value };
+                const updated = { ...localProfile, bodyweight: value };
                 await saveProfile(updated);
                 setProfile(updated); // Optimistic
             }
@@ -167,11 +170,12 @@ export default function BodyCompositionModal({
                         {/* WEIGHT */}
                         <MeasurementRow
                             label="Weight"
-                            currentGoal={profile?.body_composition_goals?.weight || "Maintain"}
-                            currentValue={String(profile?.bodyweight || getLatestValue('weight'))}
+                            currentGoal={localProfile?.body_composition_goals?.weight || "Maintain"}
+                            currentValue={String(localProfile?.bodyweight || getLatestValue('weight'))}
                             unit="lbs"
                             onGoalChange={async (goal) => {
-                                const updated = { ...profile, body_composition_goals: { ...profile.body_composition_goals, weight: goal } };
+                                const updated = { ...localProfile, body_composition_goals: { ...localProfile.body_composition_goals, weight: goal } };
+                                setLocalProfile(updated);
                                 setProfile(updated);
                                 await saveProfile(updated);
                                 // Recalculate score locally
@@ -180,8 +184,6 @@ export default function BodyCompositionModal({
                             onLog={(val) => handleMeasurementLog('weight', val, 'Weigh In')}
                             loading={loading === 'weight'}
                         />
-
-                        {/* BODY PARTS - Mode Dependent */}
                         {(mode === 'tape' ? [
                             { id: 'waist', label: 'Waist' },
                             { id: 'arms', label: 'Arms' },
@@ -198,10 +200,11 @@ export default function BodyCompositionModal({
                             <MeasurementRow
                                 key={part.id}
                                 label={part.label}
-                                currentGoal={profile?.body_composition_goals?.[part.id] || "Maintain"}
+                                currentGoal={localProfile?.body_composition_goals?.[part.id] || "Maintain"}
                                 currentValue={getLatestValue(part.id)}
                                 onGoalChange={async (goal) => {
-                                    const updated = { ...profile, body_composition_goals: { ...profile?.body_composition_goals, [part.id]: goal } };
+                                    const updated = { ...localProfile, body_composition_goals: { ...localProfile?.body_composition_goals, [part.id]: goal } };
+                                    setLocalProfile(updated);
                                     setProfile(updated);
                                     await saveProfile(updated);
                                     loadHistory();
