@@ -4,11 +4,12 @@ import { useState } from 'react';
 import { Upload, X, Loader2 } from 'lucide-react';
 
 interface ScreenshotUploaderProps {
-  type: 'workout' | 'nutrition' | 'habits' | 'fitness';
+  type: 'workout' | 'nutrition' | 'habits' | 'fitness' | 'body_comp';
+  subtype?: string;
   onDataExtracted: (data: any) => void;
 }
 
-export default function ScreenshotUploader({ type, onDataExtracted }: ScreenshotUploaderProps) {
+export default function ScreenshotUploader({ type, subtype, onDataExtracted }: ScreenshotUploaderProps) {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
 
@@ -27,6 +28,7 @@ export default function ScreenshotUploader({ type, onDataExtracted }: Screenshot
       const formData = new FormData();
       formData.append('image', file);
       formData.append('type', type);
+      if (subtype) formData.append('subtype', subtype);
 
       console.log('Uploading screenshot:', file.name, file.type, file.size);
 

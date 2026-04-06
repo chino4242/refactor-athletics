@@ -14,6 +14,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get('image') as File;
     const type = formData.get('type') as string;
+    const subtype = formData.get('subtype') as string | null;
 
     console.log('File:', file?.name, 'Type:', type);
 
@@ -68,6 +69,24 @@ export async function POST(request: NextRequest) {
   "calories_burned": 2450,
   "steps": 10000,
   "day_strain": 14.2
+}`,
+      body_comp_tape: `Extract body tape measurements from this screenshot. Look for circumference measurements in inches for body parts. Return ONLY valid JSON with this exact structure (use null for any values not found):
+{
+  "weight": 185,
+  "waist": 34,
+  "arms": 15,
+  "chest": 42,
+  "legs": 24,
+  "shoulders": 48
+}`,
+      body_comp_muscle: `Extract muscle mass data from this screenshot. Look for lean muscle mass in pounds (lbs) for each body segment. Return ONLY valid JSON with this exact structure (use null for any values not found):
+{
+  "weight": 185,
+  "left_arm_muscle": 8.2,
+  "right_arm_muscle": 8.4,
+  "trunk_muscle": 62.5,
+  "left_leg_muscle": 22.1,
+  "right_leg_muscle": 22.3
 }`
     };
 
@@ -90,7 +109,7 @@ export async function POST(request: NextRequest) {
             },
             {
               type: 'text',
-              text: prompts[type as keyof typeof prompts] || prompts.workout,
+              text: prompts[(type === 'body_comp' ? `body_comp_${subtype || 'tape'}` : type) as keyof typeof prompts] || prompts.workout,
             },
           ],
         },

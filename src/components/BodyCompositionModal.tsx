@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Scale, TrendingUp } from 'lucide-react';
 import MeasurementRow from './MeasurementRow';
+import ScreenshotUploader from './ScreenshotUploader';
 import type { UserProfileData } from '@/types';
 import { BodyCompositionService } from '../services/BodyCompositionService';
 import type { BodyCompositionEntry } from '../services/BodyCompositionService';
@@ -154,6 +155,36 @@ export default function BodyCompositionModal({
 
                     {/* LEFT: Inputs */}
                     <div className="w-full md:w-1/3 border-r border-zinc-800 overflow-y-auto custom-scrollbar p-4 space-y-4 bg-zinc-900/30">
+                        <ScreenshotUploader
+                            type="body_comp"
+                            subtype={mode}
+                            onDataExtracted={async (data) => {
+                                const today = new Date().toISOString().split('T')[0];
+                                const measurements: Record<string, number> = {};
+                                const fields = mode === 'muscle'
+                                    ? ['weight', 'left_arm_muscle', 'right_arm_muscle', 'trunk_muscle', 'left_leg_muscle', 'right_leg_muscle']
+                                    : ['weight', 'waist', 'arms', 'chest', 'legs', 'shoulders'];
+                                fields.forEach(f => { if (data[f] != null) measurements[f] = Number(data[f]); });
+                                if (Object.keys(measurements).length === 0) return;
+                                try {
+                                    setLoading('screenshot');
+                                    await BodyCompositionService.logMeasurements(localProfile.user_id, today, { ...measurements, measurement_mode: mode });
+                                    if (measurements.weight) {
+                                        const updated = { ...localProfile, bodyweight: measurements.weight };
+                                        await saveProfile(updated);
+                                        setLocalProfile(updated);
+                                        setProfile(updated);
+                                    }
+                                    await loadHistory();
+                                    toast.success(`Logged ${Object.keys(measurements).length} measurements from screenshot`);
+                                } catch (e) {
+                                    console.error(e);
+                                    toast.error('Failed to save screenshot data');
+                                } finally {
+                                    setLoading(null);
+                                }
+                            }}
+                        />
                         {/* WEIGHT */}
                         <MeasurementRow
                             label="Weight"
