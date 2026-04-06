@@ -110,7 +110,7 @@ describe('BodyCompositionModal', () => {
         fireEvent.click(logButtons[1]);
 
         await waitFor(() => {
-            expect(mockLogMeasurements).toHaveBeenCalledWith('user-1', expect.any(String), { waist: 36 });
+            expect(mockLogMeasurements).toHaveBeenCalledWith('user-1', expect.any(String), { waist: 36, measurement_mode: 'tape' });
         });
 
         // History should be reloaded after logging
@@ -199,35 +199,35 @@ describe('BodyCompositionModal', () => {
     it('saves goal change to profile', async () => {
         const noGoalProfile = { ...baseProfile, body_composition_goals: {} };
         const saveSpy = vi.fn().mockResolvedValue({});
-        const setProfileSpy = vi.fn();
 
         render(<BodyCompositionModal
             {...defaultProps}
             profile={noGoalProfile}
             saveProfile={saveSpy}
-            setProfile={setProfileSpy}
         />);
 
         await waitFor(() => {
             expect(screen.getByText('Weight')).toBeInTheDocument();
         });
 
-        // With no goals, all rows default to "Maintain". Open the first dropdown.
-        const maintainButtons = screen.getAllByRole('button').filter(
-            btn => btn.textContent?.includes('Maintain')
+        // Find all goal selector buttons (they contain goal text like Maintain/Shrink)
+        // Click the first one to open its dropdown
+        const goalButtons = screen.getAllByRole('button').filter(
+            btn => btn.textContent?.includes('Maintain') || btn.textContent?.includes('Shrink')
         );
-        fireEvent.click(maintainButtons[0]);
+        // First goal button is Weight's "Maintain"
+        fireEvent.click(goalButtons[0]);
 
-        // Dropdown should now show Grow/Shrink/Maintain/Disable options
+        // Wait for dropdown, then click "Grow" (unique, only appears in dropdown)
         await waitFor(() => {
-            expect(screen.getByText('Shrink')).toBeInTheDocument();
+            expect(screen.getByText('Grow')).toBeInTheDocument();
         });
-        fireEvent.click(screen.getByText('Shrink'));
+        fireEvent.click(screen.getByText('Grow'));
 
         await waitFor(() => {
-            expect(setProfileSpy).toHaveBeenCalledWith(
+            expect(saveSpy).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    body_composition_goals: expect.objectContaining({ weight: 'Shrink' })
+                    body_composition_goals: expect.objectContaining({ weight: 'Grow' })
                 })
             );
         });
