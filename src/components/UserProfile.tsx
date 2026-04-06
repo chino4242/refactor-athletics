@@ -43,7 +43,7 @@ export default function UserProfile({
 }: UserProfileProps) {
 
   // --- HOOKS ---
-  const { history, stats, initialGoalWeight, loadUserData } = useUserProfileData(userId);
+  const { history, stats, initialGoalWeight, measurementMode, loadUserData } = useUserProfileData(userId);
   const { groupedTrophies, categoryStats } = useTrophies(history, exercises);
   const toast = useToast();
   const { currentTheme: activeTheme, setCurrentTheme } = useTheme();
@@ -139,6 +139,7 @@ export default function UserProfile({
             sex={sex}
             currentWeight={currentWeight}
             goalWeight={initialGoalWeight}
+            measurementMode={measurementMode}
             level={stats?.player_level || 1}
             onProfileUpdate={handleProfileUpdate}
             onReload={loadUserData}

@@ -14,6 +14,7 @@ interface ProfileCardProps {
     sex: string;
     currentWeight: number;
     goalWeight: number;
+    measurementMode?: 'tape' | 'muscle';
     level: number;
     onProfileUpdate: (newWeight: number, newAge: number, newSex: string) => void;
     onReload: () => void;
@@ -26,6 +27,7 @@ export default function ProfileCard({
     sex,
     currentWeight,
     goalWeight,
+    measurementMode = 'tape',
     level,
     onProfileUpdate,
     onReload
@@ -37,6 +39,7 @@ export default function ProfileCard({
 
     const [formWeight, setFormWeight] = useState<number>(currentWeight);
     const [formGoalWeight, setFormGoalWeight] = useState<number>(goalWeight);
+    const [formMeasurementMode, setFormMeasurementMode] = useState<'tape' | 'muscle'>(measurementMode);
     const [formSex, setFormSex] = useState<string>(sex);
     const [formDob, setFormDob] = useState<string>('');
     const [calculatedAge, setCalculatedAge] = useState<number>(age);
@@ -47,8 +50,9 @@ export default function ProfileCard({
             setFormSex(sex);
             setCalculatedAge(age);
             setFormGoalWeight(goalWeight);
+            setFormMeasurementMode(measurementMode);
         }
-    }, [currentWeight, sex, age, goalWeight, isEditing]);
+    }, [currentWeight, sex, age, goalWeight, measurementMode, isEditing]);
 
     const handleDobChange = (dateString: string) => {
         setFormDob(dateString);
@@ -70,6 +74,7 @@ export default function ProfileCard({
                 sex: formSex,
                 bodyweight: formWeight,
                 body_composition_goals: formGoalWeight > 0 ? { target_weight: formGoalWeight.toString() } : undefined,
+                measurement_mode: formMeasurementMode,
                 is_onboarded: true,
                 display_name: displayName,
             });
@@ -165,6 +170,13 @@ export default function ProfileCard({
                     <div>
                         <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">Goal Weight</label>
                         <input type="number" value={formGoalWeight} onChange={(e) => setFormGoalWeight(Number(e.target.value))} placeholder="Optional" className="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2 text-white text-sm outline-none focus:border-orange-500 transition-colors" />
+                    </div>
+                    <div>
+                        <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">Body Tracking</label>
+                        <select value={formMeasurementMode} onChange={(e) => setFormMeasurementMode(e.target.value as 'tape' | 'muscle')} className="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2 text-white text-sm outline-none focus:border-orange-500 transition-colors">
+                            <option value="tape">📏 Tape (inches)</option>
+                            <option value="muscle">💪 Muscle Mass (lbs)</option>
+                        </select>
                     </div>
                     <div className="col-span-2 flex justify-end gap-3 mt-2 border-t border-zinc-800 pt-4">
                         <button onClick={() => setIsEditing(false)} className="px-4 py-2 text-xs font-bold text-zinc-400 hover:text-white transition uppercase tracking-wider">Cancel</button>

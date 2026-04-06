@@ -1,19 +1,20 @@
-const METRICS = ['waist', 'arms', 'legs', 'chest', 'shoulders', 'weight',
-    'left_arm_muscle', 'right_arm_muscle', 'trunk_muscle', 'left_leg_muscle', 'right_leg_muscle'] as const;
+const TAPE_METRICS = ['weight', 'waist', 'arms', 'legs', 'chest', 'shoulders'] as const;
+const MUSCLE_METRICS = ['weight', 'left_arm_muscle', 'right_arm_muscle', 'trunk_muscle', 'left_leg_muscle', 'right_leg_muscle'] as const;
 
 export function calculatePhysiquePoints(
     bodyCompHistory: Array<Record<string, any>>,
-    goals: Record<string, string>
+    goals: Record<string, string>,
+    mode: 'tape' | 'muscle' = 'tape'
 ): { score: number; status: string; color: string } {
     if (bodyCompHistory.length < 2) return { score: 0, status: 'No Data', color: 'text-zinc-400' };
 
+    const metrics = mode === 'muscle' ? MUSCLE_METRICS : TAPE_METRICS;
     let score = 0;
 
-    METRICS.forEach(metric => {
+    metrics.forEach(metric => {
         const goal = goals[metric];
         if (!goal) return;
 
-        // Find earliest and latest non-null values for this metric
         let baseVal: number | null = null;
         let currVal: number | null = null;
 

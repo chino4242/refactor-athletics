@@ -38,18 +38,10 @@ export default function BodyCompositionModal({
     const [history, setHistory] = useState<BodyCompositionEntry[]>([]);
     const [physiquePoints, setPhysiquePoints] = useState<number>(0);
     const [isLoadingHistory, setIsLoadingHistory] = useState(false);
-    const [mode, setMode] = useState<'tape' | 'muscle'>(profile.measurement_mode || 'tape');
     const [localProfile, setLocalProfile] = useState(profile);
+    const mode = localProfile.measurement_mode || 'tape';
 
     useEffect(() => { setLocalProfile(profile); }, [profile]);
-
-    const switchMode = async (newMode: 'tape' | 'muscle') => {
-        setMode(newMode);
-        const updated = { ...localProfile, measurement_mode: newMode };
-        setLocalProfile(updated);
-        setProfile(updated);
-        await saveProfile(updated);
-    };
 
     // Initial Load
     useEffect(() => {
@@ -62,7 +54,7 @@ export default function BodyCompositionModal({
         setIsLoadingHistory(true);
         const data = await BodyCompositionService.getHistory(localProfile.user_id);
         setHistory(data);
-        const result = calculatePhysiquePoints(data, localProfile.body_composition_goals || {});
+        const result = calculatePhysiquePoints(data, localProfile.body_composition_goals || {}, mode);
         setPhysiquePoints(result.score);
         setIsLoadingHistory(false);
     };
@@ -155,19 +147,6 @@ export default function BodyCompositionModal({
                     >
                         <X size={20} />
                     </button>
-                </div>
-
-                {/* Mode Toggle */}
-                <div className="flex border-b border-zinc-800 shrink-0">
-                    {([['tape', '📏 Tape (inches)'], ['muscle', '💪 Muscle Mass (lbs)']] as const).map(([id, label]) => (
-                        <button
-                            key={id}
-                            onClick={() => switchMode(id)}
-                            className={`flex-1 py-3 text-xs font-bold uppercase tracking-widest transition-all ${mode === id ? 'text-white border-b-2 border-emerald-500 bg-zinc-800/50' : 'text-zinc-500 hover:text-zinc-300'}`}
-                        >
-                            {label}
-                        </button>
-                    ))}
                 </div>
 
                 {/* Content - Two Columns */}

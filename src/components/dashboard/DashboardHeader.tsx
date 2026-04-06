@@ -52,7 +52,7 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
 
     // Calculate refactor score
     const physiquePoints = useMemo(() => {
-        return calculatePhysiquePoints(bodyCompHistory, userProfile?.body_composition_goals || {});
+        return calculatePhysiquePoints(bodyCompHistory, userProfile?.body_composition_goals || {}, (userProfile?.measurement_mode as 'tape' | 'muscle') || 'tape');
     }, [bodyCompHistory, userProfile]);
 
     return (

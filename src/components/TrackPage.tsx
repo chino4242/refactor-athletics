@@ -135,7 +135,7 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
 
     // Calculate refactor score
     const physiquePoints = useMemo(() => {
-        return calculatePhysiquePoints(bodyCompHistory, initialProfile?.body_composition_goals || {});
+        return calculatePhysiquePoints(bodyCompHistory, initialProfile?.body_composition_goals || {}, initialProfile?.measurement_mode || 'tape');
     }, [bodyCompHistory, initialProfile]);
 
     // --- RETRO CHECK LOGIC ---
