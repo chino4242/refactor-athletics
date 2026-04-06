@@ -13,6 +13,8 @@ import { v4 as uuidv4 } from 'uuid';
 
 // --- SAFELIST CONSTANT REMOVED ---
 
+import EquipmentVariantPicker, { getEquipmentVariants } from './EquipmentVariantPicker';
+
 // --- SUB-COMPONENT: EXERCISE VIEW ---
 function ExerciseView({ block, onComplete, fullHistory, catalog }: any) {
   const [completedSets, setCompletedSets] = useState<number[]>([]);
@@ -26,13 +28,18 @@ function ExerciseView({ block, onComplete, fullHistory, catalog }: any) {
     return Array(totalSets).fill(parsed > 0 ? String(parsed) : '');
   });
 
-  const [showHistoryModal, setShowHistoryModal] = useState(false); // 🟢 NEW
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
 
   // Find Catalog Item
-  const catalogItem = useMemo(() => {
+  const defaultCatalogItem = useMemo(() => {
     if (!catalog || catalog.length === 0) return null;
     return catalog.find((c: any) => c.name.toLowerCase() === block.name.toLowerCase());
   }, [catalog, block.name]);
+
+  const [overrideCatalogItem, setOverrideCatalogItem] = useState<CatalogItem | null>(null);
+  const catalogItem = overrideCatalogItem || defaultCatalogItem;
+
+  const variants = useMemo(() => getEquipmentVariants(block.name, catalog || []), [block.name, catalog]);
 
   const updateWeight = (index: number, val: string) => {
     const newWeights = [...weights];
@@ -108,6 +115,12 @@ function ExerciseView({ block, onComplete, fullHistory, catalog }: any) {
             </button>
           )}
         </div>
+
+        {variants.length > 0 && (
+          <div className="mt-2">
+            <EquipmentVariantPicker variants={variants} selectedId={catalogItem?.id || ''} onSelect={setOverrideCatalogItem} />
+          </div>
+        )}
 
         <p className="text-zinc-400 text-sm mt-1 font-mono">
           {block.sets} Sets × {block.reps_per_set} Reps • {block.rest_seconds || 90}s Rest
@@ -253,9 +266,9 @@ function ExerciseView({ block, onComplete, fullHistory, catalog }: any) {
       <div className="bg-zinc-900 border-t border-zinc-800 p-4 shrink-0">
         <button
           onClick={() => {
-            // Construct detailed payload
             const exercisesPayload = [{
-              name: block.name,
+              name: catalogItem?.name || block.name,
+              catalogId: catalogItem?.id,
               sets: completedSets.map(i => ({
                 weight: parseFloat(weights[i] || '0'),
                 reps: parseInt(repsInputs[i], 10) || 10
@@ -429,14 +442,14 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
 
 // --- SUB-COMPONENT: SUPERSET VIEW ---
 function SupersetView({ block, onComplete, fullHistory, catalog }: any) {
-  // State to track completion of each set for each exercise
-  // Structure: { "exercise_index": [completed_set_indices] }
   const [completedSets, setCompletedSets] = useState<Record<number, number[]>>({});
-  const [weights, setWeights] = useState<Record<string, string>>({}); // Key: "exIdx-setIdx"
-  const [reps, setReps] = useState<Record<string, string>>({}); // Key: "exIdx-setIdx"
+  const [weights, setWeights] = useState<Record<string, string>>({});
+  const [reps, setReps] = useState<Record<string, string>>({});
 
-  // 🟢 NEW: Active History Modal
   const [selectedExerciseForHistory, setSelectedExerciseForHistory] = useState<CatalogItem | null>(null);
+
+  // Equipment variant overrides per exercise index
+  const [variantOverrides, setVariantOverrides] = useState<Record<number, CatalogItem>>({});
 
   // Rest Timer State
   const [restTime, setRestTime] = useState(0);
@@ -586,12 +599,14 @@ function SupersetView({ block, onComplete, fullHistory, catalog }: any) {
                   const targetReps = ex.reps_list ? ex.reps_list[setIdx] : null;
                   const defaultReps = targetReps != null ? String(targetReps) : '';
 
-                  // Find catalog item
-                  const catalogItem = catalog?.find((c: any) => c.name.toLowerCase() === ex.name.toLowerCase());
+                  // Find catalog item (with variant override)
+                  const defaultCatalogItem = catalog?.find((c: any) => c.name.toLowerCase() === ex.name.toLowerCase());
+                  const catalogItem = variantOverrides[exIdx] || defaultCatalogItem;
+                  const exVariants = getEquipmentVariants(ex.name, catalog || []);
 
                   return (
-                    <div key={exIdx} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${isDone ? 'bg-green-500/10 border-green-500/40' : 'bg-zinc-800 border-zinc-700'
-                      }`}>
+                    <div key={exIdx} className={`rounded-xl border transition-all ${isDone ? 'bg-green-500/10 border-green-500/40' : 'bg-zinc-800 border-zinc-700'}`}>
+                    <div className={`flex items-center gap-3 p-3`}>
 
                       {/* Weight + Reps Inputs */}
                       <div className="flex gap-1 shrink-0">
@@ -652,6 +667,12 @@ function SupersetView({ block, onComplete, fullHistory, catalog }: any) {
                       )}
 
                     </div>
+                    {setIdx === 0 && exVariants.length > 0 && (
+                      <div className="px-3 pb-2">
+                        <EquipmentVariantPicker variants={exVariants} selectedId={catalogItem?.id || ''} onSelect={(item) => setVariantOverrides(prev => ({ ...prev, [exIdx]: item }))} />
+                      </div>
+                    )}
+                    </div>
                   );
                 })}
               </div>
@@ -703,7 +724,9 @@ function SupersetView({ block, onComplete, fullHistory, catalog }: any) {
                   });
                 }
               }
-              return { name: ex.name, sets: setsData };
+              const override = variantOverrides[exIdx];
+              const catalogMatch = override || catalog?.find((c: any) => c.name.toLowerCase() === ex.name.toLowerCase());
+              return { name: catalogMatch?.name || ex.name, catalogId: catalogMatch?.id, sets: setsData };
             });
             onComplete(false, exercisesPayload);
           }}
@@ -967,7 +990,9 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
           const results: any[] = [];
           for (const ex of exercisesData) {
             if (!ex.sets || ex.sets.length === 0) continue;
-            const catalogItem = findCatalogMatch(ex.name);
+            const catalogItem = ex.catalogId
+              ? catalog.find((c: any) => c.id === ex.catalogId)
+              : findCatalogMatch(ex.name);
 
             if (catalogItem) {
               try {
