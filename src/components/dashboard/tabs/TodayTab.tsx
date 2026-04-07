@@ -222,7 +222,12 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                                 ? 'bg-orange-500/10 border border-orange-500/20'
                                 : 'bg-zinc-800/50'
                         }`}>
-                            <div className="text-xl mb-0.5">⚡</div>
+                            <div className="relative">
+                                <div className="text-xl mb-0.5">⚡</div>
+                                {todayProgress.maxDailyXp > 0 && (
+                                    <div className="absolute -top-1 -right-1 text-[8px] text-zinc-500 font-bold">🏆{(todayProgress.maxDailyXp || 0).toLocaleString()}</div>
+                                )}
+                            </div>
                             <div className="text-[10px] text-zinc-500 mb-0.5">{isClassic ? 'Points' : 'XP'}</div>
                             <div className={`text-sm font-bold ${
                                 todayProgress.xp > 0 && todayProgress.xp >= todayProgress.maxDailyXp
@@ -231,7 +236,7 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                             }`}>
                                 {(todayProgress.xp || 0).toLocaleString()}
                             </div>
-                            <div className="text-[10px] text-zinc-600">/ {(todayProgress.maxDailyXp || 0).toLocaleString()} best</div>
+                            <div className="text-[10px] text-zinc-600">today</div>
                         </div>
                     </div>
                     
