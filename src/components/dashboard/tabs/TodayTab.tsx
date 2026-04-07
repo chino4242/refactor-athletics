@@ -22,6 +22,7 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
         calories: 0,
         water: 0,
         steps: 0,
+        xp: 0,
     });
     const [loading, setLoading] = useState(true);
 
@@ -71,6 +72,16 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                     water: habitProgress?.totals?.habit_water || 0,
                     steps: habitProgress?.totals?.habit_steps || 0,
                 });
+                
+                // Get today's XP from all tables
+                const todayDate = new Date().toISOString().split('T')[0];
+                const [{ data: wXp }, { data: nXp }, { data: hXp }] = await Promise.all([
+                    supabase.from('workouts').select('xp').eq('user_id', userId).eq('date', todayDate),
+                    supabase.from('nutrition_logs').select('xp').eq('user_id', userId).gte('timestamp', startOfDay),
+                    supabase.from('habit_logs').select('xp').eq('user_id', userId).gte('timestamp', startOfDay),
+                ]);
+                const totalXp = [...(wXp || []), ...(nXp || []), ...(hXp || [])].reduce((s, r) => s + (r.xp || 0), 0);
+                setTodayProgress((prev: any) => ({ ...prev, xp: totalXp }));
                 
                 // Get last completed workout from history
                 const history = await getHistory(userId);
@@ -145,14 +156,14 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                     </div>
                     
                     {/* Quick Stats Grid */}
-                    <div className="grid grid-cols-3 gap-3">
-                        <div className={`rounded-lg p-3 text-center transition-colors ${
+                    <div className="grid grid-cols-4 gap-2">
+                        <div className={`rounded-lg p-2.5 text-center transition-colors ${
                             todayProgress.calories >= (profile.nutrition_targets?.calories || 2000)
                                 ? 'bg-emerald-500/10 border border-emerald-500/20'
                                 : 'bg-zinc-800/50'
                         }`}>
-                            <div className="text-2xl mb-1">🍽️</div>
-                            <div className="text-xs text-zinc-500 mb-1">Calories</div>
+                            <div className="text-xl mb-0.5">🍽️</div>
+                            <div className="text-[10px] text-zinc-500 mb-0.5">Calories</div>
                             <div className={`text-sm font-bold ${
                                 todayProgress.calories >= (profile.nutrition_targets?.calories || 2000)
                                     ? 'text-emerald-400'
@@ -160,15 +171,15 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                             }`}>
                                 {Math.round(todayProgress.calories)}
                             </div>
-                            <div className="text-xs text-zinc-600">/ {profile.nutrition_targets?.calories || 2000}</div>
+                            <div className="text-[10px] text-zinc-600">/ {profile.nutrition_targets?.calories || 2000}</div>
                         </div>
-                        <div className={`rounded-lg p-3 text-center transition-colors ${
+                        <div className={`rounded-lg p-2.5 text-center transition-colors ${
                             todayProgress.water >= (profile.habit_targets?.habit_water || 100)
                                 ? 'bg-emerald-500/10 border border-emerald-500/20'
                                 : 'bg-zinc-800/50'
                         }`}>
-                            <div className="text-2xl mb-1">💧</div>
-                            <div className="text-xs text-zinc-500 mb-1">Water</div>
+                            <div className="text-xl mb-0.5">💧</div>
+                            <div className="text-[10px] text-zinc-500 mb-0.5">Water</div>
                             <div className={`text-sm font-bold ${
                                 todayProgress.water >= (profile.habit_targets?.habit_water || 100)
                                     ? 'text-emerald-400'
@@ -176,15 +187,15 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                             }`}>
                                 {Math.round(todayProgress.water)}
                             </div>
-                            <div className="text-xs text-zinc-600">/ {profile.habit_targets?.habit_water || 100} oz</div>
+                            <div className="text-[10px] text-zinc-600">/ {profile.habit_targets?.habit_water || 100} oz</div>
                         </div>
-                        <div className={`rounded-lg p-3 text-center transition-colors ${
+                        <div className={`rounded-lg p-2.5 text-center transition-colors ${
                             todayProgress.steps >= (profile.habit_targets?.habit_steps || 10000)
                                 ? 'bg-emerald-500/10 border border-emerald-500/20'
                                 : 'bg-zinc-800/50'
                         }`}>
-                            <div className="text-2xl mb-1">👟</div>
-                            <div className="text-xs text-zinc-500 mb-1">Steps</div>
+                            <div className="text-xl mb-0.5">👟</div>
+                            <div className="text-[10px] text-zinc-500 mb-0.5">Steps</div>
                             <div className={`text-sm font-bold ${
                                 todayProgress.steps >= (profile.habit_targets?.habit_steps || 10000)
                                     ? 'text-emerald-400'
@@ -192,7 +203,21 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                             }`}>
                                 {Math.round(todayProgress.steps)}
                             </div>
-                            <div className="text-xs text-zinc-600">/ {profile.habit_targets?.habit_steps || 10000}</div>
+                            <div className="text-[10px] text-zinc-600">/ {(profile.habit_targets?.habit_steps || 10000).toLocaleString()}</div>
+                        </div>
+                        <div className={`rounded-lg p-2.5 text-center transition-colors ${
+                            todayProgress.xp > 0
+                                ? 'bg-orange-500/10 border border-orange-500/20'
+                                : 'bg-zinc-800/50'
+                        }`}>
+                            <div className="text-xl mb-0.5">⚡</div>
+                            <div className="text-[10px] text-zinc-500 mb-0.5">{isClassic ? 'Points' : 'XP'}</div>
+                            <div className={`text-sm font-bold ${
+                                todayProgress.xp > 0 ? 'text-orange-400' : 'text-white'
+                            }`}>
+                                {todayProgress.xp.toLocaleString()}
+                            </div>
+                            <div className="text-[10px] text-zinc-600">earned</div>
                         </div>
                     </div>
                     

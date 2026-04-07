@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 420">
+  <defs>
+    <radialGradient id="skin" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#e8b88a"/>
+      <stop offset="100%" stop-color="#d4a574"/>
+    </radialGradient>
+    <linearGradient id="hair" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5a3a28"/>
+      <stop offset="100%" stop-color="#4a2a1e"/>
+    </linearGradient>
+    <linearGradient id="leggings" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3a3a3a"/>
+      <stop offset="100%" stop-color="#2a2a2a"/>
+    </linearGradient>
+    <linearGradient id="top" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6a4a8a"/>
+      <stop offset="100%" stop-color="#5a3a7a"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Shadow on ground -->
+  <ellipse cx="100" cy="400" rx="30" ry="5" fill="rgba(0,0,0,0.15)"/>
+
+  <!-- Left leg -->
+  <path d="M87,250 Q85,295 86,340 Q86,355 90,355 L96,355 Q99,355 99,345 Q98,295 96,250 Z" fill="url(#skin)"/>
+  <!-- Right leg -->
+  <path d="M104,250 Q102,295 101,340 Q101,355 105,355 L111,355 Q114,355 114,345 Q115,295 113,250 Z" fill="url(#skin)"/>
+
+  <!-- Leggings -->
+  <path d="M84,240 Q83,280 84,330 L99,330 Q98,280 97,240 Z" fill="url(#leggings)"/>
+  <path d="M103,240 Q102,280 101,330 L116,330 Q117,280 116,240 Z" fill="url(#leggings)"/>
+
+  <!-- Torso - slightly narrower waist, wider hips -->
+  <path d="M80,132 Q76,155 77,185 Q78,215 80,240 Q88,248 100,248 Q112,248 120,240 Q122,215 123,185 Q124,155 120,132 Z" fill="url(#skin)"/>
+
+  <!-- Sports top -->
+  <path d="M80,132 Q76,148 77,170 L123,170 Q124,148 120,132 Z" fill="url(#top)" opacity="0.95"/>
+  <path d="M80,132 Q88,127 100,125 Q112,127 120,132" fill="url(#top)"/>
+  <!-- Top strap detail -->
+  <path d="M90,125 L90,132" stroke="#7a5a9a" stroke-width="0.5"/>
+  <path d="M110,125 L110,132" stroke="#7a5a9a" stroke-width="0.5"/>
+
+  <!-- Left arm -->
+  <path d="M78,134 Q68,137 64,142 Q58,155 60,188 Q60,196 65,196 Q70,196 70,188 Q71,158 74,145 Z" fill="url(#skin)"/>
+
+  <!-- Right arm -->
+  <path d="M122,134 Q132,137 136,142 Q142,155 140,188 Q140,196 135,196 Q130,196 130,188 Q129,158 126,145 Z" fill="url(#skin)"/>
+
+  <!-- Neck -->
+  <rect x="93" y="110" width="14" height="20" rx="4" fill="url(#skin)"/>
+
+  <!-- Head - slightly rounder -->
+  <ellipse cx="100" cy="80" rx="30" ry="34" fill="url(#skin)"/>
+
+  <!-- Hair - longer, flowing -->
+  <path d="M70,78 Q68,40 100,36 Q132,40 130,78 Q128,50 100,46 Q72,50 70,78 Z" fill="url(#hair)"/>
+  <!-- Side hair flowing down -->
+  <path d="M70,78 Q65,60 66,45 Q68,50 72,70 Z" fill="url(#hair)"/>
+  <path d="M130,78 Q135,60 134,45 Q132,50 128,70 Z" fill="url(#hair)"/>
+  <!-- Hair flowing past shoulders -->
+  <path d="M66,45 Q60,70 62,105 Q64,110 68,105 Q70,80 70,65 Z" fill="url(#hair)" opacity="0.9"/>
+  <path d="M134,45 Q140,70 138,105 Q136,110 132,105 Q130,80 130,65 Z" fill="url(#hair)" opacity="0.9"/>
+
+  <!-- Eyes - slightly larger, more expressive -->
+  <ellipse cx="89" cy="78" rx="5.5" ry="4.5" fill="white"/>
+  <ellipse cx="111" cy="78" rx="5.5" ry="4.5" fill="white"/>
+  <circle cx="90" cy="78" r="2.8" fill="#4a6a3a"/>
+  <circle cx="112" cy="78" r="2.8" fill="#4a6a3a"/>
+  <circle cx="90.3" cy="77.5" r="1.2" fill="#1a1a1a"/>
+  <circle cx="112.3" cy="77.5" r="1.2" fill="#1a1a1a"/>
+  <!-- Eye highlights -->
+  <circle cx="91.2" cy="76.5" r="0.8" fill="white" opacity="0.9"/>
+  <circle cx="113.2" cy="76.5" r="0.8" fill="white" opacity="0.9"/>
+  <!-- Eyelashes hint -->
+  <path d="M83,75 Q86,73 89,74" fill="none" stroke="#3a2a1e" stroke-width="0.6"/>
+  <path d="M111,74 Q114,73 117,75" fill="none" stroke="#3a2a1e" stroke-width="0.6"/>
+
+  <!-- Eyebrows - thinner, arched -->
+  <path d="M83,72 Q89,68 95,71" fill="none" stroke="#4a2a1e" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M105,71 Q111,68 117,72" fill="none" stroke="#4a2a1e" stroke-width="1.2" stroke-linecap="round"/>
+
+  <!-- Nose - smaller -->
+  <path d="M100,83 Q98,89 99,91 Q100,92 101,91 Q102,89 100,83" fill="none" stroke="#c4956a" stroke-width="0.7"/>
+
+  <!-- Mouth - subtle smile -->
+  <path d="M94,99 Q100,103 106,99" fill="none" stroke="#c4956a" stroke-width="1" stroke-linecap="round"/>
+  <!-- Lower lip hint -->
+  <path d="M96,101 Q100,104 104,101" fill="#d4a574" opacity="0.3"/>
+
+  <!-- Ears (partially hidden by hair) -->
+  <ellipse cx="70" cy="80" rx="4" ry="7" fill="url(#skin)"/>
+  <ellipse cx="130" cy="80" rx="4" ry="7" fill="url(#skin)"/>
+
+  <!-- Shoes -->
+  <path d="M82,353 Q80,363 84,366 L99,366 Q102,363 100,353 Z" fill="#444"/>
+  <path d="M100,353 Q98,363 102,366 L117,366 Q120,363 118,353 Z" fill="#444"/>
+</svg>

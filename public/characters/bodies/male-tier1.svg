@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 420">
+  <defs>
+    <radialGradient id="skin" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#e8b88a"/>
+      <stop offset="100%" stop-color="#d4a574"/>
+    </radialGradient>
+    <radialGradient id="shadow" cx="50%" cy="30%" r="60%">
+      <stop offset="0%" stop-color="#c4956a"/>
+      <stop offset="100%" stop-color="#b8895e"/>
+    </radialGradient>
+    <linearGradient id="hair" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4a3728"/>
+      <stop offset="100%" stop-color="#3a2a1e"/>
+    </linearGradient>
+    <linearGradient id="shorts" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3a3a3a"/>
+      <stop offset="100%" stop-color="#2a2a2a"/>
+    </linearGradient>
+    <linearGradient id="shirt" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#555"/>
+      <stop offset="100%" stop-color="#444"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Shadow on ground -->
+  <ellipse cx="100" cy="400" rx="35" ry="6" fill="rgba(0,0,0,0.15)"/>
+
+  <!-- Left leg -->
+  <path d="M85,245 Q82,290 83,340 Q83,355 88,355 L95,355 Q98,355 98,345 Q97,290 95,245 Z" fill="url(#skin)"/>
+  <!-- Right leg -->
+  <path d="M105,245 Q103,290 102,340 Q102,355 107,355 L114,355 Q117,355 117,345 Q118,290 115,245 Z" fill="url(#skin)"/>
+
+  <!-- Shorts -->
+  <path d="M78,230 L78,270 Q80,280 90,280 L90,250 Q95,255 100,255 Q105,255 110,250 L110,280 Q120,280 122,270 L122,230 Z" fill="url(#shorts)"/>
+
+  <!-- Torso -->
+  <path d="M75,130 Q72,160 73,190 Q74,220 78,240 L122,240 Q126,220 127,190 Q128,160 125,130 Z" fill="url(#skin)"/>
+  <!-- Chest definition -->
+  <path d="M85,150 Q90,158 100,158 Q110,158 115,150" fill="none" stroke="#c4956a" stroke-width="0.8" opacity="0.5"/>
+  <!-- Abs hint -->
+  <line x1="100" y1="170" x2="100" y2="225" stroke="#c4956a" stroke-width="0.6" opacity="0.3"/>
+  <path d="M88,180 Q100,183 112,180" fill="none" stroke="#c4956a" stroke-width="0.5" opacity="0.3"/>
+  <path d="M89,198 Q100,201 111,198" fill="none" stroke="#c4956a" stroke-width="0.5" opacity="0.3"/>
+
+  <!-- T-shirt -->
+  <path d="M75,130 Q72,145 73,165 L127,165 Q128,145 125,130 Z" fill="url(#shirt)" opacity="0.9"/>
+  <path d="M75,130 Q85,125 100,123 Q115,125 125,130" fill="url(#shirt)"/>
+
+  <!-- Left arm -->
+  <path d="M73,132 Q62,135 58,140 Q52,155 54,190 Q54,200 60,200 Q66,200 66,190 Q68,160 70,145 Z" fill="url(#skin)"/>
+  <!-- Left arm sleeve -->
+  <path d="M73,132 Q62,135 58,140 Q55,150 57,160 Q65,158 70,145 Z" fill="url(#shirt)" opacity="0.9"/>
+
+  <!-- Right arm -->
+  <path d="M127,132 Q138,135 142,140 Q148,155 146,190 Q146,200 140,200 Q134,200 134,190 Q132,160 130,145 Z" fill="url(#skin)"/>
+  <!-- Right arm sleeve -->
+  <path d="M127,132 Q138,135 142,140 Q145,150 143,160 Q135,158 130,145 Z" fill="url(#shirt)" opacity="0.9"/>
+
+  <!-- Neck -->
+  <rect x="92" y="108" width="16" height="22" rx="4" fill="url(#skin)"/>
+
+  <!-- Head -->
+  <ellipse cx="100" cy="80" rx="32" ry="36" fill="url(#skin)"/>
+
+  <!-- Hair -->
+  <path d="M68,75 Q68,42 100,40 Q132,42 132,75 Q130,55 100,52 Q70,55 68,75 Z" fill="url(#hair)"/>
+  <!-- Side hair -->
+  <path d="M68,75 Q66,65 68,55 Q70,58 72,70 Z" fill="url(#hair)"/>
+  <path d="M132,75 Q134,65 132,55 Q130,58 128,70 Z" fill="url(#hair)"/>
+
+  <!-- Eyes -->
+  <ellipse cx="88" cy="78" rx="5" ry="4" fill="white"/>
+  <ellipse cx="112" cy="78" rx="5" ry="4" fill="white"/>
+  <circle cx="89" cy="78" r="2.5" fill="#4a3728"/>
+  <circle cx="113" cy="78" r="2.5" fill="#4a3728"/>
+  <circle cx="89.5" cy="77.5" r="1" fill="#1a1a1a"/>
+  <circle cx="113.5" cy="77.5" r="1" fill="#1a1a1a"/>
+  <!-- Eye highlights -->
+  <circle cx="90.5" cy="76.5" r="0.7" fill="white" opacity="0.8"/>
+  <circle cx="114.5" cy="76.5" r="0.7" fill="white" opacity="0.8"/>
+
+  <!-- Eyebrows -->
+  <path d="M82,72 Q88,69 94,71" fill="none" stroke="#3a2a1e" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M106,71 Q112,69 118,72" fill="none" stroke="#3a2a1e" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- Nose -->
+  <path d="M100,82 Q97,90 98,92 Q100,94 102,92 Q103,90 100,82" fill="none" stroke="#c4956a" stroke-width="0.8"/>
+
+  <!-- Mouth -->
+  <path d="M93,100 Q100,105 107,100" fill="none" stroke="#b8895e" stroke-width="1.2" stroke-linecap="round"/>
+
+  <!-- Ears -->
+  <ellipse cx="68" cy="80" rx="5" ry="8" fill="url(#skin)"/>
+  <ellipse cx="132" cy="80" rx="5" ry="8" fill="url(#skin)"/>
+
+  <!-- Shoes -->
+  <path d="M80,353 Q78,365 82,368 L98,368 Q102,365 100,353 Z" fill="#333"/>
+  <path d="M100,353 Q98,365 102,368 L118,368 Q122,365 120,353 Z" fill="#333"/>
+</svg>
