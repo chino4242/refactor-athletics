@@ -131,10 +131,6 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
 
     console.log('TodayTab render:', { loading, profile: !!profile });
 
-    const handleXpEarned = () => {
-        router.refresh();
-    };
-
     if (loading) {
         return <div className="text-zinc-400 text-center py-8">Loading...</div>;
     }

@@ -13,7 +13,10 @@ export const getWorkouts = async (userId: string): Promise<Workout[]> => {
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+        console.error('getWorkouts failed:', error.message || error);
+        return [];
+    }
     return data || [];
 };
 
