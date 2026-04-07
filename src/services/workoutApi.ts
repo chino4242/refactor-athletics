@@ -14,7 +14,7 @@ export const getWorkouts = async (userId: string): Promise<Workout[]> => {
         .order('created_at', { ascending: false });
 
     if (error) {
-        console.error('getWorkouts failed:', error.message || error);
+        console.warn('getWorkouts:', error.message || error);
         return [];
     }
     return data || [];
