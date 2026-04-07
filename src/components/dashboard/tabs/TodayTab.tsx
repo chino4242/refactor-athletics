@@ -23,6 +23,7 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
         water: 0,
         steps: 0,
         xp: 0,
+        maxDailyXp: 0,
     });
     const [loading, setLoading] = useState(true);
 
@@ -81,7 +82,20 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                     supabase.from('habit_logs').select('xp').eq('user_id', userId).gte('timestamp', startOfDay),
                 ]);
                 const totalXp = [...(wXp || []), ...(nXp || []), ...(hXp || [])].reduce((s, r) => s + (r.xp || 0), 0);
-                setTodayProgress((prev: any) => ({ ...prev, xp: totalXp }));
+                
+                // Get max daily XP (all-time best day)
+                const [{ data: allW }, { data: allN }, { data: allH }] = await Promise.all([
+                    supabase.from('workouts').select('date, xp').eq('user_id', userId),
+                    supabase.from('nutrition_logs').select('date, xp').eq('user_id', userId),
+                    supabase.from('habit_logs').select('date, xp').eq('user_id', userId),
+                ]);
+                const dailyTotals: Record<string, number> = {};
+                for (const r of [...(allW || []), ...(allN || []), ...(allH || [])]) {
+                    if (r.date) dailyTotals[r.date] = (dailyTotals[r.date] || 0) + (r.xp || 0);
+                }
+                const maxDailyXp = Math.max(0, ...Object.values(dailyTotals));
+                
+                setTodayProgress((prev: any) => ({ ...prev, xp: totalXp, maxDailyXp }));
                 
                 // Get last completed workout from history
                 const history = await getHistory(userId);
@@ -202,18 +216,22 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                             <div className="text-[10px] text-zinc-600">/ {(profile.habit_targets?.habit_steps || 10000).toLocaleString()}</div>
                         </div>
                         <div className={`rounded-lg p-2.5 text-center transition-colors ${
-                            todayProgress.xp > 0
+                            todayProgress.xp > 0 && todayProgress.xp >= todayProgress.maxDailyXp
+                                ? 'bg-emerald-500/10 border border-emerald-500/20'
+                                : todayProgress.xp > 0
                                 ? 'bg-orange-500/10 border border-orange-500/20'
                                 : 'bg-zinc-800/50'
                         }`}>
                             <div className="text-xl mb-0.5">⚡</div>
                             <div className="text-[10px] text-zinc-500 mb-0.5">{isClassic ? 'Points' : 'XP'}</div>
                             <div className={`text-sm font-bold ${
-                                todayProgress.xp > 0 ? 'text-orange-400' : 'text-white'
+                                todayProgress.xp > 0 && todayProgress.xp >= todayProgress.maxDailyXp
+                                    ? 'text-emerald-400'
+                                    : todayProgress.xp > 0 ? 'text-orange-400' : 'text-white'
                             }`}>
                                 {(todayProgress.xp || 0).toLocaleString()}
                             </div>
-                            <div className="text-[10px] text-zinc-600">earned</div>
+                            <div className="text-[10px] text-zinc-600">/ {(todayProgress.maxDailyXp || 0).toLocaleString()}</div>
                         </div>
                     </div>
                     
