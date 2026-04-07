@@ -211,7 +211,7 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                             <div className={`text-sm font-bold ${
                                 todayProgress.xp > 0 ? 'text-orange-400' : 'text-white'
                             }`}>
-                                {todayProgress.xp.toLocaleString()}
+                                {(todayProgress.xp || 0).toLocaleString()}
                             </div>
                             <div className="text-[10px] text-zinc-600">earned</div>
                         </div>
