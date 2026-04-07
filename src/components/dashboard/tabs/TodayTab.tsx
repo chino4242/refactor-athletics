@@ -231,7 +231,7 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                             }`}>
                                 {(todayProgress.xp || 0).toLocaleString()}
                             </div>
-                            <div className="text-[10px] text-zinc-600">/ {(todayProgress.maxDailyXp || 0).toLocaleString()}</div>
+                            <div className="text-[10px] text-zinc-600">/ {(todayProgress.maxDailyXp || 0).toLocaleString()} best</div>
                         </div>
                     </div>
                     
