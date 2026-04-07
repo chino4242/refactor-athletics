@@ -52,6 +52,7 @@ export default function RootLayout({
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased selection:bg-orange-500/30`}
+        suppressHydrationWarning
       >
         <ThemeProvider>
           <ExperienceModeProvider>
