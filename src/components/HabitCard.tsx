@@ -12,6 +12,7 @@ interface HabitCardProps {
     colorClass: string; // e.g. "bg-orange-500" or "text-orange-500" - we will parse or expect bg base
     onLog: (amount: number, label: string) => void;
     enableTotalSync?: boolean; // For Steps
+    setOnly?: boolean; // Force "set" mode, hide add/quick buttons
     loading?: boolean;
     xp?: number;
 }
@@ -25,12 +26,13 @@ export default function HabitCard({
     colorClass,
     onLog,
     enableTotalSync = false,
+    setOnly = false,
     loading = false,
     xp = 0
 }: HabitCardProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [value, setValue] = useState('');
-    const [mode, setMode] = useState<'add' | 'total'>('add');
+    const [mode, setMode] = useState<'add' | 'total'>(setOnly ? 'total' : 'add');
     const inputRef = useRef<HTMLInputElement>(null);
 
     // Auto-focus input when editing starts
@@ -80,7 +82,7 @@ export default function HabitCard({
                     </button>
                 </div>
 
-                {enableTotalSync && (
+                {enableTotalSync && !setOnly && (
                     <div className="flex bg-black rounded p-0.5 border border-zinc-800 mb-2">
                         <button
                             onClick={() => setMode('add')}
@@ -98,6 +100,7 @@ export default function HabitCard({
                 )}
 
                 {/* Quick Add Buttons */}
+                {!setOnly && (
                 <div className="flex gap-1 mb-2">
                     {[1, 5, 10, 25].map(amt => (
                         <button
@@ -109,6 +112,7 @@ export default function HabitCard({
                         </button>
                     ))}
                 </div>
+                )}
 
                 <div className="flex gap-1">
                     <input

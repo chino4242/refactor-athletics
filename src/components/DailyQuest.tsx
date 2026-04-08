@@ -272,6 +272,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
               colorClass="bg-orange-500"
               onLog={(val, label) => handleLog('habit_steps', val, label)}
               enableTotalSync={true}
+              setOnly={true}
               loading={loading === 'habit_steps'}
               xp={150}
             />
