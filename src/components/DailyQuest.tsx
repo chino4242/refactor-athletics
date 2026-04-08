@@ -260,6 +260,23 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
           {expandedSections.nutrition && (
             <div className="space-y-3 animate-fade-in">
 
+          {/* STEPS */}
+          {!isHidden('habit_steps') && (
+            <HabitCard
+              habitId="habit_steps"
+              label="Steps"
+              icon={<Footprints size={14} className="text-orange-500" />}
+              current={totals['habit_steps'] || 0}
+              goal={profile?.habit_targets?.habit_steps || 10000}
+              unit="steps"
+              colorClass="bg-orange-500"
+              onLog={(val, label) => handleLog('habit_steps', val, label)}
+              enableTotalSync={true}
+              loading={loading === 'habit_steps'}
+              xp={150}
+            />
+          )}
+
           {profile && (
             <NutritionTracker
               userId={userId}
@@ -409,25 +426,6 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
 
           {/* CUSTOM HABIT CARDS */}
           <div className="grid grid-cols-2 gap-2">
-
-            {/* STEPS */}
-            {!isHidden('habit_steps') && (
-              <div className="col-span-2">
-                <HabitCard
-                  habitId="habit_steps"
-                  label="Steps"
-                  icon={<Footprints size={14} className="text-orange-500" />}
-                  current={totals['habit_steps'] || 0}
-                  goal={profile?.habit_targets?.habit_steps || 10000}
-                  unit="steps"
-                  colorClass="bg-orange-500"
-                  onLog={(val, label) => handleLog('habit_steps', val, label)}
-                  enableTotalSync={true}
-                  loading={loading === 'habit_steps'}
-                  xp={150}
-                />
-              </div>
-            )}
 
             {/* EXERCISE MINUTES */}
             {!isHidden('habit_exercise_minutes') && (
