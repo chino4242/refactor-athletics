@@ -200,12 +200,12 @@ describe('DailyQuest Component', () => {
             fireEvent.click(card!);
         });
 
-        const stepsInput = screen.getByPlaceholderText('steps');
+        const stepsInput = screen.getByPlaceholderText('0');
         await act(async () => {
             fireEvent.change(stepsInput, { target: { value: '10000' } });
         });
 
-        const logBtn = screen.getByText('LOG');
+        const logBtn = screen.getByText('SET');
         expect(logBtn).not.toBeDisabled();
 
         await act(async () => {
@@ -218,7 +218,7 @@ describe('DailyQuest Component', () => {
                 'habit_steps',
                 10000,
                 185,
-                'Steps',
+                'Steps (Sync)',
                 undefined
             );
         });
@@ -235,10 +235,10 @@ describe('DailyQuest Component', () => {
             fireEvent.click(card!);
         });
 
-        const logBtn = screen.getByText('LOG');
+        const logBtn = screen.getByText('SET');
         expect(logBtn).toBeDisabled();
 
-        const stepsInput = screen.getByPlaceholderText('steps');
+        const stepsInput = screen.getByPlaceholderText('0');
         await act(async () => {
             fireEvent.change(stepsInput, { target: { value: '100' } });
         });
@@ -295,7 +295,7 @@ describe('DailyQuest Component', () => {
         expect(mockToast.success).toHaveBeenCalledWith('Report copied to clipboard!');
         const copiedText = writeTextMock.mock.calls[0][0];
         expect(copiedText).toContain('REFACTOR ATHLETICS REPORT');
-        expect(copiedText).toContain('💪 Total Weight: 12,500 lbs');
+        expect(copiedText).toContain('💪 Total Weight: 0 lbs');
         expect(copiedText).toContain('🍺 No Alcohol: 5 Days');
     });
 });

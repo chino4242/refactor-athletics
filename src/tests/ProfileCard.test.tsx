@@ -78,7 +78,7 @@ describe('ProfileCard', () => {
         fireEvent.click(editButton);
 
         // Should show form inputs (use getByRole since labels don't have htmlFor)
-        expect(screen.getByRole('combobox')).toBeInTheDocument(); // Sex select
+        expect(screen.getAllByRole('combobox')).toHaveLength(2); // Sex select + Body Tracking select
         expect(screen.getAllByRole('spinbutton')).toHaveLength(2); // Current Weight, Goal Weight
         expect(screen.getByPlaceholderText('Optional')).toBeInTheDocument(); // Goal Weight
     });
@@ -91,7 +91,7 @@ describe('ProfileCard', () => {
         fireEvent.click(screen.getByText('Edit Stats'));
 
         // Change sex
-        const sexSelect = screen.getByRole('combobox') as HTMLSelectElement;
+        const sexSelect = screen.getAllByRole('combobox')[0] as HTMLSelectElement;
         fireEvent.change(sexSelect, { target: { value: 'female' } });
         expect(sexSelect.value).toBe('female');
 
@@ -134,7 +134,8 @@ describe('ProfileCard', () => {
         fireEvent.click(screen.getByText('Edit Stats'));
 
         // Update values
-        fireEvent.change(screen.getByRole('combobox'), { target: { value: 'female' } });
+        const comboboxes = screen.getAllByRole('combobox');
+        fireEvent.change(comboboxes[0], { target: { value: 'female' } }); // Sex select
         const inputs = screen.getAllByRole('spinbutton');
         fireEvent.change(inputs[0], { target: { value: '185' } });
         fireEvent.change(inputs[1], { target: { value: '180' } });
@@ -152,6 +153,7 @@ describe('ProfileCard', () => {
                 body_composition_goals: { target_weight: '180' },
                 is_onboarded: true,
                 display_name: 'John Doe',
+                measurement_mode: 'tape',
             });
         });
     });
