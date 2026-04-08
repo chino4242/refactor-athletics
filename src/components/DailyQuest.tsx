@@ -552,7 +552,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
             )}
           </div>
 
-          {/* WEEKLY QUESTS */}
+          {/* WEEKLY QUESTS - temporarily disabled
           {profile && (
             <WeeklyQuest
               userId={userId}
@@ -563,6 +563,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
               }}
             />
           )}
+          */}
 
             </div>
             </div>
