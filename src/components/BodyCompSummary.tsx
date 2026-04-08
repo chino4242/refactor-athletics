@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from 'react';
-import { TrendingUp, TrendingDown, Minus, Scale } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { TrendingUp, TrendingDown, Minus, Scale, ChevronDown } from 'lucide-react';
 
 interface BodyCompSummaryProps {
     profile: {
@@ -27,6 +27,7 @@ interface BodyCompSummaryProps {
 }
 
 export default function BodyCompSummary({ profile, bodyCompHistory, physiquePoints, onOpenModal }: BodyCompSummaryProps) {
+    const [expanded, setExpanded] = useState(false);
     const metrics = useMemo(() => {
         if (bodyCompHistory.length === 0) return [];
 
@@ -105,28 +106,33 @@ export default function BodyCompSummary({ profile, bodyCompHistory, physiquePoin
     return (
         <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 mb-6 hover:border-zinc-700 transition-colors">
             {/* Header */}
-            <div className="flex items-center justify-between mb-4">
+            <button onClick={() => setExpanded(!expanded)} className="flex items-center justify-between w-full">
                 <div className="flex items-center gap-3">
                     <div className="bg-emerald-500/10 p-2 rounded-lg">
                         <Scale className="text-emerald-500" size={20} />
                     </div>
-                    <div>
+                    <div className="text-left">
                         <h3 className="text-sm font-black uppercase tracking-wider text-white">Body Composition</h3>
                         <p className="text-xs text-zinc-500">Track your evolution</p>
                     </div>
                 </div>
 
-                {/* Physique Points Badge */}
-                <div className="bg-zinc-800/50 px-3 py-1.5 rounded-lg border border-zinc-700">
-                    <div className="text-xs text-zinc-500 uppercase tracking-widest font-bold">💪 PP</div>
-                    <div className={`text-xl font-black ${physiquePoints.color}`}>
-                        {physiquePoints.score > 0 ? '+' : ''}{physiquePoints.score}
+                <div className="flex items-center gap-3">
+                    {/* Physique Points Badge */}
+                    <div className="bg-zinc-800/50 px-3 py-1.5 rounded-lg border border-zinc-700">
+                        <div className="text-xs text-zinc-500 uppercase tracking-widest font-bold">💪 PP</div>
+                        <div className={`text-xl font-black ${physiquePoints.color}`}>
+                            {physiquePoints.score > 0 ? '+' : ''}{physiquePoints.score}
+                        </div>
                     </div>
+                    <ChevronDown size={16} className={`text-zinc-600 transition-transform ${expanded ? 'rotate-180' : ''}`} />
                 </div>
-            </div>
+            </button>
 
+            {expanded && (
+            <>
             {/* Status Bar */}
-            <div className={`mb-4 p-3 rounded-lg border ${
+            <div className={`mt-4 mb-4 p-3 rounded-lg border ${
                 physiquePoints.score > 0 
                     ? 'bg-emerald-500/10 border-emerald-500/20' 
                     : physiquePoints.score < 0 
@@ -185,6 +191,8 @@ export default function BodyCompSummary({ profile, bodyCompHistory, physiquePoin
                     View History →
                 </button>
             </div>
+            </>
+            )}
         </div>
     );
 }
