@@ -199,7 +199,19 @@ export async function logTrainingAction(
     // Calculate total XP from sets
     let totalXp = 0;
     for (const set of sets) {
-        const setXp = Math.floor((set.reps || 10) * xpFactor);
+        let setXp = 0;
+        if (exerciseType.includes('time') || exerciseType.includes('duration') || exerciseType.includes('distance') || exerciseType === 'cardio') {
+            if (set.duration && set.duration > 0) {
+                setXp = Math.floor(set.duration * 8 * xpFactor);
+            } else if (set.distance && set.distance > 0) {
+                const estMinutes = (set.distance / 1609.34) * 10;
+                setXp = Math.floor(estMinutes * 8 * xpFactor);
+            } else {
+                setXp = Math.floor(10 * xpFactor);
+            }
+        } else {
+            setXp = Math.floor((set.reps || 10) * xpFactor);
+        }
         totalXp += setXp;
     }
     totalXp += xpEarned; // Add rank XP
