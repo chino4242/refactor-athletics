@@ -58,8 +58,8 @@ export default function HabitCard({
         let logLabel = label;
 
         if (mode === 'total' && enableTotalSync) {
-            finalVal = val - current;
-            if (finalVal === 0) return;
+            finalVal = val;
+            if (finalVal === current) return;
             logLabel = `${label} (Sync)`;
         }
 

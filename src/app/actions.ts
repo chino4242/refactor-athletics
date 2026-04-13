@@ -55,6 +55,16 @@ export async function logHabitAction(
             xp = 25; // creatine, no_alcohol, no_vice, etc.
         }
 
+        // If this is a "Set" (sync) operation, delete existing entries for this habit today first
+        if (label?.includes('(Sync)')) {
+            await supabase
+                .from('habit_logs')
+                .delete()
+                .eq('user_id', userId)
+                .eq('habit_id', habitId)
+                .eq('date', dateStr);
+        }
+
         const { error } = await supabase
             .from('habit_logs')
             .insert({
