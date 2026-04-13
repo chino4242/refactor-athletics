@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 // Verified
 
+import { THEMES } from '../data/themes';
 import EquipmentVariantPicker, { getEquipmentVariants } from './EquipmentVariantPicker';
 import { type WorkoutSet, type HistoryItem, type CatalogItem } from '../services/api';
 import { logTrainingAction, deleteHistoryItemAction } from '@/app/actions';
@@ -675,8 +676,9 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
         const achievement = achievements[currentAchievementIndex];
         const level = achievement.level || 0;
         const rankKey = `level${level}`;
-        const rankDetails = currentTheme.ranks[rankKey];
-        const themeRankName = rankDetails?.name || achievement.rankName || 'Unknown';
+        const theme = THEMES[currentTheme] || THEMES['athlete'];
+        const rankDetails = theme.ranks[rankKey as keyof typeof theme.ranks];
+        const themeRankName = rankDetails?.name || 'Unknown';
         const rankImage = rankDetails?.image;
         
         return (
