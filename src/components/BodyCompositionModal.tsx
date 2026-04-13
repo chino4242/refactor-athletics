@@ -144,6 +144,34 @@ export default function BodyCompositionModal({
                         </div>
                     </div>
 
+                    {/* MODE TOGGLE */}
+                    <div className="flex bg-zinc-800 rounded-lg p-0.5 border border-zinc-700">
+                        <button
+                            onClick={async () => {
+                                const updated = { ...localProfile, measurement_mode: 'tape' as const };
+                                setLocalProfile(updated);
+                                setProfile(updated);
+                                await saveProfile(updated);
+                                loadHistory();
+                            }}
+                            className={`px-3 py-1.5 text-[10px] font-bold uppercase rounded transition-all ${mode === 'tape' ? 'bg-zinc-700 text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
+                        >
+                            📏 Tape
+                        </button>
+                        <button
+                            onClick={async () => {
+                                const updated = { ...localProfile, measurement_mode: 'muscle' as const };
+                                setLocalProfile(updated);
+                                setProfile(updated);
+                                await saveProfile(updated);
+                                loadHistory();
+                            }}
+                            className={`px-3 py-1.5 text-[10px] font-bold uppercase rounded transition-all ${mode === 'muscle' ? 'bg-zinc-700 text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
+                        >
+                            💪 Muscle
+                        </button>
+                    </div>
+
                     <button
                         onClick={onClose}
                         className="text-zinc-500 hover:text-white transition-colors p-2 hover:bg-zinc-800 rounded-lg absolute top-4 right-4"
