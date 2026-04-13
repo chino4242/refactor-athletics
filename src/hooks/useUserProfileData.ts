@@ -11,7 +11,7 @@ export function useUserProfileData(userId: string) {
     const [history, setHistory] = useState<HistoryItem[]>([]);
     const [stats, setStats] = useState<UserStats | null>(null);
     const [initialGoalWeight, setInitialGoalWeight] = useState<number>(0);
-    const [measurementMode, setMeasurementMode] = useState<'tape' | 'muscle'>('tape');
+    const [measurementMode, setMeasurementMode] = useState<'tape' | 'scale'>('tape');
 
     const loadUserData = useCallback(async () => {
         if (userId) {
@@ -24,7 +24,7 @@ export function useUserProfileData(userId: string) {
                     setInitialGoalWeight(parseFloat(profile.body_composition_goals.target_weight));
                 }
                 if (profile?.measurement_mode) {
-                    setMeasurementMode(profile.measurement_mode as 'tape' | 'muscle');
+                    setMeasurementMode(profile.measurement_mode as 'tape' | 'scale');
                 }
             } catch (e) {
                 console.error("Failed to load goal weight", e);

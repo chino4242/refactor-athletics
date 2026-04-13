@@ -14,7 +14,7 @@ interface ProfileCardProps {
     sex: string;
     currentWeight: number;
     goalWeight: number;
-    measurementMode?: 'tape' | 'muscle';
+    measurementMode?: 'tape' | 'scale';
     level: number;
     onProfileUpdate: (newWeight: number, newAge: number, newSex: string) => void;
     onReload: () => void;
@@ -39,7 +39,7 @@ export default function ProfileCard({
 
     const [formWeight, setFormWeight] = useState<number>(currentWeight);
     const [formGoalWeight, setFormGoalWeight] = useState<number>(goalWeight);
-    const [formMeasurementMode, setFormMeasurementMode] = useState<'tape' | 'muscle'>(measurementMode);
+    const [formMeasurementMode, setFormMeasurementMode] = useState<'tape' | 'scale'>(measurementMode);
     const [formSex, setFormSex] = useState<string>(sex);
     const [formDob, setFormDob] = useState<string>('');
     const [calculatedAge, setCalculatedAge] = useState<number>(age);
@@ -173,9 +173,9 @@ export default function ProfileCard({
                     </div>
                     <div>
                         <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">Body Tracking</label>
-                        <select value={formMeasurementMode} onChange={(e) => setFormMeasurementMode(e.target.value as 'tape' | 'muscle')} className="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2 text-white text-sm outline-none focus:border-orange-500 transition-colors">
-                            <option value="tape">📏 Tape (inches)</option>
-                            <option value="muscle">💪 Muscle Mass (lbs)</option>
+                        <select value={formMeasurementMode} onChange={(e) => setFormMeasurementMode(e.target.value as 'tape' | 'scale')} className="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2 text-white text-sm outline-none focus:border-orange-500 transition-colors">
+                            <option value="tape">📏 Tape Measure</option>
+                            <option value="scale">⚖️ Scale</option>
                         </select>
                     </div>
                     <div className="col-span-2 flex justify-end gap-3 mt-2 border-t border-zinc-800 pt-4">

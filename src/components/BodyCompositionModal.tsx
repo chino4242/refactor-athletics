@@ -160,15 +160,15 @@ export default function BodyCompositionModal({
                         </button>
                         <button
                             onClick={async () => {
-                                const updated = { ...localProfile, measurement_mode: 'muscle' as const };
+                                const updated = { ...localProfile, measurement_mode: 'scale' as const };
                                 setLocalProfile(updated);
                                 setProfile(updated);
                                 await saveProfile(updated);
                                 loadHistory();
                             }}
-                            className={`px-3 py-1.5 text-[10px] font-bold uppercase rounded transition-all ${mode === 'muscle' ? 'bg-zinc-700 text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
+                            className={`px-3 py-1.5 text-[10px] font-bold uppercase rounded transition-all ${mode === 'scale' ? 'bg-zinc-700 text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
                         >
-                            💪 Muscle
+                            ⚖️ Scale
                         </button>
                     </div>
 
@@ -229,36 +229,93 @@ export default function BodyCompositionModal({
                             onLog={(val) => handleMeasurementLog('weight', val, 'Weigh In')}
                             loading={loading === 'weight'}
                         />
-                        {(mode === 'tape' ? [
-                            { id: 'waist', label: 'Waist' },
-                            { id: 'arms', label: 'Arms' },
-                            { id: 'chest', label: 'Chest' },
-                            { id: 'legs', label: 'Legs' },
-                            { id: 'shoulders', label: 'Shoulders' },
-                        ] : [
-                            { id: 'left_arm_muscle', label: 'Left Arm' },
-                            { id: 'right_arm_muscle', label: 'Right Arm' },
-                            { id: 'trunk_muscle', label: 'Trunk' },
-                            { id: 'left_leg_muscle', label: 'Left Leg' },
-                            { id: 'right_leg_muscle', label: 'Right Leg' },
-                        ]).map(part => (
-                            <MeasurementRow
-                                key={part.id}
-                                label={part.label}
-                                currentGoal={localProfile?.body_composition_goals?.[part.id] || (mode === 'muscle' ? 'Grow' : part.id === 'waist' ? 'Shrink' : 'Maintain')}
-                                currentValue={getLatestValue(part.id)}
-                                onGoalChange={async (goal) => {
-                                    const updated = { ...localProfile, body_composition_goals: { ...localProfile?.body_composition_goals, [part.id]: goal } };
-                                    setLocalProfile(updated);
-                                    setProfile(updated);
-                                    await saveProfile(updated);
-                                    loadHistory();
-                                }}
-                                onLog={(val) => handleMeasurementLog(part.id, val, `${part.label}`)}
-                                loading={loading === part.id}
-                                unit={mode === 'muscle' ? 'lbs' : 'in'}
-                            />
-                        ))}
+                        {mode === 'tape' ? (
+                            [
+                                { id: 'waist', label: 'Waist' },
+                                { id: 'arms', label: 'Arms' },
+                                { id: 'chest', label: 'Chest' },
+                                { id: 'legs', label: 'Legs' },
+                                { id: 'shoulders', label: 'Shoulders' },
+                            ].map(part => (
+                                <MeasurementRow
+                                    key={part.id}
+                                    label={part.label}
+                                    currentGoal={localProfile?.body_composition_goals?.[part.id] || (part.id === 'waist' ? 'Shrink' : 'Maintain')}
+                                    currentValue={getLatestValue(part.id)}
+                                    onGoalChange={async (goal) => {
+                                        const updated = { ...localProfile, body_composition_goals: { ...localProfile?.body_composition_goals, [part.id]: goal } };
+                                        setLocalProfile(updated);
+                                        setProfile(updated);
+                                        await saveProfile(updated);
+                                        loadHistory();
+                                    }}
+                                    onLog={(val) => handleMeasurementLog(part.id, val, `${part.label}`)}
+                                    loading={loading === part.id}
+                                    unit="in"
+                                />
+                            ))
+                        ) : (
+                            <>
+                                {/* Body Fat % */}
+                                <MeasurementRow
+                                    label="Body Fat"
+                                    currentGoal={localProfile?.body_composition_goals?.body_fat_percentage || 'Shrink'}
+                                    currentValue={getLatestValue('body_fat_percentage')}
+                                    onGoalChange={async (goal) => {
+                                        const updated = { ...localProfile, body_composition_goals: { ...localProfile?.body_composition_goals, body_fat_percentage: goal } };
+                                        setLocalProfile(updated);
+                                        setProfile(updated);
+                                        await saveProfile(updated);
+                                        loadHistory();
+                                    }}
+                                    onLog={(val) => handleMeasurementLog('body_fat_percentage', val, 'Body Fat %')}
+                                    loading={loading === 'body_fat_percentage'}
+                                    unit="%"
+                                />
+                                {/* Per-region: muscle + fat grouped by body part */}
+                                {[
+                                    { region: 'Left Arm', muscle: 'left_arm_muscle', fat: 'left_arm_fat' },
+                                    { region: 'Right Arm', muscle: 'right_arm_muscle', fat: 'right_arm_fat' },
+                                    { region: 'Trunk', muscle: 'trunk_muscle', fat: 'trunk_fat' },
+                                    { region: 'Left Leg', muscle: 'left_leg_muscle', fat: 'left_leg_fat' },
+                                    { region: 'Right Leg', muscle: 'right_leg_muscle', fat: 'right_leg_fat' },
+                                ].map(part => (
+                                    <div key={part.region} className="border-t border-zinc-800 pt-2">
+                                        <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1 px-1">{part.region}</div>
+                                        <MeasurementRow
+                                            label="Muscle"
+                                            currentGoal={localProfile?.body_composition_goals?.[part.muscle] || 'Grow'}
+                                            currentValue={getLatestValue(part.muscle)}
+                                            onGoalChange={async (goal) => {
+                                                const updated = { ...localProfile, body_composition_goals: { ...localProfile?.body_composition_goals, [part.muscle]: goal } };
+                                                setLocalProfile(updated);
+                                                setProfile(updated);
+                                                await saveProfile(updated);
+                                                loadHistory();
+                                            }}
+                                            onLog={(val) => handleMeasurementLog(part.muscle, val, `${part.region} Muscle`)}
+                                            loading={loading === part.muscle}
+                                            unit="lbs"
+                                        />
+                                        <MeasurementRow
+                                            label="Fat"
+                                            currentGoal={localProfile?.body_composition_goals?.[part.fat] || 'Shrink'}
+                                            currentValue={getLatestValue(part.fat)}
+                                            onGoalChange={async (goal) => {
+                                                const updated = { ...localProfile, body_composition_goals: { ...localProfile?.body_composition_goals, [part.fat]: goal } };
+                                                setLocalProfile(updated);
+                                                setProfile(updated);
+                                                await saveProfile(updated);
+                                                loadHistory();
+                                            }}
+                                            onLog={(val) => handleMeasurementLog(part.fat, val, `${part.region} Fat %`)}
+                                            loading={loading === part.fat}
+                                            unit="%"
+                                        />
+                                    </div>
+                                ))}
+                            </>
+                        )}
                     </div>
 
                     {/* RIGHT: Visuals */}
@@ -267,7 +324,7 @@ export default function BodyCompositionModal({
                             {/* Simple Graphs Loop */}
                             {(mode === 'tape'
                                 ? ['weight', 'waist', 'arms', 'legs', 'chest', 'shoulders']
-                                : ['weight', 'left_arm_muscle', 'right_arm_muscle', 'trunk_muscle', 'left_leg_muscle', 'right_leg_muscle']
+                                : ['weight', 'body_fat_percentage', 'left_arm_muscle', 'left_arm_fat', 'right_arm_muscle', 'right_arm_fat', 'trunk_muscle', 'trunk_fat', 'left_leg_muscle', 'left_leg_fat', 'right_leg_muscle', 'right_leg_fat']
                             ).map(metric => {
                                 // Filter data where metric exists
                                 const chartData = history.filter(h => h[metric] !== undefined && h[metric] !== null && Number(h[metric]) > 0);

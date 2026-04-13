@@ -1,14 +1,14 @@
 const TAPE_METRICS = ['weight', 'waist', 'arms', 'legs', 'chest', 'shoulders'] as const;
-const MUSCLE_METRICS = ['weight', 'left_arm_muscle', 'right_arm_muscle', 'trunk_muscle', 'left_leg_muscle', 'right_leg_muscle'] as const;
+const SCALE_METRICS = ['weight', 'body_fat_percentage', 'left_arm_muscle', 'right_arm_muscle', 'trunk_muscle', 'left_leg_muscle', 'right_leg_muscle', 'left_arm_fat', 'right_arm_fat', 'trunk_fat', 'left_leg_fat', 'right_leg_fat'] as const;
 
 export function calculatePhysiquePoints(
     bodyCompHistory: Array<Record<string, any>>,
     goals: Record<string, string>,
-    mode: 'tape' | 'muscle' = 'tape'
+    mode: 'tape' | 'scale' = 'tape'
 ): { score: number; status: string; color: string } {
     if (bodyCompHistory.length < 2) return { score: 0, status: 'No Data', color: 'text-zinc-400' };
 
-    const metrics = mode === 'muscle' ? MUSCLE_METRICS : TAPE_METRICS;
+    const metrics = mode === 'scale' ? SCALE_METRICS : TAPE_METRICS;
     let score = 0;
 
     metrics.forEach(metric => {

@@ -29,7 +29,7 @@ export default function ProgressMetrics({ stats, profile, bodyCompHistory }: Pro
     const theme = THEMES[currentTheme] || THEMES.dragon;
 
     const physiquePoints = useMemo(() => {
-        return calculatePhysiquePoints(bodyCompHistory, profile?.body_composition_goals || {}, (profile?.measurement_mode as 'tape' | 'muscle') || 'tape');
+        return calculatePhysiquePoints(bodyCompHistory, profile?.body_composition_goals || {}, (profile?.measurement_mode as 'tape' | 'scale') || 'tape');
     }, [bodyCompHistory, profile]);
 
     const powerLevel = stats?.power_level || 0;

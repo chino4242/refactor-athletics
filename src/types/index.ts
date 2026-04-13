@@ -16,7 +16,7 @@ export interface UserProfileData {
     habit_targets?: Record<string, number>;
     body_composition_goals?: Record<string, string>;
     available_equipment?: string[];
-    measurement_mode?: 'tape' | 'muscle';
+    measurement_mode?: 'tape' | 'scale';
 }
 
 export interface NutritionTargets {

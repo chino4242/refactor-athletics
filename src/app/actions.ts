@@ -312,6 +312,11 @@ export async function logBodyMeasurementAction(
         legs?: number;
         shoulders?: number;
         body_fat_percentage?: number;
+        left_arm_fat?: number;
+        right_arm_fat?: number;
+        trunk_fat?: number;
+        left_leg_fat?: number;
+        right_leg_fat?: number;
     },
     timestamp?: number
 ) {

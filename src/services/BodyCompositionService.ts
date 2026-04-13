@@ -10,11 +10,17 @@ export interface BodyCompositionEntry {
     chest?: number;
     legs?: number;
     shoulders?: number;
+    body_fat_percentage?: number;
     left_arm_muscle?: number;
     right_arm_muscle?: number;
     trunk_muscle?: number;
     left_leg_muscle?: number;
     right_leg_muscle?: number;
+    left_arm_fat?: number;
+    right_arm_fat?: number;
+    trunk_fat?: number;
+    left_leg_fat?: number;
+    right_leg_fat?: number;
     measurement_mode?: string;
     [key: string]: string | number | undefined;
 }
@@ -42,11 +48,17 @@ export const BodyCompositionService = {
             chest: row.chest,
             legs: row.legs,
             shoulders: row.shoulders,
+            body_fat_percentage: row.body_fat_percentage,
             left_arm_muscle: row.left_arm_muscle,
             right_arm_muscle: row.right_arm_muscle,
             trunk_muscle: row.trunk_muscle,
             left_leg_muscle: row.left_leg_muscle,
             right_leg_muscle: row.right_leg_muscle,
+            left_arm_fat: row.left_arm_fat,
+            right_arm_fat: row.right_arm_fat,
+            trunk_fat: row.trunk_fat,
+            left_leg_fat: row.left_leg_fat,
+            right_leg_fat: row.right_leg_fat,
             measurement_mode: row.measurement_mode,
         }));
     },
