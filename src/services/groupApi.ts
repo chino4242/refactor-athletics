@@ -74,13 +74,16 @@ export async function getUserGroups(userId: string): Promise<GroupWithDetails[]>
     if (!memberships || memberships.length === 0) return [];
 
     const groupIds = memberships.map(m => m.group_id);
-    const now = new Date().toISOString().split('T')[0];
+    // Use local date minus 1 day buffer so challenges stay visible through end_date in all US timezones
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const cutoff = yesterday.toISOString().split('T')[0];
 
     // Fetch groups, all members, and active challenges in parallel
     const [groupsRes, membersRes, challengesRes] = await Promise.all([
         supabase.from('groups').select('*').in('id', groupIds),
         supabase.from('group_members').select('group_id, user_id, joined_at').in('group_id', groupIds),
-        supabase.from('group_challenges').select('*').in('group_id', groupIds).gte('end_date', now).eq('completed', false).order('created_at', { ascending: false }),
+        supabase.from('group_challenges').select('*').in('group_id', groupIds).gte('end_date', cutoff).eq('completed', false).order('created_at', { ascending: false }),
     ]);
 
     // Get display names for all members
