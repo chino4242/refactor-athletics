@@ -61,7 +61,10 @@ Each catalog entry has `normalization_factor` and `normalizes_to` (base exercise
 - **nutrition_logs**: Macro tracking (protein, carbs, fat, calories, water, calories_burned) with XP
   - Calories automatically calculated from macros: protein × 4 + carbs × 4 + fat × 9
 - **habit_logs**: Daily habits (steps, sleep, etc.) with XP
-- **body_measurements**: Body composition tracking (weight, waist, body fat %, etc.)
+- **body_measurements**: Body composition tracking (weight, waist, body fat %, per-region muscle mass and fat %)
+  - Tape mode: weight, waist, arms, chest, legs, shoulders (inches)
+  - Scale mode: weight, body_fat_percentage, per-region muscle (lbs) and fat (%) for left arm, right arm, trunk, left leg, right leg
+  - Supports delete individual measurements and reset all
 - **workout_programs**: Custom workout templates
 - **program_blocks**: Exercises and treadmill intervals within programs
 - **program_schedule**: Assigns programs to calendar days
@@ -70,6 +73,8 @@ Each catalog entry has `normalization_factor` and `normalizes_to` (base exercise
 - **groups**: Party/group system with invite codes
 - **group_members**: Group membership (many-to-many)
 - **group_challenges**: Weekly collaborative challenges per group
+- **public_challenges**: Community-wide challenges with join pages
+- **screenshot_examples**: Few-shot examples for Claude screenshot parsing
 
 ### Key Indexes
 - `(user_id, date)` on all log tables for fast daily queries
@@ -115,6 +120,12 @@ Apply migrations in order:
 10. `20260330_groups.sql` - Groups, members, and group challenges
 11. `20260330_catalog_equipment.sql` - Add required_equipment to catalog
 12. `20260330_normalization_factors.sql` - Equipment normalization and smith machine variants
+13. `20260405_group_challenges_v2.sql` - Group challenges v2 with improved schema
+14. `20260405_workout_session_id.sql` - Add session IDs to workouts
+15. `20260406_hume_pod_muscle_mass.sql` - Per-region muscle mass columns and measurement_mode
+16. `20260406_public_challenges.sql` - Public challenges table
+17. `20260406_screenshot_examples.sql` - Screenshot examples for Claude few-shot parsing
+18. `20260413_scale_fat_columns.sql` - Per-region fat % columns, rename muscle→scale
 
 Run in Supabase SQL Editor or via CLI:
 ```bash
@@ -166,7 +177,7 @@ Sum of max_level for each ranked exercise
 ## Deployment
 This project is optimized for deployment on [Vercel](https://vercel.com/new). Ensure all environment variables are securely mapped before triggering a production build.
 
-## Recent Changes (Feb-Mar 2026)
+## Recent Changes (Feb-Apr 2026)
 - Migrated from monolithic `history` table to domain-specific tables
 - Fixed macro logging to use Server Actions
 - Added habit visibility toggles
@@ -191,6 +202,21 @@ This project is optimized for deployment on [Vercel](https://vercel.com/new). En
 - **Dashboard improvements**: Expertise/Physique Points/Weight cards are clickable links with CTAs, Last Workout shows per-exercise volume summary, Today's Workout shows exercise preview bullets
 - **Consistency heatmaps**: Week/month/year toggle (persisted in localStorage), daily streak counter per habit
 - **Day strain**: New habit for WHOOP-style intensity tracking
+- **Body composition modes**: Tape Measure (inches) and Scale (muscle lbs + fat % per region) with toggle in modal
+- **Scale mode batch logging**: Single "Log All" button for weight, body fat %, and per-region muscle/fat
+- **Delete/reset measurements**: Delete individual body measurements or reset all composition data
+- **Steps set-only mode**: Steps input uses "Set" mode only — type total, replaces previous value (no add/diff)
+- **Workout session IDs**: Group sets logged in the same session
+- **Public challenges**: Community-wide challenges with shareable join pages
+- **Group challenge modal**: Create and manage group challenges with improved UI
+- **Workout report**: Post-workout summary with exercise details
+- **Active workout improvements**: Enhanced active workout tracking UI
+- **Join pages**: `/join/[code]` for groups and `/challenges/[id]` for public challenges
+- **Screenshot examples API**: Few-shot examples for Claude screenshot parsing
+- **Workout text parser**: Parse workout descriptions into structured exercise data
+- **Equipment variant picker**: Select equipment variant (barbell/dumbbell/smith) per exercise
+- **Character system**: RPG character avatars with gear shop (in progress)
+- **Cardio XP scaling**: Duration/distance exercises earn 8 XP per minute instead of flat reps-based XP
 
 ## Testing
 The project uses **Vitest** and **React Testing Library** for testing.
@@ -202,7 +228,7 @@ npm test -- <filename>      # Run specific test file
 npm test -- --coverage      # Run with coverage report
 ```
 
-### Test Coverage (168 tests)
+### Test Coverage (182 tests)
 - **Server Actions**: logHabitAction, logTrainingAction, deleteHistoryItemAction
 - **API Functions**: saveProfile, getHabitProgress, getUserStats, getHistory
 - **API Routes**: parse-screenshot (Claude AI integration)
@@ -226,6 +252,7 @@ npm test -- --coverage      # Run with coverage report
 - `src/tests/physiquePoints.test.ts` - Physique Points calculation
 - `src/tests/logBodyMeasurement.test.ts` - Body measurement upsert logic
 - `src/tests/BodyCompositionModal.test.tsx` - Body composition modal UI
+- `src/tests/workoutParser.test.ts` - Workout text parser
 
 ## Progressive Web App (PWA)
 The application is a fully functional PWA with offline support.

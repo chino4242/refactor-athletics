@@ -26,6 +26,10 @@ The application uses **Supabase** (PostgreSQL) as its primary backend.
   - **NutritionTargets** includes `calories_burned` (daily burn goal) and `net_calorie_target` (deficit target, e.g. -500)
 - **habit_logs**: Daily habits (steps, sleep, etc.) with XP
 - **body_measurements**: Body composition tracking
+  - Tape mode: weight, waist, arms, chest, legs, shoulders (inches)
+  - Scale mode: weight, body_fat_percentage, per-region muscle (lbs) and fat (%) — left_arm_muscle, right_arm_muscle, trunk_muscle, left_leg_muscle, right_leg_muscle, left_arm_fat, right_arm_fat, trunk_fat, left_leg_fat, right_leg_fat
+  - `measurement_mode` column: 'tape' or 'scale'
+  - Supports delete individual measurements (`deleteBodyMeasurementAction`) and reset all (`deleteAllBodyMeasurementsAction`)
 - **workout_programs**: Custom workout templates
 - **program_blocks**: Exercises and treadmill intervals within programs
 - **program_schedule**: Assigns programs to calendar days
@@ -34,6 +38,8 @@ The application uses **Supabase** (PostgreSQL) as its primary backend.
 - **groups**: Party/group system with invite codes and leader management
 - **group_members**: Group membership (many-to-many, user_id + group_id)
 - **group_challenges**: Weekly collaborative challenges per group (metric, target, week_start)
+- **public_challenges**: Community-wide challenges with shareable join pages
+- **screenshot_examples**: Few-shot examples for Claude screenshot parsing (type, image_url, expected_output)
 
 ### 1.2 Row Level Security (RLS)
 RLS is active on all tables:
@@ -56,6 +62,12 @@ RLS is active on all tables:
 10. `20260330_groups.sql` - Groups, group_members, group_challenges tables with RLS
 11. `20260330_catalog_equipment.sql` - Added `required_equipment` (jsonb) to catalog, populated mappings
 12. `20260330_normalization_factors.sql` - Added `normalization_factor`, `normalizes_to` to catalog; smith machine variants
+13. `20260405_group_challenges_v2.sql` - Group challenges v2 with improved schema
+14. `20260405_workout_session_id.sql` - Add session IDs to workouts
+15. `20260406_hume_pod_muscle_mass.sql` - Per-region muscle mass columns and measurement_mode
+16. `20260406_public_challenges.sql` - Public challenges table
+17. `20260406_screenshot_examples.sql` - Screenshot examples for Claude few-shot parsing
+18. `20260413_scale_fat_columns.sql` - Per-region fat % columns, rename muscle→scale
 
 **Note**: After running migrations that modify table schemas, Supabase's PostgREST API server caches the old schema. You must either:
 - Restart the Supabase project (Settings → General → Restart project)
@@ -95,11 +107,17 @@ There are two distinct progression metrics for a user:
 ### 2.3 Data Architecture Patterns
 - **Server Actions** (`src/app/actions.ts`): All write operations (logging workouts, habits, macros)
   - **Body Measurements**: `logBodyMeasurementAction` upserts per date — if a row exists for that date, it merges new metrics into it rather than creating duplicate rows
+  - **Steps Set Mode**: When label contains "(Sync)", deletes existing rows for that habit+date before inserting the full value (no diff accumulation)
+  - **Body Measurement Deletion**: `deleteBodyMeasurementAction` (single by ID), `deleteAllBodyMeasurementsAction` (reset all for user)
 - **API Functions** (`src/services/api.ts`): All read operations (getHistory, getHabitProgress, getUserStats)
   - **Profile Updates**: Use `router.refresh()` after saving to reload server-rendered data
   - **Target Weight**: Stored in `body_composition_goals.target_weight` (string format)
 - **Program API** (`src/services/programApi.ts`): Workout program CRUD operations
 - **Shared Utilities** (`src/utils/physiquePoints.ts`): `calculatePhysiquePoints()` — used by TrackPage, ProgressMetrics, DashboardHeader, and BodyCompositionModal
+- **Workout Parser** (`src/utils/workoutParser.ts`): Parses workout text descriptions into structured exercise data
+- **parseReps** (`src/utils/parseReps.ts`): Utility for parsing rep schemes from text (e.g., "3x10", "5-5-5-3-3")
+- **EquipmentVariantPicker** (`src/components/EquipmentVariantPicker.tsx`): Select equipment variant (barbell/dumbbell/smith) per exercise during logging
+- **EngineSelector** (`src/components/EngineSelector.tsx`): Engine/mode selector component
 
 ### 2.4 Attribute Balance Radar
 The Radar chart in `PowerRadar.tsx` requires exactly 4 cardinal points: **STR**, **END**, **PWR**, **MOB**.
@@ -153,7 +171,10 @@ The dashboard (`/dashboard`) is the default landing page after login, featuring 
 - **Pull-to-Refresh**: Touch gesture to reload all dashboard data (mobile-first)
 - **Skeleton Loaders**: Animated placeholders instead of "Loading..." text
 - **Weight Tracking**: Current weight, target weight, and progress in header
-- **Physique Points**: Calculated from body composition changes vs goals (color-coded). Uses shared `calculatePhysiquePoints()` utility from `src/utils/physiquePoints.ts`. For each metric (waist, arms, legs, chest, shoulders, weight), finds the earliest and latest non-null values across all `body_measurements` rows, then sums deltas aligned with goals (shrink = points for decrease, grow = points for increase). Rounded to 1 decimal place. Requires 2+ entries to calculate.
+- **Physique Points**: Calculated from body composition changes vs goals (color-coded). Uses shared `calculatePhysiquePoints()` utility from `src/utils/physiquePoints.ts`. For each metric, finds the earliest and latest non-null values across all `body_measurements` rows, then sums deltas aligned with goals (shrink = points for decrease, grow = points for increase). Rounded to 1 decimal place. Requires 2+ entries to calculate.
+  - **Tape mode metrics**: weight, waist, arms, legs, chest, shoulders
+  - **Scale mode metrics**: weight, body_fat_percentage, left/right arm muscle+fat, trunk muscle+fat, left/right leg muscle+fat
+  - Fat metrics default to "Shrink" goal, muscle metrics default to "Grow", users can change to "Maintain"
 - **Empty States**: Motivational messages with CTAs for all empty sections
 
 ### 4.3 Onboarding Wizard
@@ -195,7 +216,7 @@ Example:
 ### 5.1 Test Framework
 - **Vitest** for unit and integration tests
 - **React Testing Library** for component tests
-- **168 tests** covering critical business logic and user flows
+- **182 tests** covering critical business logic and user flows
 
 ### 5.2 Test Coverage Areas
 - **Server Actions**: logHabitAction, logTrainingAction, deleteHistoryItemAction
