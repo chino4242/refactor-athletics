@@ -355,3 +355,17 @@ export async function logBodyMeasurementAction(
     revalidatePath('/');
     return { xp_earned: xp };
 }
+
+export async function deleteBodyMeasurementAction(measurementId: string) {
+    const supabase = await createClient();
+    const { error } = await supabase.from('body_measurements').delete().eq('id', measurementId);
+    if (error) throw error;
+    revalidatePath('/');
+}
+
+export async function deleteAllBodyMeasurementsAction(userId: string) {
+    const supabase = await createClient();
+    const { error } = await supabase.from('body_measurements').delete().eq('user_id', userId);
+    if (error) throw error;
+    revalidatePath('/');
+}

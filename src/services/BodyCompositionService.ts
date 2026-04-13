@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/client';
 import { logBodyMeasurementAction } from '@/app/actions';
 
 export interface BodyCompositionEntry {
+    id?: string;
     date: string;
     weight?: number;
     waist?: number;
@@ -33,6 +34,7 @@ export const BodyCompositionService = {
         }
 
         return data.map(row => ({
+            id: row.id,
             date: row.date,
             weight: row.weight,
             waist: row.waist,

@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Scale, TrendingUp } from 'lucide-react';
+import { X, Scale, TrendingUp, Trash2 } from 'lucide-react';
 import MeasurementRow from './MeasurementRow';
 import ScreenshotUploader from './ScreenshotUploader';
 import type { UserProfileData } from '@/types';
 import { BodyCompositionService } from '../services/BodyCompositionService';
 import type { BodyCompositionEntry } from '../services/BodyCompositionService';
 import { calculatePhysiquePoints } from '@/utils/physiquePoints';
+import { deleteBodyMeasurementAction, deleteAllBodyMeasurementsAction } from '@/app/actions';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface BodyCompositionModalProps {
@@ -40,6 +41,7 @@ export default function BodyCompositionModal({
     const [physiquePoints, setPhysiquePoints] = useState<number>(0);
     const [isLoadingHistory, setIsLoadingHistory] = useState(false);
     const [localProfile, setLocalProfile] = useState(profile);
+    const [confirmReset, setConfirmReset] = useState(false);
     const mode = localProfile.measurement_mode || 'tape';
 
     useEffect(() => { setLocalProfile(profile); }, [profile]);
@@ -281,6 +283,73 @@ export default function BodyCompositionModal({
                                 <div className="flex flex-col items-center justify-center h-full text-zinc-500 py-20 opacity-50">
                                     <TrendingUp size={48} className="mb-4" />
                                     <p>Log more measurements to see trends & score</p>
+                                </div>
+                            )}
+
+                            {/* Measurement History Table */}
+                            {history.length > 0 && (
+                                <div className="bg-zinc-900/80 p-4 rounded-xl border border-zinc-800">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h4 className="text-sm font-bold text-zinc-400 uppercase tracking-wider">History</h4>
+                                        {!confirmReset ? (
+                                            <button
+                                                onClick={() => setConfirmReset(true)}
+                                                className="text-[10px] text-red-500/60 hover:text-red-400 uppercase tracking-wider font-bold transition"
+                                            >
+                                                Reset All
+                                            </button>
+                                        ) : (
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-[10px] text-red-400">Delete all data?</span>
+                                                <button
+                                                    onClick={async () => {
+                                                        await deleteAllBodyMeasurementsAction(localProfile.user_id);
+                                                        setConfirmReset(false);
+                                                        await loadHistory();
+                                                    }}
+                                                    className="text-[10px] bg-red-600 hover:bg-red-500 text-white px-2 py-1 rounded font-bold uppercase transition"
+                                                >
+                                                    Confirm
+                                                </button>
+                                                <button
+                                                    onClick={() => setConfirmReset(false)}
+                                                    className="text-[10px] text-zinc-500 hover:text-white px-2 py-1 font-bold uppercase transition"
+                                                >
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="space-y-1 max-h-60 overflow-y-auto custom-scrollbar">
+                                        {[...history].reverse().map((entry) => (
+                                            <div key={entry.id || entry.date} className="flex items-center justify-between py-1.5 px-2 rounded hover:bg-zinc-800/50 group">
+                                                <div className="flex items-center gap-3 text-xs">
+                                                    <span className="text-zinc-500 font-mono w-20">{entry.date}</span>
+                                                    <span className="text-zinc-300">
+                                                        {[
+                                                            entry.weight && `${entry.weight}lbs`,
+                                                            entry.waist && `W:${entry.waist}"`,
+                                                            entry.arms && `A:${entry.arms}"`,
+                                                            entry.chest && `C:${entry.chest}"`,
+                                                            entry.legs && `L:${entry.legs}"`,
+                                                        ].filter(Boolean).join(' · ') || 'No data'}
+                                                    </span>
+                                                </div>
+                                                {entry.id && (
+                                                    <button
+                                                        onClick={async () => {
+                                                            await deleteBodyMeasurementAction(entry.id!);
+                                                            await loadHistory();
+                                                        }}
+                                                        className="opacity-0 group-hover:opacity-100 text-zinc-600 hover:text-red-400 transition p-1"
+                                                        title="Delete measurement"
+                                                    >
+                                                        <Trash2 size={12} />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
                         </div>
