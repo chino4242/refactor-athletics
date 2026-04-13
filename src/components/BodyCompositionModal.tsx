@@ -42,6 +42,7 @@ export default function BodyCompositionModal({
     const [isLoadingHistory, setIsLoadingHistory] = useState(false);
     const [localProfile, setLocalProfile] = useState(profile);
     const [confirmReset, setConfirmReset] = useState(false);
+    const [scaleInputs, setScaleInputs] = useState<Record<string, string>>({});
     const mode = localProfile.measurement_mode || 'tape';
 
     useEffect(() => { setLocalProfile(profile); }, [profile]);
@@ -213,24 +214,24 @@ export default function BodyCompositionModal({
                             }}
                         />
                         {/* WEIGHT */}
-                        <MeasurementRow
-                            label="Weight"
-                            currentGoal={localProfile?.body_composition_goals?.weight || "Maintain"}
-                            currentValue={String(localProfile?.bodyweight || getLatestValue('weight'))}
-                            unit="lbs"
-                            onGoalChange={async (goal) => {
-                                const updated = { ...localProfile, body_composition_goals: { ...localProfile.body_composition_goals, weight: goal } };
-                                setLocalProfile(updated);
-                                setProfile(updated);
-                                await saveProfile(updated);
-                                // Recalculate score locally
-                                loadHistory();
-                            }}
-                            onLog={(val) => handleMeasurementLog('weight', val, 'Weigh In')}
-                            loading={loading === 'weight'}
-                        />
                         {mode === 'tape' ? (
-                            [
+                            <>
+                            <MeasurementRow
+                                label="Weight"
+                                currentGoal={localProfile?.body_composition_goals?.weight || "Maintain"}
+                                currentValue={String(localProfile?.bodyweight || getLatestValue('weight'))}
+                                unit="lbs"
+                                onGoalChange={async (goal) => {
+                                    const updated = { ...localProfile, body_composition_goals: { ...localProfile.body_composition_goals, weight: goal } };
+                                    setLocalProfile(updated);
+                                    setProfile(updated);
+                                    await saveProfile(updated);
+                                    loadHistory();
+                                }}
+                                onLog={(val) => handleMeasurementLog('weight', val, 'Weigh In')}
+                                loading={loading === 'weight'}
+                            />
+                            {[
                                 { id: 'waist', label: 'Waist' },
                                 { id: 'arms', label: 'Arms' },
                                 { id: 'chest', label: 'Chest' },
@@ -253,67 +254,108 @@ export default function BodyCompositionModal({
                                     loading={loading === part.id}
                                     unit="in"
                                 />
-                            ))
+                            ))}
+                            </>
                         ) : (
                             <>
-                                {/* Body Fat % */}
-                                <MeasurementRow
-                                    label="Body Fat"
-                                    currentGoal={localProfile?.body_composition_goals?.body_fat_percentage || 'Shrink'}
-                                    currentValue={getLatestValue('body_fat_percentage')}
-                                    onGoalChange={async (goal) => {
-                                        const updated = { ...localProfile, body_composition_goals: { ...localProfile?.body_composition_goals, body_fat_percentage: goal } };
-                                        setLocalProfile(updated);
-                                        setProfile(updated);
-                                        await saveProfile(updated);
-                                        loadHistory();
-                                    }}
-                                    onLog={(val) => handleMeasurementLog('body_fat_percentage', val, 'Body Fat %')}
-                                    loading={loading === 'body_fat_percentage'}
-                                    unit="%"
-                                />
-                                {/* Per-region: muscle + fat grouped by body part */}
-                                {[
-                                    { region: 'Left Arm', muscle: 'left_arm_muscle', fat: 'left_arm_fat' },
-                                    { region: 'Right Arm', muscle: 'right_arm_muscle', fat: 'right_arm_fat' },
-                                    { region: 'Trunk', muscle: 'trunk_muscle', fat: 'trunk_fat' },
-                                    { region: 'Left Leg', muscle: 'left_leg_muscle', fat: 'left_leg_fat' },
-                                    { region: 'Right Leg', muscle: 'right_leg_muscle', fat: 'right_leg_fat' },
-                                ].map(part => (
-                                    <div key={part.region} className="border-t border-zinc-800 pt-2">
-                                        <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1 px-1">{part.region}</div>
-                                        <MeasurementRow
-                                            label="Muscle"
-                                            currentGoal={localProfile?.body_composition_goals?.[part.muscle] || 'Grow'}
-                                            currentValue={getLatestValue(part.muscle)}
-                                            onGoalChange={async (goal) => {
-                                                const updated = { ...localProfile, body_composition_goals: { ...localProfile?.body_composition_goals, [part.muscle]: goal } };
-                                                setLocalProfile(updated);
-                                                setProfile(updated);
-                                                await saveProfile(updated);
-                                                loadHistory();
-                                            }}
-                                            onLog={(val) => handleMeasurementLog(part.muscle, val, `${part.region} Muscle`)}
-                                            loading={loading === part.muscle}
-                                            unit="lbs"
-                                        />
-                                        <MeasurementRow
-                                            label="Fat"
-                                            currentGoal={localProfile?.body_composition_goals?.[part.fat] || 'Shrink'}
-                                            currentValue={getLatestValue(part.fat)}
-                                            onGoalChange={async (goal) => {
-                                                const updated = { ...localProfile, body_composition_goals: { ...localProfile?.body_composition_goals, [part.fat]: goal } };
-                                                setLocalProfile(updated);
-                                                setProfile(updated);
-                                                await saveProfile(updated);
-                                                loadHistory();
-                                            }}
-                                            onLog={(val) => handleMeasurementLog(part.fat, val, `${part.region} Fat %`)}
-                                            loading={loading === part.fat}
-                                            unit="%"
-                                        />
-                                    </div>
-                                ))}
+                                {/* Scale batch form */}
+                                {(() => {
+                                    const scaleFields = [
+                                        { id: 'weight', label: 'Weight', unit: 'lbs', placeholder: getLatestValue('weight') },
+                                        { id: 'body_fat_percentage', label: 'Body Fat', unit: '%', placeholder: getLatestValue('body_fat_percentage') },
+                                    ];
+                                    const regionFields = [
+                                        { region: 'Left Arm', muscle: 'left_arm_muscle', fat: 'left_arm_fat' },
+                                        { region: 'Right Arm', muscle: 'right_arm_muscle', fat: 'right_arm_fat' },
+                                        { region: 'Trunk', muscle: 'trunk_muscle', fat: 'trunk_fat' },
+                                        { region: 'Left Leg', muscle: 'left_leg_muscle', fat: 'left_leg_fat' },
+                                        { region: 'Right Leg', muscle: 'right_leg_muscle', fat: 'right_leg_fat' },
+                                    ];
+                                    return (
+                                        <div className="space-y-3">
+                                            {/* Weight + Body Fat */}
+                                            {scaleFields.map(f => (
+                                                <div key={f.id} className="p-3 bg-zinc-900/50 border border-zinc-800 rounded-xl">
+                                                    <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">{f.label}</span>
+                                                    <div className="relative mt-1">
+                                                        <input
+                                                            type="number"
+                                                            step="0.01"
+                                                            value={scaleInputs[f.id] || ''}
+                                                            onChange={e => setScaleInputs(prev => ({ ...prev, [f.id]: e.target.value }))}
+                                                            placeholder={f.placeholder !== '0' ? f.placeholder : '0.0'}
+                                                            className="w-full bg-zinc-950 rounded-lg p-2 text-sm text-white text-center outline-none border border-zinc-800 focus:border-zinc-600 transition font-bold placeholder:text-zinc-700"
+                                                        />
+                                                        <span className="absolute right-3 top-2.5 text-[10px] text-zinc-600 font-bold pointer-events-none uppercase">{f.unit}</span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            {/* Per-region muscle + fat */}
+                                            {regionFields.map(r => (
+                                                <div key={r.region} className="p-3 bg-zinc-900/50 border border-zinc-800 rounded-xl">
+                                                    <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">{r.region}</span>
+                                                    <div className="grid grid-cols-2 gap-2 mt-1">
+                                                        <div className="relative">
+                                                            <input
+                                                                type="number"
+                                                                step="0.01"
+                                                                value={scaleInputs[r.muscle] || ''}
+                                                                onChange={e => setScaleInputs(prev => ({ ...prev, [r.muscle]: e.target.value }))}
+                                                                placeholder={getLatestValue(r.muscle) !== '0' ? getLatestValue(r.muscle) : '0.0'}
+                                                                className="w-full bg-zinc-950 rounded-lg p-2 text-sm text-white text-center outline-none border border-zinc-800 focus:border-zinc-600 transition font-bold placeholder:text-zinc-700"
+                                                            />
+                                                            <span className="absolute right-2 top-2.5 text-[10px] text-zinc-600 font-bold pointer-events-none">lbs</span>
+                                                        </div>
+                                                        <div className="relative">
+                                                            <input
+                                                                type="number"
+                                                                step="0.01"
+                                                                value={scaleInputs[r.fat] || ''}
+                                                                onChange={e => setScaleInputs(prev => ({ ...prev, [r.fat]: e.target.value }))}
+                                                                placeholder={getLatestValue(r.fat) !== '0' ? getLatestValue(r.fat) : '0.0'}
+                                                                className="w-full bg-zinc-950 rounded-lg p-2 text-sm text-white text-center outline-none border border-zinc-800 focus:border-zinc-600 transition font-bold placeholder:text-zinc-700"
+                                                            />
+                                                            <span className="absolute right-2 top-2.5 text-[10px] text-zinc-600 font-bold pointer-events-none">fat%</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            {/* Log All button */}
+                                            <button
+                                                onClick={async () => {
+                                                    const measurements: Record<string, number> = {};
+                                                    Object.entries(scaleInputs).forEach(([k, v]) => {
+                                                        if (v && Number(v) > 0) measurements[k] = Number(v);
+                                                    });
+                                                    if (Object.keys(measurements).length === 0) return;
+                                                    setLoading('scale_all');
+                                                    try {
+                                                        const today = new Date().toISOString().split('T')[0];
+                                                        await BodyCompositionService.logMeasurements(localProfile.user_id, today, { ...measurements, measurement_mode: mode });
+                                                        if (measurements.weight) {
+                                                            const updated = { ...localProfile, bodyweight: measurements.weight };
+                                                            setLocalProfile(updated);
+                                                            setProfile(updated);
+                                                            await saveProfile(updated);
+                                                        }
+                                                        await loadHistory();
+                                                        setScaleInputs({});
+                                                        toast.success(`Logged ${Object.keys(measurements).length} measurements`);
+                                                    } catch (e) {
+                                                        console.error(e);
+                                                        toast.error('Failed to save');
+                                                    } finally {
+                                                        setLoading(null);
+                                                    }
+                                                }}
+                                                disabled={loading === 'scale_all' || Object.values(scaleInputs).every(v => !v)}
+                                                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 rounded-xl uppercase tracking-wider text-xs transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                {loading === 'scale_all' ? 'Saving...' : 'Log All Measurements'}
+                                            </button>
+                                        </div>
+                                    );
+                                })()}
                             </>
                         )}
                     </div>
