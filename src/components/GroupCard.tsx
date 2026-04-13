@@ -247,7 +247,8 @@ export default function GroupCard({ userId }: GroupCardProps) {
                                     <p className="text-[10px] text-zinc-600 text-center py-2">No completed challenges yet</p>
                                 ) : challengeHistory.map(ch => {
                                     const p = CHALLENGE_PRESETS[ch.metric as ChallengeMetric];
-                                    const total = ch.results ? Object.values(ch.results).reduce((s: number, v: any) => s + (v as number), 0) : 0;
+                                    const total = ch.results ? Object.entries(ch.results).filter(([k]) => k !== '_success').reduce((s: number, [, v]: [string, any]) => s + (v as number), 0) : 0;
+                                    const wasSuccessful = (ch.results as any)?._success === true || (ch.results && total >= ch.target);
                                     const mvp = ch.mvp_user_id ? members.find(m => m.user_id === ch.mvp_user_id)?.display_name : null;
                                     return (
                                         <div key={ch.id} className="bg-zinc-800/30 rounded-lg p-2 flex items-center justify-between">
@@ -259,8 +260,8 @@ export default function GroupCard({ userId }: GroupCardProps) {
                                                 </div>
                                             </div>
                                             <div className="text-right">
-                                                <div className={`text-[10px] font-bold ${ch.completed ? 'text-emerald-400' : 'text-red-400'}`}>
-                                                    {ch.completed ? '✓ Complete' : '✗ Failed'}
+                                                <div className={`text-[10px] font-bold ${wasSuccessful ? 'text-emerald-400' : 'text-red-400'}`}>
+                                                    {wasSuccessful ? '✓ Complete' : '✗ Failed'}
                                                 </div>
                                                 <div className="text-[10px] text-zinc-600">{total.toLocaleString()} / {ch.target.toLocaleString()}</div>
                                                 {mvp && <div className="text-[10px] text-yellow-500 flex items-center gap-0.5 justify-end"><Crown size={8} /> {mvp}</div>}

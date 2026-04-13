@@ -151,9 +151,6 @@ export async function createGroupChallenge(params: CreateGroupChallengeParams): 
 export async function getGroupChallengeProgress(groupId: string, challenge: GroupChallenge): Promise<Record<string, number>> {
     const supabase = createClient();
 
-    const startTs = Math.floor(new Date(challenge.start_date + 'T00:00:00').getTime() / 1000);
-    const endTs = Math.floor(new Date(challenge.end_date + 'T23:59:59').getTime() / 1000);
-
     // Get all members
     const { data: members } = await supabase
         .from('group_members')
@@ -171,11 +168,11 @@ export async function getGroupChallengeProgress(groupId: string, challenge: Grou
     if (challenge.metric === 'steps') {
         const { data } = await supabase
             .from('habit_logs')
-            .select('user_id, value')
+            .select('user_id, value, date')
             .in('user_id', memberIds)
             .eq('habit_id', 'habit_steps')
-            .gte('timestamp', startTs)
-            .lte('timestamp', endTs);
+            .gte('date', challenge.start_date)
+            .lte('date', challenge.end_date);
 
         (data || []).forEach(row => {
             progress[row.user_id] = (progress[row.user_id] || 0) + (row.value || 0);
@@ -183,10 +180,10 @@ export async function getGroupChallengeProgress(groupId: string, challenge: Grou
     } else if (challenge.metric === 'workouts') {
         const { data } = await supabase
             .from('workouts')
-            .select('user_id')
+            .select('user_id, date')
             .in('user_id', memberIds)
-            .gte('timestamp', startTs)
-            .lte('timestamp', endTs);
+            .gte('date', challenge.start_date)
+            .lte('date', challenge.end_date);
 
         (data || []).forEach(row => {
             progress[row.user_id] = (progress[row.user_id] || 0) + 1;
@@ -194,10 +191,10 @@ export async function getGroupChallengeProgress(groupId: string, challenge: Grou
     } else if (challenge.metric === 'active_minutes') {
         const { data } = await supabase
             .from('workouts')
-            .select('user_id')
+            .select('user_id, date')
             .in('user_id', memberIds)
-            .gte('timestamp', startTs)
-            .lte('timestamp', endTs);
+            .gte('date', challenge.start_date)
+            .lte('date', challenge.end_date);
 
         (data || []).forEach(row => {
             progress[row.user_id] = (progress[row.user_id] || 0) + 30;
@@ -208,8 +205,8 @@ export async function getGroupChallengeProgress(groupId: string, challenge: Grou
             .select('user_id, date')
             .in('user_id', memberIds)
             .eq('habit_id', 'habit_water')
-            .gte('timestamp', startTs)
-            .lte('timestamp', endTs);
+            .gte('date', challenge.start_date)
+            .lte('date', challenge.end_date);
 
         const daysSeen = new Map<string, Set<string>>();
         (data || []).forEach(row => {
@@ -228,7 +225,7 @@ export async function finalizeGroupChallenge(challenge: GroupChallenge, progress
     const supabase = createClient();
 
     const total = Object.values(progress).reduce((sum, v) => sum + v, 0);
-    const completed = total >= challenge.target;
+    const success = total >= challenge.target;
 
     // Find MVP (highest individual contributor)
     let mvpUserId: string | null = null;
@@ -243,10 +240,10 @@ export async function finalizeGroupChallenge(challenge: GroupChallenge, progress
     const { data, error } = await supabase
         .from('group_challenges')
         .update({
-            completed,
+            completed: true,
             completed_at: new Date().toISOString(),
-            mvp_user_id: completed ? mvpUserId : null,
-            results: progress,
+            mvp_user_id: success ? mvpUserId : null,
+            results: { ...progress, _success: success },
         })
         .eq('id', challenge.id)
         .select()
@@ -254,8 +251,8 @@ export async function finalizeGroupChallenge(challenge: GroupChallenge, progress
 
     if (error) throw error;
 
-    // Award MVP badge if challenge was completed
-    if (completed && mvpUserId) {
+    // Award MVP badge if challenge was completed successfully
+    if (success && mvpUserId) {
         await awardBadge(mvpUserId, BADGE_TYPES.GROUP_CHALLENGE_MVP, challenge.id, {
             group_id: challenge.group_id,
             metric: challenge.metric,
