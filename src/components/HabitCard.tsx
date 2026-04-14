@@ -101,21 +101,6 @@ export default function HabitCard({
                     </div>
                 )}
 
-                {/* Quick Add Buttons */}
-                {!setOnly && (
-                <div className="flex gap-1 mb-2">
-                    {[1, 5, 10, 25].map(amt => (
-                        <button
-                            key={amt}
-                            onClick={() => setValue(String(parseFloat(value || '0') + amt))}
-                            className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white text-xs font-bold py-2 rounded transition-all"
-                        >
-                            +{amt}
-                        </button>
-                    ))}
-                </div>
-                )}
-
                 <div className="flex gap-1">
                     <input
                         ref={inputRef}
