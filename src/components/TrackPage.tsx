@@ -90,15 +90,19 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
             {showLevelUp && <LevelUpOverlay level={showLevelUp} onClose={() => setShowLevelUp(null)} />}
 
             {/* Date Navigation */}
-            <div className="flex items-center justify-between px-2 py-2">
-                <button onClick={goToPreviousDay} className="p-2 text-zinc-400 hover:text-white transition">←</button>
-                <button onClick={isToday ? undefined : goToToday} className={`text-center ${!isToday ? 'active:opacity-70' : ''}`}>
-                    <span className="text-sm font-black text-white">
-                        {isToday ? 'Today' : selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                    </span>
-                    {!isToday && <span className="block text-[10px] text-orange-500 font-bold">Tap for today</span>}
+            <div className="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-3">
+                <button onClick={goToPreviousDay} className="p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition active:scale-95">
+                    <span className="text-lg font-bold">‹</span>
                 </button>
-                <button onClick={goToNextDay} disabled={isFuture} className={`p-2 transition ${isFuture ? 'text-zinc-700' : 'text-zinc-400 hover:text-white'}`}>→</button>
+                <button onClick={isToday ? undefined : goToToday} className={`text-center px-4 ${!isToday ? 'active:opacity-70' : ''}`}>
+                    <span className="text-sm font-black text-white uppercase tracking-wider">
+                        {isToday ? '📅 Today' : selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                    </span>
+                    {!isToday && <span className="block text-[10px] text-orange-500 font-bold mt-0.5">Tap to return to today</span>}
+                </button>
+                <button onClick={goToNextDay} disabled={isFuture} className={`p-2 rounded-lg transition active:scale-95 ${isFuture ? 'bg-zinc-900 text-zinc-700 cursor-not-allowed' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white'}`}>
+                    <span className="text-lg font-bold">›</span>
+                </button>
             </div>
 
             {/* Daily Quests (Nutrition & Habits) */}
