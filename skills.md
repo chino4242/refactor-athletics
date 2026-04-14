@@ -100,7 +100,7 @@ This allows users to log their actual weight on any equipment variant and get a 
 ### 2.2 Power Level & Player Stats (`src/services/api.ts`)
 There are two distinct progression metrics for a user:
 1. **Player Level**: Driven purely by raw participation. Uses exponential scaling: each level requires `1000 * 1.08^level` XP (fibonacci-ish curve). Early levels come fast, later levels require sustained commitment. Every time a user logs *any* exercise (or habit), they gain XP.
-2. **Power Level (Aggregate Score)**: Driven by *performance*. Calculated by querying ONLY the `workouts` table (not habits/macros), finding the **highest rank level achieved** for *each unique ranked exercise*, and summing `max_level` across all of them. Currently counts ALL exercises; **planned**: filter to only exercises in the user's chosen path (see STORY_MAP.md).
+2. **Power Level (Aggregate Score)**: Driven by *performance*. Calculated by querying ONLY the `workouts` table (not habits/macros), finding the **highest rank level achieved** for *each unique ranked exercise*, and summing `max_level` across all of them.
 
 **Important**: Power Level only counts ranked exercises from the `workouts` table. Habits and nutrition do not contribute to Power Level, only to Player Level (XP).
 
@@ -142,8 +142,6 @@ Users can create custom workout programs with exercises and treadmill blocks, th
 - **Phase 2** ✅: Program editor with exercise selection and category filtering
 - **Phase 3** ✅: Edit sets/reps/weight, treadmill blocks, reordering, supersets
 - **Phase 4** (Planned): Calendar scheduling, week/month copying, execution with timer
-
-See `WORKOUT_PROGRAMS.md` for detailed documentation.
 
 ## 4. Dashboard & User Experience
 
@@ -263,8 +261,6 @@ npm run build && npm start   # Production build required
 - Chrome DevTools → Application → Service Workers
 - Test offline mode in Network tab
 - Run Lighthouse audit (target: 90+ PWA score)
-
-See `PWA_SETUP.md` for detailed implementation guide.
 
 ## 7. UI Guidelines & Component Guardrails
 - **Mobile First**: All layouts must be responsive, defaulting to stacked views on mobile (`flex-col`) before applying `md:` modifiers.

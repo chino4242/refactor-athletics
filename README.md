@@ -172,7 +172,6 @@ Sum of max_level for each ranked exercise
 ## Development Resources
 - **Developer Guardrails**: Please review `skills.md` for strict architectural guidelines, specifically relating to the math behind Ranks, Power Levels, and Z-Index Stacking Contexts for the mobile UI.
 - **Database Rules**: All data inserts involving the `catalog` table require bypassing RLS using the `SUPABASE_SERVICE_ROLE_KEY`.
-- **Migration Guides**: See `SCHEMA_MIGRATION_GUIDE.md`, `DEPLOYMENT_CHECKLIST.md`, and `MIGRATION_COMPLETE.md` for detailed migration instructions.
 
 ## Deployment
 This project is optimized for deployment on [Vercel](https://vercel.com/new). Ensure all environment variables are securely mapped before triggering a production build.
@@ -271,6 +270,3 @@ npm run build && npm start   # Production build required for PWA
 - Open Chrome DevTools → Application → Service Workers
 - Test offline mode by checking "Offline" in Network tab
 - Run Lighthouse audit for PWA score (target: 90+)
-
-### PWA Setup
-See `PWA_SETUP.md` for detailed implementation guide and troubleshooting.
