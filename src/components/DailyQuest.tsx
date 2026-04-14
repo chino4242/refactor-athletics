@@ -253,6 +253,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
             className="w-full flex items-center justify-between py-2"
           >
             <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">🥗 Nutrition</span>
+            <span className="text-[10px] text-zinc-600 font-normal normal-case tracking-normal ml-2">Track macros, water & calories</span>
             <div className="flex items-center gap-2">
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${nutritionComplete === nutritionMetrics.length ? 'bg-emerald-500/20 text-emerald-400' : 'bg-zinc-800 text-zinc-500'}`}>
                 {nutritionComplete}/{nutritionMetrics.length}
@@ -294,6 +295,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
             {
               id: 'health',
               label: '💪 Health',
+              desc: 'Steps, sleep & daily activity',
               habits: [
                 { type: 'card', id: 'habit_steps', label: 'Steps', icon: <Footprints size={14} className="text-orange-500" />, unit: 'steps', color: 'bg-orange-500', heatColor: 'bg-orange-500 shadow-orange-500/50 shadow-[0_0_5px]', goalKey: 'habit_steps', defaultGoal: 10000, xp: 150, setOnly: true, enableTotalSync: true },
                 { type: 'card', id: 'habit_sleep', label: 'Sleep', icon: '💤', unit: 'hrs', color: 'bg-purple-500', heatColor: 'bg-purple-500 shadow-purple-500/50 shadow-[0_0_5px]', goalKey: 'habit_sleep', defaultGoal: 8, xp: 16 },
@@ -305,6 +307,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
             {
               id: 'recovery',
               label: '🧘 Recovery',
+              desc: 'Rest, mobility & mindfulness',
               habits: [
                 { type: 'card', id: 'habit_cold_plunge', label: 'Cold Plunge', icon: '🧊', unit: 'mins', color: 'bg-blue-500', heatColor: 'bg-blue-500 shadow-blue-500/50 shadow-[0_0_5px]', goalKey: 'habit_cold_plunge', defaultGoal: 3, xp: 5 },
                 { type: 'card', id: 'habit_sauna', label: 'Sauna', icon: '🔥', unit: 'mins', color: 'bg-red-500', heatColor: 'bg-red-500 shadow-red-500/50 shadow-[0_0_5px]', goalKey: 'habit_sauna', defaultGoal: 15, xp: 2 },
@@ -315,6 +318,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
             {
               id: 'discipline',
               label: '🛡️ Discipline',
+              desc: 'Streaks, journaling & self-control',
               habits: [
                 { type: 'vice', id: 'habit_no_alcohol', viceId: 'habit_alcohol', label: 'Avoid Alcohol', icon: '🍺', heatColor: 'bg-emerald-500 shadow-emerald-500/50 shadow-[0_0_5px]' },
                 { type: 'vice', id: 'habit_no_vice', viceId: 'habit_bad_habit', label: 'Avoid Vice', icon: '🛡️', heatColor: 'bg-fuchsia-500 shadow-fuchsia-500/50 shadow-[0_0_5px]' },
@@ -350,6 +354,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
                   className="w-full flex items-center justify-between py-2"
                 >
                   <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{cat.label}</span>
+                  <span className="text-[10px] text-zinc-600 font-normal normal-case tracking-normal ml-2">{cat.desc}</span>
                   <div className="flex items-center gap-2">
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${completed === visibleHabits.length ? 'bg-emerald-500/20 text-emerald-400' : 'bg-zinc-800 text-zinc-500'}`}>
                       {completed}/{visibleHabits.length}

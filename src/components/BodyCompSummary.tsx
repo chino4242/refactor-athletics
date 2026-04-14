@@ -91,7 +91,8 @@ export default function BodyCompSummary({ profile, bodyCompHistory, physiquePoin
                 </div>
                 
                 <div className="text-center py-8 text-zinc-500">
-                    <p className="text-sm mb-4">No measurements logged yet</p>
+                    <p className="text-sm mb-1">No measurements logged yet</p>
+                    <p className="text-xs text-zinc-600 mb-4">Track weight, waist & arms to unlock your Physique Points score and trend analysis.</p>
                     <button
                         onClick={onOpenModal}
                         className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all"

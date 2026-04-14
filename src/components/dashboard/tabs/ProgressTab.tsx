@@ -167,6 +167,7 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                         <span className="text-lg">📊</span>
                         <h3 className="text-sm font-bold text-white uppercase tracking-wider">Attribute Balance</h3>
                     </div>
+                    <p className="text-[10px] text-zinc-600 mt-1">How your training distributes across STR, END, PWR & MOB</p>
                     <Link href="/profile" className="text-xs text-orange-500 hover:text-orange-400 flex items-center gap-1">
                         View Profile
                         <ChevronRight size={14} />
@@ -184,6 +185,7 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                         <span className="text-lg">💪</span>
                         <h3 className="text-sm font-bold text-white uppercase tracking-wider">{isClassic ? 'Performance Breakdown' : 'Expertise Contributors'}</h3>
                     </div>
+                    <p className="text-[10px] text-zinc-600 mt-1">Your best rank per exercise — log a ranked exercise to grow your score</p>
                     <Link href="/profile" className="text-xs text-orange-500 hover:text-orange-400 flex items-center gap-1">
                         {isClassic ? 'View All' : 'Trophy Case'}
                         <ChevronRight size={14} />

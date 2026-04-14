@@ -33,7 +33,7 @@ export default function ArenaTab({ userId, activeDuels }: ArenaTabProps) {
 
             {/* Active Duels */}
             <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">
                         <span className="text-lg">{isClassic ? '🤝' : '⚔️'}</span>
                         <h3 className="text-sm font-bold text-white uppercase tracking-wider">{isClassic ? 'Active Matchups' : 'Active Duels'}</h3>
@@ -43,6 +43,7 @@ export default function ArenaTab({ userId, activeDuels }: ArenaTabProps) {
                         <ChevronRight size={14} />
                     </Link>
                 </div>
+                <p className="text-[10px] text-zinc-600 mb-3">Head-to-head challenges — outperform your opponent to win</p>
                 {activeDuels.length > 0 ? (
                     <div className="space-y-2">
                         {activeDuels.slice(0, 3).map((duel) => (
@@ -99,7 +100,7 @@ export default function ArenaTab({ userId, activeDuels }: ArenaTabProps) {
 
             {/* Public Challenges */}
             <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">
                         <span className="text-lg">🏆</span>
                         <h3 className="text-sm font-bold text-white uppercase tracking-wider">Challenges</h3>
@@ -108,6 +109,7 @@ export default function ArenaTab({ userId, activeDuels }: ArenaTabProps) {
                         <Plus size={14} /> Create
                     </button>
                 </div>
+                <p className="text-[10px] text-zinc-600 mb-3">Open challenges anyone can join — share the link to invite others</p>
                 {publicChallenges.length > 0 ? (
                     <div className="space-y-2">
                         {publicChallenges.map((c) => (

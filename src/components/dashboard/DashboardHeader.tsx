@@ -159,6 +159,7 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                                 style={{ width: `${xpPercent}%` }}
                             />
                         </div>
+                        <p className="text-[10px] text-zinc-600 mt-1">Earn XP from workouts, nutrition & habits</p>
                     </div>
                 </div>
             </div>

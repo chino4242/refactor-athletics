@@ -162,10 +162,11 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                             <span className="text-lg">🎯</span>
                             <h3 className="text-sm font-bold text-white uppercase tracking-wider">{isClassic ? 'Today\'s Targets' : 'Daily Quests'}</h3>
                         </div>
-                        <ChevronRight size={16} className="text-zinc-500" />
+                        <span className="text-[10px] text-zinc-500">Tap to log →</span>
                     </div>
                     
                     {/* Quick Stats Grid */}
+                    <p className="text-[10px] text-zinc-600 mb-2">Green = goal met today</p>
                     <div className="grid grid-cols-4 gap-2">
                         <div className={`rounded-lg p-2.5 text-center transition-colors ${
                             todayProgress.calories >= (profile.nutrition_targets?.calories || 2000)
@@ -250,10 +251,11 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
             <div className="grid grid-cols-2 gap-3">
                 {/* Today's Scheduled Workout */}
                 <Link href="/train" className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-700 transition-colors block">
-                    <div className="flex items-center gap-2 mb-3">
+                    <div className="flex items-center gap-2 mb-1">
                         <span className="text-lg">📅</span>
                         <h3 className="text-xs font-bold text-white uppercase tracking-wider">Today</h3>
                     </div>
+                    <p className="text-[10px] text-zinc-600 mb-2">From your weekly schedule</p>
                     {todayScheduled ? (
                         <div>
                             <p className="text-sm font-bold text-white mb-1 truncate">{todayScheduled.name}</p>
@@ -291,10 +293,11 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
 
                 {/* Last Completed Workout */}
                 <Link href="/track" className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-700 transition-colors block">
-                    <div className="flex items-center gap-2 mb-3">
+                    <div className="flex items-center gap-2 mb-1">
                         <span className="text-lg">💪</span>
                         <h3 className="text-xs font-bold text-white uppercase tracking-wider">Last Workout</h3>
                     </div>
+                    <p className="text-[10px] text-zinc-600 mb-2">Volume = weight × reps</p>
                     {lastWorkout ? (
                         <div>
                             <div className="flex justify-between items-center mb-2">
