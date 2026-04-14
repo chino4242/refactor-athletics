@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { saveProfile } from '../services/api';
 import type { UserProfileData, NutritionTargets } from '@/types';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, ChevronDown } from 'lucide-react';
 
 interface HabitSettingsProps {
     isOpen: boolean;
@@ -12,15 +12,48 @@ interface HabitSettingsProps {
     onUpdate: () => void;
 }
 
+const HABIT_CATALOG = {
+  health: {
+    label: '💪 Health',
+    habits: [
+      { id: 'habit_steps', label: 'Steps', desc: 'Daily step count from walking/running', hasTarget: true, min: 1000, max: 25000, step: 500, unit: 'steps', color: 'accent-orange-500' },
+      { id: 'habit_sleep', label: 'Sleep', desc: 'Hours of sleep per night', hasTarget: true, min: 4, max: 12, step: 0.5, unit: 'hrs', color: 'accent-purple-500' },
+      { id: 'habit_exercise_minutes', label: 'Exercise', desc: 'Minutes of intentional exercise', hasTarget: true, min: 10, max: 120, step: 5, unit: 'min', color: 'accent-green-500' },
+      { id: 'habit_stand_hours', label: 'Stand Hours', desc: 'Hours spent standing/moving (Apple Watch)', hasTarget: true, min: 6, max: 16, step: 1, unit: 'hrs', color: 'accent-blue-500' },
+      { id: 'habit_creatine', label: 'Supplements', desc: 'Daily creatine or supplement intake', hasTarget: false },
+    ],
+  },
+  recovery: {
+    label: '🧘 Recovery',
+    habits: [
+      { id: 'habit_mobility', label: 'Mobility', desc: 'Stretching, foam rolling, yoga', hasTarget: true, min: 5, max: 60, step: 5, unit: 'min', color: 'accent-teal-500' },
+      { id: 'habit_cold_plunge', label: 'Cold Plunge', desc: 'Cold water immersion', hasTarget: true, min: 1, max: 15, step: 1, unit: 'min', color: 'accent-blue-500' },
+      { id: 'habit_sauna', label: 'Sauna', desc: 'Heat therapy session', hasTarget: true, min: 5, max: 30, step: 5, unit: 'min', color: 'accent-red-500' },
+      { id: 'habit_meditation', label: 'Meditation', desc: 'Mindfulness or breathing practice', hasTarget: true, min: 5, max: 30, step: 5, unit: 'min', color: 'accent-indigo-500' },
+    ],
+  },
+  discipline: {
+    label: '🛡️ Discipline',
+    habits: [
+      { id: 'habit_no_alcohol', label: 'Avoid Alcohol', desc: 'Track alcohol-free days', hasTarget: false },
+      { id: 'habit_no_vice', label: 'Avoid Vice', desc: 'Track days without your chosen vice', hasTarget: false },
+      { id: 'habit_sugar', label: 'Avoid Sugar', desc: 'Track days without added sugar', hasTarget: false },
+      { id: 'habit_journaling', label: 'Journaling', desc: 'Daily writing or reflection', hasTarget: false },
+      { id: 'habit_reading', label: 'Reading', desc: 'Pages read per day', hasTarget: true, min: 1, max: 100, step: 5, unit: 'pg', color: 'accent-pink-500' },
+      { id: 'habit_fasting', label: 'Intermittent Fasting', desc: 'Hours in fasting window', hasTarget: true, min: 12, max: 24, step: 1, unit: 'hrs', color: 'accent-violet-500' },
+    ],
+  },
+};
+
 export default function HabitSettings({ isOpen, onClose, userProfile, onUpdate }: HabitSettingsProps) {
     const [targets, setTargets] = useState<Record<string, number>>({});
     const [nutritionTargets, setNutritionTargets] = useState<Record<string, number>>({});
     const [hidden, setHidden] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
+    const [expandedCats, setExpandedCats] = useState<Record<string, boolean>>({ health: true, recovery: true, discipline: true });
 
     useEffect(() => {
         if (isOpen) {
-            // Initialize with existing targets or defaults
             setTargets({
                 habit_steps: userProfile.habit_targets?.habit_steps || 10000,
                 habit_sleep: userProfile.habit_targets?.habit_sleep || 8,
@@ -32,6 +65,7 @@ export default function HabitSettings({ isOpen, onClose, userProfile, onUpdate }
                 habit_cold_plunge: userProfile.habit_targets?.habit_cold_plunge || 3,
                 habit_sauna: userProfile.habit_targets?.habit_sauna || 15,
                 habit_meditation: userProfile.habit_targets?.habit_meditation || 10,
+                habit_fasting: userProfile.habit_targets?.habit_fasting || 16,
             });
             setNutritionTargets({
                 protein: userProfile.nutrition_targets?.protein || 150,
@@ -43,37 +77,19 @@ export default function HabitSettings({ isOpen, onClose, userProfile, onUpdate }
         }
     }, [isOpen, userProfile]);
 
-    // Auto-calculate calories when macros change
     useEffect(() => {
-        const calculatedCalories = (nutritionTargets.protein * 4) + (nutritionTargets.carbs * 4) + (nutritionTargets.fat * 9);
-        setNutritionTargets(prev => ({ ...prev, calories: calculatedCalories }));
+        const calc = (nutritionTargets.protein * 4) + (nutritionTargets.carbs * 4) + (nutritionTargets.fat * 9);
+        setNutritionTargets(prev => ({ ...prev, calories: calc }));
     }, [nutritionTargets.protein, nutritionTargets.carbs, nutritionTargets.fat]);
 
     const handleSave = async () => {
         setLoading(true);
         try {
-            // Prepare updates
             const updatedProfile = { ...userProfile };
-
-            // Update habit targets
-            updatedProfile.habit_targets = {
-                ...userProfile.habit_targets,
-                ...targets
-            };
-
-            // Update nutrition targets
-            updatedProfile.nutrition_targets = {
-                ...userProfile.nutrition_targets,
-                ...nutritionTargets,
-                water: targets.habit_water
-            } as NutritionTargets;
-
-            // Update hidden habits
+            updatedProfile.habit_targets = { ...userProfile.habit_targets, ...targets };
+            updatedProfile.nutrition_targets = { ...userProfile.nutrition_targets, ...nutritionTargets, water: targets.habit_water } as NutritionTargets;
             updatedProfile.hidden_habits = hidden;
-
-            console.log("Saving hidden_habits:", hidden);
             await saveProfile(updatedProfile);
-            console.log("Profile saved successfully");
             onUpdate();
             onClose();
         } catch (e) {
@@ -84,31 +100,7 @@ export default function HabitSettings({ isOpen, onClose, userProfile, onUpdate }
     };
 
     const toggleHidden = (id: string) => {
-        console.log("Toggling visibility for:", id, "Current hidden:", hidden);
-        if (hidden.includes(id)) {
-            setHidden(hidden.filter(h => h !== id));
-        } else {
-            setHidden([...hidden, id]);
-        }
-    };
-
-    const VisibilityToggle = ({ id }: { id: string }) => {
-        const isHidden = hidden.includes(id);
-        return (
-            <button
-                type="button"
-                onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log("Eye icon clicked for:", id);
-                    toggleHidden(id);
-                }}
-                className={`p-1.5 rounded transition-all ${isHidden ? 'bg-zinc-800 text-zinc-600 hover:text-red-400' : 'bg-zinc-800 text-green-500 hover:text-green-400'}`}
-                title={isHidden ? "Hidden" : "Visible"}
-            >
-                {isHidden ? <EyeOff size={14} /> : <Eye size={14} />}
-            </button>
-        );
+        setHidden(prev => prev.includes(id) ? prev.filter(h => h !== id) : [...prev, id]);
     };
 
     if (!isOpen) return null;
@@ -116,265 +108,105 @@ export default function HabitSettings({ isOpen, onClose, userProfile, onUpdate }
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
             <div className="bg-zinc-900 border border-zinc-700 rounded-2xl w-full max-w-md p-6 relative shadow-2xl flex flex-col max-h-[90vh]">
-                <button
-                    onClick={onClose}
-                    className="absolute top-4 right-4 text-zinc-500 hover:text-white"
-                >
-                    ✕
-                </button>
+                <button onClick={onClose} className="absolute top-4 right-4 text-zinc-500 hover:text-white">✕</button>
 
                 <div className="mb-6">
                     <h3 className="text-xl font-black italic text-white mb-1 uppercase tracking-tighter">Quest Settings</h3>
-                    <p className="text-xs text-zinc-400">Manage nutrition, habit goals, and visibility.</p>
+                    <p className="text-xs text-zinc-400">Toggle habits on/off and set daily targets.</p>
                 </div>
 
-                <div className="space-y-6 flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                <div className="space-y-4 flex-1 overflow-y-auto pr-2 custom-scrollbar">
 
-                    {/* Section 0: Nutrition Targets */}
-                    <div className="space-y-4">
-                        <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest border-b border-zinc-800 pb-2">Nutrition Targets</h4>
-                        <div className="grid grid-cols-2 gap-4">
-                            {/* Protein */}
-                            <div>
-                                <label className="text-[10px] font-bold text-zinc-400 uppercase flex items-center gap-2 mb-1">
-                                    🥩 Protein (g)
-                                </label>
-                                <input
-                                    type="number"
-                                    value={nutritionTargets.protein}
-                                    onChange={(e) => setNutritionTargets({ ...nutritionTargets, protein: Number(e.target.value) })}
-                                    className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-white text-center font-bold focus:border-red-500 outline-none"
-                                />
-                            </div>
-                            {/* Carbs */}
-                            <div>
-                                <label className="text-[10px] font-bold text-zinc-400 uppercase flex items-center gap-2 mb-1">
-                                    🍞 Carbs (g)
-                                </label>
-                                <input
-                                    type="number"
-                                    value={nutritionTargets.carbs}
-                                    onChange={(e) => setNutritionTargets({ ...nutritionTargets, carbs: Number(e.target.value) })}
-                                    className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-white text-center font-bold focus:border-yellow-500 outline-none"
-                                />
-                            </div>
-                            {/* Fat */}
-                            <div>
-                                <label className="text-[10px] font-bold text-zinc-400 uppercase flex items-center gap-2 mb-1">
-                                    🥑 Fat (g)
-                                </label>
-                                <input
-                                    type="number"
-                                    value={nutritionTargets.fat}
-                                    onChange={(e) => setNutritionTargets({ ...nutritionTargets, fat: Number(e.target.value) })}
-                                    className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-white text-center font-bold focus:border-green-500 outline-none"
-                                />
-                            </div>
-                            {/* Calories */}
-                            <div>
-                                <label className="text-[10px] font-bold text-zinc-400 uppercase flex items-center gap-2 mb-1">
-                                    🔥 Calories
-                                </label>
-                                <div className="w-full bg-zinc-800/50 border border-zinc-700 rounded p-2 text-zinc-400 text-center font-bold">
-                                    {nutritionTargets.calories}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Section 1: Quantitative Habits (Targets) */}
-                    <div className="space-y-4">
-                        <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest border-b border-zinc-800 pb-2">Daily Targets</h4>
-
-                        {/* Steps */}
-                        <div>
-                            <div className="flex justify-between items-center mb-2">
-                                <label className="text-[10px] font-bold text-zinc-400 uppercase flex items-center gap-2">
-                                    <VisibilityToggle id="habit_steps" />
-                                    Steps <span className="text-orange-500">{targets.habit_steps}</span>
-                                </label>
-                            </div>
-                            <input
-                                type="range"
-                                min="1000" max="25000" step="500"
-                                value={targets.habit_steps}
-                                onChange={(e) => setTargets({ ...targets, habit_steps: Number(e.target.value) })}
-                                className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-orange-500"
-                            />
-                        </div>
-
-                        {/* Sleep */}
-                        <div>
-                            <div className="flex justify-between items-center mb-2">
-                                <label className="text-[10px] font-bold text-zinc-400 uppercase flex items-center gap-2">
-                                    <VisibilityToggle id="habit_sleep" />
-                                    Sleep (hrs) <span className="text-purple-500">{targets.habit_sleep}</span>
-                                </label>
-                            </div>
-                            <input
-                                type="range"
-                                min="4" max="12" step="0.5"
-                                value={targets.habit_sleep}
-                                onChange={(e) => setTargets({ ...targets, habit_sleep: Number(e.target.value) })}
-                                className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-purple-500"
-                            />
-                        </div>
-
-                        {/* Water */}
-                        <div>
-                            <div className="flex justify-between items-center mb-2">
-                                <label className="text-[10px] font-bold text-zinc-400 uppercase flex items-center gap-2">
-                                    <VisibilityToggle id="habit_water" />
-                                    Water (oz) <span className="text-cyan-500">{targets.habit_water}</span>
-                                </label>
-                            </div>
-                            <input
-                                type="range"
-                                min="20" max="200" step="10"
-                                value={targets.habit_water}
-                                onChange={(e) => setTargets({ ...targets, habit_water: Number(e.target.value) })}
-                                className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
-                            />
-                        </div>
-
-                        {/* Exercise Minutes */}
-                        <div>
-                            <div className="flex justify-between items-center mb-2">
-                                <label className="text-[10px] font-bold text-zinc-400 uppercase flex items-center gap-2">
-                                    <VisibilityToggle id="habit_exercise_minutes" />
-                                    Exercise (min) <span className="text-green-500">{targets.habit_exercise_minutes}</span>
-                                </label>
-                            </div>
-                            <input
-                                type="range"
-                                min="10" max="120" step="5"
-                                value={targets.habit_exercise_minutes}
-                                onChange={(e) => setTargets({ ...targets, habit_exercise_minutes: Number(e.target.value) })}
-                                className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-green-500"
-                            />
-                        </div>
-
-                        {/* Stand Hours */}
-                        <div>
-                            <div className="flex justify-between items-center mb-2">
-                                <label className="text-[10px] font-bold text-zinc-400 uppercase flex items-center gap-2">
-                                    <VisibilityToggle id="habit_stand_hours" />
-                                    Stand (hrs) <span className="text-blue-500">{targets.habit_stand_hours}</span>
-                                </label>
-                            </div>
-                            <input
-                                type="range"
-                                min="6" max="16" step="1"
-                                value={targets.habit_stand_hours}
-                                onChange={(e) => setTargets({ ...targets, habit_stand_hours: Number(e.target.value) })}
-                                className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
-                            />
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            {/* Reading */}
-                            <div>
-                                <label className="text-[10px] font-bold text-zinc-400 uppercase flex items-center gap-2 mb-1">
-                                    <VisibilityToggle id="habit_reading" />
-                                    Reading (Pg)
-                                </label>
-                                <input
-                                    type="number"
-                                    value={targets.habit_reading}
-                                    onChange={(e) => setTargets({ ...targets, habit_reading: Number(e.target.value) })}
-                                    className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-white text-center font-bold focus:border-pink-500 outline-none"
-                                />
-                            </div>
-                            {/* Mobility */}
-                            <div>
-                                <label className="text-[10px] font-bold text-zinc-400 uppercase flex items-center gap-2 mb-1">
-                                    <VisibilityToggle id="habit_mobility" />
-                                    Mobility (m)
-                                </label>
-                                <input
-                                    type="number"
-                                    value={targets.habit_mobility}
-                                    onChange={(e) => setTargets({ ...targets, habit_mobility: Number(e.target.value) })}
-                                    className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-white text-center font-bold focus:border-teal-500 outline-none"
-                                />
-                            </div>
-                            {/* Meditation */}
-                            <div>
-                                <label className="text-[10px] font-bold text-zinc-400 uppercase flex items-center gap-2 mb-1">
-                                    <VisibilityToggle id="habit_meditation" />
-                                    Meditate (m)
-                                </label>
-                                <input
-                                    type="number"
-                                    value={targets.habit_meditation}
-                                    onChange={(e) => setTargets({ ...targets, habit_meditation: Number(e.target.value) })}
-                                    className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-white text-center font-bold focus:border-indigo-500 outline-none"
-                                />
-                            </div>
-                            {/* Sauna */}
-                            <div>
-                                <label className="text-[10px] font-bold text-zinc-400 uppercase flex items-center gap-2 mb-1">
-                                    <VisibilityToggle id="habit_sauna" />
-                                    Sauna (m)
-                                </label>
-                                <input
-                                    type="number"
-                                    value={targets.habit_sauna}
-                                    onChange={(e) => setTargets({ ...targets, habit_sauna: Number(e.target.value) })}
-                                    className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-white text-center font-bold focus:border-red-500 outline-none"
-                                />
-                            </div>
-                            {/* Cold */}
-                            <div>
-                                <label className="text-[10px] font-bold text-zinc-400 uppercase flex items-center gap-2 mb-1">
-                                    <VisibilityToggle id="habit_cold_plunge" />
-                                    Cold (m)
-                                </label>
-                                <input
-                                    type="number"
-                                    value={targets.habit_cold_plunge}
-                                    onChange={(e) => setTargets({ ...targets, habit_cold_plunge: Number(e.target.value) })}
-                                    className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-white text-center font-bold focus:border-blue-500 outline-none"
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Section 2: Binary Habits (Toggle Only) */}
-                    <div className="space-y-4">
-                        <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest border-b border-zinc-800 pb-2">Habit Visibility</h4>
+                    {/* Nutrition */}
+                    <div>
+                        <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest border-b border-zinc-800 pb-2 mb-3">🥗 Nutrition Targets</h4>
                         <div className="grid grid-cols-2 gap-3">
                             {[
-                                { id: 'habit_creatine', label: 'Supplements' },
-                                { id: 'habit_no_alcohol', label: 'No Alcohol' },
-                                { id: 'habit_no_vice', label: 'No Vice' },
-                                { id: 'habit_sugar', label: 'Avoid Sugar' },
-                                { id: 'habit_fasting', label: 'Fasting' },
-                                { id: 'habit_journaling', label: 'Journaling' },
-                                { id: 'habit_weigh_in', label: 'Weigh In' },
-                            ].map(habit => (
-                                <div key={habit.id} className="flex items-center justify-between p-3 bg-zinc-800/50 rounded-lg border border-zinc-800">
-                                    <span className="text-xs font-bold text-zinc-300">{habit.label}</span>
-                                    <VisibilityToggle id={habit.id} />
+                                { key: 'protein', label: '🥩 Protein (g)', color: 'focus:border-red-500' },
+                                { key: 'carbs', label: '🍞 Carbs (g)', color: 'focus:border-yellow-500' },
+                                { key: 'fat', label: '🥑 Fat (g)', color: 'focus:border-green-500' },
+                            ].map(m => (
+                                <div key={m.key}>
+                                    <label className="text-[10px] font-bold text-zinc-400 uppercase mb-1 block">{m.label}</label>
+                                    <input type="number" value={nutritionTargets[m.key]} onChange={e => setNutritionTargets({ ...nutritionTargets, [m.key]: Number(e.target.value) })}
+                                        className={`w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-white text-center font-bold outline-none ${m.color}`} />
                                 </div>
                             ))}
+                            <div>
+                                <label className="text-[10px] font-bold text-zinc-400 uppercase mb-1 block">🔥 Calories</label>
+                                <div className="w-full bg-zinc-800/50 border border-zinc-700 rounded p-2 text-zinc-400 text-center font-bold">{nutritionTargets.calories}</div>
+                            </div>
+                        </div>
+                        {/* Water */}
+                        <div className="mt-3">
+                            <div className="flex justify-between items-center mb-1">
+                                <label className="text-[10px] font-bold text-zinc-400 uppercase">💧 Water (oz) <span className="text-cyan-500">{targets.habit_water}</span></label>
+                            </div>
+                            <input type="range" min="20" max="200" step="10" value={targets.habit_water}
+                                onChange={e => setTargets({ ...targets, habit_water: Number(e.target.value) })}
+                                className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-cyan-500" />
                         </div>
                     </div>
 
+                    {/* Habit Categories */}
+                    {Object.entries(HABIT_CATALOG).map(([catId, cat]) => {
+                        const visibleCount = cat.habits.filter(h => !hidden.includes(h.id)).length;
+                        const isExpanded = expandedCats[catId];
+
+                        return (
+                            <div key={catId}>
+                                <button onClick={() => setExpandedCats(prev => ({ ...prev, [catId]: !prev[catId] }))}
+                                    className="w-full flex items-center justify-between border-b border-zinc-800 pb-2 mb-3">
+                                    <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{cat.label}</h4>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] text-zinc-600">{visibleCount}/{cat.habits.length} active</span>
+                                        <ChevronDown size={14} className={`text-zinc-600 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                                    </div>
+                                </button>
+
+                                {isExpanded && (
+                                    <div className="space-y-3 animate-fade-in">
+                                        {cat.habits.map(habit => {
+                                            const isHidden = hidden.includes(habit.id);
+                                            return (
+                                                <div key={habit.id} className={`p-3 rounded-lg border transition-all ${isHidden ? 'bg-zinc-900/30 border-zinc-800/50 opacity-50' : 'bg-zinc-800/50 border-zinc-700'}`}>
+                                                    <div className="flex items-center justify-between mb-1">
+                                                        <div>
+                                                            <span className="text-xs font-bold text-white">{habit.label}</span>
+                                                            <p className="text-[10px] text-zinc-500">{habit.desc}</p>
+                                                        </div>
+                                                        <button onClick={() => toggleHidden(habit.id)}
+                                                            className={`p-1.5 rounded transition-all ${isHidden ? 'bg-zinc-800 text-zinc-600 hover:text-red-400' : 'bg-zinc-800 text-green-500 hover:text-green-400'}`}>
+                                                            {isHidden ? <EyeOff size={14} /> : <Eye size={14} />}
+                                                        </button>
+                                                    </div>
+                                                    {habit.hasTarget && !isHidden && (
+                                                        <div className="mt-2">
+                                                            <div className="flex justify-between text-[10px] text-zinc-500 mb-1">
+                                                                <span>{habit.min} {habit.unit}</span>
+                                                                <span className="font-bold text-zinc-300">{targets[habit.id] || habit.min} {habit.unit}</span>
+                                                                <span>{habit.max} {habit.unit}</span>
+                                                            </div>
+                                                            <input type="range" min={habit.min} max={habit.max} step={habit.step}
+                                                                value={targets[habit.id] || habit.min}
+                                                                onChange={e => setTargets({ ...targets, [habit.id]: Number(e.target.value) })}
+                                                                className={`w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer ${habit.color}`} />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
 
                 <div className="mt-6 flex gap-3 pt-4 border-t border-zinc-800">
-                    <button
-                        onClick={onClose}
-                        className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 font-bold py-3 rounded-xl uppercase tracking-wider text-xs transition"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        onClick={handleSave}
-                        disabled={loading}
-                        className="flex-1 bg-white hover:bg-zinc-200 text-black font-black py-3 rounded-xl uppercase tracking-wider text-xs transition disabled:opacity-50"
-                    >
+                    <button onClick={onClose} className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 font-bold py-3 rounded-xl uppercase tracking-wider text-xs transition">Cancel</button>
+                    <button onClick={handleSave} disabled={loading}
+                        className="flex-1 bg-white hover:bg-zinc-200 text-black font-black py-3 rounded-xl uppercase tracking-wider text-xs transition disabled:opacity-50">
                         {loading ? 'Saving...' : 'Save Changes'}
                     </button>
                 </div>

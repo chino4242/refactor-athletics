@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { saveProfile } from '@/services/api';
 import { useRouter } from 'next/navigation';
 import { THEMES } from '@/data/themes';
+import { getDefaultHiddenHabits } from '@/data/habitDefaults';
 import { PATHS } from '@/data/paths';
 
 interface OnboardingWizardProps {
@@ -75,6 +76,7 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
             selected_path: formData.path,
             experience_mode: experienceMode,
             available_equipment: formData.equipment,
+            hidden_habits: getDefaultHiddenHabits(experienceMode, formData.path),
             is_onboarded: true,
             waiver_accepted_at: new Date().toISOString(),
         });
