@@ -387,23 +387,26 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
                           const tap = h as any;
                           const done = (totals[h.id] || 0) > 0;
                           return (
-                            <button
-                              key={h.id}
-                              onClick={() => handleLog(h.id, 1, h.label)}
-                              disabled={loading === h.id || done}
-                              className={`p-3 rounded-xl border transition-all flex flex-col items-center justify-center gap-1.5 h-24 ${done
-                                ? 'bg-emerald-900/20 border-emerald-500/50 cursor-default'
-                                : 'bg-zinc-900 border-zinc-700 hover:border-blue-500 hover:bg-blue-500/10'
-                              }`}
-                            >
-                              <span className="text-2xl">{done ? tap.doneIcon : h.icon}</span>
-                              <div className="text-center">
-                                <span className="block text-xs font-black uppercase text-white tracking-tight">{h.label}</span>
-                                <span className={`text-[9px] font-bold ${done ? 'text-emerald-400' : 'text-blue-400'}`}>
-                                  {done ? 'COMPLETE' : `+${tap.xp} XP`}
-                                </span>
+                            <div key={h.id} className="p-2 bg-zinc-900/50 rounded-xl border border-zinc-800/50 transition-all duration-300">
+                              <div className="flex justify-between items-center mb-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm">{h.icon}</span>
+                                  <span className="text-[10px] uppercase font-bold text-zinc-400">{h.label}</span>
+                                </div>
+                                {done && <span className="text-[10px] font-bold text-emerald-400">✓</span>}
                               </div>
-                            </button>
+                              {done ? (
+                                <span className="text-xs text-emerald-400 font-bold">Complete</span>
+                              ) : (
+                                <button
+                                  onClick={() => handleLog(h.id, 1, h.label)}
+                                  disabled={loading === h.id}
+                                  className="w-full py-2 rounded-lg bg-zinc-800 hover:bg-emerald-600 text-zinc-400 hover:text-white text-xs font-bold uppercase transition-all border border-zinc-700 hover:border-emerald-500"
+                                >
+                                  {loading === h.id ? '...' : `Log +${tap.xp} XP`}
+                                </button>
+                              )}
+                            </div>
                           );
                         }
                         return null;

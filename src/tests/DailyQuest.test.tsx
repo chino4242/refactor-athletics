@@ -165,7 +165,8 @@ describe('DailyQuest Component', () => {
         await act(async () => {
             render(<DailyQuest {...defaultProps} />);
         });
-        const btn = screen.getByText('Supplements').closest('button');
+        const container = screen.getByText('Supplements').closest('[class*="rounded-xl"]');
+        const btn = container?.querySelector('button');
 
         await act(async () => {
             fireEvent.click(btn!);
@@ -254,7 +255,8 @@ describe('DailyQuest Component', () => {
         });
 
         // Use Supplements — a simple toggle button that logs on click
-        const btn = screen.getByText('Supplements').closest('button');
+        const container = screen.getByText('Supplements').closest('[class*="rounded-xl"]');
+        const btn = container?.querySelector('button');
         await act(async () => {
             fireEvent.click(btn!);
         });
