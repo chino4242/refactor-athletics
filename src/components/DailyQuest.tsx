@@ -34,7 +34,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
   // Edit Mode for Toggling Habits
   const [showSettings, setShowSettings] = useState(false);
   const [showBodyComp, setShowBodyComp] = useState(false);
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({ nutrition: true });
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({ nutrition: false });
 
   // History State
   const [history, setHistory] = useState<HistoryItem[]>([]);
