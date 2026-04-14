@@ -236,14 +236,29 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
 
       <div className="space-y-3">
 
-        {/* 1. NUTRITION & BASICS */}
+        {/* 1. NUTRITION */}
+        {(() => {
+          const nutritionMetrics = [
+            { id: 'macro_protein', target: profile?.nutrition_targets?.protein || 150 },
+            { id: 'macro_carbs', target: profile?.nutrition_targets?.carbs || 150 },
+            { id: 'macro_fat', target: profile?.nutrition_targets?.fat || 60 },
+            { id: 'habit_water', target: profile?.nutrition_targets?.water || 100 },
+          ];
+          const nutritionComplete = nutritionMetrics.filter(m => (totals[m.id] || 0) >= m.target).length;
+
+          return (
         <div>
           <button
             onClick={() => setExpandedSections(prev => ({ ...prev, nutrition: !prev.nutrition }))}
             className="w-full flex items-center justify-between py-2"
           >
             <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">🥗 Nutrition</span>
-            <ChevronDown size={16} className={`text-zinc-600 transition-transform ${expandedSections.nutrition ? 'rotate-180' : ''}`} />
+            <div className="flex items-center gap-2">
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${nutritionComplete === nutritionMetrics.length ? 'bg-emerald-500/20 text-emerald-400' : 'bg-zinc-800 text-zinc-500'}`}>
+                {nutritionComplete}/{nutritionMetrics.length}
+              </span>
+              <ChevronDown size={16} className={`text-zinc-600 transition-transform ${expandedSections.nutrition ? 'rotate-180' : ''}`} />
+            </div>
           </button>
 
           {expandedSections.nutrition && (
@@ -270,6 +285,8 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
             </div>
           )}
         </div>
+          );
+        })()}
 
         {/* 2. HABITS — Grouped by Category */}
         {(() => {
