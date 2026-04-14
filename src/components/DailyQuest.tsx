@@ -242,30 +242,12 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
             onClick={() => setExpandedSections(prev => ({ ...prev, nutrition: !prev.nutrition }))}
             className="w-full flex items-center justify-between py-2"
           >
-            <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">🥗 Nutrition & Sleep</span>
+            <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">🥗 Nutrition</span>
             <ChevronDown size={16} className={`text-zinc-600 transition-transform ${expandedSections.nutrition ? 'rotate-180' : ''}`} />
           </button>
 
           {expandedSections.nutrition && (
             <div className="space-y-3 animate-fade-in">
-
-          {/* STEPS */}
-          {!isHidden('habit_steps') && (
-            <HabitCard
-              habitId="habit_steps"
-              label="Steps"
-              icon={<Footprints size={14} className="text-orange-500" />}
-              current={totals['habit_steps'] || 0}
-              goal={profile?.habit_targets?.habit_steps || 10000}
-              unit="steps"
-              colorClass="bg-orange-500"
-              onLog={(val, label) => handleLog('habit_steps', val, label)}
-              enableTotalSync={true}
-              setOnly={true}
-              loading={loading === 'habit_steps'}
-              xp={150}
-            />
-          )}
 
           {profile && (
             <NutritionTracker
@@ -297,7 +279,6 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
               label: '💪 Health',
               habits: [
                 { type: 'card', id: 'habit_steps', label: 'Steps', icon: <Footprints size={14} className="text-orange-500" />, unit: 'steps', color: 'bg-orange-500', heatColor: 'bg-orange-500 shadow-orange-500/50 shadow-[0_0_5px]', goalKey: 'habit_steps', defaultGoal: 10000, xp: 150, setOnly: true, enableTotalSync: true },
-                { type: 'card', id: 'habit_water', label: 'Water', icon: '💧', unit: 'oz', color: 'bg-cyan-500', heatColor: 'bg-cyan-500 shadow-cyan-500/50 shadow-[0_0_5px]', goalKey: 'habit_water', defaultGoal: 100, xp: 1, isNutrition: true },
                 { type: 'card', id: 'habit_sleep', label: 'Sleep', icon: '💤', unit: 'hrs', color: 'bg-purple-500', heatColor: 'bg-purple-500 shadow-purple-500/50 shadow-[0_0_5px]', goalKey: 'habit_sleep', defaultGoal: 8, xp: 16 },
                 { type: 'card', id: 'habit_exercise_minutes', label: 'Exercise', icon: '💪', unit: 'mins', color: 'bg-green-500', heatColor: 'bg-green-500 shadow-green-500/50 shadow-[0_0_5px]', goalKey: 'habit_exercise_minutes', defaultGoal: 30, xp: 3 },
                 { type: 'card', id: 'habit_stand_hours', label: 'Stand', icon: '🚶', unit: 'hrs', color: 'bg-blue-400', heatColor: 'bg-blue-400 shadow-blue-400/50 shadow-[0_0_5px]', goalKey: 'habit_stand_hours', defaultGoal: 12, xp: 2 },
