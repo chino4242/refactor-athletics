@@ -5,7 +5,6 @@ import { getHabitProgress, saveProfile, getHistory, getProfile } from '../servic
 import type { UserProfileData, UserStats, HistoryItem, Challenge } from '@/types';
 import HabitHeatmap from './HabitHeatmap';
 import NutritionTracker from './NutritionTracker';
-import WeeklyQuest from './WeeklyQuest';
 import { useToast } from '@/context/ToastContext';
 import { SlidersHorizontal, Footprints, Timer, Share2, ChevronDown } from 'lucide-react';
 import HabitSettings from './HabitSettings';
@@ -13,7 +12,6 @@ import BodyCompositionModal from './BodyCompositionModal';
 import HabitCard from './HabitCard';
 import ViceToggle from './ViceToggle';
 import { logHabitAction, deleteHistoryItemAction } from '@/app/actions';
-import ScreenshotUploader from './ScreenshotUploader';
 
 interface DailyQuestProps {
   userId: string;
@@ -36,22 +34,10 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
   // Edit Mode for Toggling Habits
   const [showSettings, setShowSettings] = useState(false);
   const [showBodyComp, setShowBodyComp] = useState(false);
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({ habits: true, nutrition: true });
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({ nutrition: true });
 
   // History State
   const [history, setHistory] = useState<HistoryItem[]>([]);
-  const [showHistory, setShowHistory] = useState(false);
-  const [consistencyView, setConsistencyView] = useState<'week' | 'month' | 'year'>(() => {
-    if (typeof window !== 'undefined') {
-      return (localStorage.getItem('consistencyView') as 'week' | 'month' | 'year') || 'month';
-    }
-    return 'month';
-  });
-
-  const updateConsistencyView = (v: 'week' | 'month' | 'year') => {
-    setConsistencyView(v);
-    localStorage.setItem('consistencyView', v);
-  };
 
   // Profile State
   const [profile, setProfile] = useState<UserProfileData | null>(initialProfile);
@@ -103,20 +89,6 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
       toast.error("Failed to log quest.");
     } finally {
       setLoading(null);
-    }
-  };
-
-  const handleHabitData = async (data: any) => {
-    const promises = [];
-    if (data.steps) promises.push(handleLog('habit_steps', data.steps, 'Steps'));
-    if (data.exercise_minutes) promises.push(handleLog('habit_exercise_minutes', data.exercise_minutes, 'Exercise'));
-    if (data.stand_hours) promises.push(handleLog('habit_stand_hours', data.stand_hours, 'Stand'));
-    if (data.water) promises.push(handleLog('habit_water', data.water, 'Water'));
-    if (data.sleep) promises.push(handleLog('habit_sleep', data.sleep, 'Sleep'));
-    
-    if (promises.length > 0) {
-      await Promise.all(promises);
-      toast.success(`Logged ${promises.length} habits from screenshot!`);
     }
   };
 
@@ -300,339 +272,176 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
           )}
         </div>
 
-        {/* 2. HABITS */}
-        <div>
-          <button
-            onClick={() => setExpandedSections(prev => ({ ...prev, habits: !prev.habits }))}
-            className="w-full flex items-center justify-between py-2"
-          >
-            <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">⚔️ Habits</span>
-            <ChevronDown size={16} className={`text-zinc-600 transition-transform ${expandedSections.habits ? 'rotate-180' : ''}`} />
-          </button>
+        {/* 2. HABITS — Grouped by Category */}
+        {(() => {
+          const categories = [
+            {
+              id: 'health',
+              label: '💪 Health',
+              habits: [
+                { type: 'card', id: 'habit_steps', label: 'Steps', icon: <Footprints size={14} className="text-orange-500" />, unit: 'steps', color: 'bg-orange-500', heatColor: 'bg-orange-500 shadow-orange-500/50 shadow-[0_0_5px]', goalKey: 'habit_steps', defaultGoal: 10000, xp: 150, setOnly: true, enableTotalSync: true },
+                { type: 'card', id: 'habit_water', label: 'Water', icon: '💧', unit: 'oz', color: 'bg-cyan-500', heatColor: 'bg-cyan-500 shadow-cyan-500/50 shadow-[0_0_5px]', goalKey: 'habit_water', defaultGoal: 100, xp: 1, isNutrition: true },
+                { type: 'card', id: 'habit_sleep', label: 'Sleep', icon: '💤', unit: 'hrs', color: 'bg-purple-500', heatColor: 'bg-purple-500 shadow-purple-500/50 shadow-[0_0_5px]', goalKey: 'habit_sleep', defaultGoal: 8, xp: 16 },
+                { type: 'card', id: 'habit_exercise_minutes', label: 'Exercise', icon: '💪', unit: 'mins', color: 'bg-green-500', heatColor: 'bg-green-500 shadow-green-500/50 shadow-[0_0_5px]', goalKey: 'habit_exercise_minutes', defaultGoal: 30, xp: 3 },
+                { type: 'card', id: 'habit_stand_hours', label: 'Stand', icon: '🚶', unit: 'hrs', color: 'bg-blue-400', heatColor: 'bg-blue-400 shadow-blue-400/50 shadow-[0_0_5px]', goalKey: 'habit_stand_hours', defaultGoal: 12, xp: 2 },
+                { type: 'tap', id: 'habit_creatine', label: 'Supplements', icon: '🧪', doneIcon: '✅', xp: 25, color: 'bg-blue-500' },
+              ],
+            },
+            {
+              id: 'recovery',
+              label: '🧘 Recovery',
+              habits: [
+                { type: 'card', id: 'habit_cold_plunge', label: 'Cold Plunge', icon: '🧊', unit: 'mins', color: 'bg-blue-500', heatColor: 'bg-blue-500 shadow-blue-500/50 shadow-[0_0_5px]', goalKey: 'habit_cold_plunge', defaultGoal: 3, xp: 5 },
+                { type: 'card', id: 'habit_sauna', label: 'Sauna', icon: '🔥', unit: 'mins', color: 'bg-red-500', heatColor: 'bg-red-500 shadow-red-500/50 shadow-[0_0_5px]', goalKey: 'habit_sauna', defaultGoal: 15, xp: 2 },
+                { type: 'card', id: 'habit_mobility', label: 'Mobility', icon: '🧘', unit: 'mins', color: 'bg-teal-500', heatColor: 'bg-pink-500 shadow-pink-500/50 shadow-[0_0_5px]', goalKey: 'habit_mobility', defaultGoal: 15, xp: 2 },
+                { type: 'card', id: 'habit_meditation', label: 'Meditation', icon: '🧠', unit: 'mins', color: 'bg-indigo-500', heatColor: 'bg-indigo-500 shadow-indigo-500/50 shadow-[0_0_5px]', goalKey: 'habit_meditation', defaultGoal: 10, xp: 3 },
+              ],
+            },
+            {
+              id: 'discipline',
+              label: '🛡️ Discipline',
+              habits: [
+                { type: 'vice', id: 'habit_no_alcohol', viceId: 'habit_alcohol', label: 'Avoid Alcohol', icon: '🍺', heatColor: 'bg-emerald-500 shadow-emerald-500/50 shadow-[0_0_5px]' },
+                { type: 'vice', id: 'habit_no_vice', viceId: 'habit_bad_habit', label: 'Avoid Vice', icon: '🛡️', heatColor: 'bg-fuchsia-500 shadow-fuchsia-500/50 shadow-[0_0_5px]' },
+                { type: 'vice', id: 'habit_no_sugar', viceId: 'habit_sugar', label: 'Avoid Sugar', icon: '🍬', heatColor: 'bg-amber-500 shadow-amber-500/50 shadow-[0_0_5px]' },
+                { type: 'tap', id: 'habit_journaling', label: 'Journaling', icon: '📓', doneIcon: '✅', xp: 25, color: 'bg-yellow-500', heatColor: 'bg-yellow-500 shadow-yellow-500/50 shadow-[0_0_5px]' },
+                { type: 'card', id: 'habit_reading', label: 'Reading', icon: '📖', unit: 'pages', color: 'bg-pink-500', heatColor: 'bg-blue-500 shadow-blue-500/50 shadow-[0_0_5px]', goalKey: 'habit_reading', defaultGoal: 10, xp: 1 },
+                { type: 'card', id: 'habit_fasting', label: 'Intermit. Fasting', icon: <Timer size={14} className="text-violet-500" />, unit: 'hours', color: 'bg-violet-500', heatColor: 'bg-violet-500 shadow-violet-500/50 shadow-[0_0_5px]', goalKey: 'habit_fasting', defaultGoal: 16, xp: 25 },
+              ],
+            },
+          ];
 
-          {expandedSections.habits && (
-            <div className="space-y-3 animate-fade-in">
-          <div className="flex justify-end mb-2">
-            <ScreenshotUploader type="habits" userId={userId} onDataExtracted={handleHabitData} />
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            {!isHidden('habit_sleep') && (
-              <HabitCard
-                habitId="habit_sleep"
-                label="Sleep"
-                icon="💤"
-                current={totals['habit_sleep'] || 0}
-                goal={profile?.habit_targets?.habit_sleep || 8}
-                unit="hrs"
-                colorClass="bg-purple-500"
-                onLog={(val, label) => handleLog('habit_sleep', val, label)}
-                loading={loading === 'habit_sleep'}
-                xp={16}
-              />
-            )}
+          return categories.map(cat => {
+            const visibleHabits = cat.habits.filter(h => {
+              const checkId = h.type === 'vice' ? h.id : h.id;
+              return !isHidden(checkId);
+            });
+            if (visibleHabits.length === 0) return null;
 
-            {!isHidden('habit_creatine') && (
-              <button
-                onClick={() => handleLog('habit_creatine', 1, 'Supplements')}
-                disabled={loading === 'habit_creatine' || (totals['habit_creatine'] || 0) > 0}
-                className={`p-3 rounded-xl border transition-all flex flex-col items-center justify-center gap-1.5 relative overflow-hidden group h-24 ${(totals['habit_creatine'] || 0) > 0
-                  ? 'bg-emerald-900/20 border-emerald-500/50 cursor-default'
-                  : 'bg-zinc-900 border-zinc-700 hover:border-blue-500 hover:bg-blue-500/10'
-                  }`}
-              >
-                <span className="text-2xl">{(totals['habit_creatine'] || 0) > 0 ? '✅' : '🧪'}</span>
-                <div className="text-center">
-                  <span className="block text-xs font-black uppercase text-white tracking-tight">Supplements</span>
-                  <span className={`text-[9px] font-bold ${(totals['habit_creatine'] || 0) > 0 ? 'text-emerald-400' : 'text-blue-400'}`}>
-                    {(totals['habit_creatine'] || 0) > 0 ? 'COMPLETE' : '+25 XP'}
-                  </span>
-                </div>
-              </button>
-            )}
+            const completed = visibleHabits.filter(h => {
+              if (h.type === 'vice') return (totals[h.id] || 0) > 0;
+              if (h.type === 'tap') return (totals[h.id] || 0) > 0;
+              const goal = (h as any).goalKey ? (profile?.habit_targets?.[(h as any).goalKey] || (h as any).defaultGoal) : 1;
+              return (totals[h.id] || 0) >= goal;
+            }).length;
 
-            {/* ALCOHOL TOGGLE */}
-            {!isHidden('habit_no_alcohol') && (
-              <ViceToggle
-                virtueId="habit_no_alcohol"
-                viceId="habit_alcohol"
-                label="Avoid Alcohol"
-                icon="🍺"
-                history={history}
-                viewDateStartTs={viewDateStartTs}
-                onLog={handleLog}
-                onDelete={handleDelete}
-                loading={loading === 'habit_alcohol' || loading === 'habit_no_alcohol'}
-              />
-            )}
+            const isExpanded = expandedSections[cat.id] !== false; // default open
 
-            {/* BAD HABIT TOGGLE */}
-            {!isHidden('habit_no_vice') && (
-              <ViceToggle
-                virtueId="habit_no_vice"
-                viceId="habit_bad_habit"
-                label="Avoid Vice"
-                icon="🛡️"
-                history={history}
-                viewDateStartTs={viewDateStartTs}
-                onLog={handleLog}
-                onDelete={handleDelete}
-                loading={loading === 'habit_bad_habit' || loading === 'habit_no_vice'}
-              />
-            )}
-
-            {/* SUGAR TOGGLE (Extra) */}
-            {(!isHidden('habit_sugar') /* || activeChallenge?.goals.some(g => g.habit_id === 'habit_sugar') */) && (
-              <ViceToggle
-                virtueId="habit_no_sugar"
-                viceId="habit_sugar"
-                label="Avoid Sugar"
-                icon="🍬"
-                history={history}
-                viewDateStartTs={viewDateStartTs}
-                onLog={handleLog}
-                onDelete={handleDelete}
-                loading={loading === 'habit_sugar' || loading === 'habit_no_sugar'}
-              />
-            )}
-          </div>
-
-        {/* 3. RECOVERY & ACTIVITY */}
-        <div className="space-y-3 mt-3">
-          <div className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Recovery & Mindset</div>
-
-          {!isHidden('habit_journaling') && (
-            <div className="relative w-full">
-              <button
-                onClick={() => handleLog('habit_journaling', 1, 'Journaling')}
-                disabled={loading === 'habit_journaling' || (totals['habit_journaling'] || 0) > 0}
-                className={`w-full flex items-center justify-between p-3 rounded-xl border transition group ${(totals['habit_journaling'] || 0) > 0
-                  ? 'bg-emerald-900/20 border-emerald-500/50 cursor-default'
-                  : 'bg-zinc-900 border-zinc-700 hover:border-yellow-500 hover:bg-yellow-500/10'
-                  }`}
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-xl">{(totals['habit_journaling'] || 0) > 0 ? '✅' : '📓'}</span>
-                  <div className="text-left">
-                    <span className="block text-sm font-bold text-white">Journaling</span>
+            return (
+              <div key={cat.id}>
+                <button
+                  onClick={() => setExpandedSections(prev => ({ ...prev, [cat.id]: !isExpanded }))}
+                  className="w-full flex items-center justify-between py-2"
+                >
+                  <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{cat.label}</span>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${completed === visibleHabits.length ? 'bg-emerald-500/20 text-emerald-400' : 'bg-zinc-800 text-zinc-500'}`}>
+                      {completed}/{visibleHabits.length}
+                    </span>
+                    <ChevronDown size={16} className={`text-zinc-600 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                   </div>
-                </div>
-                {(totals['habit_journaling'] || 0) > 0 ? (
-                  <span className="text-xs font-bold text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded">LOGGED</span>
-                ) : (
-                  <span className="text-xs font-bold text-yellow-400">+25 XP</span>
+                </button>
+
+                {isExpanded && (
+                  <div className="space-y-2 animate-fade-in">
+                    <div className="grid grid-cols-2 gap-2">
+                      {visibleHabits.map(h => {
+                        if (h.type === 'card') {
+                          const habit = h as any;
+                          return (
+                            <HabitCard
+                              key={h.id}
+                              habitId={h.id}
+                              label={h.label}
+                              icon={h.icon}
+                              current={totals[h.id] || 0}
+                              goal={profile?.habit_targets?.[habit.goalKey] || habit.defaultGoal}
+                              unit={habit.unit}
+                              colorClass={habit.color}
+                              onLog={(val, label) => handleLog(h.id, val, label)}
+                              loading={loading === h.id}
+                              xp={habit.xp}
+                              {...(habit.setOnly ? { setOnly: true } : {})}
+                              {...(habit.enableTotalSync ? { enableTotalSync: true } : {})}
+                            />
+                          );
+                        }
+                        if (h.type === 'vice') {
+                          const vice = h as any;
+                          return (
+                            <ViceToggle
+                              key={h.id}
+                              virtueId={h.id}
+                              viceId={vice.viceId}
+                              label={h.label}
+                              icon={h.icon as string}
+                              history={history}
+                              viewDateStartTs={viewDateStartTs}
+                              onLog={handleLog}
+                              onDelete={handleDelete}
+                              loading={loading === vice.viceId || loading === h.id}
+                            />
+                          );
+                        }
+                        if (h.type === 'tap') {
+                          const tap = h as any;
+                          const done = (totals[h.id] || 0) > 0;
+                          return (
+                            <button
+                              key={h.id}
+                              onClick={() => handleLog(h.id, 1, h.label)}
+                              disabled={loading === h.id || done}
+                              className={`p-3 rounded-xl border transition-all flex flex-col items-center justify-center gap-1.5 h-24 ${done
+                                ? 'bg-emerald-900/20 border-emerald-500/50 cursor-default'
+                                : 'bg-zinc-900 border-zinc-700 hover:border-blue-500 hover:bg-blue-500/10'
+                              }`}
+                            >
+                              <span className="text-2xl">{done ? tap.doneIcon : h.icon}</span>
+                              <div className="text-center">
+                                <span className="block text-xs font-black uppercase text-white tracking-tight">{h.label}</span>
+                                <span className={`text-[9px] font-bold ${done ? 'text-emerald-400' : 'text-blue-400'}`}>
+                                  {done ? 'COMPLETE' : `+${tap.xp} XP`}
+                                </span>
+                              </div>
+                            </button>
+                          );
+                        }
+                        return null;
+                      })}
+                    </div>
+                    {/* Inline heatmaps per category */}
+                    <button
+                      onClick={() => setExpandedSections(prev => ({ ...prev, [`${cat.id}_heatmap`]: !prev[`${cat.id}_heatmap`] }))}
+                      className="w-full py-1 text-[10px] font-bold uppercase tracking-widest text-zinc-600 hover:text-zinc-400 transition-colors flex items-center justify-center gap-1"
+                    >
+                      📊 {expandedSections[`${cat.id}_heatmap`] ? 'Hide' : 'Show'} Streaks
+                    </button>
+                    {expandedSections[`${cat.id}_heatmap`] && (
+                      <div className="space-y-3 animate-fade-in">
+                        {visibleHabits.filter(h => h.heatColor).map(h => {
+                          const heatId = h.type === 'vice' ? h.id : h.id;
+                          const goal = (h as any).goalKey ? (profile?.habit_targets?.[(h as any).goalKey] || (h as any).defaultGoal) : undefined;
+                          return (
+                            <HabitHeatmap
+                              key={heatId}
+                              history={history}
+                              habitId={heatId}
+                              label={`${h.label} (30d)`}
+                              colorClass={h.heatColor!}
+                              daysBack={30}
+                              {...(goal ? { goal } : {})}
+                            />
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 )}
-              </button>
-            </div>
-          )}
+              </div>
+            );
+          });
+        })()}
 
-          {/* CUSTOM HABIT CARDS */}
-          <div className="grid grid-cols-2 gap-2">
-
-            {/* EXERCISE MINUTES */}
-            {!isHidden('habit_exercise_minutes') && (
-              <HabitCard
-                habitId="habit_exercise_minutes"
-                label="Exercise"
-                icon="💪"
-                current={totals['habit_exercise_minutes'] || 0}
-                goal={profile?.habit_targets?.habit_exercise_minutes || 30}
-                unit="mins"
-                colorClass="bg-green-500"
-                onLog={(val, label) => handleLog('habit_exercise_minutes', val, label)}
-                loading={loading === 'habit_exercise_minutes'}
-                xp={3}
-              />
-            )}
-
-            {/* STAND HOURS */}
-            {!isHidden('habit_stand_hours') && (
-              <HabitCard
-                habitId="habit_stand_hours"
-                label="Stand"
-                icon="🚶"
-                current={totals['habit_stand_hours'] || 0}
-                goal={profile?.habit_targets?.habit_stand_hours || 12}
-                unit="hrs"
-                colorClass="bg-blue-400"
-                onLog={(val, label) => handleLog('habit_stand_hours', val, label)}
-                loading={loading === 'habit_stand_hours'}
-                xp={2}
-              />
-            )}
-
-            {!isHidden('habit_reading') && (
-              <HabitCard
-                habitId="habit_reading"
-                label="Reading"
-                icon="📖"
-                current={totals['habit_reading'] || 0}
-                goal={profile?.habit_targets?.habit_reading || 10}
-                unit="pages"
-                colorClass="bg-pink-500"
-                onLog={(val, label) => handleLog('habit_reading', val, label)}
-                loading={loading === 'habit_reading'}
-                xp={1}
-              />
-            )}
-
-            {!isHidden('habit_mobility') && (
-              <HabitCard
-                habitId="habit_mobility"
-                label="Mobility"
-                icon="🧘"
-                current={totals['habit_mobility'] || 0}
-                goal={profile?.habit_targets?.habit_mobility || 15}
-                unit="mins"
-                colorClass="bg-teal-500"
-                onLog={(val, label) => handleLog('habit_mobility', val, label)}
-                loading={loading === 'habit_mobility'}
-                xp={2}
-              />
-            )}
-
-            {!isHidden('habit_cold_plunge') && (
-              <HabitCard
-                habitId="habit_cold_plunge"
-                label="Cold Plunge"
-                icon="🧊"
-                current={totals['habit_cold_plunge'] || 0}
-                goal={profile?.habit_targets?.habit_cold_plunge || 3}
-                unit="mins"
-                colorClass="bg-blue-500"
-                onLog={(val, label) => handleLog('habit_cold_plunge', val, label)}
-                loading={loading === 'habit_cold_plunge'}
-                xp={5}
-              />
-            )}
-
-            {!isHidden('habit_sauna') && (
-              <HabitCard
-                habitId="habit_sauna"
-                label="Sauna"
-                icon="🔥"
-                current={totals['habit_sauna'] || 0}
-                goal={profile?.habit_targets?.habit_sauna || 15}
-                unit="mins"
-                colorClass="bg-red-500"
-                onLog={(val, label) => handleLog('habit_sauna', val, label)}
-                loading={loading === 'habit_sauna'}
-                xp={2}
-              />
-            )}
-
-            {!isHidden('habit_meditation') && (
-              <HabitCard
-                habitId="habit_meditation"
-                label="Meditation"
-                icon="🧠"
-                current={totals['habit_meditation'] || 0}
-                goal={profile?.habit_targets?.habit_meditation || 10}
-                unit="mins"
-                colorClass="bg-indigo-500"
-                onLog={(val, label) => handleLog('habit_meditation', val, label)}
-                loading={loading === 'habit_meditation'}
-                xp={3}
-              />
-            )}
-
-            {!isHidden('habit_fasting') && (
-              <HabitCard
-                habitId="habit_fasting"
-                label="Intermit. Fasting"
-                icon={<Timer size={14} className="text-violet-500" />}
-                current={totals['habit_fasting'] || 0}
-                goal={profile?.habit_targets?.habit_fasting || 16}
-                unit="hours"
-                colorClass="bg-violet-500"
-                onLog={(val, label) => handleLog('habit_fasting', val, label)}
-                loading={loading === 'habit_fasting'}
-                xp={25}
-              />
-            )}
-          </div>
-
-          {/* WEEKLY QUESTS - temporarily disabled
-          {profile && (
-            <WeeklyQuest
-              userId={userId}
-              userProfile={profile}
-              onUpdate={() => {
-                fetchProgress();
-                onXpEarned();
-              }}
-            />
-          )}
-          */}
-
-            </div>
-            </div>
-          )}
-        </div>
-
-      </div>
-
-      {/* CONSISTENCY TOGGLE */}
-      <div className="mt-6 border-t border-zinc-800 pt-6">
-        <button
-          onClick={() => setShowHistory(!showHistory)}
-          className="w-full py-2 text-xs font-bold uppercase tracking-widest text-zinc-500 hover:text-white transition-colors flex items-center justify-center gap-2"
-        >
-          <span>{showHistory ? 'Hide' : 'Show'} Consistency</span>
-          <span className="text-lg">📊</span>
-        </button>
-
-        {showHistory && (
-          <div className="mt-4 animate-fade-in">
-            <div className="flex justify-center gap-1 mb-4">
-              {(['week', 'month', 'year'] as const).map(v => (
-                <button key={v} onClick={() => updateConsistencyView(v)} className={`px-3 py-1 text-[10px] font-bold uppercase rounded ${consistencyView === v ? 'bg-zinc-700 text-white' : 'text-zinc-600 hover:text-zinc-400'}`}>{v}</button>
-              ))}
-            </div>
-            <div className="space-y-4">
-            {(() => {
-              const viewProps = consistencyView === 'year'
-                ? { year: 2026, daysBack: 365 }
-                : { daysBack: consistencyView === 'month' ? 30 : 7 };
-              const suffix = consistencyView === 'year' ? '(2026)' : consistencyView === 'month' ? '(30d)' : '(7d)';
-              return <>
-            {!isHidden('habit_sleep') && (
-              <HabitHeatmap history={history} habitId="habit_sleep" label={`Sleep 7+ Hrs ${suffix}`} colorClass="bg-purple-500 shadow-purple-500/50 shadow-[0_0_5px]" {...viewProps} />
-            )}
-            {!isHidden('habit_no_alcohol') && (
-              <HabitHeatmap history={history} habitId="habit_no_alcohol" label={`No Alcohol ${suffix}`} colorClass="bg-emerald-500 shadow-emerald-500/50 shadow-[0_0_5px]" {...viewProps} />
-            )}
-            {!isHidden('habit_no_vice') && (
-              <HabitHeatmap history={history} habitId="habit_no_vice" label={`No Vice ${suffix}`} colorClass="bg-fuchsia-500 shadow-fuchsia-500/50 shadow-[0_0_5px]" {...viewProps} />
-            )}
-            {!isHidden('habit_steps') && (
-              <HabitHeatmap history={history} habitId="habit_steps" label={`Steps ${suffix}`} colorClass="bg-orange-500 shadow-orange-500/50 shadow-[0_0_5px]" {...viewProps} goal={10000} />
-            )}
-            {!isHidden('habit_water') && (
-              <HabitHeatmap history={history} habitId="habit_water" label={`Water ${suffix}`} colorClass="bg-cyan-500 shadow-cyan-500/50 shadow-[0_0_5px]" {...viewProps} goal={100} />
-            )}
-            {!isHidden('habit_journaling') && (
-              <HabitHeatmap history={history} habitId="habit_journaling" label={`Journaling ${suffix}`} colorClass="bg-yellow-500 shadow-yellow-500/50 shadow-[0_0_5px]" {...viewProps} />
-            )}
-            {!isHidden('habit_meditation') && (
-              <HabitHeatmap history={history} habitId="habit_meditation" label={`Meditation ${suffix}`} colorClass="bg-indigo-500 shadow-indigo-500/50 shadow-[0_0_5px]" {...viewProps} goal={10} />
-            )}
-            {!isHidden('habit_reading') && (
-              <HabitHeatmap history={history} habitId="habit_reading" label={`Reading ${suffix}`} colorClass="bg-blue-500 shadow-blue-500/50 shadow-[0_0_5px]" {...viewProps} goal={10} />
-            )}
-            {!isHidden('habit_mobility') && (
-              <HabitHeatmap history={history} habitId="habit_mobility" label={`Mobility ${suffix}`} colorClass="bg-pink-500 shadow-pink-500/50 shadow-[0_0_5px]" {...viewProps} goal={15} />
-            )}
-            {!isHidden('habit_fasting') && (
-              <HabitHeatmap history={history} habitId="habit_fasting" label={`Fasting ${suffix}`} colorClass="bg-violet-500 shadow-violet-500/50 shadow-[0_0_5px]" {...viewProps} goal={16} />
-            )}
-            {!isHidden('habit_bad_habit') && (
-              <HabitHeatmap history={history} habitId="habit_bad_habit" label={`Bad Habit ${suffix}`} colorClass="bg-red-500 shadow-red-500/50 shadow-[0_0_5px]" {...viewProps} />
-            )}
-              </>;
-            })()}
-            </div>
-          </div>
-        )}
       </div>
 
     </div >

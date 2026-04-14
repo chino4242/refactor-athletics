@@ -61,7 +61,7 @@ describe('DailyQuest Component', () => {
         });
         expect(screen.getByText('Supplements')).toBeInTheDocument();
         expect(screen.getByText('Sleep')).toBeInTheDocument();
-        expect(screen.getByText(/Steps/i)).toBeInTheDocument();
+        expect(screen.getAllByText(/Steps/i).length).toBeGreaterThan(0);
     });
 
     it('renders new Apple Fitness habit cards', async () => {
@@ -155,7 +155,7 @@ describe('DailyQuest Component', () => {
         });
         expect(screen.getByText('Supplements')).toBeInTheDocument();
         expect(screen.getByText('Sleep')).toBeInTheDocument();
-        expect(screen.getByText(/Steps/i)).toBeInTheDocument();
+        expect(screen.getAllByText(/Steps/i).length).toBeGreaterThan(0);
     });
 
     it('calls logHabitAction when a simple habit button is clicked', async () => {
@@ -193,7 +193,7 @@ describe('DailyQuest Component', () => {
             render(<DailyQuest {...defaultProps} />);
         });
 
-        const card = screen.getByText('Steps', { selector: 'span.uppercase' }).closest('button');
+        const card = screen.getAllByText('Steps').find(el => el.matches('span.uppercase'))?.closest('[class*="rounded"]');
         expect(card).toBeInTheDocument();
 
         await act(async () => {
@@ -230,7 +230,7 @@ describe('DailyQuest Component', () => {
             render(<DailyQuest {...defaultProps} />);
         });
 
-        const card = screen.getByText('Steps', { selector: 'span.uppercase' }).closest('button');
+        const card = screen.getAllByText('Steps').find(el => el.matches('span.uppercase'))?.closest('[class*="rounded"]');
         await act(async () => {
             fireEvent.click(card!);
         });
