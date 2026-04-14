@@ -14,10 +14,11 @@ interface ViceToggleProps {
     onLog: (habitId: string, value: number, label: string) => Promise<void>;
     onDelete: (timestamp: number) => Promise<void>;
     loading?: boolean;
+    weekDots?: boolean[];
 }
 
 export default function ViceToggle({
-    virtueId, viceId, label, icon, history, viewDateStartTs, onLog, onDelete, loading = false
+    virtueId, viceId, label, icon, history, viewDateStartTs, onLog, onDelete, loading = false, weekDots
 }: ViceToggleProps) {
     const [localLoading, setLocalLoading] = useState(false);
 
@@ -114,6 +115,14 @@ export default function ViceToggle({
                     >
                         Undo
                     </button>
+                </div>
+            )}
+
+            {weekDots && (
+                <div className="flex gap-0.5 mt-1.5 justify-end">
+                    {weekDots.map((met, i) => (
+                        <div key={i} className={`w-1.5 h-1.5 rounded-full ${met ? 'bg-emerald-500' : 'bg-zinc-800'}`} />
+                    ))}
                 </div>
             )}
         </div>

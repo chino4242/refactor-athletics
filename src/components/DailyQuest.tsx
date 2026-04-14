@@ -112,6 +112,23 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
     return profile?.hidden_habits?.includes(habitId);
   };
 
+  // Compute 7-day dots for a habit: true if goal was met that day
+  const getWeekDots = (habitId: string, goal: number): boolean[] => {
+    const dots: boolean[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setHours(0, 0, 0, 0);
+      d.setDate(d.getDate() - i);
+      const dayStart = Math.floor(d.getTime() / 1000);
+      const dayEnd = dayStart + 86400;
+      const dayTotal = history
+        .filter(h => h.exercise_id === habitId && h.timestamp >= dayStart && h.timestamp < dayEnd)
+        .reduce((sum, h) => sum + Number(h.raw_value || h.value || 0), 0);
+      dots.push(dayTotal >= goal);
+    }
+    return dots;
+  };
+
   return (
     <div className="bg-zinc-800/50 p-6 rounded-2xl border border-zinc-700/50 transition-all duration-300 shadow-xl backdrop-blur-sm mb-8 animate-fade-in-up">
       <div className="flex flex-col md:flex-row md:items-center gap-4 mb-6 border-b border-zinc-700 pb-4">
@@ -321,7 +338,8 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
             const completed = visibleHabits.filter(h => {
               if (h.type === 'vice') return (totals[h.id] || 0) > 0;
               if (h.type === 'tap') return (totals[h.id] || 0) > 0;
-              const goal = (h as any).goalKey ? (profile?.habit_targets?.[(h as any).goalKey] || (h as any).defaultGoal) : 1;
+              const goalKey = (h as any).goalKey;
+              const goal = goalKey ? (profile?.habit_targets?.[goalKey] || (h as any).defaultGoal) : 1;
               return (totals[h.id] || 0) >= goal;
             }).length;
 
@@ -348,6 +366,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
                       {visibleHabits.map(h => {
                         if (h.type === 'card') {
                           const habit = h as any;
+                          const habitGoal = profile?.habit_targets?.[habit.goalKey] || habit.defaultGoal;
                           return (
                             <HabitCard
                               key={h.id}
@@ -355,12 +374,13 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
                               label={h.label}
                               icon={h.icon}
                               current={totals[h.id] || 0}
-                              goal={profile?.habit_targets?.[habit.goalKey] || habit.defaultGoal}
+                              goal={habitGoal}
                               unit={habit.unit}
                               colorClass={habit.color}
                               onLog={(val, label) => handleLog(h.id, val, label)}
                               loading={loading === h.id}
                               xp={habit.xp}
+                              weekDots={getWeekDots(h.id, habitGoal)}
                               {...(habit.setOnly ? { setOnly: true } : {})}
                               {...(habit.enableTotalSync ? { enableTotalSync: true } : {})}
                             />
@@ -380,6 +400,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
                               onLog={handleLog}
                               onDelete={handleDelete}
                               loading={loading === vice.viceId || loading === h.id}
+                              weekDots={getWeekDots(h.id, 1)}
                             />
                           );
                         }
@@ -406,6 +427,12 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
                                   {loading === h.id ? '...' : `Log +${tap.xp} XP`}
                                 </button>
                               )}
+                              {/* Week dots */}
+                              <div className="flex gap-0.5 mt-1.5 justify-end">
+                                {getWeekDots(h.id, 1).map((met, i) => (
+                                  <div key={i} className={`w-1.5 h-1.5 rounded-full ${met ? (tap.color || 'bg-emerald-500') : 'bg-zinc-800'}`} />
+                                ))}
+                              </div>
                             </div>
                           );
                         }

@@ -15,6 +15,7 @@ interface HabitCardProps {
     setOnly?: boolean; // Force "set" mode, hide add/quick buttons
     loading?: boolean;
     xp?: number;
+    weekDots?: boolean[]; // 7 booleans for last 7 days (oldest first), true = goal met
 }
 
 export default function HabitCard({
@@ -28,7 +29,8 @@ export default function HabitCard({
     enableTotalSync = false,
     setOnly = false,
     loading = false,
-    xp = 0
+    xp = 0,
+    weekDots
 }: HabitCardProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [value, setValue] = useState('');
@@ -172,6 +174,15 @@ export default function HabitCard({
                         style={{ width: `${percent}%` }}
                     />
                 </div>
+
+                {/* Week dots */}
+                {weekDots && (
+                    <div className="flex gap-0.5 mt-1.5 justify-end">
+                        {weekDots.map((met, i) => (
+                            <div key={i} className={`w-1.5 h-1.5 rounded-full ${met ? colorClass : 'bg-zinc-800'}`} />
+                        ))}
+                    </div>
+                )}
 
                 {/* Mobile-friendly: No hover overlays */}
             </div>
