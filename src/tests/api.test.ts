@@ -234,12 +234,13 @@ describe('API Functions', () => {
 
         const mockNotChain = (resolvedData: any) => vi.fn().mockResolvedValue({ data: resolvedData, error: null });
 
-        // Chainable eq mock that supports .eq().eq().gte() patterns
+        // Chainable eq mock that supports .eq().eq().order().limit() patterns
         const chainableEq = (data: any) => {
             const chain: any = {};
             chain.eq = vi.fn().mockReturnValue(chain);
             chain.gte = vi.fn().mockResolvedValue({ data, error: null });
-            // Also resolve directly for simple .eq() patterns
+            chain.order = vi.fn().mockReturnValue(chain);
+            chain.limit = vi.fn().mockResolvedValue({ data, error: null });
             chain.then = (resolve: any) => resolve({ data, error: null });
             return chain;
         };

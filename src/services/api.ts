@@ -292,29 +292,47 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
     const xpNeeded = xpForLevel(playerLevel);
     const level_progress_percent = (xpIntoLevel / xpNeeded) * 100;
 
-    // Simple streak calculation: check if user logged alcohol/vice today
-    // If no logs or value = 0, streak = 1 (today counts)
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayStart = Math.floor(today.getTime() / 1000);
-    
-    const { data: todayAlcohol } = await supabase
-        .from('habit_logs')
-        .select('value')
-        .eq('user_id', userId)
-        .eq('habit_id', 'habit_alcohol')
-        .gte('timestamp', todayStart);
-    
-    const { data: todayVice } = await supabase
-        .from('habit_logs')
-        .select('value')
-        .eq('user_id', userId)
-        .eq('habit_id', 'habit_vice')
-        .gte('timestamp', todayStart);
-    
-    // If no logs today or all values are 0, streak is at least 1
-    const alcoholStreak = (!todayAlcohol || todayAlcohol.length === 0 || todayAlcohol.every(log => log.value === 0)) ? 1 : 0;
-    const viceStreak = (!todayVice || todayVice.length === 0 || todayVice.every(log => log.value === 0)) ? 1 : 0;
+    // Streak calculation: walk backwards from today counting consecutive days with virtue logged
+    const streakFor = async (virtueId: string, viceId: string): Promise<number> => {
+        // Get all virtue and vice logs, ordered by date descending
+        const { data: virtueLogs } = await supabase
+            .from('habit_logs')
+            .select('date')
+            .eq('user_id', userId)
+            .eq('habit_id', virtueId)
+            .order('date', { ascending: false })
+            .limit(365);
+
+        const { data: viceLogs } = await supabase
+            .from('habit_logs')
+            .select('date')
+            .eq('user_id', userId)
+            .eq('habit_id', viceId)
+            .order('date', { ascending: false })
+            .limit(365);
+
+        const virtueDates = new Set((virtueLogs || []).map(l => l.date));
+        const viceDates = new Set((viceLogs || []).map(l => l.date));
+
+        let streak = 0;
+        const d = new Date();
+        d.setHours(0, 0, 0, 0);
+
+        for (let i = 0; i < 365; i++) {
+            const dateStr = d.toISOString().split('T')[0];
+            if (viceDates.has(dateStr)) break; // Failed this day
+            if (virtueDates.has(dateStr)) streak++; // Logged success
+            else if (i === 0) {} // Today not logged yet, keep going
+            else break; // Past day with no log = streak broken
+            d.setDate(d.getDate() - 1);
+        }
+        return streak;
+    };
+
+    const [alcoholStreak, viceStreak] = await Promise.all([
+        streakFor('habit_no_alcohol', 'habit_alcohol'),
+        streakFor('habit_no_vice', 'habit_bad_habit'),
+    ]);
 
     return {
         power_level: finalExpertise,
