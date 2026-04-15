@@ -67,7 +67,7 @@ export default function StatsTab({ userId, stats }: StatsTabProps) {
     }, [history]);
 
     // Recent activity
-    const recent = useMemo(() => history.slice(0, 5), [history]);
+    const recent = useMemo(() => [...history].sort((a, b) => b.timestamp - a.timestamp).slice(0, 5), [history]);
 
     // Power Level preview
     const powerLevel = stats?.power_level || 0;
