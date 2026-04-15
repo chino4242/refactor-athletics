@@ -120,21 +120,17 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                     </div>
                 )}
                 {/* Score overlay at bottom */}
-                <div className="relative px-4 pb-4 -mt-6">
-                    <div className="flex items-end justify-between">
-                        <div>
-                            <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Power Level</div>
-                            <div className={`text-5xl font-black italic leading-none bg-gradient-to-r ${theme.progressGradient || 'from-orange-500 to-red-500'} bg-clip-text text-transparent`}>
-                                {powerLevel}
-                                <span className="text-xl text-zinc-500 font-bold ml-1">/ {maxPower}</span>
-                            </div>
+                <div className="relative px-4 pb-4 mt-2 text-center">
+                    <div className="flex flex-col items-center">
+                        <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Power Level</div>
+                        <div className={`text-5xl font-black italic leading-none bg-gradient-to-r ${theme.progressGradient || 'from-orange-500 to-red-500'} bg-clip-text text-transparent`}>
+                            {powerLevel}
+                            <span className="text-xl text-zinc-500 font-bold ml-1">/ {maxPower}</span>
                         </div>
-                        <div className="text-right">
-                            <div className={`text-sm font-black uppercase tracking-wider bg-gradient-to-r ${theme.progressGradient || 'from-orange-500 to-red-500'} bg-clip-text text-transparent`}>
-                                {rankName}
-                            </div>
-                            <p className="text-[9px] text-zinc-500 max-w-[180px]">{rankDesc}</p>
+                        <div className={`text-sm font-black uppercase tracking-wider mt-1 bg-gradient-to-r ${theme.progressGradient || 'from-orange-500 to-red-500'} bg-clip-text text-transparent`}>
+                            {rankName}
                         </div>
+                        <p className="text-[9px] text-zinc-500 mt-0.5 max-w-[240px]">{rankDesc}</p>
                     </div>
 
                     {/* Progress to next tier */}
