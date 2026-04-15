@@ -239,7 +239,7 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
             )}
 
             {/* === FULL BREAKDOWN === */}
-            <div>
+            {exerciseData.length > 0 && <div>
                 <h2 className="text-sm font-black text-white uppercase tracking-wider mb-1">Full Breakdown</h2>
                 <p className="text-[10px] text-zinc-600 mb-3">All ranked exercises by category</p>
 
@@ -318,7 +318,7 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                         );
                     })}
                 </div>
-            </div>
+            </div>}
 
             {/* Empty state */}
             {exerciseData.length === 0 && (
