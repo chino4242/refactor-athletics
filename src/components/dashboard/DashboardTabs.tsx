@@ -7,7 +7,7 @@ import { useExperienceMode } from '@/context/ExperienceModeContext';
 import { THEMES } from '@/data/themes';
 import TodayTab from './tabs/TodayTab';
 import ArenaTab from './tabs/ArenaTab';
-import ProgressTab from './tabs/ProgressTab';
+import StatsTab from './tabs/StatsTab';
 
 interface DashboardTabsProps {
     userId: string;
@@ -25,8 +25,8 @@ export default function DashboardTabs({ userId, stats, hasActiveDuels, activeDue
     
     // Dynamic tab order based on active duels
     const tabs = hasActiveDuels 
-        ? ['Today', 'Arena', 'Progress']
-        : ['Today', 'Progress', 'Arena'];
+        ? ['Today', 'Arena', 'Stats']
+        : ['Today', 'Stats', 'Arena'];
 
     const [activeTab, setActiveTab] = useState(tabs[0]);
 
@@ -34,7 +34,7 @@ export default function DashboardTabs({ userId, stats, hasActiveDuels, activeDue
     const tabIcons: Record<string, string> = {
         'Today': '📅',
         'Arena': isClassic ? '👥' : '⚔️',
-        'Progress': '📊',
+        'Stats': '📊',
     };
 
     return (
@@ -64,7 +64,7 @@ export default function DashboardTabs({ userId, stats, hasActiveDuels, activeDue
             <div className="p-4">
                 {activeTab === 'Today' && <TodayTab userId={userId} programs={programs} />}
                 {activeTab === 'Arena' && <ArenaTab userId={userId} activeDuels={activeDuels} />}
-                {activeTab === 'Progress' && <ProgressTab userId={userId} stats={stats} />}
+                {activeTab === 'Stats' && <StatsTab userId={userId} stats={stats} />}
             </div>
         </div>
     );
