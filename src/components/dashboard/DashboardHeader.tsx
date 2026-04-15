@@ -93,7 +93,7 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                             <div className="flex items-center justify-center gap-2 mb-2">
                                 <span className="text-xl">💪</span>
                                 <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider group-hover:text-emerald-400 transition">Body Composition</span>
-                                <InfoTooltip text="Tracks body composition changes over time. Compares your earliest and latest measurements (weight, waist, arms, chest, legs) to score progress toward your goals. Positive = improving, negative = regressing. Log body measurements regularly to see your score change." size={14} />
+                                <InfoTooltip text="Tracks positive body composition changes that may not show up on the scale — like losing inches, gaining muscle, or dropping body fat %. Compares your earliest and latest measurements to score progress toward your goals. Positive = improving, negative = regressing." size={14} />
                             </div>
                             <div className={`text-4xl font-black italic ${physiquePoints.color}`}>
                                 {physiquePoints.score > 0 ? '+' : ''}{physiquePoints.score}
