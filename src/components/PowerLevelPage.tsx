@@ -164,7 +164,7 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
             <div>
                 <h2 className="text-sm font-black text-white uppercase tracking-wider mb-1">The Ranks</h2>
                 <p className="text-[10px] text-zinc-600 mb-3">Your Power Level measures relative strength across all ranked exercises. As it grows, you ascend through the ranks.</p>
-                <div className="grid grid-cols-6 gap-1.5">
+                <div className="grid grid-cols-3 gap-2">
                     {[0, 1, 2, 3, 4, 5].map(lvl => {
                         const key = `level${lvl}` as keyof typeof theme.ranks;
                         const r = theme.ranks[key];
@@ -175,16 +175,16 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                         const isLocked = lvl > tier;
 
                         return (
-                            <div key={lvl} className={`rounded-xl border p-2 flex flex-col items-center text-center ${
+                            <div key={lvl} className={`rounded-xl border p-3 flex flex-col items-center text-center ${
                                 isCurrent ? 'border-orange-500/50 bg-zinc-800/80' :
                                 isLocked ? 'border-zinc-800/30 bg-zinc-900/30 opacity-40' :
                                 'border-zinc-800/50 bg-zinc-900/50'
                             }`}>
                                 {img && (
-                                    <Image src={img} alt={name} width={36} height={36} className={`object-contain mb-1 ${isLocked ? 'grayscale' : ''}`} />
+                                    <Image src={img} alt={name} width={56} height={56} className={`object-contain mb-1.5 ${isLocked ? 'grayscale' : ''}`} />
                                 )}
-                                <span className={`text-[8px] font-black uppercase leading-tight ${isCurrent ? 'text-white' : isLocked ? 'text-zinc-600' : 'text-zinc-400'}`}>{name}</span>
-                                {isCurrent && <span className="text-[7px] font-bold text-orange-400 bg-orange-500/20 px-1 rounded mt-0.5">YOU</span>}
+                                <span className={`text-[10px] font-black uppercase leading-tight ${isCurrent ? 'text-white' : isLocked ? 'text-zinc-600' : 'text-zinc-400'}`}>{name}</span>
+                                {isCurrent && <span className="text-[8px] font-bold text-orange-400 bg-orange-500/20 px-1.5 py-0.5 rounded mt-1">YOU</span>}
                             </div>
                         );
                     })}
