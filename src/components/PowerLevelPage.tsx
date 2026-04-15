@@ -112,23 +112,28 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
 
             {/* === HERO === */}
             <div className={`relative rounded-2xl border border-zinc-800 overflow-hidden ${theme.colorClass || 'bg-zinc-900'}`}>
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/80" />
-                <div className="relative p-4">
-                    {/* Top row: image + score side by side */}
-                    <div className="flex items-center gap-4">
-                        {rankImage && (
-                            <Image src={rankImage} alt={rankName} width={100} height={100} className="object-contain flex-shrink-0 drop-shadow-[0_0_20px_rgba(255,165,0,0.3)]" />
-                        )}
-                        <div className="flex-1">
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/90" />
+                {/* Full-width rank image */}
+                {rankImage && (
+                    <div className="flex justify-center pt-4 px-4">
+                        <Image src={rankImage} alt={rankName} width={280} height={280} className="object-contain drop-shadow-[0_0_30px_rgba(255,165,0,0.3)]" />
+                    </div>
+                )}
+                {/* Score overlay at bottom */}
+                <div className="relative px-4 pb-4 -mt-6">
+                    <div className="flex items-end justify-between">
+                        <div>
                             <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Power Level</div>
-                            <div className={`text-5xl font-black italic bg-gradient-to-r ${theme.progressGradient || 'from-orange-500 to-red-500'} bg-clip-text text-transparent leading-none`}>
+                            <div className={`text-5xl font-black italic leading-none bg-gradient-to-r ${theme.progressGradient || 'from-orange-500 to-red-500'} bg-clip-text text-transparent`}>
                                 {powerLevel}
+                                <span className="text-xl text-zinc-500 font-bold ml-1">/ {maxPower}</span>
                             </div>
-                            <div className="text-sm text-zinc-500 font-bold">/ {maxPower}</div>
-                            <div className={`text-sm font-black uppercase tracking-wider mt-1 bg-gradient-to-r ${theme.progressGradient || 'from-orange-500 to-red-500'} bg-clip-text text-transparent`}>
+                        </div>
+                        <div className="text-right">
+                            <div className={`text-sm font-black uppercase tracking-wider bg-gradient-to-r ${theme.progressGradient || 'from-orange-500 to-red-500'} bg-clip-text text-transparent`}>
                                 {rankName}
                             </div>
-                            <p className="text-[10px] text-zinc-500 mt-0.5">{rankDesc}</p>
+                            <p className="text-[9px] text-zinc-500 max-w-[180px]">{rankDesc}</p>
                         </div>
                     </div>
 
