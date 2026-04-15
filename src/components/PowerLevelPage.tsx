@@ -116,8 +116,8 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                 <div className="relative p-6 flex flex-col items-center text-center">
                     {/* Rank image */}
                     {rankImage && (
-                        <div className="w-28 h-28 mb-3">
-                            <Image src={rankImage} alt={rankName} width={112} height={112} className="object-contain drop-shadow-[0_0_20px_rgba(255,165,0,0.3)]" />
+                        <div className="w-44 h-44 mb-3">
+                            <Image src={rankImage} alt={rankName} width={176} height={176} className="object-contain drop-shadow-[0_0_20px_rgba(255,165,0,0.3)]" />
                         </div>
                     )}
 
