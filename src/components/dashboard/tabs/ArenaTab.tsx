@@ -84,20 +84,6 @@ export default function ArenaTab({ userId, activeDuels }: ArenaTabProps) {
                 )}
             </div>
 
-            {/* Challenge a Friend CTA */}
-            <Link
-                href="/arena"
-                className="block bg-gradient-to-br from-orange-600 to-red-600 rounded-xl p-6 text-center hover:scale-[1.02] transition-transform"
-            >
-                <div className="text-4xl mb-2">🤝</div>
-                <h3 className="text-lg font-black italic text-white uppercase tracking-wider mb-1">
-                    {isClassic ? 'Challenge a Friend' : 'Challenge a Friend'}
-                </h3>
-                <p className="text-sm text-orange-100">
-                    {isClassic ? 'Compete head-to-head in friendly fitness matchups' : 'Compete head-to-head in fitness duels'}
-                </p>
-            </Link>
-
             {/* Public Challenges */}
             <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-1">
