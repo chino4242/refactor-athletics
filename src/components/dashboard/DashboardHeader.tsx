@@ -88,11 +88,11 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                             <div className="text-[10px] text-orange-500/70 group-hover:text-orange-400 mt-1 transition">View Power Level →</div>
                         </Link>
 
-                        {/* Physique Points */}
+                        {/* Body Composition */}
                         <Link href="/track#body-comp" className="group text-center">
                             <div className="flex items-center justify-center gap-2 mb-2">
                                 <span className="text-xl">💪</span>
-                                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider group-hover:text-emerald-400 transition">{isClassic ? 'Body Composition Progress' : 'Physique Points'}</span>
+                                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider group-hover:text-emerald-400 transition">Body Composition</span>
                                 <InfoTooltip text="Tracks body composition changes over time. Compares your earliest and latest measurements (weight, waist, arms, chest, legs) to score progress toward your goals. Positive = improving, negative = regressing. Log body measurements regularly to see your score change." size={14} />
                             </div>
                             <div className={`text-4xl font-black italic ${physiquePoints.color}`}>

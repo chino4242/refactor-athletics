@@ -137,9 +137,9 @@ export default function BodyCompositionModal({
                         </div>
                     </div>
 
-                    {/* PHYSIQUE POINTS CARD */}
+                    {/* BODY COMPOSITION CARD */}
                     <div className="bg-zinc-800/50 px-4 py-2 rounded-xl border border-zinc-700 flex flex-col items-center">
-                        <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold">💪 Physique Points</span>
+                        <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold">💪 Body Composition</span>
                         <div className={`text-2xl font-black ${physiquePoints > 0 ? 'text-emerald-400' : physiquePoints < 0 ? 'text-rose-400' : 'text-zinc-500'}`}>
                             {isLoadingHistory ? '...' : (physiquePoints > 0 ? '+' : '') + physiquePoints}
                         </div>
