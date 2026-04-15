@@ -164,8 +164,8 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
             <div>
                 <h2 className="text-sm font-black text-white uppercase tracking-wider mb-1">The Ranks</h2>
                 <p className="text-[10px] text-zinc-600 mb-3">Your Power Level measures relative strength across all ranked exercises. As it grows, you ascend through the ranks.</p>
-                <div className="space-y-1.5">
-                    {[5, 4, 3, 2, 1, 0].map(lvl => {
+                <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 snap-x snap-mandatory scrollbar-hide">
+                    {[0, 1, 2, 3, 4, 5].map(lvl => {
                         const key = `level${lvl}` as keyof typeof theme.ranks;
                         const r = theme.ranks[key];
                         if (!r) return null;
@@ -176,22 +176,17 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                         const threshold = TIER_THRESHOLDS[lvl];
 
                         return (
-                            <div key={lvl} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
-                                isCurrent ? `border-orange-500/50 bg-gradient-to-r ${theme.progressGradient ? theme.progressGradient.replace('from-', 'from-').split(' ').map(c => c + '/10').join(' ') : 'from-orange-500/10 to-red-500/10'}` :
-                                isLocked ? 'border-zinc-800/30 bg-zinc-900/30 opacity-50' :
+                            <div key={lvl} className={`flex-shrink-0 w-28 snap-center rounded-xl border p-3 flex flex-col items-center text-center transition-all ${
+                                isCurrent ? 'border-orange-500/50 bg-zinc-800/80 scale-105' :
+                                isLocked ? 'border-zinc-800/30 bg-zinc-900/30 opacity-40' :
                                 'border-zinc-800/50 bg-zinc-900/50'
                             }`}>
                                 {img && (
-                                    <Image src={img} alt={name} width={isCurrent ? 48 : 36} height={isCurrent ? 48 : 36} className={`object-contain flex-shrink-0 ${isLocked ? 'grayscale' : ''}`} />
+                                    <Image src={img} alt={name} width={isCurrent ? 56 : 44} height={isCurrent ? 56 : 44} className={`object-contain mb-2 ${isLocked ? 'grayscale' : ''}`} />
                                 )}
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2">
-                                        <span className={`text-xs font-black uppercase ${isCurrent ? 'text-white' : isLocked ? 'text-zinc-600' : 'text-zinc-400'}`}>{name}</span>
-                                        {isCurrent && <span className="text-[9px] font-bold text-orange-400 bg-orange-500/20 px-1.5 py-0.5 rounded">YOU</span>}
-                                    </div>
-                                    <p className={`text-[10px] mt-0.5 ${isCurrent ? 'text-zinc-400' : isLocked ? 'text-zinc-700' : 'text-zinc-600'}`}>{r.description}</p>
-                                    <span className={`text-[9px] ${isLocked ? 'text-zinc-700' : 'text-zinc-600'}`}>Power Level {threshold}+</span>
-                                </div>
+                                <span className={`text-[10px] font-black uppercase leading-tight ${isCurrent ? 'text-white' : isLocked ? 'text-zinc-600' : 'text-zinc-400'}`}>{name}</span>
+                                {isCurrent && <span className="text-[8px] font-bold text-orange-400 bg-orange-500/20 px-1.5 py-0.5 rounded mt-1">YOU</span>}
+                                <span className={`text-[8px] mt-1 ${isLocked ? 'text-zinc-700' : 'text-zinc-600'}`}>{threshold}+</span>
                             </div>
                         );
                     })}
