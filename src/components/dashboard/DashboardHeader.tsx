@@ -74,7 +74,7 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                 <div className="max-w-6xl mx-auto">
                     <div className="grid grid-cols-3 gap-4 mb-4">
                         {/* Expertise / Fitness Score */}
-                        <Link href="/test" className="group text-center">
+                        <Link href="/power" className="group text-center">
                             <div className="flex items-center justify-center gap-2 mb-2">
                                 <span className="text-xl">{isClassic ? '📊' : theme.emoji}</span>
                                 <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider group-hover:text-orange-400 transition">{isClassic ? 'Fitness Score' : 'Expertise'}</span>
@@ -85,7 +85,7 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                             <div className={`text-4xl font-black italic text-transparent bg-clip-text bg-gradient-to-r ${progressGradient}`}>
                                 {powerLevel}<span className="text-lg text-zinc-500">/{stats?.max_expertise || 0}</span>
                             </div>
-                            <div className="text-[10px] text-orange-500/70 group-hover:text-orange-400 mt-1 transition">{isClassic ? 'Test an exercise to track progress →' : 'Test an exercise to build Expertise →'}</div>
+                            <div className="text-[10px] text-orange-500/70 group-hover:text-orange-400 mt-1 transition">View Power Level →</div>
                         </Link>
 
                         {/* Physique Points */}
