@@ -113,32 +113,28 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
             {/* === HERO === */}
             <div className={`relative rounded-2xl border border-zinc-800 overflow-hidden ${theme.colorClass || 'bg-zinc-900'}`}>
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/80" />
-                <div className="relative p-6 flex flex-col items-center text-center">
-                    {/* Rank image */}
-                    {rankImage && (
-                        <div className="w-44 h-44 mb-3">
-                            <Image src={rankImage} alt={rankName} width={176} height={176} className="object-contain drop-shadow-[0_0_20px_rgba(255,165,0,0.3)]" />
+                <div className="relative p-4">
+                    {/* Top row: image + score side by side */}
+                    <div className="flex items-center gap-4">
+                        {rankImage && (
+                            <Image src={rankImage} alt={rankName} width={100} height={100} className="object-contain flex-shrink-0 drop-shadow-[0_0_20px_rgba(255,165,0,0.3)]" />
+                        )}
+                        <div className="flex-1">
+                            <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Power Level</div>
+                            <div className={`text-5xl font-black italic bg-gradient-to-r ${theme.progressGradient || 'from-orange-500 to-red-500'} bg-clip-text text-transparent leading-none`}>
+                                {powerLevel}
+                            </div>
+                            <div className="text-sm text-zinc-500 font-bold">/ {maxPower}</div>
+                            <div className={`text-sm font-black uppercase tracking-wider mt-1 bg-gradient-to-r ${theme.progressGradient || 'from-orange-500 to-red-500'} bg-clip-text text-transparent`}>
+                                {rankName}
+                            </div>
+                            <p className="text-[10px] text-zinc-500 mt-0.5">{rankDesc}</p>
                         </div>
-                    )}
-
-                    {/* Title */}
-                    <div className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-1">Power Level</div>
-                    <div className={`text-6xl font-black italic bg-gradient-to-r ${theme.progressGradient || 'from-orange-500 to-red-500'} bg-clip-text text-transparent`}>
-                        {powerLevel}
-                    </div>
-                    <div className="text-lg text-zinc-500 font-bold">/ {maxPower}</div>
-
-                    {/* Rank name + description */}
-                    <div className="mt-3">
-                        <div className={`text-lg font-black uppercase tracking-wider bg-gradient-to-r ${theme.progressGradient || 'from-orange-500 to-red-500'} bg-clip-text text-transparent`}>
-                            {rankName}
-                        </div>
-                        <p className="text-[11px] text-zinc-500 mt-1 max-w-xs">{rankDesc}</p>
                     </div>
 
                     {/* Progress to next tier */}
                     {nextTierThreshold && (
-                        <div className="w-full mt-4">
+                        <div className="mt-3">
                             <div className="flex justify-between text-[10px] text-zinc-500 mb-1">
                                 <span>{rankName}</span>
                                 <span>{theme.ranks[`level${tier + 1}` as keyof typeof theme.ranks]?.name?.split(': ')[1] || 'Next'}</span>
