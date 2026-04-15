@@ -160,6 +160,44 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                 </div>
             </div>
 
+            {/* === RANK LADDER === */}
+            <div>
+                <h2 className="text-sm font-black text-white uppercase tracking-wider mb-1">The Ranks</h2>
+                <p className="text-[10px] text-zinc-600 mb-3">Your Power Level measures relative strength across all ranked exercises. As it grows, you ascend through the ranks.</p>
+                <div className="space-y-1.5">
+                    {[5, 4, 3, 2, 1, 0].map(lvl => {
+                        const key = `level${lvl}` as keyof typeof theme.ranks;
+                        const r = theme.ranks[key];
+                        if (!r) return null;
+                        const name = r.name?.split(': ')[1] || r.name;
+                        const img = (sex.toLowerCase() === 'female' && 'femaleImage' in r && r.femaleImage) ? r.femaleImage : r.image;
+                        const isCurrent = lvl === tier;
+                        const isLocked = lvl > tier;
+                        const threshold = TIER_THRESHOLDS[lvl];
+
+                        return (
+                            <div key={lvl} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
+                                isCurrent ? `border-orange-500/50 bg-gradient-to-r ${theme.progressGradient ? theme.progressGradient.replace('from-', 'from-').split(' ').map(c => c + '/10').join(' ') : 'from-orange-500/10 to-red-500/10'}` :
+                                isLocked ? 'border-zinc-800/30 bg-zinc-900/30 opacity-50' :
+                                'border-zinc-800/50 bg-zinc-900/50'
+                            }`}>
+                                {img && (
+                                    <Image src={img} alt={name} width={isCurrent ? 48 : 36} height={isCurrent ? 48 : 36} className={`object-contain flex-shrink-0 ${isLocked ? 'grayscale' : ''}`} />
+                                )}
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                        <span className={`text-xs font-black uppercase ${isCurrent ? 'text-white' : isLocked ? 'text-zinc-600' : 'text-zinc-400'}`}>{name}</span>
+                                        {isCurrent && <span className="text-[9px] font-bold text-orange-400 bg-orange-500/20 px-1.5 py-0.5 rounded">YOU</span>}
+                                    </div>
+                                    <p className={`text-[10px] mt-0.5 ${isCurrent ? 'text-zinc-400' : isLocked ? 'text-zinc-700' : 'text-zinc-600'}`}>{r.description}</p>
+                                    <span className={`text-[9px] ${isLocked ? 'text-zinc-700' : 'text-zinc-600'}`}>Power Level {threshold}+</span>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+
             {/* === CORE LIFTS === */}
             {coreLiftData.length > 0 && (
                 <div>
