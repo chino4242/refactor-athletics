@@ -20,6 +20,7 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
     const [lastWorkout, setLastWorkout] = useState<{ date: string; totalXp: number; lifts: { name: string; volume: number }[]; treadmillSets: number } | null>(null);
     const [todayProgress, setTodayProgress] = useState<any>({
         calories: 0,
+        caloriesBurned: 0,
         water: 0,
         steps: 0,
         xp: 0,
@@ -70,6 +71,7 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                 console.log('Today progress loaded:', habitProgress);
                 setTodayProgress({
                     calories: habitProgress?.totals?.macro_calories || 0,
+                    caloriesBurned: habitProgress?.totals?.macro_calories_burned || 0,
                     water: habitProgress?.totals?.habit_water || 0,
                     steps: habitProgress?.totals?.habit_steps || 0,
                 });
@@ -168,22 +170,29 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                     {/* Quick Stats Grid */}
                     <p className="text-[10px] text-zinc-600 mb-2">Green = goal met today</p>
                     <div className="grid grid-cols-4 gap-2">
+                        {(() => {
+                            const net = Math.round(todayProgress.calories - todayProgress.caloriesBurned);
+                            const netTarget = profile.nutrition_targets?.net_calorie_target || -500;
+                            // For deficit (negative target): net must be <= target. For surplus (positive): net must be >= target.
+                            const netMet = netTarget < 0 ? net <= netTarget : net >= netTarget;
+                            return (
                         <div className={`rounded-lg p-2.5 text-center transition-colors ${
-                            todayProgress.calories >= (profile.nutrition_targets?.calories || 2000)
+                            netMet
                                 ? 'bg-emerald-500/10 border border-emerald-500/20'
                                 : 'bg-zinc-800/50'
                         }`}>
                             <div className="text-xl mb-0.5">🍽️</div>
                             <div className="text-[10px] text-zinc-500 mb-0.5">Calories</div>
-                            <div className={`text-sm font-bold ${
-                                todayProgress.calories >= (profile.nutrition_targets?.calories || 2000)
-                                    ? 'text-emerald-400'
-                                    : 'text-white'
-                            }`}>
+                            <div className={`text-sm font-bold ${netMet ? 'text-emerald-400' : 'text-white'}`}>
                                 {Math.round(todayProgress.calories)}
                             </div>
                             <div className="text-[10px] text-zinc-600">/ {profile.nutrition_targets?.calories || 2000}</div>
+                            <div className={`text-[9px] font-bold mt-0.5 ${netMet ? 'text-emerald-400' : net < 0 ? 'text-blue-400' : 'text-orange-400'}`}>
+                                Net: {net > 0 ? '+' : ''}{net}
+                            </div>
                         </div>
+                            );
+                        })()}
                         <div className={`rounded-lg p-2.5 text-center transition-colors ${
                             todayProgress.water >= (profile.habit_targets?.habit_water || 100)
                                 ? 'bg-emerald-500/10 border border-emerald-500/20'
