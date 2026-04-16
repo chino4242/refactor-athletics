@@ -19,7 +19,7 @@ const EXPERIENCE_OPTIONS = [
         mode: 'rpg' as ExperienceMode,
         emoji: '⚔️',
         title: 'Compete & Level Up',
-        description: 'Rank against standards, earn XP, unlock themes, challenge friends, and build your character.',
+        description: 'Rank against standards, earn XP, unlock themes, challenge friends, join a group, and build your character.',
     },
     {
         key: 'classic' as const,
@@ -207,7 +207,7 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                                         Strength, Endurance, Power, and Mobility.
                                     </p>
                                     <p className="text-sm">
-                                        Challenge friends to duels, complete daily quests, and watch your progress transform into legendary status.
+                                        Challenge friends to duels, join a group to train together, complete daily quests, and hold each other accountable as you transform into legendary status.
                                     </p>
                                 </>
                             ) : (
