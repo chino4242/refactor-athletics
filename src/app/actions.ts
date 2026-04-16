@@ -374,3 +374,86 @@ export async function deleteAllBodyMeasurementsAction(userId: string) {
     if (error) throw error;
     revalidatePath('/');
 }
+
+export async function assignDefaultProgram(userId: string, trainingPath: string, equipment: string[]) {
+    const supabase = await createClient();
+    const equipSet = new Set(equipment || []);
+
+    // Fetch default program days for this path
+    const { data: defaults } = await supabase
+        .from('workout_programs')
+        .select('id, name, description, day_of_week')
+        .eq('is_default', true)
+        .eq('training_path', trainingPath);
+
+    if (!defaults?.length) return;
+
+    // Delete any existing user programs for this path
+    await supabase
+        .from('workout_programs')
+        .delete()
+        .eq('user_id', userId)
+        .eq('training_path', trainingPath);
+
+    for (const day of defaults) {
+        // Create user's copy of the program day
+        const { data: userProg } = await supabase
+            .from('workout_programs')
+            .insert({
+                user_id: userId,
+                name: day.name,
+                description: day.description,
+                training_path: trainingPath,
+                day_of_week: day.day_of_week,
+                source_program_id: day.id,
+            })
+            .select('id')
+            .single();
+
+        if (!userProg) continue;
+
+        // Fetch blocks for this default day
+        const { data: blocks } = await supabase
+            .from('program_blocks')
+            .select('*')
+            .eq('workout_id', day.id)
+            .order('block_order');
+
+        if (!blocks?.length) continue;
+
+        // Copy blocks, swapping exercises based on equipment
+        const userBlocks = blocks.map((b: any) => {
+            let exerciseId = b.exercise_id;
+
+            // If user lacks required equipment and an alt exists, swap
+            if (b.alt_exercise_id && b.alt_equipment?.length) {
+                const needsAlt = b.alt_equipment.some((eq: string) => !equipSet.has(eq));
+                if (needsAlt) exerciseId = b.alt_exercise_id;
+            }
+
+            return {
+                workout_id: userProg.id,
+                block_order: b.block_order,
+                block_type: b.block_type,
+                exercise_id: exerciseId,
+                target_sets: b.target_sets,
+                target_reps: b.target_reps,
+                target_weight: b.target_weight,
+                duration_seconds: b.duration_seconds,
+                incline: b.incline,
+                intensity: b.intensity,
+                notes: b.notes,
+                alt_exercise_id: b.alt_exercise_id,
+                alt_equipment: b.alt_equipment,
+                outdoor_alternative: b.outdoor_alternative,
+                section: b.section,
+                target_duration_seconds: b.target_duration_seconds,
+                rest_seconds: b.rest_seconds,
+            };
+        });
+
+        await supabase.from('program_blocks').insert(userBlocks);
+    }
+
+    revalidatePath('/train');
+}

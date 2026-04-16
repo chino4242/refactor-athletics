@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { saveProfile } from '@/services/api';
 import { useRouter } from 'next/navigation';
 import { THEMES } from '@/data/themes';
+import { assignDefaultProgram } from '@/app/actions';
 import { getDefaultHiddenHabits } from '@/data/habitDefaults';
 import { PATHS } from '@/data/paths';
 
@@ -81,6 +82,10 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
             waiver_accepted_at: new Date().toISOString(),
         });
         localStorage.setItem('experience_mode', experienceMode);
+        // Auto-assign default workout program based on path + equipment
+        if (formData.path) {
+            await assignDefaultProgram(userId, formData.path, formData.equipment || []);
+        }
         router.refresh();
     };
 
