@@ -61,13 +61,13 @@ export default async function LoginPage({
                                 formAction={login}
                                 className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white font-black uppercase tracking-widest text-sm py-4 rounded-xl hover:from-orange-500 hover:to-red-500 transition-all shadow-[0_0_20px_rgba(249,115,22,0.3)]"
                             >
-                                Begin Your Journey
+                                Log In
                             </button>
                             <button
                                 formAction={signup}
                                 className="w-full bg-transparent border border-zinc-700 text-zinc-400 font-bold uppercase tracking-widest text-xs py-4 rounded-xl hover:border-orange-500/50 hover:text-white transition-all"
                             >
-                                Create Account
+                                Begin Your Journey
                             </button>
                         </div>
                     </form>
