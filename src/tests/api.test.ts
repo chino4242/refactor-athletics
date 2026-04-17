@@ -229,7 +229,7 @@ describe('API Functions', () => {
         const catalogData = [
             { id: 'back_squat', standards: { brackets: { male: [{ levels: [100,200,300,400,500] }], female: [] } } },
             { id: 'deadlift', standards: { brackets: { male: [{ levels: [100,200,300,400,500] }], female: [] } } },
-            { id: 'squat', standards: { brackets: { male: [{ levels: [100,200,300,400,500] }], female: [] } } },
+            { id: 'bench_press', standards: { brackets: { male: [{ levels: [100,200,300,400,500] }], female: [] } } },
         ];
 
         const mockNotChain = (resolvedData: any) => vi.fn().mockResolvedValue({ data: resolvedData, error: null });
@@ -255,10 +255,13 @@ describe('API Functions', () => {
                 } else if (callCount === 2) {
                     // catalog
                     return { not: mockNotChain(catalogData) };
-                } else if (callCount <= 5) {
-                    // nutrition (3), habits (4), measurements (5)
+                } else if (callCount === 3) {
+                    // users profile (selected_path)
+                    return { eq: vi.fn().mockReturnValue({ single: vi.fn().mockResolvedValue({ data: { selected_path: 'hybrid' }, error: null }) }) };
+                } else if (callCount <= 6) {
+                    // nutrition (4), habits (5), measurements (6)
                     const sources = [xpSources?.nutrition || [], xpSources?.habits || [], xpSources?.measurements || []];
-                    return { eq: vi.fn().mockResolvedValue({ data: sources[callCount - 3], error: null }) };
+                    return { eq: vi.fn().mockResolvedValue({ data: sources[callCount - 4], error: null }) };
                 } else {
                     // alcohol/vice streak queries - chainable .eq().eq().gte()
                     return { eq: vi.fn().mockReturnValue(chainableEq([])) };
@@ -282,7 +285,7 @@ describe('API Functions', () => {
 
         it('calculates player level from total XP', async () => {
             mockSelect.mockImplementation(makeSelectMock([
-                { exercise_id: 'squat', level: 1, xp: 2500 },
+                { exercise_id: 'bench_press', level: 1, xp: 2500 },
             ]));
 
             const result = await getUserStats('user-123');
@@ -294,7 +297,7 @@ describe('API Functions', () => {
 
         it('includes XP from all sources', async () => {
             mockSelect.mockImplementation(makeSelectMock(
-                [{ exercise_id: 'squat', level: 1, xp: 100 }],
+                [{ exercise_id: 'bench_press', level: 1, xp: 100 }],
                 { nutrition: [{ xp: 50 }], habits: [{ xp: 30 }], measurements: [{ xp: 20 }] }
             ));
 

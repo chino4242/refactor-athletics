@@ -224,11 +224,17 @@ export const getWeeklyProgress = async (userId: string, startTs: number): Promis
 export const getUserStats = async (userId: string): Promise<UserStats | null> => {
     const supabase = createClient();
     
-    // Query workouts and catalog in parallel
-    const [{ data: workouts }, { data: catalog }] = await Promise.all([
+    // Query workouts, catalog, and user profile in parallel
+    const [{ data: workouts }, { data: catalog }, { data: profile }] = await Promise.all([
         supabase.from('workouts').select('exercise_id, level, xp').eq('user_id', userId),
         supabase.from('catalog').select('id, standards').not('standards', 'is', null),
+        supabase.from('users').select('selected_path').eq('id', userId).single(),
     ]);
+
+    // Get user's path key exercises
+    const { PATH_KEY_EXERCISES } = await import('@/data/pathExercises');
+    const userPath = profile?.selected_path || 'hybrid';
+    const keyExerciseIds = new Set(PATH_KEY_EXERCISES[userPath] || PATH_KEY_EXERCISES['hybrid']);
 
     // Query all tables for total XP
     const [nutrition, habits, measurements] = await Promise.all([
@@ -254,12 +260,13 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
     let totalXp = 0;
     const maxLevelPerExercise: Record<string, number> = {};
 
-    // Calculate Expertise from ranked exercises only
+    // Calculate Expertise from path key exercises only
     for (const item of workouts || []) {
         totalXp += item.xp || 0;
         
         const normalizedId = item.exercise_id?.replace(/^(five_rm_|one_rm_|est_1rm_)/, '');
-        if (item.exercise_id && item.level > 0 && (rankedIds.has(item.exercise_id) || rankedIds.has(normalizedId))) {
+        const matchesKey = keyExerciseIds.has(item.exercise_id) || keyExerciseIds.has(normalizedId);
+        if (item.exercise_id && item.level > 0 && matchesKey) {
             if (!maxLevelPerExercise[item.exercise_id] || item.level > maxLevelPerExercise[item.exercise_id]) {
                 maxLevelPerExercise[item.exercise_id] = item.level;
             }
@@ -336,7 +343,7 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
 
     return {
         power_level: finalExpertise,
-        max_expertise: rankedIds.size * 5,
+        max_expertise: keyExerciseIds.size * 5,
         exercises_tracked: (workouts || []).length,
         highest_level_achieved: Math.max(0, ...Object.values(maxLevelPerExercise)),
         total_career_xp: totalXp,
