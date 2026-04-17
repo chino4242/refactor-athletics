@@ -5,6 +5,7 @@ import { saveProfile } from '@/services/api';
 import { useRouter } from 'next/navigation';
 import { THEMES } from '@/data/themes';
 import { assignDefaultProgram } from '@/app/actions';
+import { signout } from '@/app/login/actions';
 import { getDefaultHiddenHabits } from '@/data/habitDefaults';
 import { PATHS } from '@/data/paths';
 
@@ -109,10 +110,15 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
         <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 overflow-y-auto">
             <div className="bg-zinc-900 rounded-lg max-w-md w-full p-6 my-8">
                 <div className="mb-6">
-                    <div className="flex gap-2 mb-4">
-                        {steps.map((_, i) => (
-                            <div key={i} className={`h-1 flex-1 rounded ${i <= currentIndex ? 'bg-orange-500' : 'bg-zinc-700'}`} />
-                        ))}
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex gap-2 flex-1">
+                            {steps.map((_, i) => (
+                                <div key={i} className={`h-1 flex-1 rounded ${i <= currentIndex ? 'bg-orange-500' : 'bg-zinc-700'}`} />
+                            ))}
+                        </div>
+                        <form action={signout} className="ml-3">
+                            <button type="submit" className="text-zinc-500 hover:text-white text-xs">✕</button>
+                        </form>
                     </div>
                     <h2 className="text-2xl font-bold text-white">
                         {step === 1 && 'Liability Waiver'}
