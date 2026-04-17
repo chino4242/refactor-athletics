@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import DailyQuest from './DailyQuest';
 import LevelUpOverlay from './LevelUpOverlay';
 import BodyCompSummary from './BodyCompSummary';
@@ -55,22 +55,19 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
         return () => window.removeEventListener('keydown', handler);
     }, [selectedDate, isFuture]);
 
-    // Level up celebration
-    const [currentLevel, setCurrentLevel] = useState<number>(() => {
-        if (typeof window !== 'undefined') {
-            const cached = localStorage.getItem('cached_player_level');
-            return cached ? parseInt(cached, 10) : 0;
-        }
-        return 0;
-    });
+    // Level up celebration — only triggers when level changes during this session
     const [showLevelUp, setShowLevelUp] = useState<number | null>(null);
+    const prevLevelRef = useRef<number | null>(null);
 
     useEffect(() => {
         if (!initialStats) return;
         const newLevel = initialStats.player_level || 0;
-        if (currentLevel > 0 && newLevel > currentLevel) setShowLevelUp(newLevel);
-        setCurrentLevel(newLevel);
-        localStorage.setItem('cached_player_level', newLevel.toString());
+        const prev = prevLevelRef.current;
+        // Only celebrate if we had a previous level in this session and it increased
+        if (prev !== null && newLevel > prev) {
+            setShowLevelUp(newLevel);
+        }
+        prevLevelRef.current = newLevel;
     }, [initialStats]);
 
     // Body composition
