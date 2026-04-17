@@ -36,10 +36,10 @@ describe('Server Actions', () => {
                     user_id: 'user-123',
                     habit_id: 'habit_steps',
                     value: 10000,
-                    xp: 150,
+                    xp: 50,
                 })
             );
-            expect(result).toEqual({ xp_earned: 150 });
+            expect(result).toEqual({ xp_earned: 50 });
         });
 
         it('logs nutrition to nutrition_logs table', async () => {

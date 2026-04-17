@@ -44,7 +44,7 @@ export async function logHabitAction(
         // Habit logging - scaled XP
         let xp = 10;
         if (habitId === 'habit_steps') {
-            xp = Math.round(value * 0.015); // 10,000 steps = 150 XP
+            xp = Math.min(Math.round(value * 0.005), 75); // 10,000 steps = 50 XP, cap at 75
         } else if (habitId === 'habit_water') {
             xp = Math.round(value * 0.25); // 64 oz = 16 XP
         } else if (habitId === 'habit_sleep') {
@@ -219,7 +219,11 @@ export async function logTrainingAction(
             } else {
                 setXp = Math.floor(10 * xpFactor);
             }
+        } else if (set.weight && set.weight > 0 && bodyweight > 0) {
+            // Weight-based: heavier lifts earn more XP
+            setXp = Math.floor((set.weight / bodyweight) * (set.reps || 10) * 10 * xpFactor);
         } else {
+            // Bodyweight/reps-only exercises
             setXp = Math.floor((set.reps || 10) * xpFactor);
         }
         totalXp += setXp;
