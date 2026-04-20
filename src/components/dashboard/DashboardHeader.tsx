@@ -57,35 +57,56 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
         try {
             const supabase = createClient();
             const today = new Date().toISOString().split('T')[0];
-            const [habitRes, nutritionRes, profileRes] = await Promise.all([
+            const [habitRes, nutritionRes, workoutRes, profileRes] = await Promise.all([
                 supabase.from('habit_logs').select('habit_id, value').eq('user_id', userId).eq('date', today),
-                supabase.from('nutrition_logs').select('protein, carbs, fat, water, calories_burned').eq('user_id', userId).eq('date', today),
+                supabase.from('nutrition_logs').select('macro_type, amount').eq('user_id', userId).eq('date', today),
+                supabase.from('workouts').select('exercise_id, sets, xp').eq('user_id', userId).eq('date', today),
                 supabase.from('users').select('nutrition_targets, habit_targets').eq('id', userId).single(),
             ]);
+
+            // Habits
             const habits: Record<string, number> = {};
             (habitRes.data || []).forEach((h: any) => { habits[h.habit_id] = (habits[h.habit_id] || 0) + (h.value || 0); });
-            const macros = (nutritionRes.data || []).reduce((acc: any, n: any) => ({
-                protein: acc.protein + (n.protein || 0), carbs: acc.carbs + (n.carbs || 0),
-                fat: acc.fat + (n.fat || 0), water: acc.water + (n.water || 0), burned: acc.burned + (n.calories_burned || 0),
-            }), { protein: 0, carbs: 0, fat: 0, water: 0, burned: 0 });
+
+            // Nutrition (macro_type + amount rows)
+            const macros: Record<string, number> = {};
+            (nutritionRes.data || []).forEach((n: any) => { macros[n.macro_type] = (macros[n.macro_type] || 0) + (n.amount || 0); });
+            const protein = Math.round(macros['protein'] || 0);
+            const carbs = Math.round(macros['carbs'] || 0);
+            const fat = Math.round(macros['fat'] || 0);
+            const water = Math.round(macros['water'] || 0);
+            const burned = Math.round(macros['calories_burned'] || 0);
+            const cal = Math.round(protein * 4 + carbs * 4 + fat * 9);
+            const net = cal - burned;
+
+            // Workouts — total volume
+            let totalVolume = 0;
+            let exerciseCount = 0;
+            (workoutRes.data || []).forEach((w: any) => {
+                exerciseCount++;
+                if (w.sets && Array.isArray(w.sets)) {
+                    w.sets.forEach((s: any) => { totalVolume += (s.weight || 0) * (s.reps || 0); });
+                }
+            });
+            const totalWorkoutXp = (workoutRes.data || []).reduce((sum: number, w: any) => sum + (w.xp || 0), 0);
+
             const nt = profileRes.data?.nutrition_targets || {};
-            const ht = profileRes.data?.habit_targets || {};
-            const cal = Math.round(macros.protein * 4 + macros.carbs * 4 + macros.fat * 9);
-            const net = cal - Math.round(macros.burned);
             const lines = [
                 `📅 ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}`,
                 `⚡ Level ${playerLevel} | ${isClassic ? 'Score' : 'Power Level'}: ${powerLevel}/${stats?.max_expertise || 0}`, '',
                 '🏃 ACTIVITY',
                 `👣 Steps: ${(habits['habit_steps'] || 0).toLocaleString()}`,
                 `💪 Exercise: ${habits['habit_exercise_minutes'] || 0} min`,
-                `💤 Sleep: ${habits['habit_sleep'] || 0} hrs`, '',
+                `💤 Sleep: ${habits['habit_sleep'] || 0} hrs`,
+                habits['habit_day_strain'] ? `🔥 Day Strain: ${habits['habit_day_strain']}` : '',
+                exerciseCount > 0 ? `🏋️ Exercises: ${exerciseCount} | Volume: ${totalVolume.toLocaleString()} lbs | +${totalWorkoutXp} XP` : '', '',
                 '🥗 NUTRITION',
-                `🥩 Protein: ${Math.round(macros.protein)}/${nt.protein || 150}g`,
-                `🍞 Carbs: ${Math.round(macros.carbs)}/${nt.carbs || 150}g`,
-                `🥑 Fat: ${Math.round(macros.fat)}/${nt.fat || 60}g`,
+                `🥩 Protein: ${protein}/${nt.protein || 150}g`,
+                `🍞 Carbs: ${carbs}/${nt.carbs || 150}g`,
+                `🥑 Fat: ${fat}/${nt.fat || 60}g`,
                 `🔥 Calories: ${cal}/${nt.calories || 2000}`,
-                `💧 Water: ${Math.round(macros.water)}/${nt.water || 100} oz`,
-                macros.burned > 0 ? `📊 Net: ${net > 0 ? '+' : ''}${net} kcal` : '',
+                `💧 Water: ${water}/${nt.water || 100} oz`,
+                burned > 0 ? `📊 Net: ${net > 0 ? '+' : ''}${net} kcal` : '',
             ].filter(Boolean);
             await navigator.clipboard.writeText(lines.join('\n'));
             toast.success('Daily report copied!');
