@@ -36,8 +36,6 @@ const TYPE_STYLES: Record<string, { bg: string; text: string; dot: string }> = {
 export default function TrainingV2({ userId, bodyweight, sex, age, initialHistory, initialCatalog, onLogComplete, highestLevel = 0 }: TrainingV2Props) {
   const { theme: _theme } = useTheme();
   const theme = _theme || THEMES.athlete;
-  const rankKey = `level${Math.min(highestLevel, 5)}`;
-  const rankImage = theme.ranks?.[rankKey]?.image;
   const [weekDays, setWeekDays] = useState<DayPlan[]>([]);
   const [selectedDayStr, setSelectedDayStr] = useState('');
   const [showActiveWorkout, setShowActiveWorkout] = useState(false);
@@ -103,13 +101,6 @@ export default function TrainingV2({ userId, bodyweight, sex, age, initialHistor
             <div className="absolute -right-2 -bottom-4 text-7xl font-black text-white/[0.03] pointer-events-none select-none uppercase">
               {format(new Date(), 'EEEE')}
             </div>
-            {/* Rank avatar */}
-            {rankImage && (
-              <div className="absolute top-4 right-4 flex flex-col items-center">
-                <img src={rankImage} alt="Rank" className="w-10 h-10 object-contain" />
-                <span className="text-[8px] font-bold text-zinc-500 mt-0.5">{theme.ranks?.[rankKey]?.name?.split(': ')[1] || `Lv ${Math.min(highestLevel, 5)}`}</span>
-              </div>
-            )}
 
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-3">
