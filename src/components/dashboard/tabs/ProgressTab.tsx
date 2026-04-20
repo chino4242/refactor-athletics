@@ -273,10 +273,16 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                         <span className="text-lg">📈</span>
                         <h3 className="text-sm font-bold text-white uppercase tracking-wider">Recent Activity</h3>
                     </div>
-                    <Link href="/track" className="text-xs text-orange-500 hover:text-orange-400 flex items-center gap-1">
-                        View All
-                        <ChevronRight size={14} />
-                    </Link>
+                    <div className="flex items-center gap-3">
+                        <Link href="/progress" className="text-xs text-orange-500 hover:text-orange-400 flex items-center gap-1">
+                            Charts
+                            <ChevronRight size={14} />
+                        </Link>
+                        <Link href="/track" className="text-xs text-orange-500 hover:text-orange-400 flex items-center gap-1">
+                            View All
+                            <ChevronRight size={14} />
+                        </Link>
+                    </div>
                 </div>
                 {loading ? (
                     <p className="text-sm text-zinc-500">Loading...</p>
@@ -334,7 +340,7 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                     </div>
                     <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
                         <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">{isClassic ? 'Total Points' : 'Total XP'}</p>
-                        <p className="text-2xl font-black italic text-white">{(stats.total_career_xp || stats.total_xp || 0).toLocaleString()}</p>
+                        <p className="text-2xl font-black italic text-white">{((stats as any).total_career_xp || (stats as any).total_xp || 0).toLocaleString()}</p>
                     </div>
                 </div>
             )}
