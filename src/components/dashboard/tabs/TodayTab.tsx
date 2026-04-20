@@ -2,11 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Calendar, Dumbbell, ChevronRight } from 'lucide-react';
+import { Calendar, Dumbbell, ChevronRight, Share2 } from 'lucide-react';
 import type { Workout } from '@/types';
 import { getHistory, getHabitProgress } from '@/services/api';
 import { createClient } from '@/utils/supabase/client';
 import { useExperienceMode } from '@/context/ExperienceModeContext';
+import { useTheme } from '@/context/ThemeContext';
+import { THEMES } from '@/data/themes';
+import { useToast } from '@/context/ToastContext';
 
 interface TodayTabProps {
     userId: string;
@@ -15,6 +18,9 @@ interface TodayTabProps {
 
 export default function TodayTab({ userId, programs }: TodayTabProps) {
     const { isClassic } = useExperienceMode();
+    const { theme: _theme } = useTheme();
+    const theme = _theme || THEMES.athlete;
+    const toast = useToast();
     const [profile, setProfile] = useState<any>(null);
     const [todayScheduled, setTodayScheduled] = useState<any>(null);
     const [lastWorkout, setLastWorkout] = useState<{ date: string; totalXp: number; lifts: { name: string; volume: number }[]; treadmillSets: number } | null>(null);
@@ -155,16 +161,72 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
         <div className="space-y-4">
             {/* Daily Quest Summary */}
             {profile && (
+                <div>
+                    <div className="flex items-center justify-between mb-2 px-1">
+                        <div className="flex items-center gap-2">
+                            <span className="text-lg">🎯</span>
+                            <h3 className="text-sm font-bold text-white uppercase tracking-wider">{isClassic ? 'Today\'s Targets' : 'Daily Quests'}</h3>
+                        </div>
+                        <button
+                            onClick={async (e) => {
+                                e.preventDefault();
+                                try {
+                                    const supabase = createClient();
+                                    const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+                                    const startTs = todayStart.getTime();
+                                    const [habitRes, nutritionRes, workoutRes, profileRes] = await Promise.all([
+                                        supabase.from('habit_logs').select('habit_id, value').eq('user_id', userId).gte('timestamp', startTs),
+                                        supabase.from('nutrition_logs').select('macro_type, amount').eq('user_id', userId).gte('timestamp', startTs),
+                                        supabase.from('workouts').select('exercise_id, sets, xp').eq('user_id', userId).gte('timestamp', startTs),
+                                        supabase.from('users').select('nutrition_targets').eq('id', userId).single(),
+                                    ]);
+                                    const habits: Record<string, number> = {};
+                                    (habitRes.data || []).forEach((h: any) => { habits[h.habit_id] = (habits[h.habit_id] || 0) + (h.value || 0); });
+                                    const macros: Record<string, number> = {};
+                                    (nutritionRes.data || []).forEach((n: any) => { macros[n.macro_type] = (macros[n.macro_type] || 0) + (n.amount || 0); });
+                                    const protein = Math.round(macros['protein'] || 0), carbs = Math.round(macros['carbs'] || 0), fat = Math.round(macros['fat'] || 0);
+                                    const water = Math.round(macros['water'] || 0), burned = Math.round(macros['calories_burned'] || 0);
+                                    const cal = Math.round(protein * 4 + carbs * 4 + fat * 9);
+                                    const net = cal - burned;
+                                    let totalVolume = 0, exerciseCount = 0;
+                                    const totalXp = (workoutRes.data || []).reduce((sum: number, w: any) => {
+                                        exerciseCount++;
+                                        if (w.sets && Array.isArray(w.sets)) w.sets.forEach((s: any) => { totalVolume += (s.weight || 0) * (s.reps || 0); });
+                                        return sum + (w.xp || 0);
+                                    }, 0);
+                                    const nt = profileRes.data?.nutrition_targets || {};
+                                    const lines = [
+                                        `📅 ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}`, '',
+                                        '🏃 ACTIVITY',
+                                        `👣 Steps: ${(habits['habit_steps'] || 0).toLocaleString()}`,
+                                        `💪 Exercise: ${habits['habit_exercise_minutes'] || 0} min`,
+                                        `💤 Sleep: ${habits['habit_sleep'] || 0} hrs`,
+                                        habits['habit_day_strain'] ? `🔥 Day Strain: ${habits['habit_day_strain']}` : '',
+                                        exerciseCount > 0 ? `🏋️ Volume: ${totalVolume.toLocaleString()} lbs | +${totalXp} XP` : '', '',
+                                        '🥗 NUTRITION',
+                                        `🥩 Protein: ${protein}/${nt.protein || 150}g`,
+                                        `🍞 Carbs: ${carbs}/${nt.carbs || 150}g`,
+                                        `🥑 Fat: ${fat}/${nt.fat || 60}g`,
+                                        `🔥 Calories: ${cal}/${nt.calories || 2000}`,
+                                        `💧 Water: ${water}/${nt.water || 100} oz`,
+                                        burned > 0 ? `📊 Net: ${net > 0 ? '+' : ''}${net} kcal` : '',
+                                    ].filter(Boolean);
+                                    await navigator.clipboard.writeText(lines.join('\n'));
+                                    toast.success('Daily report copied!');
+                                } catch { toast.error('Failed to generate report'); }
+                            }}
+                            className="p-2 rounded-lg text-zinc-500 hover:text-white hover:bg-zinc-700/50 transition"
+                            title="Share Daily Report"
+                        >
+                            <Share2 size={16} />
+                        </button>
+                    </div>
                 <Link
                     href="/track"
                     className="block bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4 hover:border-orange-500 transition-colors"
                 >
                     <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                            <span className="text-lg">🎯</span>
-                            <h3 className="text-sm font-bold text-white uppercase tracking-wider">{isClassic ? 'Today\'s Targets' : 'Daily Quests'}</h3>
-                        </div>
-                        <span className="text-[10px] text-zinc-500">Tap to log →</span>
+                        <span className="text-[10px] text-zinc-500">Tap to view details →</span>
                     </div>
                     
                     {/* Quick Stats Grid */}
@@ -254,6 +316,7 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                         Tap to log progress →
                     </div>
                 </Link>
+                </div>
             )}
 
             {/* Today's Workout + Last Workout - Side by Side */}

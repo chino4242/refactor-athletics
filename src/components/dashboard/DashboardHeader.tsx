@@ -3,16 +3,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import type { UserStats } from '@/types';
-import { Trophy, Zap, Share2 } from 'lucide-react';
+import { Trophy, Zap } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { useExperienceMode } from '@/context/ExperienceModeContext';
 import { THEMES } from '@/data/themes';
-import { BodyCompositionService } from '@/services/BodyCompositionService';
 import { createClient } from '@/utils/supabase/client';
 import InfoTooltip from '@/components/common/InfoTooltip';
 import { calculatePhysiquePoints } from '@/utils/physiquePoints';
-import { useToast } from '@/context/ToastContext';
-import { getHabitProgress } from '@/services/api';
 
 interface DashboardHeaderProps {
     stats: UserStats | null;
@@ -20,7 +17,6 @@ interface DashboardHeaderProps {
 }
 
 export default function DashboardHeader({ stats, userId }: DashboardHeaderProps) {
-    const toast = useToast();
     const [mounted, setMounted] = useState(false);
     const [bodyCompHistory, setBodyCompHistory] = useState<any[]>([]);
     const [userProfile, setUserProfile] = useState<any>(null);
@@ -52,69 +48,6 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
     const playerLevel = stats?.player_level || 1;
     const xpToNext = stats?.xp_to_next_level || 0;
     const xpPercent = stats?.level_progress_percent || 0;
-
-    const handleShareReport = async () => {
-        try {
-            const supabase = createClient();
-            const todayStart = new Date();
-            todayStart.setHours(0, 0, 0, 0);
-            const startTs = todayStart.getTime();
-
-            const [habitRes, nutritionRes, workoutRes, profileRes] = await Promise.all([
-                supabase.from('habit_logs').select('habit_id, value').eq('user_id', userId).gte('timestamp', startTs),
-                supabase.from('nutrition_logs').select('macro_type, amount').eq('user_id', userId).gte('timestamp', startTs),
-                supabase.from('workouts').select('exercise_id, sets, xp').eq('user_id', userId).gte('timestamp', startTs),
-                supabase.from('users').select('nutrition_targets, habit_targets').eq('id', userId).single(),
-            ]);
-
-            // Habits
-            const habits: Record<string, number> = {};
-            (habitRes.data || []).forEach((h: any) => { habits[h.habit_id] = (habits[h.habit_id] || 0) + (h.value || 0); });
-
-            // Nutrition (macro_type + amount rows, keyed as macro_X to match getHabitProgress)
-            const macros: Record<string, number> = {};
-            (nutritionRes.data || []).forEach((n: any) => { macros[n.macro_type] = (macros[n.macro_type] || 0) + (n.amount || 0); });
-            const protein = Math.round(macros['protein'] || 0);
-            const carbs = Math.round(macros['carbs'] || 0);
-            const fat = Math.round(macros['fat'] || 0);
-            const water = Math.round(macros['water'] || 0);
-            const burned = Math.round(macros['calories_burned'] || 0);
-            const cal = Math.round(protein * 4 + carbs * 4 + fat * 9);
-            const net = cal - burned;
-
-            // Workouts — total volume
-            let totalVolume = 0;
-            let exerciseCount = 0;
-            (workoutRes.data || []).forEach((w: any) => {
-                exerciseCount++;
-                if (w.sets && Array.isArray(w.sets)) {
-                    w.sets.forEach((s: any) => { totalVolume += (s.weight || 0) * (s.reps || 0); });
-                }
-            });
-            const totalWorkoutXp = (workoutRes.data || []).reduce((sum: number, w: any) => sum + (w.xp || 0), 0);
-
-            const nt = profileRes.data?.nutrition_targets || {};
-            const lines = [
-                `📅 ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}`,
-                `⚡ Level ${playerLevel} | ${isClassic ? 'Score' : 'Power Level'}: ${powerLevel}/${stats?.max_expertise || 0}`, '',
-                '🏃 ACTIVITY',
-                `👣 Steps: ${(habits['habit_steps'] || 0).toLocaleString()}`,
-                `💪 Exercise: ${habits['habit_exercise_minutes'] || 0} min`,
-                `💤 Sleep: ${habits['habit_sleep'] || 0} hrs`,
-                habits['habit_day_strain'] ? `🔥 Day Strain: ${habits['habit_day_strain']}` : '',
-                exerciseCount > 0 ? `🏋️ Exercises: ${exerciseCount} | Volume: ${totalVolume.toLocaleString()} lbs | +${totalWorkoutXp} XP` : '', '',
-                '🥗 NUTRITION',
-                `🥩 Protein: ${protein}/${nt.protein || 150}g`,
-                `🍞 Carbs: ${carbs}/${nt.carbs || 150}g`,
-                `🥑 Fat: ${fat}/${nt.fat || 60}g`,
-                `🔥 Calories: ${cal}/${nt.calories || 2000}`,
-                `💧 Water: ${water}/${nt.water || 100} oz`,
-                burned > 0 ? `📊 Net: ${net > 0 ? '+' : ''}${net} kcal` : '',
-            ].filter(Boolean);
-            await navigator.clipboard.writeText(lines.join('\n'));
-            toast.success('Daily report copied!');
-        } catch { toast.error('Failed to generate report'); }
-    };
 
     // Calculate refactor score
     const physiquePoints = useMemo(() => {
@@ -235,9 +168,6 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                                 </span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <button onClick={handleShareReport} className="text-zinc-500 hover:text-white transition p-1 rounded hover:bg-zinc-700/50" title="Share Daily Report">
-                                    <Share2 size={14} />
-                                </button>
                                 <span className="text-xs text-zinc-500">
                                     {xpToNext} {isClassic ? 'pts to next' : 'XP to next'}
                                 </span>
