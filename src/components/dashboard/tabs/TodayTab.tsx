@@ -173,7 +173,7 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                                 try {
                                     const supabase = createClient();
                                     const todayStart = new Date(); todayStart.setHours(0,0,0,0);
-                                    const startTs = todayStart.getTime();
+                                    const startTs = Math.floor(todayStart.getTime() / 1000);
                                     const [habitRes, nutritionRes, workoutRes, profileRes] = await Promise.all([
                                         supabase.from('habit_logs').select('habit_id, value').eq('user_id', userId).gte('timestamp', startTs),
                                         supabase.from('nutrition_logs').select('macro_type, amount').eq('user_id', userId).gte('timestamp', startTs),
