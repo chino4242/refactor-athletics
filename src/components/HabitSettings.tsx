@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { saveProfile } from '../services/api';
 import type { UserProfileData, NutritionTargets } from '@/types';
-import { Eye, EyeOff, ChevronDown } from 'lucide-react';
+import { Eye, EyeOff, ChevronDown, Calculator } from 'lucide-react';
+import { calculateMacros, ACTIVITY_LABELS, GOAL_LABELS, type ActivityLevel, type MacroGoal, type MacroResult } from '@/utils/macroCalculator';
 
 interface HabitSettingsProps {
     isOpen: boolean;
@@ -51,6 +52,15 @@ export default function HabitSettings({ isOpen, onClose, userProfile, onUpdate }
     const [hidden, setHidden] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
     const [expandedCats, setExpandedCats] = useState<Record<string, boolean>>({ health: true, recovery: true, discipline: true });
+    const [showCalc, setShowCalc] = useState(false);
+    const [activityLevel, setActivityLevel] = useState<ActivityLevel>('active');
+    const [macroGoal, setMacroGoal] = useState<MacroGoal>(() => {
+        const tw = parseFloat(userProfile.body_composition_goals?.target_weight || '0');
+        if (tw && tw < userProfile.bodyweight) return 'lose';
+        if (tw && tw > userProfile.bodyweight) return 'gain';
+        return 'maintain';
+    });
+    const [calcResult, setCalcResult] = useState<MacroResult | null>(null);
 
     useEffect(() => {
         if (isOpen) {
@@ -145,6 +155,79 @@ export default function HabitSettings({ isOpen, onClose, userProfile, onUpdate }
                             <input type="range" min="20" max="200" step="10" value={targets.habit_water}
                                 onChange={e => setTargets({ ...targets, habit_water: Number(e.target.value) })}
                                 className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-cyan-500" />
+                        </div>
+
+                        {/* Macro Calculator */}
+                        <div className="mt-3">
+                            <button onClick={() => { setShowCalc(!showCalc); setCalcResult(null); }}
+                                className="flex items-center gap-1.5 text-[10px] font-bold text-orange-500 hover:text-orange-400 transition uppercase tracking-wider">
+                                <Calculator size={12} />
+                                {showCalc ? 'Hide Calculator' : 'Calculate for me'}
+                            </button>
+
+                            {showCalc && (
+                                <div className="mt-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-lg space-y-3 animate-fade-in">
+                                    <div className="text-[10px] text-zinc-500">Based on: {userProfile.bodyweight} lbs, age {userProfile.age}, {userProfile.sex}</div>
+
+                                    <div>
+                                        <label className="text-[10px] font-bold text-zinc-400 uppercase mb-1 block">Activity Level</label>
+                                        <select value={activityLevel} onChange={e => { setActivityLevel(e.target.value as ActivityLevel); setCalcResult(null); }}
+                                            className="w-full bg-zinc-900 border border-zinc-700 rounded p-2 text-white text-xs outline-none focus:border-orange-500">
+                                            {(Object.entries(ACTIVITY_LABELS) as [ActivityLevel, string][]).map(([k, v]) => (
+                                                <option key={k} value={k}>{v}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label className="text-[10px] font-bold text-zinc-400 uppercase mb-1 block">Goal</label>
+                                        <div className="flex gap-2">
+                                            {(Object.entries(GOAL_LABELS) as [MacroGoal, string][]).map(([k, v]) => (
+                                                <button key={k} onClick={() => { setMacroGoal(k); setCalcResult(null); }}
+                                                    className={`flex-1 text-[10px] font-bold py-2 rounded-lg transition ${macroGoal === k ? 'bg-orange-600 text-white' : 'bg-zinc-900 text-zinc-400 border border-zinc-700'}`}>
+                                                    {v}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {!calcResult ? (
+                                        <button onClick={() => setCalcResult(calculateMacros({ weightLbs: userProfile.bodyweight, age: userProfile.age, sex: userProfile.sex, activityLevel, goal: macroGoal }))}
+                                            className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-2 rounded-lg text-xs uppercase tracking-wider transition">
+                                            Calculate
+                                        </button>
+                                    ) : (
+                                        <div className="space-y-2">
+                                            <div className="grid grid-cols-4 gap-2 text-center">
+                                                <div className="bg-zinc-900 rounded-lg p-2">
+                                                    <div className="text-[9px] text-zinc-500 uppercase">Calories</div>
+                                                    <div className="text-sm font-bold text-white">{calcResult.calories}</div>
+                                                </div>
+                                                <div className="bg-zinc-900 rounded-lg p-2">
+                                                    <div className="text-[9px] text-zinc-500 uppercase">Protein</div>
+                                                    <div className="text-sm font-bold text-red-400">{calcResult.protein}g</div>
+                                                </div>
+                                                <div className="bg-zinc-900 rounded-lg p-2">
+                                                    <div className="text-[9px] text-zinc-500 uppercase">Carbs</div>
+                                                    <div className="text-sm font-bold text-yellow-400">{calcResult.carbs}g</div>
+                                                </div>
+                                                <div className="bg-zinc-900 rounded-lg p-2">
+                                                    <div className="text-[9px] text-zinc-500 uppercase">Fat</div>
+                                                    <div className="text-sm font-bold text-green-400">{calcResult.fat}g</div>
+                                                </div>
+                                            </div>
+                                            <div className="text-[9px] text-zinc-600 text-center">BMR: {calcResult.bmr} · TDEE: {calcResult.tdee}</div>
+                                            <button onClick={() => {
+                                                setNutritionTargets({ protein: calcResult.protein, carbs: calcResult.carbs, fat: calcResult.fat, calories: calcResult.calories });
+                                                setShowCalc(false);
+                                            }}
+                                                className="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded-lg text-xs uppercase tracking-wider transition">
+                                                Apply These Targets
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
 
