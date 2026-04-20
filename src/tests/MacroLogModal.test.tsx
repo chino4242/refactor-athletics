@@ -24,6 +24,11 @@ describe('MacroLogModal Component', () => {
         vi.clearAllMocks();
     });
 
+    const switchToManualTab = async () => {
+        const tab = screen.getByRole('button', { name: /Set Totals/i });
+        await act(async () => { fireEvent.click(tab); });
+    };
+
     it('renders when isOpen is true', async () => {
         await act(async () => {
             render(<MacroLogModal {...defaultProps} />);
@@ -40,6 +45,7 @@ describe('MacroLogModal Component', () => {
         await act(async () => {
             render(<MacroLogModal {...defaultProps} />);
         });
+        await switchToManualTab();
         expect(screen.getByText(/Carbs/i)).toBeInTheDocument();
         expect(screen.getByText(/Fat/i)).toBeInTheDocument();
         expect(screen.getByText(/Protein/i)).toBeInTheDocument();
@@ -50,6 +56,7 @@ describe('MacroLogModal Component', () => {
         await act(async () => {
             render(<MacroLogModal {...defaultProps} />);
         });
+        await switchToManualTab();
 
         const inputs = screen.getAllByRole('spinbutton');
         const proteinInput = inputs[2]; // Third input is protein
@@ -63,6 +70,7 @@ describe('MacroLogModal Component', () => {
         await act(async () => {
             render(<MacroLogModal {...defaultProps} />);
         });
+        await switchToManualTab();
 
         // Fill in values
         const inputs = screen.getAllByRole('spinbutton');
@@ -76,9 +84,9 @@ describe('MacroLogModal Component', () => {
             fireEvent.change(fatInput, { target: { value: '60' } });
         });
 
-        const setTotalsButton = screen.getByText('Set Totals');
+        const setTotalsButtons = screen.getAllByText('Set Totals');
         await act(async () => {
-            fireEvent.click(setTotalsButton);
+            fireEvent.click(setTotalsButtons[setTotalsButtons.length - 1]);
         });
 
         await waitFor(() => {
@@ -92,6 +100,7 @@ describe('MacroLogModal Component', () => {
         await act(async () => {
             render(<MacroLogModal {...defaultProps} />);
         });
+        await switchToManualTab();
 
         const inputs = screen.getAllByRole('spinbutton');
         const proteinInput = inputs[2];
@@ -99,9 +108,9 @@ describe('MacroLogModal Component', () => {
             fireEvent.change(proteinInput, { target: { value: '150' } });
         });
 
-        const setTotalsButton = screen.getByText('Set Totals');
+        const setTotalsButtons2 = screen.getAllByText('Set Totals');
         await act(async () => {
-            fireEvent.click(setTotalsButton);
+            fireEvent.click(setTotalsButtons2[setTotalsButtons2.length - 1]);
         });
 
         await waitFor(() => {
@@ -113,6 +122,7 @@ describe('MacroLogModal Component', () => {
         await act(async () => {
             render(<MacroLogModal {...defaultProps} />);
         });
+        await switchToManualTab();
 
         const inputs = screen.getAllByRole('spinbutton');
         const proteinInput = inputs[2];
@@ -120,7 +130,7 @@ describe('MacroLogModal Component', () => {
             fireEvent.change(proteinInput, { target: { value: '150' } });
         });
 
-        const setTotalsButton = screen.getByText('Set Totals');
+        const setTotalsButton = screen.getAllByText('Set Totals').pop()!;
         await act(async () => {
             fireEvent.click(setTotalsButton);
         });
@@ -134,6 +144,7 @@ describe('MacroLogModal Component', () => {
         await act(async () => {
             render(<MacroLogModal {...defaultProps} />);
         });
+        await switchToManualTab();
 
         const inputs = screen.getAllByRole('spinbutton');
         const proteinInput = inputs[2];
@@ -141,7 +152,7 @@ describe('MacroLogModal Component', () => {
             fireEvent.change(proteinInput, { target: { value: '150' } });
         });
 
-        const setTotalsButton = screen.getByText('Set Totals');
+        const setTotalsButton = screen.getAllByText('Set Totals').pop()!;
         await act(async () => {
             fireEvent.click(setTotalsButton);
         });
@@ -156,6 +167,7 @@ describe('MacroLogModal Component', () => {
         await act(async () => {
             render(<MacroLogModal {...defaultProps} />);
         });
+        await switchToManualTab();
 
         const quickAdd16 = screen.getByText('+16');
         await act(async () => {
@@ -186,7 +198,7 @@ describe('MacroLogModal Component', () => {
             render(<MacroLogModal {...defaultProps} />);
         });
 
-        const setTotalsButton = screen.getByText('Set Totals');
+        const setTotalsButton = screen.getAllByText('Set Totals').pop()!;
         await act(async () => {
             fireEvent.click(setTotalsButton);
         });
