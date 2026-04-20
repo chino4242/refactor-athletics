@@ -14,6 +14,7 @@ interface Props {
     history: any[];
     catalog: any[];
     stats: UserStats | null;
+    pathExerciseIds: string[];
 }
 
 // Map power level to a tier (0-5) using thresholds
@@ -44,7 +45,7 @@ function getStandardsForExercise(exercise: any, age: number, sex: string): numbe
     return bracket?.levels || null;
 }
 
-export default function PowerLevelPage({ userId, profile, history, catalog, stats }: Props) {
+export default function PowerLevelPage({ userId, profile, history, catalog, stats, pathExerciseIds }: Props) {
     const themeKey = profile?.selected_theme || 'athlete';
     const theme = THEMES[themeKey] || THEMES['athlete'];
     const sex = profile?.sex || 'M';
@@ -53,6 +54,7 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
     const maxPower = stats?.max_expertise || 0;
 
     const { groupedTrophies, categoryStats } = useTrophies(history, catalog);
+    const pathSet = useMemo(() => new Set(pathExerciseIds), [pathExerciseIds]);
 
     // Compute per-exercise data with next-level thresholds
     const exerciseData = useMemo(() => {
@@ -61,6 +63,7 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
 
         return allEntries.map(entry => {
             const cleanId = entry.exerciseId.replace(/^(five_rm_|one_rm_|est_1rm_)/, '');
+            if (!pathSet.has(cleanId) && !pathSet.has(entry.exerciseId)) return null;
             const ex = catalogMap.get(cleanId) || catalogMap.get(entry.exerciseId);
             const levels = getStandardsForExercise(ex, age, sex);
             const currentLevel = entry.best?.level || 0;
@@ -75,8 +78,8 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                 unit,
                 bestValue: entry.best?.value || entry.best?.raw_value || 0,
             };
-        }).sort((a, b) => b.currentLevel - a.currentLevel || (b.bestValue as number) - (a.bestValue as number));
-    }, [groupedTrophies, catalog, age, sex]);
+        }).filter((x): x is NonNullable<typeof x> => x !== null).sort((a, b) => b.currentLevel - a.currentLevel || (b.bestValue as number) - (a.bestValue as number));
+    }, [groupedTrophies, catalog, age, sex, pathSet]);
 
     // Tier calculation
     const tier = getTier(powerLevel);
@@ -253,7 +256,7 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                         // Also show untested ranked exercises in this category
                         const testedIds = new Set(catExercises.map(e => e.exerciseId.replace(/^(five_rm_|one_rm_|est_1rm_)/, '')));
                         const untestedInCat = catalog.filter((c: any) => {
-                            if (!c.standards) return false;
+                            if (!c.standards || !pathSet.has(c.id)) return false;
                             let displayCat = c.category || 'Strength';
                             if (displayCat.includes("Strength") || displayCat === "Gymnastics" || displayCat === "Weightlifting") displayCat = "Strength";
                             else if (displayCat === "Cardio" || displayCat === "Endurance") displayCat = "Endurance & Speed";
