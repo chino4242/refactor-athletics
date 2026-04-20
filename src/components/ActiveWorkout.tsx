@@ -849,6 +849,48 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
     loadSchedule();
   }, [initialDate]);
 
+  // Restore completion state from today's logged workouts
+  useEffect(() => {
+    if (!workoutData.length || !fullHistory.length) return;
+
+    const today = new Date().toISOString().split('T')[0];
+    const todayLogs = fullHistory.filter(h => h.date === today && h.exercise_id);
+    if (!todayLogs.length) return;
+
+    const loggedIds = new Set(todayLogs.map(h => h.exercise_id?.toLowerCase()));
+
+    const restored: number[] = [];
+    workoutData.forEach((block, idx) => {
+      if (completedIndices.includes(idx)) return;
+
+      const blockName = (block.name || '').replace(/^\d+\.\s*/, '').toLowerCase().trim();
+      const blockExId = (block.exercise_id || '').toLowerCase();
+
+      if (block.type === 'checklist_exercise') {
+        if (loggedIds.has(blockExId) || loggedIds.has(blockName) ||
+            [...loggedIds].some(id => id.includes(blockName) || blockName.includes(id))) {
+          restored.push(idx);
+        }
+      } else if (block.type === 'superset' && block.exercises) {
+        const allLogged = block.exercises.every((ex: any) => {
+          const exName = (ex.name || '').toLowerCase();
+          return loggedIds.has(exName) || [...loggedIds].some(id => id.includes(exName) || exName.includes(id));
+        });
+        if (allLogged) restored.push(idx);
+      } else if (block.type === 'timer') {
+        const hasCardioLog = todayLogs.some(h =>
+          (h.exercise_id || '').toLowerCase().includes('tread') ||
+          (h.exercise_id || '').toLowerCase().includes('interval')
+        );
+        if (hasCardioLog) restored.push(idx);
+      }
+    });
+
+    if (restored.length > 0) {
+      setCompletedIndices(prev => [...new Set([...prev, ...restored])]);
+    }
+  }, [workoutData, fullHistory]);
+
   const loadSchedule = async () => {
     try {
       const data = await getWeeklySchedule();
