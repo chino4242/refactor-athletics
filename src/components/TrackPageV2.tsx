@@ -15,7 +15,7 @@ import BodyCompSummary from './BodyCompSummary';
 import BodyCompositionModal from './BodyCompositionModal';
 import { BodyCompositionService } from '@/services/BodyCompositionService';
 import { calculatePhysiquePoints } from '@/utils/physiquePoints';
-import { SlidersHorizontal } from 'lucide-react';
+import { SlidersHorizontal, Share2 } from 'lucide-react';
 import type { UserStats, UserProfileData, HistoryItem } from '@/types';
 
 interface TrackPageProps {
@@ -239,9 +239,40 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
               <span className="text-[9px] font-bold mt-0.5 text-zinc-500">{theme.ranks?.[rankKey]?.name?.split(': ')[1] || `Lv ${rankLevel}`}</span>
             </div>
           )}
-          <button onClick={() => setShowSettings(true)} className="w-9 h-9 flex items-center justify-center rounded-full bg-zinc-800/60 text-zinc-500 hover:text-white hover:bg-zinc-700 transition">
-            <SlidersHorizontal size={16} />
-          </button>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              onClick={() => {
+                const p = profile;
+                const t = totals;
+                const caloriesIn = Math.round((t['macro_protein'] || 0) * 4 + (t['macro_carbs'] || 0) * 4 + (t['macro_fat'] || 0) * 9);
+                const burned = Math.round(t['calories_burned'] || 0);
+                const net = caloriesIn - burned;
+                const lines = [
+                  `📅 ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}`,
+                  `✅ ${questProgress.completed}/${questProgress.total} ${theme.labels.questsComplete}`, '',
+                  '🏃 ACTIVITY',
+                  `👣 Steps: ${(t['habit_steps'] || 0).toLocaleString()}`,
+                  `💪 Exercise: ${t['habit_exercise_minutes'] || 0} min`,
+                  `💤 Sleep: ${t['habit_sleep'] || 0} hrs`, '',
+                  '🥗 NUTRITION',
+                  `🥩 Protein: ${Math.round(t['macro_protein'] || 0)}/${p?.nutrition_targets?.protein || 150}g`,
+                  `🍞 Carbs: ${Math.round(t['macro_carbs'] || 0)}/${p?.nutrition_targets?.carbs || 150}g`,
+                  `🥑 Fat: ${Math.round(t['macro_fat'] || 0)}/${p?.nutrition_targets?.fat || 60}g`,
+                  `🔥 Calories: ${caloriesIn}/${p?.nutrition_targets?.calories || 2000}`,
+                  `💧 Water: ${t['habit_water'] || 0}/${p?.nutrition_targets?.water || 100} oz`,
+                  burned > 0 ? `📊 Net: ${net > 0 ? '+' : ''}${net} kcal` : '',
+                ].filter(Boolean);
+                navigator.clipboard.writeText(lines.join('\n'));
+                toast.success('Report copied to clipboard!');
+              }}
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-zinc-800/60 text-zinc-500 hover:text-white hover:bg-zinc-700 transition"
+            >
+              <Share2 size={14} />
+            </button>
+            <button onClick={() => setShowSettings(true)} className="w-9 h-9 flex items-center justify-center rounded-full bg-zinc-800/60 text-zinc-500 hover:text-white hover:bg-zinc-700 transition">
+              <SlidersHorizontal size={16} />
+            </button>
+          </div>
         </div>
       </div>
 
