@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { startOfWeek, addDays, format } from 'date-fns';
 import { getWeeklySchedule } from '@/services/api';
+import { useTheme } from '@/context/ThemeContext';
 import ActiveWorkout from './ActiveWorkout';
 import { ChevronDown } from 'lucide-react';
 import type { HistoryItem, CatalogItem } from '@/types';
@@ -31,6 +32,7 @@ const TYPE_STYLES: Record<string, { bg: string; text: string; dot: string }> = {
 };
 
 export default function TrainingV2({ userId, bodyweight, sex, age, initialHistory, initialCatalog, onLogComplete }: TrainingV2Props) {
+  const { theme } = useTheme();
   const [weekDays, setWeekDays] = useState<DayPlan[]>([]);
   const [selectedDayStr, setSelectedDayStr] = useState('');
   const [showActiveWorkout, setShowActiveWorkout] = useState(false);
@@ -99,7 +101,7 @@ export default function TrainingV2({ userId, bodyweight, sex, age, initialHistor
 
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-orange-400">Today&apos;s Workout</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: theme.accentHex }}>Today&apos;s Workout</span>
                 <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${todayStyle.bg} ${todayStyle.text}`}>
                   {today.plan.type}
                 </span>
@@ -132,7 +134,8 @@ export default function TrainingV2({ userId, bodyweight, sex, age, initialHistor
                 )}
                 <button
                   onClick={() => { setSelectedDayStr(todayStr); setShowActiveWorkout(true); }}
-                  className="ml-auto bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all active:scale-95 shadow-lg shadow-orange-600/20"
+                  className={`ml-auto bg-gradient-to-r ${theme.accentGradient} text-white px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all active:scale-95 shadow-lg`}
+                  style={{ boxShadow: `0 10px 15px -3px ${theme.accentHex}20` }}
                 >
                   Start Workout →
                 </button>
@@ -171,7 +174,7 @@ export default function TrainingV2({ userId, bodyweight, sex, age, initialHistor
                   {/* Day */}
                   <div className="w-10 text-center shrink-0">
                     <div className="text-[10px] font-bold uppercase text-zinc-500">{format(day.date, 'EEE')}</div>
-                    <div className={`text-sm font-black ${isToday ? 'text-orange-400' : 'text-zinc-300'}`}>{format(day.date, 'd')}</div>
+                    <div className={`text-sm font-black ${isToday ? '' : 'text-zinc-300'}`} style={isToday ? { color: theme.accentHex } : {}}>{format(day.date, 'd')}</div>
                   </div>
 
                   {/* Type dot + Title */}

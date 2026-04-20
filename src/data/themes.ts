@@ -9,7 +9,10 @@ export interface Theme {
   displayName: string;
   emoji?: string;
   colorClass?: string;
-  progressGradient?: string; // New field for XP bar
+  progressGradient?: string;
+  accent: string;       // e.g. 'orange', 'red', 'emerald', 'cyan'
+  accentHex: string;    // for SVG strokes
+  accentGradient: string; // for buttons: 'from-X to-Y'
   ranks: {
     [key: string]: RankDetails;
   };
@@ -22,6 +25,9 @@ export const THEMES: { [key: string]: Theme } = {
     emoji: "🏃",
     colorClass: "bg-zinc-900",
     progressGradient: "from-orange-600 to-red-600",
+    accent: 'orange',
+    accentHex: '#f97316',
+    accentGradient: 'from-orange-600 to-red-600',
     ranks: {
       level5: {
         name: "Level 5: Legend",
@@ -67,6 +73,9 @@ export const THEMES: { [key: string]: Theme } = {
     emoji: "🐉",
     colorClass: "bg-red-950",
     progressGradient: "from-red-600 to-orange-600",
+    accent: 'red',
+    accentHex: '#ef4444',
+    accentGradient: 'from-red-600 to-orange-600',
     ranks: {
       level5: { name: "Level 5: Archdragon", image: "/themes/dragon/level5.png", description: "A FORCE OF NATURE. Ancient, massive, and practically invincible." },
       level4: { name: "Level 4: Elder Dragon", image: "/themes/dragon/level4.png", description: "LEGENDARY BEAST. Your scales are iron and your breath is fire." },
@@ -83,6 +92,9 @@ export const THEMES: { [key: string]: Theme } = {
     emoji: "⚔️",
     colorClass: "bg-red-900",
     progressGradient: "from-red-700 to-rose-600",
+    accent: 'rose',
+    accentHex: '#e11d48',
+    accentGradient: 'from-red-700 to-rose-600',
     ranks: {
       level5: { name: "Level 5: Shogun", image: "/themes/samurai/level5.png", description: "SUPREME RULER. Your word is law. Unmatched power and command." },
       level4: { name: "Level 4: Daimyo", image: "/themes/samurai/level4.png", description: "WARLORD. You command armies and shape the battlefield." },
@@ -99,6 +111,9 @@ export const THEMES: { [key: string]: Theme } = {
     emoji: "🦖",
     colorClass: "bg-emerald-950",
     progressGradient: "from-emerald-600 to-green-500",
+    accent: 'emerald',
+    accentHex: '#10b981',
+    accentGradient: 'from-emerald-600 to-green-500',
     ranks: {
       level5: { name: "Level 5: Spinosaurus", image: "/themes/dinosaur/level5.png", description: "THE COLOSSUS. The largest predator to ever walk or swim. Master of two realms." }, // Updated to Spinosaurus per your image request context, usually Titanosaur/Rex but flexible!
       level4: { name: "Level 4: T-Rex", image: "/themes/dinosaur/level4.png", description: "TYRANT KING. Your bite force crushes bone. When you roar, the world listens." },
@@ -115,6 +130,9 @@ export const THEMES: { [key: string]: Theme } = {
     emoji: "🪓",
     colorClass: "bg-sky-950",
     progressGradient: "from-cyan-600 to-blue-600",
+    accent: 'cyan',
+    accentHex: '#06b6d4',
+    accentGradient: 'from-cyan-600 to-blue-600',
     ranks: {
       level5: { name: "Level 5: Vikingur", image: "/themes/viking/level5.png", description: "THE MOST ELITE. Rare and respected." },
       level4: { name: "Level 4: Fullsterkur", image: "/themes/viking/level4.png", description: "A MAN AMONGST MEN. Fully prepared." },

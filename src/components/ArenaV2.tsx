@@ -9,6 +9,7 @@ import ActiveDuelCard from './arena/ActiveDuelCard';
 import DuelHistoryCard from './arena/DuelHistoryCard';
 import DuelVictoryModal from './arena/DuelVictoryModal';
 import GroupCard from './GroupCard';
+import { useTheme } from '@/context/ThemeContext';
 import { Swords, Plus } from 'lucide-react';
 
 interface ArenaProps {
@@ -26,6 +27,7 @@ type TabId = typeof TABS[number]['id'];
 export default function ArenaV2({ userId }: ArenaProps) {
   const toast = useToast();
   const { isClassic } = useExperienceMode();
+  const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState<TabId>('duels');
   const [isLoading, setIsLoading] = useState(true);
 
@@ -64,7 +66,8 @@ export default function ArenaV2({ userId }: ArenaProps) {
         </div>
         <button
           onClick={() => setIsChallengeModalOpen(true)}
-          className="flex items-center gap-1.5 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all active:scale-95 shadow-lg shadow-orange-600/20"
+          className={`flex items-center gap-1.5 bg-gradient-to-r ${theme.accentGradient} text-white px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all active:scale-95 shadow-lg`}
+          style={{ boxShadow: `0 10px 15px -3px ${theme.accentHex}20` }}
         >
           <Plus size={14} />
           Challenge
@@ -82,6 +85,7 @@ export default function ArenaV2({ userId }: ArenaProps) {
                 ? 'bg-gradient-to-b from-zinc-700/80 to-zinc-800/80 text-white border border-zinc-600/50 shadow-lg shadow-black/20'
                 : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'
             }`}
+            style={activeTab === tab.id ? { borderColor: `${theme.accentHex}30` } : {}}
           >
             <span>{tab.icon}</span>
             <span>{isClassic ? tab.label : tab.rpgLabel}</span>

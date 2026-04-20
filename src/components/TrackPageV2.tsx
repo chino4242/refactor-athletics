@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { getHabitProgress, getHistory, getProfile, saveProfile } from '@/services/api';
+import { useTheme } from '@/context/ThemeContext';
 import { logHabitAction, deleteHistoryItemAction } from '@/app/actions';
 import { useToast } from '@/context/ToastContext';
 import LevelUpOverlay from './LevelUpOverlay';
@@ -36,6 +37,7 @@ type TabId = typeof TABS[number]['id'];
 
 export default function TrackPage({ userId, bodyweight, initialProfile, initialStats, onLogComplete }: TrackPageProps) {
   const toast = useToast();
+  const { theme } = useTheme();
 
   // --- Date navigation ---
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -205,8 +207,8 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
                 strokeLinecap="round" className="transition-all duration-700" />
               <defs>
                 <linearGradient id="grad-progress" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stopColor="#f97316" />
-                  <stop offset="100%" stopColor="#ef4444" />
+                  <stop offset="0%" stopColor={theme.accentHex} />
+                  <stop offset="100%" stopColor={theme.accentHex} stopOpacity="0.7" />
                 </linearGradient>
                 <linearGradient id="grad-done" x1="0" y1="0" x2="1" y2="1">
                   <stop offset="0%" stopColor="#10b981" />
@@ -215,7 +217,7 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
               </defs>
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className={`text-sm font-black ${progressPercent >= 100 ? 'text-emerald-400' : 'text-orange-400'}`}>{progressPercent}%</span>
+              <span className={`text-sm font-black ${progressPercent >= 100 ? 'text-emerald-400' : ''}`} style={progressPercent < 100 ? { color: theme.accentHex } : {}}>{progressPercent}%</span>
             </div>
           </div>
           <div className="flex-1 min-w-0">
@@ -241,6 +243,7 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
                 ? 'bg-gradient-to-b from-zinc-700/80 to-zinc-800/80 text-white border border-zinc-600/50 shadow-lg shadow-black/20'
                 : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'
             }`}
+            style={activeTab === tab.id ? { borderColor: `${theme.accentHex}30` } : {}}
           >
             <span>{tab.icon}</span>
             <span>{tab.label}</span>
