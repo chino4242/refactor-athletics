@@ -5,14 +5,26 @@ export interface RankDetails {
   description: string;
 }
 
+export interface ThemeLabels {
+  track: string;        // "Daily Quests" / "Daily Rites" / etc.
+  train: string;        // "Train" / "Forge" / "Dojo"
+  arena: string;        // "Arena" / "Battlefield" / "Colosseum"
+  todaysWorkout: string; // "Today's Workout" / "Today's Forge" / etc.
+  startWorkout: string;  // "Start Workout" / "Begin Forging" / etc.
+  questsComplete: string; // "Quests" / "Rites" / "Duties"
+  motivational: [string, string, string]; // [low%, mid%, 100%]
+}
+
 export interface Theme {
   displayName: string;
   emoji?: string;
   colorClass?: string;
   progressGradient?: string;
-  accent: string;       // e.g. 'orange', 'red', 'emerald', 'cyan'
-  accentHex: string;    // for SVG strokes
-  accentGradient: string; // for buttons: 'from-X to-Y'
+  accent: string;
+  accentHex: string;
+  accentGradient: string;
+  labels: ThemeLabels;
+  bgTexture: string;    // CSS background-image value
   ranks: {
     [key: string]: RankDetails;
   };
@@ -28,6 +40,13 @@ export const THEMES: { [key: string]: Theme } = {
     accent: 'orange',
     accentHex: '#f97316',
     accentGradient: 'from-orange-600 to-red-600',
+    labels: {
+      track: 'Daily Quests', train: 'Train', arena: 'Arena',
+      todaysWorkout: "Today's Workout", startWorkout: 'Start Workout →',
+      questsComplete: 'quests',
+      motivational: ['💪 Every rep counts. Start strong.', '🔥 Over halfway. Keep pushing.', '✨ Perfect day — all quests complete!'],
+    },
+    bgTexture: 'radial-gradient(circle at 50% 0%, rgba(249,115,22,0.03) 0%, transparent 50%)',
     ranks: {
       level5: {
         name: "Level 5: Legend",
@@ -76,6 +95,13 @@ export const THEMES: { [key: string]: Theme } = {
     accent: 'red',
     accentHex: '#ef4444',
     accentGradient: 'from-red-600 to-orange-600',
+    labels: {
+      track: 'Daily Rites', train: 'The Lair', arena: 'Battlefield',
+      todaysWorkout: "Today's Hunt", startWorkout: 'Begin Hunt →',
+      questsComplete: 'rites',
+      motivational: ['🥚 The egg stirs. Feed the flame.', '🔥 The dragon wakes. Keep burning.', '🐉 The sky is yours. All rites complete!'],
+    },
+    bgTexture: 'repeating-linear-gradient(120deg, rgba(239,68,68,0.02) 0px, transparent 2px, transparent 20px)',
     ranks: {
       level5: { name: "Level 5: Archdragon", image: "/themes/dragon/level5.png", description: "A FORCE OF NATURE. Ancient, massive, and practically invincible." },
       level4: { name: "Level 4: Elder Dragon", image: "/themes/dragon/level4.png", description: "LEGENDARY BEAST. Your scales are iron and your breath is fire." },
@@ -95,6 +121,13 @@ export const THEMES: { [key: string]: Theme } = {
     accent: 'rose',
     accentHex: '#e11d48',
     accentGradient: 'from-red-700 to-rose-600',
+    labels: {
+      track: 'Daily Duties', train: 'The Dojo', arena: 'The Colosseum',
+      todaysWorkout: "Today's Training", startWorkout: 'Enter the Dojo →',
+      questsComplete: 'duties',
+      motivational: ['🌸 Discipline begins with one step.', '⚔️ The blade sharpens. Stay focused.', '⛩️ Honor fulfilled. All duties complete.'],
+    },
+    bgTexture: 'repeating-linear-gradient(0deg, rgba(225,29,72,0.015) 0px, transparent 1px, transparent 40px)',
     ranks: {
       level5: { name: "Level 5: Shogun", image: "/themes/samurai/level5.png", description: "SUPREME RULER. Your word is law. Unmatched power and command." },
       level4: { name: "Level 4: Daimyo", image: "/themes/samurai/level4.png", description: "WARLORD. You command armies and shape the battlefield." },
@@ -114,6 +147,13 @@ export const THEMES: { [key: string]: Theme } = {
     accent: 'emerald',
     accentHex: '#10b981',
     accentGradient: 'from-emerald-600 to-green-500',
+    labels: {
+      track: 'Daily Instincts', train: 'The Hunting Grounds', arena: 'Territory',
+      todaysWorkout: "Today's Hunt", startWorkout: 'Begin Stalking →',
+      questsComplete: 'instincts',
+      motivational: ['🦎 The predator stirs. Move.', '🦖 Closing in on the kill. Keep hunting.', '🦕 Apex achieved. All instincts fulfilled!'],
+    },
+    bgTexture: 'radial-gradient(ellipse at 80% 20%, rgba(16,185,129,0.03) 0%, transparent 50%)',
     ranks: {
       level5: { name: "Level 5: Spinosaurus", image: "/themes/dinosaur/level5.png", description: "THE COLOSSUS. The largest predator to ever walk or swim. Master of two realms." }, // Updated to Spinosaurus per your image request context, usually Titanosaur/Rex but flexible!
       level4: { name: "Level 4: T-Rex", image: "/themes/dinosaur/level4.png", description: "TYRANT KING. Your bite force crushes bone. When you roar, the world listens." },
@@ -133,6 +173,13 @@ export const THEMES: { [key: string]: Theme } = {
     accent: 'cyan',
     accentHex: '#06b6d4',
     accentGradient: 'from-cyan-600 to-blue-600',
+    labels: {
+      track: 'Daily Sagas', train: 'The Forge', arena: 'Valhalla',
+      todaysWorkout: "Today's Forge", startWorkout: 'Begin Forging →',
+      questsComplete: 'sagas',
+      motivational: ['🪓 The forge is cold. Light it.', '⚡ Thunder builds. Keep forging.', '🛡️ Odin smiles. All sagas complete!'],
+    },
+    bgTexture: 'repeating-linear-gradient(45deg, rgba(6,182,212,0.015) 0px, transparent 1px, transparent 30px)',
     ranks: {
       level5: { name: "Level 5: Vikingur", image: "/themes/viking/level5.png", description: "THE MOST ELITE. Rare and respected." },
       level4: { name: "Level 4: Fullsterkur", image: "/themes/viking/level4.png", description: "A MAN AMONGST MEN. Fully prepared." },

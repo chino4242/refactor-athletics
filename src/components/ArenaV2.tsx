@@ -58,12 +58,12 @@ export default function ArenaV2({ userId }: ArenaProps) {
   useEffect(() => { loadDuels(); }, [loadDuels]);
 
   return (
-    <div className="max-w-3xl mx-auto flex flex-col gap-4 pb-32">
+    <div className="max-w-3xl mx-auto flex flex-col gap-4 pb-32" style={{ backgroundImage: theme.bgTexture }}>
 
       {/* Header */}
       <div className="flex items-center justify-between px-2 pt-2">
         <div>
-          <h1 className="text-xl font-black text-white">{isClassic ? 'Social' : 'Arena'}</h1>
+          <h1 className="text-xl font-black text-white">{isClassic ? 'Social' : theme.labels.arena}</h1>
           <p className="text-xs text-zinc-500">{isClassic ? 'Challenge friends' : 'Prove your strength'}</p>
         </div>
         <button

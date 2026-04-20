@@ -86,7 +86,7 @@ export default function TrainingV2({ userId, bodyweight, sex, age, initialHistor
   }
 
   return (
-    <div className="max-w-3xl mx-auto flex flex-col gap-4 pb-32">
+    <div className="max-w-3xl mx-auto flex flex-col gap-4 pb-32" style={{ backgroundImage: theme.bgTexture }}>
 
       {/* Today's Workout — Hero Card */}
       {today && (
@@ -103,7 +103,7 @@ export default function TrainingV2({ userId, bodyweight, sex, age, initialHistor
 
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: theme.accentHex }}>Today&apos;s Workout</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: theme.accentHex }}>{theme.labels.todaysWorkout}</span>
                 <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${todayStyle.bg} ${todayStyle.text}`}>
                   {today.plan.type}
                 </span>
@@ -139,7 +139,7 @@ export default function TrainingV2({ userId, bodyweight, sex, age, initialHistor
                   className={`ml-auto bg-gradient-to-r ${theme.accentGradient} text-white px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all active:scale-95 shadow-lg`}
                   style={{ boxShadow: `0 10px 15px -3px ${theme.accentHex}20` }}
                 >
-                  Start Workout →
+                  {theme.labels.startWorkout}
                 </button>
               </div>
             </div>

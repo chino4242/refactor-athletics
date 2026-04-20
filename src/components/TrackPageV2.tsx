@@ -176,7 +176,7 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
   };
 
   return (
-    <div className="max-w-3xl mx-auto flex flex-col gap-4 relative pb-32">
+    <div className="max-w-3xl mx-auto flex flex-col gap-4 relative pb-32" style={{ backgroundImage: theme.bgTexture }}>
       {showLevelUp && <LevelUpOverlay level={showLevelUp} onClose={() => setShowLevelUp(null)} />}
 
       {/* Date Navigation */}
@@ -223,9 +223,9 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
             </div>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-base font-bold text-white">{questProgress.completed} <span className="text-zinc-500 font-normal">of</span> {questProgress.total} <span className="text-zinc-500 font-normal">quests</span></p>
+            <p className="text-base font-bold text-white">{questProgress.completed} <span className="text-zinc-500 font-normal">of</span> {questProgress.total} <span className="text-zinc-500 font-normal">{theme.labels.questsComplete}</span></p>
             <p className="text-xs text-zinc-400 mt-0.5">
-              {progressPercent >= 100 ? '✨ Perfect day — all quests complete!' : progressPercent >= 50 ? '🔥 Over halfway there. Keep pushing.' : '💪 Every quest counts. Start strong.'}
+              {progressPercent >= 100 ? theme.labels.motivational[2] : progressPercent >= 50 ? theme.labels.motivational[1] : theme.labels.motivational[0]}
             </p>
           </div>
           <button onClick={() => setShowSettings(true)} className="w-9 h-9 flex items-center justify-center rounded-full bg-zinc-800/60 text-zinc-500 hover:text-white hover:bg-zinc-700 transition">
