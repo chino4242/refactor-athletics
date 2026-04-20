@@ -152,11 +152,6 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
 
   const progressPercent = questProgress.total > 0 ? Math.round((questProgress.completed / questProgress.total) * 100) : 0;
 
-  // Rank avatar from theme — use highest exercise rank achieved (0-5), not career XP level
-  const rankLevel = Math.min(initialStats?.highest_level_achieved || 0, 5);
-  const rankKey = `level${rankLevel}`;
-  const rankImage = theme.ranks?.[rankKey]?.image;
-
   // --- Render helpers ---
   const renderHabitCard = (habitId: string, label: string, icon: string, goal: number, unit: string, color: string, opts?: { sync?: boolean; setOnly?: boolean }) => {
     if (isHidden(habitId)) return null;
@@ -233,12 +228,6 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
               {progressPercent >= 100 ? theme.labels.motivational[2] : progressPercent >= 50 ? theme.labels.motivational[1] : theme.labels.motivational[0]}
             </p>
           </div>
-          {rankImage && (
-            <div className="flex flex-col items-center shrink-0">
-              <img src={rankImage} alt="Rank" className="w-11 h-11 object-contain" />
-              <span className="text-[9px] font-bold mt-0.5 text-zinc-500">{theme.ranks?.[rankKey]?.name?.split(': ')[1] || `Lv ${rankLevel}`}</span>
-            </div>
-          )}
           <button onClick={() => setShowSettings(true)} className="w-9 h-9 flex items-center justify-center rounded-full bg-zinc-800/60 text-zinc-500 hover:text-white hover:bg-zinc-700 transition shrink-0">
             <SlidersHorizontal size={16} />
           </button>

@@ -121,6 +121,18 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
         return calculatePhysiquePoints(bodyCompHistory, userProfile?.body_composition_goals || {}, (userProfile?.measurement_mode as 'tape' | 'scale') || 'tape');
     }, [bodyCompHistory, userProfile]);
 
+    // Tier-based rank from aggregate power level
+    const TIER_THRESHOLDS = [0, 1, 13, 25, 49, 97];
+    const tier = useMemo(() => {
+        for (let i = TIER_THRESHOLDS.length - 1; i >= 0; i--) {
+            if (powerLevel >= TIER_THRESHOLDS[i]) return i;
+        }
+        return 0;
+    }, [powerLevel]);
+    const rankKey = `level${tier}`;
+    const rankImage = theme.ranks?.[rankKey]?.image;
+    const rankName = theme.ranks?.[rankKey]?.name?.split(': ')[1] || `Tier ${tier}`;
+
     return (
         <div className="relative">
             {/* Theme Banner Image */}
@@ -128,7 +140,7 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                 <div className="relative overflow-hidden">
                     <img 
                         src={`/themes/${currentTheme}/banner.png`}
-                        alt={`${theme.name} banner`}
+                        alt={`${theme.displayName} banner`}
                         className="w-full h-auto block"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
@@ -142,8 +154,12 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                         {/* Power Level */}
                         <Link href="/power-level" className="group text-center">
                             <div className="flex items-center justify-center gap-2 mb-2">
-                                <span className="text-xl">{isClassic ? '📊' : theme.emoji}</span>
-                                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider group-hover:text-orange-400 transition">{isClassic ? 'Fitness Score' : 'Power Level'}</span>
+                                {rankImage ? (
+                                    <img src={rankImage} alt={rankName} className="w-8 h-8 object-contain" />
+                                ) : (
+                                    <span className="text-xl">{isClassic ? '📊' : theme.emoji}</span>
+                                )}
+                                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider group-hover:text-orange-400 transition">{isClassic ? 'Fitness Score' : rankName}</span>
                                 <InfoTooltip text={isClassic
                                     ? `Your fitness score across ${stats?.max_expertise ? stats.max_expertise / 5 : 0} exercises. Test an exercise to see where you stand.`
                                     : `Your best rank level (1-5) across ${stats?.max_expertise ? stats.max_expertise / 5 : 0} ranked exercises. Max = ${stats?.max_expertise || 0} (${stats?.max_expertise ? stats.max_expertise / 5 : 0} exercises × 5 levels). Log your best result on an exercise to earn your rank!`} size={14} />
