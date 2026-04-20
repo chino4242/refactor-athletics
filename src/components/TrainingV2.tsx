@@ -145,17 +145,27 @@ export default function TrainingV2({ userId, bodyweight, sex, age, initialHistor
                 >
                   {theme.labels.startWorkout}
                 </button>
-                <button
-                  onClick={() => setShowQuickLog(true)}
-                  className="bg-zinc-800 border border-zinc-700 text-zinc-300 px-3 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all active:scale-95 hover:border-zinc-600"
-                >
-                  <Zap size={14} />
-                </button>
               </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* Quick Log */}
+      <div className="mx-2 mt-2">
+        <button
+          onClick={() => setShowQuickLog(true)}
+          className="w-full flex items-center gap-3 bg-zinc-900 border border-zinc-800 rounded-xl p-3.5 hover:border-zinc-700 transition-colors active:scale-[0.98]"
+        >
+          <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center">
+            <Zap size={16} className="text-orange-500" />
+          </div>
+          <div className="text-left">
+            <span className="text-sm font-bold text-white">Quick Log</span>
+            <p className="text-[10px] text-zinc-500">Log a run, lift, or any exercise outside your program</p>
+          </div>
+        </button>
+      </div>
 
       {/* Week Schedule — Collapsible */}
       <div className="mx-2">
