@@ -3,6 +3,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Trophy, Share2, Copy, Check, X } from 'lucide-react';
 import { getSessionWorkouts, getExercisePRs, type SessionWorkout } from '@/services/api';
+import { useTheme } from '@/context/ThemeContext';
+import { THEMES } from '@/data/themes';
 
 interface Props {
     sessionId: string;
@@ -29,6 +31,13 @@ export default function WorkoutReport({ sessionId, userId, onExit }: Props) {
     const [prMap, setPrMap] = useState<Record<string, number>>({});
     const [loading, setLoading] = useState(true);
     const [copied, setCopied] = useState(false);
+    const { currentTheme } = useTheme();
+    const theme = THEMES[currentTheme] || THEMES['athlete'];
+
+    const getThemeRankName = (level: number) => {
+        const key = `level${level}` as keyof typeof theme.ranks;
+        return theme.ranks[key]?.name?.split(': ')[1] || theme.ranks[key]?.name || null;
+    };
 
     useEffect(() => {
         loadReport();
@@ -77,7 +86,7 @@ export default function WorkoutReport({ sessionId, userId, onExit }: Props) {
                 totalVolume,
                 xp: w.xp || 0,
                 level: w.level || 0,
-                rankName: w.rank_name,
+                rankName: getThemeRankName(w.level || 0),
                 isPR,
                 isBlock,
             };
