@@ -2,9 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Droplets, Wheat, Egg, Ban, Search, Plus } from 'lucide-react';
+import { X, Droplets, Wheat, Egg, Ban, Search, Plus, ScanBarcode } from 'lucide-react';
 import ScreenshotUploader from './ScreenshotUploader';
 import type { FoodResult } from '@/app/api/food-search/route';
+import dynamic from 'next/dynamic';
+
+const BarcodeScanner = dynamic(() => import('./BarcodeScanner'), { ssr: false });
 
 interface MacroLogModalProps {
     isOpen: boolean;
@@ -28,6 +31,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
     const [searching, setSearching] = useState(false);
     const [selectedFood, setSelectedFood] = useState<FoodResult | null>(null);
     const [servingGrams, setServingGrams] = useState('100');
+    const [showScanner, setShowScanner] = useState(false);
 
     const handleNutritionData = (data: any) => {
         if (data.protein) setProtein(String(data.protein));
@@ -147,16 +151,23 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                 {tab === 'search' ? (
                     <div className="p-4 space-y-3">
                         {/* Search input */}
-                        <div className="relative">
-                            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
-                            <input
-                                type="text"
-                                placeholder="Search foods (e.g. chicken breast, rice)..."
-                                value={foodQuery}
-                                onChange={e => handleFoodSearch(e.target.value)}
-                                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-9 pr-3 py-2.5 text-sm text-white focus:border-orange-500 outline-none"
-                                autoFocus
-                            />
+                        <div className="flex gap-2">
+                            <div className="relative flex-1">
+                                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+                                <input
+                                    type="text"
+                                    placeholder="Search foods..."
+                                    value={foodQuery}
+                                    onChange={e => handleFoodSearch(e.target.value)}
+                                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-9 pr-3 py-2.5 text-sm text-white focus:border-orange-500 outline-none"
+                                    autoFocus
+                                />
+                            </div>
+                            <button onClick={() => setShowScanner(true)}
+                                className="bg-zinc-800 border border-zinc-700 hover:border-orange-500 rounded-lg px-3 transition flex items-center"
+                                title="Scan barcode">
+                                <ScanBarcode size={18} className="text-zinc-400" />
+                            </button>
                         </div>
 
                         {/* Selected food — serving size + add */}
@@ -338,6 +349,12 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                 </>
                 )}
             </div>
+            {showScanner && (
+                <BarcodeScanner
+                    onResult={(food) => { setSelectedFood(food); setServingGrams('100'); setShowScanner(false); setTab('search'); }}
+                    onClose={() => setShowScanner(false)}
+                />
+            )}
         </div>
         , document.body);
 }
