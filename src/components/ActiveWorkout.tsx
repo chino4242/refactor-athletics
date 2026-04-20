@@ -807,12 +807,19 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
   const [briefingData, setBriefingData] = useState<any[] | null>(null);
   const [briefingDate, setBriefingDate] = useState<string | null>(null);
 
-  // 🟢 NEW: Computed Sections
+  // 🟢 NEW: Computed Sections (ordered: Strength first, then Cardio, then Core)
   const sections = useMemo(() => {
     if (!workoutData || workoutData.length === 0) return [];
 
+    const SECTION_ORDER: Record<string, number> = {
+      'Armor': 0, 'Strength Protocol': 0, 'Strength': 0,
+      'Engine': 1, 'Cardio': 1,
+      'Core Work': 2, 'Abdominal Protocol': 2, 'Core': 2,
+      'Cooldown': 3, 'Recovery': 3,
+    };
+
     const uniqueNames = Array.from(new Set(workoutData.map(b => b.section || 'General')));
-    return uniqueNames.map(name => {
+    const mapped = uniqueNames.map(name => {
       const sectionBlocks = workoutData.map((b, i) => ({ ...b, globalIndex: i })).filter(b => (b.section || 'General') === name);
       const firstIndex = sectionBlocks[0].globalIndex;
       const indices = sectionBlocks.map(b => b.globalIndex);
@@ -831,6 +838,8 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
         }).filter((n: string, i: number, arr: string[]) => n && arr.indexOf(n) === i).slice(0, 4)
       };
     });
+
+    return mapped.sort((a, b) => (SECTION_ORDER[a.name] ?? 99) - (SECTION_ORDER[b.name] ?? 99));
   }, [workoutData, completedIndices]);
 
   // FETCH WORKOUT ON MOUNT
