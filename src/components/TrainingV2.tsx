@@ -105,7 +105,10 @@ export default function TrainingV2({ userId, bodyweight, sex, age, initialHistor
             </div>
             {/* Rank avatar */}
             {rankImage && (
-              <img src={rankImage} alt="" className="absolute -right-2 -bottom-2 w-24 h-24 object-contain opacity-10 pointer-events-none select-none" />
+              <div className="absolute top-4 right-4 flex flex-col items-center">
+                <img src={rankImage} alt="Rank" className="w-10 h-10 object-contain" />
+                <span className="text-[8px] font-bold text-zinc-500 mt-0.5">{theme.ranks?.[rankKey]?.name?.split(': ')[1] || `Lv ${Math.min(highestLevel, 5)}`}</span>
+              </div>
             )}
 
             <div className="relative z-10">

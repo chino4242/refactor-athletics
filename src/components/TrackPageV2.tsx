@@ -234,7 +234,10 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
             </p>
           </div>
           {rankImage && (
-            <img src={rankImage} alt="Rank" className="w-12 h-12 object-contain shrink-0 opacity-80" />
+            <div className="flex flex-col items-center shrink-0">
+              <img src={rankImage} alt="Rank" className="w-11 h-11 object-contain" />
+              <span className="text-[9px] font-bold mt-0.5 text-zinc-500">{theme.ranks?.[rankKey]?.name?.split(': ')[1] || `Lv ${rankLevel}`}</span>
+            </div>
           )}
           <button onClick={() => setShowSettings(true)} className="w-9 h-9 flex items-center justify-center rounded-full bg-zinc-800/60 text-zinc-500 hover:text-white hover:bg-zinc-700 transition">
             <SlidersHorizontal size={16} />
