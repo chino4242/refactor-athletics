@@ -178,14 +178,14 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                                         supabase.from('habit_logs').select('habit_id, value').eq('user_id', userId).gte('timestamp', startTs),
                                         supabase.from('nutrition_logs').select('macro_type, amount').eq('user_id', userId).gte('timestamp', startTs),
                                         supabase.from('workouts').select('exercise_id, sets, xp').eq('user_id', userId).gte('timestamp', startTs),
-                                        supabase.from('users').select('nutrition_targets').eq('id', userId).single(),
+                                        supabase.from('users').select('nutrition_targets, habit_targets').eq('id', userId).single(),
                                     ]);
                                     const habits: Record<string, number> = {};
                                     (habitRes.data || []).forEach((h: any) => { habits[h.habit_id] = (habits[h.habit_id] || 0) + (h.value || 0); });
                                     const macros: Record<string, number> = {};
                                     (nutritionRes.data || []).forEach((n: any) => { macros[n.macro_type] = (macros[n.macro_type] || 0) + (n.amount || 0); });
                                     const protein = Math.round(macros['protein'] || 0), carbs = Math.round(macros['carbs'] || 0), fat = Math.round(macros['fat'] || 0);
-                                    const water = Math.round(macros['water'] || 0), burned = Math.round(macros['calories_burned'] || 0);
+                                    const water = Math.round(habits['habit_water'] || 0), burned = Math.round(macros['calories_burned'] || 0);
                                     const cal = Math.round(protein * 4 + carbs * 4 + fat * 9);
                                     const net = cal - burned;
                                     let totalVolume = 0, exerciseCount = 0;
@@ -208,7 +208,7 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                                         `🍞 Carbs: ${carbs}/${nt.carbs || 150}g`,
                                         `🥑 Fat: ${fat}/${nt.fat || 60}g`,
                                         `🔥 Calories: ${cal}/${nt.calories || 2000}`,
-                                        `💧 Water: ${water}/${nt.water || 100} oz`,
+                                        `💧 Water: ${water}/${profileRes.data?.habit_targets?.habit_water || nt.water || 100} oz`,
                                         burned > 0 ? `📊 Net: ${net > 0 ? '+' : ''}${net} kcal` : '',
                                     ].filter(Boolean);
                                     await navigator.clipboard.writeText(lines.join('\n'));
