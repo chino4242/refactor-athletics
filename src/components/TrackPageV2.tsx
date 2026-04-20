@@ -152,9 +152,9 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
 
   const progressPercent = questProgress.total > 0 ? Math.round((questProgress.completed / questProgress.total) * 100) : 0;
 
-  // Rank avatar from theme
-  const playerLevel = initialStats?.player_level || 0;
-  const rankKey = `level${Math.min(playerLevel, 5)}`;
+  // Rank avatar from theme — use highest exercise rank achieved (0-5), not career XP level
+  const rankLevel = Math.min(initialStats?.highest_level_achieved || 0, 5);
+  const rankKey = `level${rankLevel}`;
   const rankImage = theme.ranks?.[rankKey]?.image;
 
   // --- Render helpers ---

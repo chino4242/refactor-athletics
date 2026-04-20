@@ -17,7 +17,7 @@ interface TrainingV2Props {
   initialHistory?: HistoryItem[];
   initialCatalog?: CatalogItem[];
   onLogComplete?: () => void;
-  playerLevel?: number;
+  highestLevel?: number;
 }
 
 interface DayPlan {
@@ -33,10 +33,10 @@ const TYPE_STYLES: Record<string, { bg: string; text: string; dot: string }> = {
   Recovery: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', dot: 'bg-emerald-400' },
 };
 
-export default function TrainingV2({ userId, bodyweight, sex, age, initialHistory, initialCatalog, onLogComplete, playerLevel = 0 }: TrainingV2Props) {
+export default function TrainingV2({ userId, bodyweight, sex, age, initialHistory, initialCatalog, onLogComplete, highestLevel = 0 }: TrainingV2Props) {
   const { theme: _theme } = useTheme();
   const theme = _theme || THEMES.athlete;
-  const rankKey = `level${Math.min(playerLevel, 5)}`;
+  const rankKey = `level${Math.min(highestLevel, 5)}`;
   const rankImage = theme.ranks?.[rankKey]?.image;
   const [weekDays, setWeekDays] = useState<DayPlan[]>([]);
   const [selectedDayStr, setSelectedDayStr] = useState('');

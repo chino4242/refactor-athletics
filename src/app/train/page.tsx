@@ -28,7 +28,7 @@ export default async function TrainPage() {
                     sex={profile?.sex || 'M'}
                     initialHistory={history}
                     initialCatalog={catalog}
-                    playerLevel={stats?.player_level || 0}
+                    highestLevel={stats?.highest_level_achieved || 0}
                 />
             </main>
         </div>
