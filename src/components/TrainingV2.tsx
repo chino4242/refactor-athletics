@@ -6,8 +6,9 @@ import { getWeeklySchedule } from '@/services/api';
 import { useTheme } from '@/context/ThemeContext';
 import { THEMES } from '@/data/themes';
 import ActiveWorkout from './ActiveWorkout';
-import { ChevronDown, Settings } from 'lucide-react';
+import { ChevronDown, Settings, Zap } from 'lucide-react';
 import Link from 'next/link';
+import QuickLogModal from './QuickLogModal';
 import type { HistoryItem, CatalogItem } from '@/types';
 
 interface TrainingV2Props {
@@ -41,6 +42,7 @@ export default function TrainingV2({ userId, bodyweight, sex, age, initialHistor
   const [selectedDayStr, setSelectedDayStr] = useState('');
   const [showActiveWorkout, setShowActiveWorkout] = useState(false);
   const [showWeekView, setShowWeekView] = useState(false);
+  const [showQuickLog, setShowQuickLog] = useState(false);
 
   const todayStr = format(new Date(), 'yyyy-MM-dd');
 
@@ -143,6 +145,12 @@ export default function TrainingV2({ userId, bodyweight, sex, age, initialHistor
                 >
                   {theme.labels.startWorkout}
                 </button>
+                <button
+                  onClick={() => setShowQuickLog(true)}
+                  className="bg-zinc-800 border border-zinc-700 text-zinc-300 px-3 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all active:scale-95 hover:border-zinc-600"
+                >
+                  <Zap size={14} />
+                </button>
               </div>
             </div>
           </div>
@@ -202,6 +210,17 @@ export default function TrainingV2({ userId, bodyweight, sex, age, initialHistor
           </div>
         )}
       </div>
+
+      {showQuickLog && (
+        <QuickLogModal
+          userId={userId}
+          bodyweight={bodyweight}
+          sex={sex}
+          catalog={initialCatalog || []}
+          onClose={() => setShowQuickLog(false)}
+          onLogged={() => onLogComplete?.()}
+        />
+      )}
     </div>
   );
 }
