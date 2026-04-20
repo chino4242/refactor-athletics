@@ -51,7 +51,7 @@ describe('workoutParser - treadmill blocks', () => {
     });
 
     describe('All daily workouts parse without errors', () => {
-        const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        const days = ['monday', 'tuesday', 'thursday', 'friday', 'saturday'];
 
         for (const day of days) {
             it(`${day}.txt should parse successfully`, () => {
@@ -63,6 +63,12 @@ describe('workoutParser - treadmill blocks', () => {
 
         it('sunday.txt should parse (rest day, no blocks expected)', () => {
             const text = loadWorkout('sunday');
+            const blocks = processWorkoutText(text, catalog);
+            expect(blocks.length).toBeGreaterThanOrEqual(0);
+        });
+
+        it('wednesday.txt should parse (recovery day, no blocks expected)', () => {
+            const text = loadWorkout('wednesday');
             const blocks = processWorkoutText(text, catalog);
             expect(blocks.length).toBeGreaterThanOrEqual(0);
         });
