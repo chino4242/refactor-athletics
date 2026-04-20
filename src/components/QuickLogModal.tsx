@@ -16,6 +16,17 @@ interface Props {
 
 const CATEGORIES = ['All', 'Cardio', 'Cardio & Conditioning', 'Chest', 'Back', 'Shoulders', 'Legs', 'Arms', 'Core', 'Abs & Core', 'Plyometrics', 'Olympic', 'Power & Capacity', 'Endurance & Speed', 'Mobility'];
 
+const QUICK_PICKS = [
+  { id: 'running_generic', emoji: '🏃', label: 'Run' },
+  { id: 'cycling', emoji: '🚴', label: 'Cycle' },
+  { id: 'swimming', emoji: '🏊', label: 'Swim' },
+  { id: 'rowing_general', emoji: '🚣', label: 'Row' },
+  { id: 'elliptical', emoji: '🏃‍♀️', label: 'Elliptical' },
+  { id: 'push_up', emoji: '💪', label: 'Push-Ups' },
+  { id: 'pull_up', emoji: '🏋️', label: 'Pull-Ups' },
+  { id: 'run_1_mile', emoji: '⏱️', label: '1mi Run' },
+];
+
 export default function QuickLogModal({ userId, bodyweight, sex, catalog, onClose, onLogged }: Props) {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
@@ -69,6 +80,20 @@ export default function QuickLogModal({ userId, bodyweight, sex, catalog, onClos
           </div>
 
           <div className="px-4 pt-3">
+            {/* Quick picks */}
+            <div className="flex gap-2 overflow-x-auto pb-3 no-scrollbar">
+              {QUICK_PICKS.map(qp => {
+                const item = catalog.find(c => c.id === qp.id);
+                if (!item) return null;
+                return (
+                  <button key={qp.id} onClick={() => setSelected(item)} className="flex flex-col items-center gap-1 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-xl hover:border-orange-500 transition min-w-[64px]">
+                    <span className="text-lg">{qp.emoji}</span>
+                    <span className="text-[9px] font-bold text-zinc-400 whitespace-nowrap">{qp.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
             <div className="relative mb-3">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
               <input
