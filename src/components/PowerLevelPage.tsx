@@ -196,7 +196,7 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                             <h2 className="text-sm font-black text-white uppercase tracking-wider">Core Lifts</h2>
                             <p className="text-[10px] text-zinc-600">Your top exercises driving your Power Level</p>
                         </div>
-                        <Link href="/test" className="text-[10px] text-orange-500 hover:text-orange-400 font-bold flex items-center gap-0.5">
+                                        <Link href="/test" className="text-[10px] text-orange-500 hover:text-orange-400 font-bold flex items-center gap-0.5">
                             Test <ChevronRight size={12} />
                         </Link>
                     </div>
@@ -304,7 +304,7 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                                                 {untestedInCat.slice(0, 5).map((c: any) => (
                                                     <div key={c.id} className="flex items-center gap-2 py-1">
                                                         <span className="text-[10px] text-zinc-600 flex-1 truncate">{c.name || formatExerciseName(c.id)}</span>
-                                                        <Link href="/test" className="text-[9px] text-orange-500/60 hover:text-orange-400 font-bold">Test</Link>
+                                                        <Link href={`/test?exercise=${encodeURIComponent(c.id)}`} className="text-[9px] text-orange-500/60 hover:text-orange-400 font-bold">Test</Link>
                                                     </div>
                                                 ))}
                                                 {untestedInCat.length > 5 && (

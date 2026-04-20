@@ -24,12 +24,13 @@ interface CalculatorProps {
     onCalculate?: () => void;
     history?: any[];
     hideBanner?: boolean;
+    initialExerciseId?: string;
 }
 
-export default function Calculator({ userId, bodyweight, sex, age, exercises, onCalculate, hideBanner = false }: CalculatorProps) {
+export default function Calculator({ userId, bodyweight, sex, age, exercises, onCalculate, hideBanner = false, initialExerciseId = '' }: CalculatorProps) {
 
     // --- LOCAL STATE ---
-    const [exerciseId, setExerciseId] = useState<string>('');
+    const [exerciseId, setExerciseId] = useState<string>(initialExerciseId);
     const [resultValue, setResultValue] = useState<number>(0);
     const { currentTheme } = useTheme();
     const [isMounted, setIsMounted] = useState(false);

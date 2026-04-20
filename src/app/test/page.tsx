@@ -3,7 +3,8 @@ import { createClient } from '@/utils/supabase/server';
 import { getProfile, getTrainingCatalog } from '@/services/api';
 import { redirect } from 'next/navigation';
 
-export default async function TestPage() {
+export default async function TestPage({ searchParams }: { searchParams: Promise<{ exercise?: string }> }) {
+    const params = await searchParams;
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -30,6 +31,7 @@ export default async function TestPage() {
                     age={profile?.age || 30}
                     sex={profile?.sex || 'M'}
                     exercises={rankedExercises}
+                    initialExerciseId={params.exercise || ''}
                     hideBanner
                 />
             </main>
