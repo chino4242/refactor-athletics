@@ -56,11 +56,14 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
     const handleShareReport = async () => {
         try {
             const supabase = createClient();
-            const today = new Date().toISOString().split('T')[0];
+            const todayStart = new Date();
+            todayStart.setHours(0, 0, 0, 0);
+            const startTs = todayStart.getTime();
+
             const [habitRes, nutritionRes, workoutRes, profileRes] = await Promise.all([
-                supabase.from('habit_logs').select('habit_id, value').eq('user_id', userId).eq('date', today),
-                supabase.from('nutrition_logs').select('macro_type, amount').eq('user_id', userId).eq('date', today),
-                supabase.from('workouts').select('exercise_id, sets, xp').eq('user_id', userId).eq('date', today),
+                supabase.from('habit_logs').select('habit_id, value').eq('user_id', userId).gte('timestamp', startTs),
+                supabase.from('nutrition_logs').select('macro_type, amount').eq('user_id', userId).gte('timestamp', startTs),
+                supabase.from('workouts').select('exercise_id, sets, xp').eq('user_id', userId).gte('timestamp', startTs),
                 supabase.from('users').select('nutrition_targets, habit_targets').eq('id', userId).single(),
             ]);
 
@@ -68,7 +71,7 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
             const habits: Record<string, number> = {};
             (habitRes.data || []).forEach((h: any) => { habits[h.habit_id] = (habits[h.habit_id] || 0) + (h.value || 0); });
 
-            // Nutrition (macro_type + amount rows)
+            // Nutrition (macro_type + amount rows, keyed as macro_X to match getHabitProgress)
             const macros: Record<string, number> = {};
             (nutritionRes.data || []).forEach((n: any) => { macros[n.macro_type] = (macros[n.macro_type] || 0) + (n.amount || 0); });
             const protein = Math.round(macros['protein'] || 0);
