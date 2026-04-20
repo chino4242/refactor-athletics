@@ -34,8 +34,48 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
     const [scheduleDate, setScheduleDate] = useState('');
     const [daySwapMode, setDaySwapMode] = useState(false);
     const [daySwapFirst, setDaySwapFirst] = useState<string | null>(null);
+    const [editorTab, setEditorTab] = useState<'exercises' | 'raw'>('exercises');
+    const [exerciseSwapTarget, setExerciseSwapTarget] = useState<{ name: string; swapGroup: string } | null>(null);
 
     const categories = ['All', 'Strength', 'Power & Capacity', 'Endurance & Speed', 'Olympic', 'Cardio'];
+
+    // Extract exercise names from workout text for structured view
+    const extractedExercises = (() => {
+        if (!defaultWorkoutContent) return [];
+        const found: { name: string; catalogItem: CatalogItem | null }[] = [];
+        const seen = new Set<string>();
+        // Match exercise names in parentheses like "Superset (Bench Press + High Pull)"
+        const parenMatches = defaultWorkoutContent.matchAll(/\(([^)]+)\)/g);
+        for (const m of parenMatches) {
+            const inner = m[1];
+            // Skip things like "PW @ 6%+" or "Base Pace" or "Heels Elevated"
+            if (inner.includes('@') || inner.includes('%') || inner.length < 4) continue;
+            const parts = inner.split(/\s*\+\s*/);
+            for (const part of parts) {
+                const name = part.trim();
+                if (name.length < 3 || seen.has(name.toLowerCase())) continue;
+                const match = catalog.find(c =>
+                    c.name.toLowerCase() === name.toLowerCase() ||
+                    c.name.toLowerCase().includes(name.toLowerCase()) ||
+                    name.toLowerCase().includes(c.name.toLowerCase())
+                );
+                if (match) { seen.add(name.toLowerCase()); found.push({ name, catalogItem: match }); }
+            }
+        }
+        // Also match standalone exercise lines like "◦ Crunch: 60s" or "◦ Plank: 60s"
+        const lineMatches = defaultWorkoutContent.matchAll(/[◦•]\s*([^:]+):/g);
+        for (const m of lineMatches) {
+            const name = m[1].trim();
+            if (name.length < 3 || seen.has(name.toLowerCase())) continue;
+            const match = catalog.find(c =>
+                c.name.toLowerCase() === name.toLowerCase() ||
+                c.name.toLowerCase().includes(name.toLowerCase()) ||
+                name.toLowerCase().includes(c.name.toLowerCase())
+            );
+            if (match) { seen.add(name.toLowerCase()); found.push({ name, catalogItem: match }); }
+        }
+        return found;
+    })();
 
     const filteredCatalog = catalog.filter(ex => {
         const matchesCategory = selectedCategory === 'All' || ex.category === selectedCategory;
@@ -874,17 +914,45 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
                             </div>
                         </div>
 
+                        <div className="flex gap-2 px-6 pt-4 border-b border-zinc-800">
+                            <button onClick={() => setEditorTab('exercises')} className={`text-xs font-bold uppercase px-3 py-2 border-b-2 transition ${editorTab === 'exercises' ? 'border-orange-500 text-white' : 'border-transparent text-zinc-500 hover:text-white'}`}>Exercises</button>
+                            <button onClick={() => setEditorTab('raw')} className={`text-xs font-bold uppercase px-3 py-2 border-b-2 transition ${editorTab === 'raw' ? 'border-orange-500 text-white' : 'border-transparent text-zinc-500 hover:text-white'}`}>Raw Text</button>
+                        </div>
+
                         <div className="flex-1 overflow-y-auto p-6">
-                            <label className="text-xs font-bold text-zinc-400 uppercase mb-2 block">Workout Content</label>
-                            <textarea
-                                value={defaultWorkoutContent}
-                                onChange={(e) => setDefaultWorkoutContent(e.target.value)}
-                                className="w-full h-full min-h-[500px] bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white font-mono text-sm focus:border-orange-500 outline-none resize-none"
-                                placeholder="Enter workout content..."
-                            />
-                            <p className="text-xs text-zinc-500 mt-2">
-                                Format: Use # for title, [Exercise Name] for exercises, and specify sets/reps/weight
-                            </p>
+                            {editorTab === 'exercises' ? (
+                                <div className="space-y-2">
+                                    {extractedExercises.length === 0 ? (
+                                        <p className="text-sm text-zinc-500 text-center py-8">No exercises detected. Use the Raw Text tab to edit.</p>
+                                    ) : extractedExercises.map((ex, i) => (
+                                        <div key={i} className="flex items-center gap-3 bg-zinc-800/50 border border-zinc-700 rounded-lg p-3">
+                                            <div className="flex-1 min-w-0">
+                                                <span className="text-sm font-bold text-white">{ex.name}</span>
+                                                {ex.catalogItem?.category && <span className="text-[10px] text-zinc-500 ml-2 uppercase">{ex.catalogItem.category}</span>}
+                                            </div>
+                                            {ex.catalogItem?.swap_group && (
+                                                <button
+                                                    onClick={() => setExerciseSwapTarget({ name: ex.name, swapGroup: ex.catalogItem!.swap_group! })}
+                                                    className="p-1.5 text-zinc-500 hover:text-orange-400 rounded hover:bg-zinc-700/50"
+                                                    title="Swap exercise"
+                                                >
+                                                    <ArrowLeftRight size={16} />
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <>
+                                    <label className="text-xs font-bold text-zinc-400 uppercase mb-2 block">Workout Content</label>
+                                    <textarea
+                                        value={defaultWorkoutContent}
+                                        onChange={(e) => setDefaultWorkoutContent(e.target.value)}
+                                        className="w-full h-full min-h-[500px] bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white font-mono text-sm focus:border-orange-500 outline-none resize-none"
+                                        placeholder="Enter workout content..."
+                                    />
+                                </>
+                            )}
                         </div>
 
                         <div className="p-6 border-t border-zinc-800 flex gap-3 flex-shrink-0">
@@ -943,6 +1011,43 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
                             >
                                 {loading ? 'Scheduling...' : 'Confirm'}
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Exercise Swap Picker for Program Editor */}
+            {exerciseSwapTarget && (
+                <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-end justify-center" onClick={() => setExerciseSwapTarget(null)}>
+                    <div className="bg-zinc-900 border-t border-zinc-700 rounded-t-2xl w-full max-w-lg max-h-[70vh] flex flex-col" onClick={e => e.stopPropagation()}>
+                        <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
+                            <div>
+                                <h3 className="text-sm font-bold text-white">Swap Exercise</h3>
+                                <p className="text-[10px] text-zinc-500">Replacing: {exerciseSwapTarget.name}</p>
+                            </div>
+                            <button onClick={() => setExerciseSwapTarget(null)} className="text-zinc-500 hover:text-white text-xs font-bold px-3 py-1 rounded bg-zinc-800">✕</button>
+                        </div>
+                        <div className="overflow-y-auto p-3 space-y-1">
+                            {catalog
+                                .filter(c => c.swap_group === exerciseSwapTarget.swapGroup && c.name.toLowerCase() !== exerciseSwapTarget.name.toLowerCase())
+                                .sort((a, b) => a.name.localeCompare(b.name))
+                                .map(c => (
+                                    <button
+                                        key={c.id}
+                                        onClick={() => {
+                                            // Replace exercise name in text content
+                                            const regex = new RegExp(exerciseSwapTarget.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+                                            setDefaultWorkoutContent(prev => prev.replace(regex, c.name));
+                                            setExerciseSwapTarget(null);
+                                        }}
+                                        className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-zinc-800 transition flex items-center justify-between"
+                                    >
+                                        <span className="text-sm text-white">{c.name}</span>
+                                        {c.required_equipment && c.required_equipment.length > 0 && (
+                                            <span className="text-[9px] text-zinc-600">{c.required_equipment.join(', ')}</span>
+                                        )}
+                                    </button>
+                                ))}
                         </div>
                     </div>
                 </div>
