@@ -1,4 +1,4 @@
-import Arena from '@/components/Arena';
+import ArenaV2 from '@/components/ArenaV2';
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 
@@ -12,8 +12,8 @@ export default async function ArenaPage() {
 
     return (
         <div className="min-h-screen bg-black text-white w-full">
-            <main className="w-full h-full p-4 md:p-8">
-                <Arena userId={user.id} />
+            <main className="w-full h-full">
+                <ArenaV2 userId={user.id} />
             </main>
         </div>
     );
