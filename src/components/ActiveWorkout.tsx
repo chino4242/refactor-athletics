@@ -140,6 +140,25 @@ function ExerciseView({ block, blockIndex, onComplete, fullHistory, catalog, exe
         <p className="text-zinc-400 text-sm mt-1 font-mono">
           {block.sets} Sets × {block.reps_per_set} Reps • {block.rest_seconds || 90}s Rest
         </p>
+
+        {/* Last time hint */}
+        {(() => {
+          const exId = catalogItem?.id || block.exercise_id;
+          if (!exId || !fullHistory) return null;
+          const logs = fullHistory
+            .filter((h: any) => h.exercise_id === exId && (h.details?.length > 0 || h.data?.length > 0))
+            .sort((a: any, b: any) => b.timestamp - a.timestamp);
+          if (logs.length === 0) return null;
+          const last = logs[0];
+          const sets = last.details || last.data || [];
+          const summary = sets.map((s: any) => s.weight ? `${s.weight}×${s.reps}` : `${s.reps} reps`).join(', ');
+          return (
+            <div className="mt-2 px-2 py-1.5 bg-zinc-800/50 border border-zinc-700/50 rounded-lg">
+              <span className="text-[10px] text-zinc-500">Last: </span>
+              <span className="text-[10px] text-zinc-300 font-mono">{summary}</span>
+            </div>
+          );
+        })()}
       </div>
 
       {/* SCROLLABLE CONTENT */}
@@ -584,6 +603,32 @@ function SupersetView({ block, blockIndex, onComplete, fullHistory, catalog, exe
                 </li>
               ))}
             </ul>
+          </div>
+        )}
+
+        {/* Last time hints */}
+        {exercises.length > 0 && fullHistory && (
+          <div className="space-y-1">
+            {exercises.map((ex: any, exIdx: number) => {
+              const swapKey = `${blockIndex}-${exIdx}`;
+              const swap = exerciseSwaps?.[swapKey];
+              const name = swap?.name || ex.name;
+              const catItem = variantOverrides[exIdx] || swap?.catalogItem || catalog?.find((c: any) => c.name.toLowerCase() === name.toLowerCase());
+              const exId = catItem?.id;
+              if (!exId) return null;
+              const logs = fullHistory
+                .filter((h: any) => h.exercise_id === exId && (h.details?.length > 0 || h.data?.length > 0))
+                .sort((a: any, b: any) => b.timestamp - a.timestamp);
+              if (logs.length === 0) return null;
+              const sets = logs[0].details || logs[0].data || [];
+              const summary = sets.map((s: any) => s.weight ? `${s.weight}×${s.reps}` : `${s.reps} reps`).join(', ');
+              return (
+                <div key={exIdx} className="px-2 py-1 bg-zinc-800/50 border border-zinc-700/50 rounded-lg">
+                  <span className="text-[10px] text-zinc-500">{name}: </span>
+                  <span className="text-[10px] text-zinc-300 font-mono">{summary}</span>
+                </div>
+              );
+            })}
           </div>
         )}
 
