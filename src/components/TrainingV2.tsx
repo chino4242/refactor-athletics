@@ -6,7 +6,8 @@ import { getWeeklySchedule } from '@/services/api';
 import { useTheme } from '@/context/ThemeContext';
 import { THEMES } from '@/data/themes';
 import ActiveWorkout from './ActiveWorkout';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Settings } from 'lucide-react';
+import Link from 'next/link';
 import type { HistoryItem, CatalogItem } from '@/types';
 
 interface TrainingV2Props {
@@ -150,13 +151,18 @@ export default function TrainingV2({ userId, bodyweight, sex, age, initialHistor
 
       {/* Week Schedule — Collapsible */}
       <div className="mx-2">
-        <button
-          onClick={() => setShowWeekView(!showWeekView)}
-          className="flex items-center justify-between w-full py-3 px-1"
-        >
-          <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">This Week</span>
-          <ChevronDown size={16} className={`text-zinc-500 transition-transform ${showWeekView ? 'rotate-180' : ''}`} />
-        </button>
+        <div className="flex items-center justify-between py-3 px-1">
+          <button
+            onClick={() => setShowWeekView(!showWeekView)}
+            className="flex items-center gap-2"
+          >
+            <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">This Week</span>
+            <ChevronDown size={16} className={`text-zinc-500 transition-transform ${showWeekView ? 'rotate-180' : ''}`} />
+          </button>
+          <Link href="/workouts" className="p-1.5 text-zinc-500 hover:text-orange-400 rounded hover:bg-zinc-800/50 transition">
+            <Settings size={14} />
+          </Link>
+        </div>
 
         {showWeekView && (
           <div className="flex flex-col gap-1.5 animate-fade-in-up pb-2">
