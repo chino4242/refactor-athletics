@@ -127,16 +127,16 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
   // --- Progress calculation ---
   const questProgress = useMemo(() => {
     const habits = [
-      { id: 'habit_steps', goal: profile?.habit_targets?.steps || 10000 },
-      { id: 'habit_sleep', goal: profile?.habit_targets?.sleep || 7 },
-      { id: 'habit_exercise_minutes', goal: profile?.habit_targets?.exercise_minutes || 30 },
-      { id: 'habit_stand_hours', goal: profile?.habit_targets?.stand_hours || 8 },
-      { id: 'habit_cold_plunge', goal: profile?.habit_targets?.cold_plunge || 3 },
-      { id: 'habit_sauna', goal: profile?.habit_targets?.sauna || 15 },
-      { id: 'habit_mobility', goal: profile?.habit_targets?.mobility || 10 },
-      { id: 'habit_meditation', goal: profile?.habit_targets?.meditation || 10 },
-      { id: 'habit_reading', goal: profile?.habit_targets?.reading || 20 },
-      { id: 'habit_fasting', goal: profile?.habit_targets?.fasting || 16 },
+      { id: 'habit_steps', goal: profile?.habit_targets?.habit_steps || profile?.habit_targets?.steps || 10000 },
+      { id: 'habit_sleep', goal: profile?.habit_targets?.habit_sleep || profile?.habit_targets?.sleep || 7 },
+      { id: 'habit_exercise_minutes', goal: profile?.habit_targets?.habit_exercise_minutes || profile?.habit_targets?.exercise_minutes || 30 },
+      { id: 'habit_stand_hours', goal: profile?.habit_targets?.habit_stand_hours || profile?.habit_targets?.stand_hours || 8 },
+      { id: 'habit_cold_plunge', goal: profile?.habit_targets?.habit_cold_plunge || profile?.habit_targets?.cold_plunge || 3 },
+      { id: 'habit_sauna', goal: profile?.habit_targets?.habit_sauna || profile?.habit_targets?.sauna || 15 },
+      { id: 'habit_mobility', goal: profile?.habit_targets?.habit_mobility || profile?.habit_targets?.mobility || 10 },
+      { id: 'habit_meditation', goal: profile?.habit_targets?.habit_meditation || profile?.habit_targets?.meditation || 10 },
+      { id: 'habit_reading', goal: profile?.habit_targets?.habit_reading || profile?.habit_targets?.reading || 20 },
+      { id: 'habit_fasting', goal: profile?.habit_targets?.habit_fasting || profile?.habit_targets?.fasting || 16 },
     ].filter(h => !isHidden(h.id));
 
     const completed = habits.filter(h => (totals[h.id] || 0) >= h.goal).length;
@@ -254,12 +254,12 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
         {activeTab === 'health' && (
           <div className="flex flex-col gap-2.5 animate-fade-in-up">
             <div className="grid grid-cols-2 gap-2.5">
-              {renderHabitCard('habit_steps', 'Steps', '🚶', profile?.habit_targets?.steps || 10000, 'steps', 'bg-orange-500', { sync: true, setOnly: true })}
-              {renderHabitCard('habit_sleep', 'Sleep', '😴', profile?.habit_targets?.sleep || 7, 'hrs', 'bg-indigo-500', { sync: true })}
-              {renderHabitCard('habit_exercise_minutes', 'Exercise', '🏋️', profile?.habit_targets?.exercise_minutes || 30, 'min', 'bg-red-500', { sync: true })}
-              {renderHabitCard('habit_stand_hours', 'Stand', '🧍', profile?.habit_targets?.stand_hours || 8, 'hrs', 'bg-sky-500', { sync: true })}
+              {renderHabitCard('habit_steps', 'Steps', '🚶', profile?.habit_targets?.habit_steps || 10000, 'steps', 'bg-orange-500', { sync: true, setOnly: true })}
+              {renderHabitCard('habit_sleep', 'Sleep', '😴', profile?.habit_targets?.habit_sleep || 8, 'hrs', 'bg-indigo-500', { sync: true })}
+              {renderHabitCard('habit_exercise_minutes', 'Exercise', '🏋️', profile?.habit_targets?.habit_exercise_minutes || 30, 'min', 'bg-red-500', { sync: true })}
+              {renderHabitCard('habit_stand_hours', 'Stand', '🧍', profile?.habit_targets?.habit_stand_hours || 12, 'hrs', 'bg-sky-500', { sync: true })}
             </div>
-            {!isHidden('habit_day_strain') && renderHabitCard('habit_day_strain', 'Day Strain', '🔥', profile?.habit_targets?.day_strain || 14, 'strain', 'bg-amber-500', { sync: true, setOnly: true })}
+            {!isHidden('habit_day_strain') && renderHabitCard('habit_day_strain', 'Day Strain', '🔥', profile?.habit_targets?.habit_day_strain || 14, 'strain', 'bg-amber-500', { sync: true, setOnly: true })}
             {!isHidden('habit_supplements') && (
               <button
                 onClick={() => handleLog('habit_supplements', 1, 'Supplements')}
@@ -292,10 +292,10 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
         {/* RECOVERY TAB */}
         {activeTab === 'recovery' && (
           <div className="grid grid-cols-2 gap-2.5 animate-fade-in-up">
-            {renderHabitCard('habit_cold_plunge', 'Cold Plunge', '🧊', profile?.habit_targets?.cold_plunge || 3, 'min', 'bg-cyan-500')}
-            {renderHabitCard('habit_sauna', 'Sauna', '🔥', profile?.habit_targets?.sauna || 15, 'min', 'bg-red-500')}
-            {renderHabitCard('habit_mobility', 'Mobility', '🧘', profile?.habit_targets?.mobility || 10, 'min', 'bg-purple-500')}
-            {renderHabitCard('habit_meditation', 'Meditation', '🧠', profile?.habit_targets?.meditation || 10, 'min', 'bg-violet-500')}
+            {renderHabitCard('habit_cold_plunge', 'Cold Plunge', '🧊', profile?.habit_targets?.habit_cold_plunge || 3, 'min', 'bg-cyan-500')}
+            {renderHabitCard('habit_sauna', 'Sauna', '🔥', profile?.habit_targets?.habit_sauna || 15, 'min', 'bg-red-500')}
+            {renderHabitCard('habit_mobility', 'Mobility', '🧘', profile?.habit_targets?.habit_mobility || 10, 'min', 'bg-purple-500')}
+            {renderHabitCard('habit_meditation', 'Meditation', '🧠', profile?.habit_targets?.habit_meditation || 10, 'min', 'bg-violet-500')}
           </div>
         )}
 
@@ -320,7 +320,7 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
                 loading={loading === 'habit_no_vice' || loading === 'habit_bad_habit'}
               />
             )}
-            {renderHabitCard('habit_reading', 'Reading', '📖', profile?.habit_targets?.reading || 20, 'pages', 'bg-amber-500')}
+            {renderHabitCard('habit_reading', 'Reading', '📖', profile?.habit_targets?.habit_reading || 10, 'pages', 'bg-amber-500')}
             {!isHidden('habit_journaling') && (
               <button
                 onClick={() => handleLog('habit_journaling', 1, 'Journaling')}
@@ -334,7 +334,7 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
                 ✍️ Journaling {(totals['habit_journaling'] || 0) > 0 ? '✓' : '— tap to log'}
               </button>
             )}
-            {renderHabitCard('habit_fasting', 'Fasting', '⏰', profile?.habit_targets?.fasting || 16, 'hrs', 'bg-orange-500')}
+            {renderHabitCard('habit_fasting', 'Fasting', '⏰', profile?.habit_targets?.habit_fasting || 16, 'hrs', 'bg-orange-500')}
           </div>
         )}
 
