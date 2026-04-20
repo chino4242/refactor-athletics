@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { saveProfile } from '@/services/api';
 import { useRouter } from 'next/navigation';
+import { saveProfile } from '@/services/api';
+import { calculateMacros, ACTIVITY_LABELS, GOAL_LABELS, type ActivityLevel, type MacroGoal, type MacroResult } from '@/utils/macroCalculator';
 import { THEMES } from '@/data/themes';
 import { assignDefaultProgram } from '@/app/actions';
 import { signout } from '@/app/login/actions';
@@ -47,18 +48,32 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
         path: 'hybrid',
         equipment: [] as string[],
     });
+    const [activityLevel, setActivityLevel] = useState<ActivityLevel>('active');
+    const [macroGoal, setMacroGoal] = useState<MacroGoal>('maintain');
+    const [calcResult, setCalcResult] = useState<MacroResult | null>(null);
 
     // Classic mode skips theme selection (step 4)
     const steps = experienceMode === 'classic'
-        ? [1, 2, 3, 5, 6, 7, 8] // waiver, motivation, intro, path, personal, goal, equipment
-        : [1, 2, 3, 4, 5, 6, 7, 8]; // waiver, motivation, intro, theme, path, personal, goal, equipment
+        ? [1, 2, 3, 5, 6, 7, 8, 9]
+        : [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
     const currentIndex = steps.indexOf(step);
     const totalSteps = steps.length;
     const isLastStep = currentIndex === totalSteps - 1;
 
     const handleNext = () => {
-        if (!isLastStep) setStep(steps[currentIndex + 1]);
+        if (!isLastStep) {
+            const nextStep = steps[currentIndex + 1];
+            // Auto-infer goal and calculate when entering nutrition step
+            if (nextStep === 9 && formData.bodyweight && formData.age && formData.sex) {
+                const tw = parseFloat(formData.target_weight || '0');
+                const bw = parseFloat(formData.bodyweight);
+                const goal: MacroGoal = tw && tw < bw ? 'lose' : tw && tw > bw ? 'gain' : 'maintain';
+                setMacroGoal(goal);
+                setCalcResult(calculateMacros({ weightLbs: bw, age: parseInt(formData.age), sex: formData.sex, activityLevel, goal }));
+            }
+            setStep(nextStep);
+        }
     };
 
     const handleBack = () => {
@@ -78,6 +93,13 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
             selected_path: formData.path,
             experience_mode: experienceMode,
             available_equipment: formData.equipment,
+            nutrition_targets: calcResult ? {
+                calories: calcResult.calories,
+                protein: calcResult.protein,
+                carbs: calcResult.carbs,
+                fat: calcResult.fat,
+                water: 100,
+            } : undefined,
             hidden_habits: getDefaultHiddenHabits(experienceMode, formData.path),
             is_onboarded: true,
             waiver_accepted_at: new Date().toISOString(),
@@ -129,6 +151,7 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                         {step === 6 && 'About You'}
                         {step === 7 && 'Set Your Goal'}
                         {step === 8 && 'Your Equipment'}
+                        {step === 9 && 'Your Nutrition Plan'}
                     </h2>
                 </div>
 
@@ -427,6 +450,62 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                             })}
                         </div>
                         <p className="text-xs text-zinc-500">You can update this anytime in settings.</p>
+                    </div>
+                )}
+
+                {/* Step 9: Nutrition */}
+                {step === 9 && (
+                    <div className="space-y-4">
+                        <p className="text-zinc-400">We&apos;ll calculate recommended daily macros based on your profile.</p>
+
+                        <div>
+                            <label className="block text-sm font-medium text-zinc-300 mb-2">Activity Level</label>
+                            <select value={activityLevel} onChange={e => {
+                                setActivityLevel(e.target.value as ActivityLevel);
+                                setCalcResult(calculateMacros({ weightLbs: parseFloat(formData.bodyweight), age: parseInt(formData.age), sex: formData.sex, activityLevel: e.target.value as ActivityLevel, goal: macroGoal }));
+                            }} className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-white text-sm">
+                                {(Object.entries(ACTIVITY_LABELS) as [ActivityLevel, string][]).map(([k, v]) => (
+                                    <option key={k} value={k}>{v}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-zinc-300 mb-2">Goal</label>
+                            <div className="flex gap-2">
+                                {(Object.entries(GOAL_LABELS) as [MacroGoal, string][]).map(([k, v]) => (
+                                    <button key={k} onClick={() => {
+                                        setMacroGoal(k);
+                                        setCalcResult(calculateMacros({ weightLbs: parseFloat(formData.bodyweight), age: parseInt(formData.age), sex: formData.sex, activityLevel, goal: k }));
+                                    }} className={`flex-1 text-xs font-bold py-2.5 rounded-lg transition ${macroGoal === k ? 'bg-orange-600 text-white' : 'bg-zinc-800 text-zinc-400 border border-zinc-700'}`}>
+                                        {v}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {calcResult && (
+                            <div className="grid grid-cols-4 gap-2 text-center mt-2">
+                                <div className="bg-zinc-800 rounded-lg p-3">
+                                    <div className="text-[9px] text-zinc-500 uppercase">Calories</div>
+                                    <div className="text-lg font-bold text-white">{calcResult.calories}</div>
+                                </div>
+                                <div className="bg-zinc-800 rounded-lg p-3">
+                                    <div className="text-[9px] text-zinc-500 uppercase">Protein</div>
+                                    <div className="text-lg font-bold text-red-400">{calcResult.protein}g</div>
+                                </div>
+                                <div className="bg-zinc-800 rounded-lg p-3">
+                                    <div className="text-[9px] text-zinc-500 uppercase">Carbs</div>
+                                    <div className="text-lg font-bold text-yellow-400">{calcResult.carbs}g</div>
+                                </div>
+                                <div className="bg-zinc-800 rounded-lg p-3">
+                                    <div className="text-[9px] text-zinc-500 uppercase">Fat</div>
+                                    <div className="text-lg font-bold text-green-400">{calcResult.fat}g</div>
+                                </div>
+                            </div>
+                        )}
+
+                        <p className="text-xs text-zinc-500">You can adjust these anytime in Quest Settings.</p>
                     </div>
                 )}
 
