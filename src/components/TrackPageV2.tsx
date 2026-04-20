@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { getHabitProgress, getHistory, getProfile, saveProfile } from '@/services/api';
 import { useTheme } from '@/context/ThemeContext';
+import { THEMES } from '@/data/themes';
 import { logHabitAction, deleteHistoryItemAction } from '@/app/actions';
 import { useToast } from '@/context/ToastContext';
 import LevelUpOverlay from './LevelUpOverlay';
@@ -37,7 +38,8 @@ type TabId = typeof TABS[number]['id'];
 
 export default function TrackPage({ userId, bodyweight, initialProfile, initialStats, onLogComplete }: TrackPageProps) {
   const toast = useToast();
-  const { theme } = useTheme();
+  const { theme: _theme } = useTheme();
+  const theme = _theme || THEMES.athlete;
 
   // --- Date navigation ---
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());

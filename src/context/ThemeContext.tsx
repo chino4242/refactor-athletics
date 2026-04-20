@@ -26,8 +26,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
     const theme = useMemo(() => THEMES[currentTheme] || THEMES.athlete, [currentTheme]);
 
+    const DEFAULT_THEME = THEMES.athlete;
+
     return (
-        <ThemeContext.Provider value={{ currentTheme, setCurrentTheme, theme }}>
+        <ThemeContext.Provider value={{ currentTheme, setCurrentTheme, theme: theme || DEFAULT_THEME }}>
             {children}
         </ThemeContext.Provider>
     );

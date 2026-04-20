@@ -10,6 +10,7 @@ import DuelHistoryCard from './arena/DuelHistoryCard';
 import DuelVictoryModal from './arena/DuelVictoryModal';
 import GroupCard from './GroupCard';
 import { useTheme } from '@/context/ThemeContext';
+import { THEMES } from '@/data/themes';
 import { Swords, Plus } from 'lucide-react';
 
 interface ArenaProps {
@@ -27,7 +28,8 @@ type TabId = typeof TABS[number]['id'];
 export default function ArenaV2({ userId }: ArenaProps) {
   const toast = useToast();
   const { isClassic } = useExperienceMode();
-  const { theme } = useTheme();
+  const { theme: _theme } = useTheme();
+  const theme = _theme || THEMES.athlete;
   const [activeTab, setActiveTab] = useState<TabId>('duels');
   const [isLoading, setIsLoading] = useState(true);
 

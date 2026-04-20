@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { startOfWeek, addDays, format } from 'date-fns';
 import { getWeeklySchedule } from '@/services/api';
 import { useTheme } from '@/context/ThemeContext';
+import { THEMES } from '@/data/themes';
 import ActiveWorkout from './ActiveWorkout';
 import { ChevronDown } from 'lucide-react';
 import type { HistoryItem, CatalogItem } from '@/types';
@@ -32,7 +33,8 @@ const TYPE_STYLES: Record<string, { bg: string; text: string; dot: string }> = {
 };
 
 export default function TrainingV2({ userId, bodyweight, sex, age, initialHistory, initialCatalog, onLogComplete }: TrainingV2Props) {
-  const { theme } = useTheme();
+  const { theme: _theme } = useTheme();
+  const theme = _theme || THEMES.athlete;
   const [weekDays, setWeekDays] = useState<DayPlan[]>([]);
   const [selectedDayStr, setSelectedDayStr] = useState('');
   const [showActiveWorkout, setShowActiveWorkout] = useState(false);
