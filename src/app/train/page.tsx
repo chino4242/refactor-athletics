@@ -1,4 +1,4 @@
-import Training from '@/components/Training';
+import TrainingV2 from '@/components/TrainingV2';
 import { createClient } from '@/utils/supabase/server';
 import { getProfile, getHistory, getTrainingCatalog } from '@/services/api';
 import { redirect } from 'next/navigation';
@@ -11,23 +11,20 @@ export default async function TrainPage() {
         return redirect('/login');
     }
 
-    // Fetch all required data on the Server
-    const profile = await getProfile(user.id);
-    const history = await getHistory(user.id);
-    const catalog = await getTrainingCatalog();
-
-    const bodyweight = profile?.bodyweight || 180;
-    const age = profile?.age || 30;
-    const sex = profile?.sex || 'M';
+    const [profile, history, catalog] = await Promise.all([
+        getProfile(user.id),
+        getHistory(user.id),
+        getTrainingCatalog(),
+    ]);
 
     return (
         <div className="min-h-screen bg-black text-white w-full">
             <main className="w-full h-full">
-                <Training
+                <TrainingV2
                     userId={user.id}
-                    bodyweight={bodyweight}
-                    age={age}
-                    sex={sex}
+                    bodyweight={profile?.bodyweight || 180}
+                    age={profile?.age || 30}
+                    sex={profile?.sex || 'M'}
                     initialHistory={history}
                     initialCatalog={catalog}
                 />
