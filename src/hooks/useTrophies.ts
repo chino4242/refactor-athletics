@@ -42,13 +42,13 @@ export function useTrophies(history: HistoryItem[], exercises: any[]) {
                 let displayCategory = meta.category || 'Strength';
 
                 // Map sub-categories to the 4 main Radar buckets
-                if (displayCategory.includes("Strength") || displayCategory === "Gymnastics" || displayCategory === "Weightlifting") {
+                if (['Strength','Chest','Back','Legs','Shoulders','Arms','Olympic','Abs & Core','Core','Gymnastics','Weightlifting'].includes(displayCategory)) {
                     displayCategory = "Strength";
-                } else if (displayCategory === "Cardio" || displayCategory === "Endurance") {
+                } else if (['Endurance & Speed','Cardio','Endurance','Cardio & Conditioning'].includes(displayCategory)) {
                     displayCategory = "Endurance & Speed";
-                } else if (displayCategory === "Metcon" || displayCategory === "Power") {
+                } else if (['Power & Capacity','Metcon','Power','Plyometrics'].includes(displayCategory)) {
                     displayCategory = "Power & Capacity";
-                } else if (displayCategory === "Mobility" || displayCategory === "Flexibility") {
+                } else if (['Mobility','Flexibility','Recovery'].includes(displayCategory)) {
                     displayCategory = "Mobility";
                 }
 

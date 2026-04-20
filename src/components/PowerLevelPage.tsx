@@ -258,10 +258,10 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                         const untestedInCat = catalog.filter((c: any) => {
                             if (!c.standards || !pathSet.has(c.id)) return false;
                             let displayCat = c.category || 'Strength';
-                            if (displayCat.includes("Strength") || displayCat === "Gymnastics" || displayCat === "Weightlifting") displayCat = "Strength";
-                            else if (displayCat === "Cardio" || displayCat === "Endurance") displayCat = "Endurance & Speed";
-                            else if (displayCat === "Metcon" || displayCat === "Power") displayCat = "Power & Capacity";
-                            else if (displayCat === "Mobility" || displayCat === "Flexibility") displayCat = "Mobility";
+                            if (['Strength','Chest','Back','Legs','Shoulders','Arms','Olympic','Abs & Core','Core','Gymnastics','Weightlifting'].includes(displayCat)) displayCat = 'Strength';
+                            else if (['Endurance & Speed','Cardio','Endurance','Cardio & Conditioning'].includes(displayCat)) displayCat = 'Endurance & Speed';
+                            else if (['Power & Capacity','Metcon','Power','Plyometrics'].includes(displayCat)) displayCat = 'Power & Capacity';
+                            else if (['Mobility','Flexibility','Recovery'].includes(displayCat)) displayCat = 'Mobility';
                             return displayCat === cat && !testedIds.has(c.id);
                         });
 
