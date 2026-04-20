@@ -5,7 +5,7 @@ import { getActiveWorkout, getWorkoutHistory, getWeeklySchedule, getHistory, get
 import type { HistoryItem, CatalogItem } from '@/types';
 import ExerciseHistoryModal from './ExerciseHistoryModal'; // 🟢 NEW
 import { playCountdownBeep } from '../utils/audio';
-import { Play, Pause, SkipForward, RotateCcw, Calendar, CheckCircle, Info, Timer, ChevronRight } from 'lucide-react';
+import { Play, Pause, SkipForward, RotateCcw, Calendar, CheckCircle, Info, Timer, ChevronRight, ArrowLeftRight } from 'lucide-react';
 import ChecklistView from './ChecklistView';
 import { logWorkoutBlockAction, logTrainingAction } from '@/app/actions';
 import { getProfile } from '@/services/api';
@@ -16,7 +16,7 @@ import { v4 as uuidv4 } from 'uuid';
 import EquipmentVariantPicker, { getEquipmentVariants } from './EquipmentVariantPicker';
 
 // --- SUB-COMPONENT: EXERCISE VIEW ---
-function ExerciseView({ block, onComplete, fullHistory, catalog }: any) {
+function ExerciseView({ block, blockIndex, onComplete, fullHistory, catalog, exerciseSwaps, onSwap }: any) {
   const [completedSets, setCompletedSets] = useState<number[]>([]);
   const [restTime, setRestTime] = useState(0);
   const [isResting, setIsResting] = useState(false);
@@ -31,15 +31,19 @@ function ExerciseView({ block, onComplete, fullHistory, catalog }: any) {
   const [showHistoryModal, setShowHistoryModal] = useState(false);
 
   // Find Catalog Item
+  const swapKey = `${blockIndex}-0`;
+  const swap = exerciseSwaps?.[swapKey];
+  const displayName = swap?.name || block.name;
   const defaultCatalogItem = useMemo(() => {
     if (!catalog || catalog.length === 0) return null;
-    return catalog.find((c: any) => c.name.toLowerCase() === block.name.toLowerCase());
-  }, [catalog, block.name]);
+    return catalog.find((c: any) => c.name.toLowerCase() === displayName.toLowerCase());
+  }, [catalog, displayName]);
 
   const [overrideCatalogItem, setOverrideCatalogItem] = useState<CatalogItem | null>(null);
-  const catalogItem = overrideCatalogItem || defaultCatalogItem;
+  const catalogItem = overrideCatalogItem || swap?.catalogItem || defaultCatalogItem;
+  const swapGroup = catalogItem?.swap_group || defaultCatalogItem?.swap_group;
 
-  const variants = useMemo(() => getEquipmentVariants(block.name, catalog || []), [block.name, catalog]);
+  const variants = useMemo(() => getEquipmentVariants(displayName, catalog || []), [displayName, catalog]);
 
   const updateWeight = (index: number, val: string) => {
     const newWeights = [...weights];
@@ -100,9 +104,20 @@ function ExerciseView({ block, onComplete, fullHistory, catalog }: any) {
         </div>
 
         <div className="flex justify-between items-start">
-          <h1 className="text-white text-2xl font-black italic leading-tight">
-            {block.name}
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-white text-2xl font-black italic leading-tight flex-1">
+              {displayName}
+            </h1>
+            {swapGroup && (
+              <button
+                onClick={() => onSwap(0, displayName, swapGroup)}
+                className="p-2 text-zinc-500 hover:text-orange-400 rounded-lg hover:bg-zinc-800/50"
+                title="Swap exercise"
+              >
+                <ArrowLeftRight size={16} />
+              </button>
+            )}
+          </div>
 
           {/* 🟢 HISTORY BUTTON */}
           {catalogItem && (
@@ -267,7 +282,7 @@ function ExerciseView({ block, onComplete, fullHistory, catalog }: any) {
         <button
           onClick={() => {
             const exercisesPayload = [{
-              name: catalogItem?.name || block.name,
+              name: catalogItem?.name || displayName,
               catalogId: catalogItem?.id,
               sets: completedSets.map(i => ({
                 weight: parseFloat(weights[i] || '0'),
@@ -441,7 +456,7 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
 }
 
 // --- SUB-COMPONENT: SUPERSET VIEW ---
-function SupersetView({ block, onComplete, fullHistory, catalog }: any) {
+function SupersetView({ block, blockIndex, onComplete, fullHistory, catalog, exerciseSwaps, onSwap }: any) {
   const [completedSets, setCompletedSets] = useState<Record<number, number[]>>({});
   const [weights, setWeights] = useState<Record<string, string>>({});
   const [reps, setReps] = useState<Record<string, string>>({});
@@ -600,9 +615,13 @@ function SupersetView({ block, onComplete, fullHistory, catalog }: any) {
                   const defaultReps = targetReps != null ? String(targetReps) : '';
 
                   // Find catalog item (with variant override)
-                  const defaultCatalogItem = catalog?.find((c: any) => c.name.toLowerCase() === ex.name.toLowerCase());
-                  const catalogItem = variantOverrides[exIdx] || defaultCatalogItem;
-                  const exVariants = getEquipmentVariants(ex.name, catalog || []);
+                  const swapKey = `${blockIndex}-${exIdx}`;
+                  const swap = exerciseSwaps?.[swapKey];
+                  const displayName = swap?.name || ex.name;
+                  const defaultCatalogItem = catalog?.find((c: any) => c.name.toLowerCase() === displayName.toLowerCase());
+                  const catalogItem = variantOverrides[exIdx] || swap?.catalogItem || defaultCatalogItem;
+                  const exVariants = getEquipmentVariants(displayName, catalog || []);
+                  const swapGroup = catalogItem?.swap_group || defaultCatalogItem?.swap_group;
 
                   return (
                     <div key={exIdx} className={`rounded-xl border transition-all ${isDone ? 'bg-green-500/10 border-green-500/40' : 'bg-zinc-800 border-zinc-700'}`}>
@@ -643,7 +662,7 @@ function SupersetView({ block, onComplete, fullHistory, catalog }: any) {
                       >
                         <div className="flex flex-col">
                           <span className={`font-bold text-sm leading-tight ${isDone ? 'text-zinc-400 line-through' : 'text-white'}`}>
-                            {ex.name}
+                            {displayName}
                           </span>
                         </div>
 
@@ -652,6 +671,20 @@ function SupersetView({ block, onComplete, fullHistory, catalog }: any) {
                           {isDone && <CheckCircle size={12} className="text-black" />}
                         </div>
                       </button>
+
+                      {/* Swap button */}
+                      {swapGroup && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSwap(exIdx, displayName, swapGroup);
+                          }}
+                          className="p-1.5 text-zinc-500 hover:text-orange-400 rounded hover:bg-zinc-700/50"
+                          title="Swap exercise"
+                        >
+                          <ArrowLeftRight size={14} />
+                        </button>
+                      )}
 
                       {/* 🟢 HISTORY ICON (Small) */}
                       {catalogItem && (
@@ -724,9 +757,12 @@ function SupersetView({ block, onComplete, fullHistory, catalog }: any) {
                   });
                 }
               }
+              const swapKey = `${blockIndex}-${exIdx}`;
+              const swap = exerciseSwaps?.[swapKey];
               const override = variantOverrides[exIdx];
-              const catalogMatch = override || catalog?.find((c: any) => c.name.toLowerCase() === ex.name.toLowerCase());
-              return { name: catalogMatch?.name || ex.name, catalogId: catalogMatch?.id, sets: setsData };
+              const displayName = swap?.name || ex.name;
+              const catalogMatch = override || swap?.catalogItem || catalog?.find((c: any) => c.name.toLowerCase() === displayName.toLowerCase());
+              return { name: catalogMatch?.name || displayName, catalogId: catalogMatch?.id, sets: setsData };
             });
             onComplete(false, exercisesPayload);
           }}
@@ -802,6 +838,10 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
   const [blockResults, setBlockResults] = useState<any[] | null>(null);
   const [showBlockComplete, setShowBlockComplete] = useState(false);
   const [engineChoice, setEngineChoice] = useState<Record<number, 'hiit' | 'zone2' | null>>({});
+
+  // Swap exercise state
+  const [swapTarget, setSwapTarget] = useState<{ blockIdx: number; exIdx: number; name: string; swapGroup: string } | null>(null);
+  const [exerciseSwaps, setExerciseSwaps] = useState<Record<string, { name: string; catalogItem: CatalogItem }>>({});
 
   // 🟢 NEW: Briefing State
   const [briefingData, setBriefingData] = useState<any[] | null>(null);
@@ -1393,8 +1433,11 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
       <ExerciseView
         key={blockIndex} // vital for resetting state on new exercise
         block={currentBlock}
+        blockIndex={blockIndex}
         fullHistory={fullHistory}
         catalog={catalog}
+        exerciseSwaps={exerciseSwaps}
+        onSwap={(exIdx: number, name: string, swapGroup: string) => setSwapTarget({ blockIdx: blockIndex, exIdx, name, swapGroup })}
         onComplete={handleBlockComplete}
       />
     );
@@ -1413,8 +1456,11 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
       <SupersetView
         key={blockIndex}
         block={currentBlock}
+        blockIndex={blockIndex}
         fullHistory={fullHistory}
         catalog={catalog}
+        exerciseSwaps={exerciseSwaps}
+        onSwap={(exIdx: number, name: string, swapGroup: string) => setSwapTarget({ blockIdx: blockIndex, exIdx, name, swapGroup })}
         onComplete={handleBlockComplete}
       />
     )
@@ -1546,6 +1592,45 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
                     );
                   })}
                 </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Swap Exercise Picker */}
+      {swapTarget && (
+        <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-end justify-center" onClick={() => setSwapTarget(null)}>
+          <div className="bg-zinc-900 border-t border-zinc-700 rounded-t-2xl w-full max-w-lg max-h-[70vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-white">Swap Exercise</h3>
+                <p className="text-[10px] text-zinc-500">Replacing: {swapTarget.name}</p>
+              </div>
+              <button onClick={() => setSwapTarget(null)} className="text-zinc-500 hover:text-white text-xs font-bold px-3 py-1 rounded bg-zinc-800">✕</button>
+            </div>
+            <div className="overflow-y-auto p-3 space-y-1">
+              {catalog
+                .filter(c => c.swap_group === swapTarget.swapGroup && c.name.toLowerCase() !== swapTarget.name.toLowerCase())
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map(c => (
+                  <button
+                    key={c.id}
+                    onClick={() => {
+                      const key = `${swapTarget.blockIdx}-${swapTarget.exIdx}`;
+                      setExerciseSwaps(prev => ({ ...prev, [key]: { name: c.name, catalogItem: c } }));
+                      setSwapTarget(null);
+                    }}
+                    className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-zinc-800 transition flex items-center justify-between"
+                  >
+                    <span className="text-sm text-white">{c.name}</span>
+                    {c.required_equipment && c.required_equipment.length > 0 && (
+                      <span className="text-[9px] text-zinc-600">{c.required_equipment.join(', ')}</span>
+                    )}
+                  </button>
+                ))}
+              {catalog.filter(c => c.swap_group === swapTarget.swapGroup && c.name.toLowerCase() !== swapTarget.name.toLowerCase()).length === 0 && (
+                <p className="text-center text-zinc-500 text-xs py-4">No alternatives available</p>
               )}
             </div>
           </div>

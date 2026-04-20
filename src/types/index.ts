@@ -152,6 +152,7 @@ export interface CatalogItem {
     normalization_factor?: number;
     normalizes_to?: string;
     required_equipment?: string[];
+    swap_group?: string;
     standards?: {
         unit?: string;
         scoring?: string;
