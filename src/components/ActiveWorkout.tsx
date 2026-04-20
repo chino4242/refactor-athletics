@@ -1108,49 +1108,69 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
   // RENDER: Block completion results with continue/stop
   if (showBlockComplete && blockResults) {
     const totalXp = blockResults.reduce((sum: number, r: any) => sum + (r.xp_earned || 0), 0);
-    return (
-      <div className="w-full max-w-md mx-auto bg-zinc-900 rounded-3xl flex flex-col items-center justify-center text-center p-8 border border-orange-500/30">
-        <div className="text-5xl mb-4">⚡</div>
-        <h1 className="text-2xl font-black italic text-white uppercase mb-2">Block Complete</h1>
-        <p className="text-orange-500 font-bold text-lg mb-6">+{totalXp} XP</p>
+    const completedCount = completedIndices.length;
+    const totalBlocks = workoutData.length;
+    const progressPct = Math.round((completedCount / totalBlocks) * 100);
 
-        <div className="w-full space-y-2 mb-8">
+    return (
+      <div className="w-full max-w-md mx-auto flex flex-col items-center justify-center text-center px-4">
+        {/* Progress ring */}
+        <div className="relative w-20 h-20 mb-4">
+          <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
+            <circle cx="40" cy="40" r="34" fill="none" stroke="#1c1c1e" strokeWidth="5" />
+            <circle cx="40" cy="40" r="34" fill="none" stroke="url(#xp-grad)" strokeWidth="5"
+              strokeDasharray={`${2 * Math.PI * 34}`} strokeDashoffset={`${2 * Math.PI * 34 * (1 - progressPct / 100)}`}
+              strokeLinecap="round" className="transition-all duration-700" />
+            <defs>
+              <linearGradient id="xp-grad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#f97316" />
+                <stop offset="100%" stopColor="#ef4444" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-lg font-black text-orange-400">+{totalXp}</span>
+          </div>
+        </div>
+
+        <h1 className="text-xl font-black text-white mb-1">Block Complete</h1>
+        <p className="text-xs text-zinc-500 mb-5">{completedCount} of {totalBlocks} blocks done</p>
+
+        <div className="w-full space-y-1.5 mb-6">
           {blockResults.map((r: any, i: number) => (
-            <div key={i} className="flex items-center justify-between bg-zinc-800/50 rounded-lg p-3">
-              <div className="text-left">
-                <p className="text-sm font-bold text-white">
+            <div key={i} className="flex items-center justify-between bg-zinc-800/60 rounded-xl p-3 border border-zinc-700/30">
+              <div className="text-left min-w-0 flex-1">
+                <p className="text-sm font-semibold text-white truncate">
                   {r.name}
-                  {r.isPR && <span className="ml-2 text-yellow-400 text-xs">🏆 PR!</span>}
+                  {r.isPR && <span className="ml-1.5 text-yellow-400 text-[10px]">🏆 PR</span>}
                 </p>
-                <p className="text-xs text-zinc-500">{r.value}</p>
+                <p className="text-[11px] text-zinc-500">{r.value}</p>
               </div>
-              <div className="text-right">
-                {r.hasStandards && r.level > 0 ? (
-                  <span className={`text-xs font-bold px-2 py-0.5 rounded ${
-                    r.level >= 4 ? 'bg-orange-500/20 text-orange-400' :
-                    r.level >= 2 ? 'bg-zinc-700 text-zinc-300' :
-                    'bg-zinc-800 text-zinc-400'
-                  }`}>
-                    {r.rank_name}
-                  </span>
-                ) : (
-                  <span className="text-xs text-zinc-600">+{r.xp_earned} XP</span>
-                )}
-              </div>
+              {r.hasStandards && r.level > 0 ? (
+                <span className={`text-[10px] font-bold px-2 py-1 rounded-lg shrink-0 ml-2 ${
+                  r.level >= 4 ? 'bg-orange-500/15 text-orange-400 border border-orange-500/20' :
+                  r.level >= 2 ? 'bg-zinc-700/80 text-zinc-300 border border-zinc-600/30' :
+                  'bg-zinc-800 text-zinc-400 border border-zinc-700/30'
+                }`}>
+                  {r.rank_name}
+                </span>
+              ) : (
+                <span className="text-[10px] text-zinc-600 shrink-0 ml-2">+{r.xp_earned} XP</span>
+              )}
             </div>
           ))}
         </div>
 
-        <div className="w-full space-y-3">
+        <div className="w-full space-y-2">
           <button
             onClick={handleContinueAfterBlock}
-            className="w-full py-4 bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold uppercase tracking-wider rounded-xl hover:from-orange-500 hover:to-red-500 transition-all"
+            className="w-full py-3.5 bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold uppercase tracking-wider text-sm rounded-xl hover:from-orange-500 hover:to-red-500 transition-all active:scale-[0.98] shadow-lg shadow-orange-600/20"
           >
             Next Exercise →
           </button>
           <button
             onClick={handleStopAfterBlock}
-            className="w-full py-3 bg-zinc-800 text-zinc-400 font-bold uppercase tracking-wider rounded-xl hover:bg-zinc-700 hover:text-white transition-all"
+            className="w-full py-3 text-zinc-500 font-medium text-sm rounded-xl hover:text-white transition"
           >
             Stop Workout
           </button>
@@ -1179,146 +1199,97 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
     return (
       <div className="w-full max-w-md mx-auto">
         {/* Header */}
-        <div className="mb-6 bg-zinc-900/50 backdrop-blur p-6 rounded-2xl border border-zinc-800 text-center relative overflow-hidden">
-          <div className="relative z-10">
-            <h2 className="text-orange-500 font-bold uppercase tracking-widest text-xs mb-2">Daily Protocol</h2>
-            <h1 className="text-3xl font-black italic text-white mb-2">{selectedDate || "Today's Plan"}</h1>
-            <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden mb-2">
-              <div className="h-full bg-orange-500 transition-all duration-500" style={{ width: `${overallProgress}%` }}></div>
+        <div className="mb-5 px-1">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h2 className="text-[10px] font-bold uppercase tracking-widest text-orange-400 mb-0.5">Today&apos;s Workout</h2>
+              <h1 className="text-xl font-black text-white">{workoutData[0]?.name?.split(' - ')[0] || selectedDate || "Today"}</h1>
             </div>
-            <p className="text-zinc-400 text-xs font-mono">{completedCount} / {totalBlocks} Blocks Complete</p>
+            <div className="text-right">
+              <span className="text-2xl font-black text-white">{overallProgress}%</span>
+              <p className="text-[10px] text-zinc-500">{completedCount}/{totalBlocks} blocks</p>
+            </div>
+          </div>
+          <div className="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-orange-500 to-red-500 transition-all duration-500 rounded-full" style={{ width: `${overallProgress}%` }} />
           </div>
         </div>
 
-        {/* Sections List */}
-        <div className="space-y-4">
+        {/* Sections */}
+        <div className="space-y-2">
           {sections.map((section: any, idx: number) => {
             const isExpanded = expandedSection === idx;
+            const sectionDoneCount = section.indices.filter((i: number) => completedIndices.includes(i)).length;
 
             return (
-              <div
-                key={idx}
-                className={`w-full rounded-2xl border transition-all duration-300 overflow-hidden ${section.isDone
-                  ? 'bg-zinc-900/30 border-green-900/30 opacity-60 hover:opacity-100'
-                  : 'bg-zinc-900 border-zinc-700'
-                  } ${isExpanded ? 'border-orange-500 shadow-lg shadow-orange-900/20' : 'hover:border-zinc-500'}`}
-              >
-                {/* Main Card Header (Clickable for Expand) */}
+              <div key={idx} className={`rounded-xl border transition-all overflow-hidden ${
+                section.isDone ? 'bg-zinc-900/30 border-zinc-800/50' :
+                isExpanded ? 'bg-zinc-900 border-zinc-700 shadow-lg shadow-black/20' :
+                'bg-zinc-900/60 border-zinc-800/50 hover:border-zinc-700'
+              }`}>
                 <button
-                  className="w-full p-6 text-left flex justify-between items-center"
+                  className="w-full p-4 text-left flex items-center gap-3"
                   onClick={() => setExpandedSection(isExpanded ? null : idx)}
                 >
-                  <div>
-                    <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">
-                      Section {idx + 1}
-                    </div>
-                    <h3 className={`text-xl font-black italic ${section.isDone ? 'text-green-500' : 'text-white'}`}>
-                      {section.name}
-                    </h3>
-                    <p className="text-zinc-500 text-xs mt-1 font-mono">
-                      {section.count} Blocks
-                    </p>
-                    {!isExpanded && section.preview?.length > 0 && (
-                      <div className="mt-2 space-y-0.5">
-                        {section.preview.map((name: string, i: number) => (
-                          <div key={i} className="flex items-center gap-2 text-[11px] text-zinc-500 capitalize">
-                            <span className="w-1 h-1 rounded-full bg-zinc-600 shrink-0" />
-                            {name}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''}`}>
+                  {/* Status indicator */}
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                    section.isDone ? 'bg-emerald-500/15' : 'bg-zinc-800'
+                  }`}>
                     {section.isDone
-                      ? <CheckCircle size={24} className="text-green-500" />
-                      : <ChevronRight size={24} className="text-zinc-600" />
+                      ? <CheckCircle size={16} className="text-emerald-400" />
+                      : <span className="text-xs font-bold text-zinc-400">{idx + 1}</span>
                     }
                   </div>
+
+                  <div className="flex-1 min-w-0">
+                    <h3 className={`text-sm font-bold ${section.isDone ? 'text-emerald-400' : 'text-white'}`}>
+                      {section.name}
+                    </h3>
+                    <p className="text-[10px] text-zinc-500 mt-0.5">
+                      {sectionDoneCount}/{section.count} blocks {section.isDone ? '✓' : ''}
+                    </p>
+                  </div>
+
+                  <ChevronRight size={16} className={`text-zinc-600 transition-transform shrink-0 ${isExpanded ? 'rotate-90' : ''}`} />
                 </button>
 
-                {/* Expanded Content */}
                 {isExpanded && (
-                  <div className="px-6 pb-6 pt-0 border-t border-zinc-800/50 bg-black/20">
-
-                    {/* List of Blocks */}
-                    <div className="py-4 space-y-4">
-                      {section.indices.map((blockIndex: number) => {
-                        const block = workoutData[blockIndex];
-                        const isComplete = completedIndices.includes(blockIndex);
-                        const isSkipped = skippedIndices.includes(blockIndex); // Check for skip
-
-                        // Determine detail items to show
-                        let details: string[] = [];
-                        if (block.exercises && Array.isArray(block.exercises)) {
-                          details = block.exercises.map((e: any) => e.name || e.text || "Exercise").slice(0, 5);
-                        } else if (block.intervals && Array.isArray(block.intervals)) {
-                          // Summarize intervals? "30 sec base", etc.
-                          details = block.intervals
-                            .filter((i: any) => i.type === 'interval')
-                            .map((i: any) => i.raw_text || i.zone)
-                            .slice(0, 6);
-                        }
+                  <div className="px-4 pb-4 border-t border-zinc-800/50">
+                    <div className="py-3 space-y-2">
+                      {section.indices.map((bIdx: number) => {
+                        const block = workoutData[bIdx];
+                        const isDone = completedIndices.includes(bIdx);
+                        const isSkipped = skippedIndices.includes(bIdx);
 
                         return (
-                          <div key={blockIndex} className="text-sm text-zinc-400">
-                            {/* Block Title */}
-                            <div className="flex items-center gap-3 mb-1">
-                              <div className={`w-2 h-2 rounded-full ${isSkipped ? 'bg-zinc-700' : isComplete ? 'bg-green-500' : 'bg-zinc-600'}`}></div>
-                              <span className={`font-bold ${isSkipped ? 'text-zinc-500 font-normal italic' : isComplete ? 'text-green-500 line-through' : 'text-white'}`}>
-                                {block.name || block.type}
-                                {isSkipped && <span className="text-[10px] ml-2 text-zinc-600 not-italic uppercase tracking-wider border border-zinc-700 px-1 rounded">Skipped</span>}
-                              </span>
-                            </div>
-
-                            {/* Inner Details (Exercises) */}
-                            {details.length > 0 && (
-                              <ul className="pl-5 space-y-1 mt-1 border-l-2 border-zinc-800 ml-1">
-                                {details.map((detail, dIdx) => (
-                                  <li key={dIdx} className="text-xs text-zinc-500">
-                                    {detail}
-                                  </li>
-                                ))}
-                                {(block.exercises?.length > 5 || block.intervals?.length > 6) && (
-                                  <li className="text-xs text-zinc-600 italic">...and more</li>
-                                )}
-                              </ul>
-                            )}
+                          <div key={bIdx} className="flex items-center gap-2.5 text-sm">
+                            <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${isSkipped ? 'bg-zinc-700' : isDone ? 'bg-emerald-400' : 'bg-zinc-600'}`} />
+                            <span className={`${isDone ? 'text-zinc-500 line-through' : isSkipped ? 'text-zinc-600 italic' : 'text-zinc-300'}`}>
+                              {block.name || block.type}
+                            </span>
+                            {isSkipped && <span className="text-[9px] text-zinc-600 border border-zinc-700 px-1 rounded">Skip</span>}
                           </div>
                         );
                       })}
                     </div>
 
-                    {/* Start Button */}
                     <button
                       onClick={() => {
                         const firstUnfinished = section.indices.find((i: number) => !completedIndices.includes(i));
                         const targetIndex = firstUnfinished !== undefined ? firstUnfinished : section.firstIndex;
-
                         setBlockIndex(targetIndex);
                         setViewMode('WORKOUT');
                       }}
-                      className="w-full py-4 bg-orange-500 hover:bg-orange-400 text-black font-black uppercase text-lg rounded-xl flex items-center justify-center gap-2 transition-colors mt-2"
+                      className="w-full py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold uppercase tracking-wider text-xs rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-orange-600/20 mt-1"
                     >
-                      <Play size={20} fill="currentColor" />
-                      {section.isDone ? 'Revisit Section' : 'Begin Section'}
+                      <Play size={14} fill="currentColor" />
+                      {section.isDone ? 'Revisit' : 'Begin'}
                     </button>
                   </div>
                 )}
               </div>
             );
           })}
-        </div>
-
-        {/* Library / Back */}
-        <div className="mt-8 text-center">
-          <button
-            onClick={() => setShowLibrary(true)}
-            className="text-zinc-500 text-xs font-bold uppercase tracking-widest hover:text-white transition"
-          >
-            View All Protocols
-          </button>
         </div>
       </div>
     );
@@ -1430,24 +1401,21 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
   }
 
   return (
-    <div className="relative w-full">
-      {/* Workout Header with Library Button */}
-      <div className="mb-4 flex items-center justify-between bg-zinc-900/50 backdrop-blur-sm p-4 rounded-2xl border border-zinc-800 max-w-md mx-auto">
-        <div onClick={() => viewMode === 'WORKOUT' && setViewMode('HUB')} className={viewMode === 'WORKOUT' ? "cursor-pointer" : ""}>
-          <h2 className="text-orange-500 font-bold uppercase tracking-widest text-xs flex items-center gap-1">
-            {viewMode === 'WORKOUT' && <span className="text-[10px]">◀</span>} Active Workout
-          </h2>
-          <p className="text-white font-bold text-lg">
-            {selectedDate || "Today's Protocol"}
-          </p>
-        </div>
+    <div className="relative w-full max-w-md mx-auto">
+      {/* Workout Header */}
+      <div className="mb-3 flex items-center justify-between px-1">
         <button
-          onClick={() => setShowLibrary(!showLibrary)}
-          className="bg-orange-600 hover:bg-orange-500 text-white p-3 rounded-xl shadow-lg transition-all hover:scale-105 active:scale-95"
-          aria-label="Workout Library"
+          onClick={() => viewMode === 'WORKOUT' ? setViewMode('HUB') : undefined}
+          className={`text-left ${viewMode === 'WORKOUT' ? 'cursor-pointer' : ''}`}
         >
-          <Calendar size={24} />
+          <div className="flex items-center gap-1.5">
+            {viewMode === 'WORKOUT' && <span className="text-zinc-500 text-sm">‹</span>}
+            <span className="text-[10px] font-bold uppercase tracking-widest text-orange-400">Active Workout</span>
+          </div>
         </button>
+        <div className="text-xs text-zinc-500 font-medium">
+          {completedIndices.length}/{workoutData.length} blocks
+        </div>
       </div>
 
       {mainView}
