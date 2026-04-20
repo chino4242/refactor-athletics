@@ -12,8 +12,8 @@ export interface FoodResult {
 const USDA_KEY = process.env.USDA_API_KEY || 'DEMO_KEY';
 
 // Extract nutrient value from USDA foodNutrients array
-function usdaNutrient(nutrients: any[], name: string): number {
-  const n = nutrients.find((n: any) => n.nutrientName === name);
+function usdaNutrient(nutrients: any[], name: string, unit?: string): number {
+  const n = nutrients.find((n: any) => n.nutrientName === name && (!unit || n.unitName === unit));
   return n?.value || 0;
 }
 
@@ -35,7 +35,7 @@ async function searchUSDA(query: string): Promise<FoodResult[]> {
     source: 'usda' as const,
     servingSize: '100g',
     per100g: {
-      calories: Math.round(usdaNutrient(f.foodNutrients, 'Energy')),
+      calories: Math.round(usdaNutrient(f.foodNutrients, 'Energy', 'KCAL')),
       protein: Math.round(usdaNutrient(f.foodNutrients, 'Protein') * 10) / 10,
       carbs: Math.round(usdaNutrient(f.foodNutrients, 'Carbohydrate, by difference') * 10) / 10,
       fat: Math.round(usdaNutrient(f.foodNutrients, 'Total lipid (fat)') * 10) / 10,
