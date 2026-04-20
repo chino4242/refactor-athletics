@@ -243,8 +243,8 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
 
             {/* === FULL BREAKDOWN === */}
             {exerciseData.length > 0 && <div>
-                <h2 className="text-sm font-black text-white uppercase tracking-wider mb-1">Full Breakdown</h2>
-                <p className="text-[10px] text-zinc-600 mb-3">All ranked exercises by category</p>
+                <h2 className="text-sm font-black text-white uppercase tracking-wider mb-1">Path Exercises</h2>
+                <p className="text-[10px] text-zinc-600 mb-3">Your 12 ranked exercises by category</p>
 
                 <div className="space-y-2">
                     {CATEGORIES.map(cat => {
