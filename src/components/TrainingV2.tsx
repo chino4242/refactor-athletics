@@ -17,6 +17,7 @@ interface TrainingV2Props {
   initialHistory?: HistoryItem[];
   initialCatalog?: CatalogItem[];
   onLogComplete?: () => void;
+  playerLevel?: number;
 }
 
 interface DayPlan {
@@ -32,9 +33,11 @@ const TYPE_STYLES: Record<string, { bg: string; text: string; dot: string }> = {
   Recovery: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', dot: 'bg-emerald-400' },
 };
 
-export default function TrainingV2({ userId, bodyweight, sex, age, initialHistory, initialCatalog, onLogComplete }: TrainingV2Props) {
+export default function TrainingV2({ userId, bodyweight, sex, age, initialHistory, initialCatalog, onLogComplete, playerLevel = 0 }: TrainingV2Props) {
   const { theme: _theme } = useTheme();
   const theme = _theme || THEMES.athlete;
+  const rankKey = `level${Math.min(playerLevel, 5)}`;
+  const rankImage = theme.ranks?.[rankKey]?.image;
   const [weekDays, setWeekDays] = useState<DayPlan[]>([]);
   const [selectedDayStr, setSelectedDayStr] = useState('');
   const [showActiveWorkout, setShowActiveWorkout] = useState(false);
@@ -100,6 +103,10 @@ export default function TrainingV2({ userId, bodyweight, sex, age, initialHistor
             <div className="absolute -right-2 -bottom-4 text-7xl font-black text-white/[0.03] pointer-events-none select-none uppercase">
               {format(new Date(), 'EEEE')}
             </div>
+            {/* Rank avatar */}
+            {rankImage && (
+              <img src={rankImage} alt="" className="absolute -right-2 -bottom-2 w-24 h-24 object-contain opacity-10 pointer-events-none select-none" />
+            )}
 
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-3">

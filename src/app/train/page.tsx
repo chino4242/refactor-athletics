@@ -1,6 +1,6 @@
 import TrainingV2 from '@/components/TrainingV2';
 import { createClient } from '@/utils/supabase/server';
-import { getProfile, getHistory, getTrainingCatalog } from '@/services/api';
+import { getProfile, getHistory, getTrainingCatalog, getUserStats } from '@/services/api';
 import { redirect } from 'next/navigation';
 
 export default async function TrainPage() {
@@ -11,10 +11,11 @@ export default async function TrainPage() {
         return redirect('/login');
     }
 
-    const [profile, history, catalog] = await Promise.all([
+    const [profile, history, catalog, stats] = await Promise.all([
         getProfile(user.id),
         getHistory(user.id),
         getTrainingCatalog(),
+        getUserStats(user.id),
     ]);
 
     return (
@@ -27,6 +28,7 @@ export default async function TrainPage() {
                     sex={profile?.sex || 'M'}
                     initialHistory={history}
                     initialCatalog={catalog}
+                    playerLevel={stats?.player_level || 0}
                 />
             </main>
         </div>
