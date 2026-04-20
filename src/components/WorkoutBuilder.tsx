@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Plus, Dumbbell, Calendar, Edit, Trash2, X, ArrowUp, ArrowDown, Check, Link, Unlink, Search } from 'lucide-react';
+import { Plus, Dumbbell, Calendar, Edit, Trash2, X, ArrowUp, ArrowDown, Check, Link, Unlink, Search, ArrowLeftRight } from 'lucide-react';
 import type { Workout, WorkoutBlock, CatalogItem } from '@/types';
 import { getWorkouts, createWorkout, deleteWorkout, getWorkoutBlocks, addWorkoutBlock, deleteWorkoutBlock, updateWorkoutBlock, scheduleWorkout } from '@/services/workoutApi';
 import { getTrainingCatalog } from '@/services/api';
@@ -32,6 +32,8 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
     const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
     const [workoutToSchedule, setWorkoutToSchedule] = useState<Workout | null>(null);
     const [scheduleDate, setScheduleDate] = useState('');
+    const [daySwapMode, setDaySwapMode] = useState(false);
+    const [daySwapFirst, setDaySwapFirst] = useState<string | null>(null);
 
     const categories = ['All', 'Strength', 'Power & Capacity', 'Endurance & Speed', 'Olympic', 'Cardio'];
 
@@ -71,6 +73,26 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
     };
 
     const handleViewDefaultWorkout = async (day: any) => {
+        if (daySwapMode) {
+            if (!daySwapFirst) {
+                setDaySwapFirst(day.day);
+            } else if (daySwapFirst !== day.day) {
+                // Swap the two days
+                try {
+                    const res = await fetch('/api/workouts/swap-days', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ day1: daySwapFirst, day2: day.day }),
+                    });
+                    if (res.ok) loadWeeklySchedule();
+                } catch (e) {
+                    console.error('Failed to swap days:', e);
+                }
+                setDaySwapMode(false);
+                setDaySwapFirst(null);
+            }
+            return;
+        }
         setSelectedDefaultDay(day);
         setLoading(true);
         try {
@@ -380,15 +402,29 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
                     <div className="flex items-center justify-between mb-4">
                         <div>
                             <h2 className="text-lg font-black italic text-white uppercase tracking-tighter">Default Weekly Program</h2>
-                            <p className="text-xs text-zinc-500 mt-1">This is the default schedule shown on the Train page</p>
+                            <p className="text-xs text-zinc-500 mt-1">
+                                {daySwapMode
+                                    ? daySwapFirst ? `Now tap the day to swap with ${daySwapFirst}` : 'Tap the first day to swap'
+                                    : 'This is the default schedule shown on the Train page'}
+                            </p>
                         </div>
+                        <button
+                            onClick={() => { setDaySwapMode(!daySwapMode); setDaySwapFirst(null); }}
+                            className={`text-xs font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 ${daySwapMode ? 'bg-orange-600 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}
+                        >
+                            <ArrowLeftRight size={14} />
+                            {daySwapMode ? 'Cancel' : 'Swap Days'}
+                        </button>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                         {weeklySchedule.map((day) => (
                             <button
                                 key={day.day}
                                 onClick={() => handleViewDefaultWorkout(day)}
-                                className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-3 hover:border-orange-500 hover:bg-zinc-800 transition text-left"
+                                className={`bg-zinc-800/50 border rounded-lg p-3 hover:border-orange-500 hover:bg-zinc-800 transition text-left ${
+                                    daySwapMode && daySwapFirst === day.day ? 'border-orange-500 ring-1 ring-orange-500' :
+                                    daySwapMode ? 'border-zinc-700 animate-pulse' : 'border-zinc-700'
+                                }`}
                             >
                                 <div className="flex items-center justify-between mb-2">
                                     <span className="text-xs font-bold text-zinc-400 uppercase">{day.day}</span>
