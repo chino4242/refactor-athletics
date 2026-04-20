@@ -176,53 +176,70 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
       {showLevelUp && <LevelUpOverlay level={showLevelUp} onClose={() => setShowLevelUp(null)} />}
 
       {/* Date Navigation */}
-      <div className="flex items-center justify-between px-1 py-2">
-        <button onClick={goToPreviousDay} className="p-2 rounded-lg text-zinc-400 hover:text-white transition active:scale-95">
-          <span className="text-lg font-bold">‹</span>
+      <div className="flex items-center justify-between px-2 py-3">
+        <button onClick={goToPreviousDay} className="w-9 h-9 flex items-center justify-center rounded-full bg-zinc-800/60 text-zinc-400 hover:text-white hover:bg-zinc-700 transition active:scale-95">
+          <span className="text-base font-bold">‹</span>
         </button>
         <button onClick={isToday ? undefined : goToToday} className="text-center px-4">
-          <span className="text-sm font-bold text-white">
-            {isToday ? 'Today' : selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+          <span className="text-sm font-semibold text-white tracking-wide">
+            {isToday ? '📅 Today' : selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
           </span>
-          {!isToday && <span className="block text-[10px] text-orange-500 font-medium mt-0.5">Tap to return</span>}
+          {!isToday && <span className="block text-[10px] text-orange-400 font-medium mt-0.5">Tap to return</span>}
         </button>
-        <button onClick={goToNextDay} disabled={isFuture} className={`p-2 rounded-lg transition active:scale-95 ${isFuture ? 'text-zinc-800 cursor-not-allowed' : 'text-zinc-400 hover:text-white'}`}>
-          <span className="text-lg font-bold">›</span>
+        <button onClick={goToNextDay} disabled={isFuture} className={`w-9 h-9 flex items-center justify-center rounded-full transition active:scale-95 ${isFuture ? 'bg-zinc-900 text-zinc-800 cursor-not-allowed' : 'bg-zinc-800/60 text-zinc-400 hover:text-white hover:bg-zinc-700'}`}>
+          <span className="text-base font-bold">›</span>
         </button>
       </div>
 
       {/* Progress Ring + Summary */}
-      <div className="flex items-center gap-4 px-2">
-        <div className="relative w-16 h-16 shrink-0">
-          <svg className="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
-            <circle cx="32" cy="32" r="28" fill="none" stroke="#27272a" strokeWidth="4" />
-            <circle cx="32" cy="32" r="28" fill="none" stroke={progressPercent >= 100 ? '#10b981' : '#f97316'} strokeWidth="4"
-              strokeDasharray={`${2 * Math.PI * 28}`} strokeDashoffset={`${2 * Math.PI * 28 * (1 - progressPercent / 100)}`}
-              strokeLinecap="round" className="transition-all duration-700" />
-          </svg>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-xs font-bold text-white">{progressPercent}%</span>
+      <div className="mx-2 p-4 rounded-2xl bg-gradient-to-br from-zinc-800/80 to-zinc-900/80 border border-zinc-700/40 backdrop-blur-sm">
+        <div className="flex items-center gap-4">
+          <div className="relative w-16 h-16 shrink-0">
+            <svg className="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
+              <circle cx="32" cy="32" r="28" fill="none" stroke="#1c1c1e" strokeWidth="5" />
+              <circle cx="32" cy="32" r="28" fill="none"
+                stroke={progressPercent >= 100 ? 'url(#grad-done)' : 'url(#grad-progress)'}
+                strokeWidth="5"
+                strokeDasharray={`${2 * Math.PI * 28}`}
+                strokeDashoffset={`${2 * Math.PI * 28 * (1 - progressPercent / 100)}`}
+                strokeLinecap="round" className="transition-all duration-700" />
+              <defs>
+                <linearGradient id="grad-progress" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#f97316" />
+                  <stop offset="100%" stopColor="#ef4444" />
+                </linearGradient>
+                <linearGradient id="grad-done" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#10b981" />
+                  <stop offset="100%" stopColor="#34d399" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className={`text-sm font-black ${progressPercent >= 100 ? 'text-emerald-400' : 'text-orange-400'}`}>{progressPercent}%</span>
+            </div>
           </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-base font-bold text-white">{questProgress.completed} <span className="text-zinc-500 font-normal">of</span> {questProgress.total} <span className="text-zinc-500 font-normal">quests</span></p>
+            <p className="text-xs text-zinc-400 mt-0.5">
+              {progressPercent >= 100 ? '✨ Perfect day — all quests complete!' : progressPercent >= 50 ? '🔥 Over halfway there. Keep pushing.' : '💪 Every quest counts. Start strong.'}
+            </p>
+          </div>
+          <button onClick={() => setShowSettings(true)} className="w-9 h-9 flex items-center justify-center rounded-full bg-zinc-800/60 text-zinc-500 hover:text-white hover:bg-zinc-700 transition">
+            <SlidersHorizontal size={16} />
+          </button>
         </div>
-        <div className="flex-1">
-          <p className="text-sm font-bold text-white">{questProgress.completed}/{questProgress.total} Quests</p>
-          <p className="text-xs text-zinc-500">{progressPercent >= 100 ? 'All done! 🎉' : 'Keep going — you\'re making progress.'}</p>
-        </div>
-        <button onClick={() => setShowSettings(true)} className="p-2 rounded-lg text-zinc-500 hover:text-white transition">
-          <SlidersHorizontal size={18} />
-        </button>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 px-1 overflow-x-auto no-scrollbar">
+      <div className="flex gap-1.5 px-2 overflow-x-auto no-scrollbar">
         {TABS.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+            className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
               activeTab === tab.id
-                ? 'bg-zinc-800 text-white border border-zinc-700'
-                : 'text-zinc-500 hover:text-zinc-300'
+                ? 'bg-gradient-to-b from-zinc-700/80 to-zinc-800/80 text-white border border-zinc-600/50 shadow-lg shadow-black/20'
+                : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'
             }`}
           >
             <span>{tab.icon}</span>
@@ -232,11 +249,11 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
       </div>
 
       {/* Tab Content */}
-      <div className="min-h-[400px]">
+      <div className="min-h-[400px] px-2">
         {/* HEALTH TAB */}
         {activeTab === 'health' && (
-          <div className="flex flex-col gap-2 animate-fade-in-up">
-            <div className="grid grid-cols-2 gap-2">
+          <div className="flex flex-col gap-2.5 animate-fade-in-up">
+            <div className="grid grid-cols-2 gap-2.5">
               {renderHabitCard('habit_steps', 'Steps', '🚶', profile?.habit_targets?.steps || 10000, 'steps', 'bg-orange-500', { sync: true, setOnly: true })}
               {renderHabitCard('habit_sleep', 'Sleep', '😴', profile?.habit_targets?.sleep || 7, 'hrs', 'bg-indigo-500', { sync: true })}
               {renderHabitCard('habit_exercise_minutes', 'Exercise', '🏋️', profile?.habit_targets?.exercise_minutes || 30, 'min', 'bg-red-500', { sync: true })}
@@ -247,13 +264,13 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
               <button
                 onClick={() => handleLog('habit_supplements', 1, 'Supplements')}
                 disabled={loading === 'habit_supplements'}
-                className={`w-full p-3 rounded-xl border text-left text-sm font-medium transition-all ${
+                className={`w-full p-3.5 rounded-xl border text-left text-sm font-medium transition-all active:scale-[0.98] ${
                   (totals['habit_supplements'] || 0) > 0
-                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-                    : 'bg-zinc-900/50 border-zinc-800/50 text-zinc-400 hover:border-zinc-700'
+                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 shadow-sm shadow-emerald-500/5'
+                    : 'bg-zinc-900/60 border-zinc-700/40 text-zinc-400 hover:border-zinc-600 hover:bg-zinc-800/60'
                 }`}
               >
-                💊 Supplements {(totals['habit_supplements'] || 0) > 0 ? '✓' : ''}
+                💊 Supplements {(totals['habit_supplements'] || 0) > 0 ? '✓' : '— tap to log'}
               </button>
             )}
           </div>
@@ -274,7 +291,7 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
 
         {/* RECOVERY TAB */}
         {activeTab === 'recovery' && (
-          <div className="grid grid-cols-2 gap-2 animate-fade-in-up">
+          <div className="grid grid-cols-2 gap-2.5 animate-fade-in-up">
             {renderHabitCard('habit_cold_plunge', 'Cold Plunge', '🧊', profile?.habit_targets?.cold_plunge || 3, 'min', 'bg-cyan-500')}
             {renderHabitCard('habit_sauna', 'Sauna', '🔥', profile?.habit_targets?.sauna || 15, 'min', 'bg-red-500')}
             {renderHabitCard('habit_mobility', 'Mobility', '🧘', profile?.habit_targets?.mobility || 10, 'min', 'bg-purple-500')}
@@ -284,7 +301,7 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
 
         {/* DISCIPLINE TAB */}
         {activeTab === 'discipline' && (
-          <div className="flex flex-col gap-2 animate-fade-in-up">
+          <div className="flex flex-col gap-2.5 animate-fade-in-up">
             {!isHidden('habit_no_alcohol') && (
               <ViceToggle
                 label="No Alcohol" icon="🍺" virtueId="habit_no_alcohol" viceId="habit_alcohol"
@@ -308,13 +325,13 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
               <button
                 onClick={() => handleLog('habit_journaling', 1, 'Journaling')}
                 disabled={loading === 'habit_journaling'}
-                className={`w-full p-3 rounded-xl border text-left text-sm font-medium transition-all ${
+                className={`w-full p-3.5 rounded-xl border text-left text-sm font-medium transition-all active:scale-[0.98] ${
                   (totals['habit_journaling'] || 0) > 0
-                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-                    : 'bg-zinc-900/50 border-zinc-800/50 text-zinc-400 hover:border-zinc-700'
+                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 shadow-sm shadow-emerald-500/5'
+                    : 'bg-zinc-900/60 border-zinc-700/40 text-zinc-400 hover:border-zinc-600 hover:bg-zinc-800/60'
                 }`}
               >
-                ✍️ Journaling {(totals['habit_journaling'] || 0) > 0 ? '✓' : ''}
+                ✍️ Journaling {(totals['habit_journaling'] || 0) > 0 ? '✓' : '— tap to log'}
               </button>
             )}
             {renderHabitCard('habit_fasting', 'Fasting', '⏰', profile?.habit_targets?.fasting || 16, 'hrs', 'bg-orange-500')}
