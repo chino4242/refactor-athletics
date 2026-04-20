@@ -153,21 +153,23 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                     <div className="grid grid-cols-3 gap-4 mb-4">
                         {/* Power Level */}
                         <Link href="/power-level" className="group text-center">
-                            <div className="flex flex-col items-center gap-1 mb-2">
+                            <div className="flex flex-col items-center mb-2">
                                 <div className="flex items-center gap-1.5">
                                     <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">{isClassic ? 'Fitness Score' : 'Power Level'}</span>
                                     <InfoTooltip text={isClassic
                                         ? `Your fitness score across ${stats?.max_expertise ? stats.max_expertise / 5 : 0} exercises. Test an exercise to see where you stand.`
                                         : `Your best rank level (1-5) across ${stats?.max_expertise ? stats.max_expertise / 5 : 0} ranked exercises. Max = ${stats?.max_expertise || 0} (${stats?.max_expertise ? stats.max_expertise / 5 : 0} exercises × 5 levels). Log your best result on an exercise to earn your rank!`} size={14} />
                                 </div>
-                                <div className="flex items-center gap-1.5">
-                                    {rankImage && <img src={rankImage} alt={rankName} className="w-6 h-6 object-contain" />}
-                                    <span className="text-xs font-semibold group-hover:text-orange-400 transition" style={{ color: theme.accentHex }}>{isClassic ? '' : rankName}</span>
-                                </div>
                             </div>
                             <div className={`text-4xl font-black italic text-transparent bg-clip-text bg-gradient-to-r ${progressGradient}`}>
                                 {powerLevel}<span className="text-lg text-zinc-500">/{stats?.max_expertise || 0}</span>
                             </div>
+                            {!isClassic && rankImage && (
+                                <div className="flex flex-col items-center mt-2">
+                                    <img src={rankImage} alt={rankName} className="w-14 h-14 object-contain" />
+                                    <span className="text-[10px] font-bold mt-1" style={{ color: theme.accentHex }}>{rankName}</span>
+                                </div>
+                            )}
                             <div className="text-[10px] text-orange-500/70 group-hover:text-orange-400 mt-1 transition">View Power Level →</div>
                         </Link>
 
