@@ -83,16 +83,24 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
       );
       
       if (catalogExercise && ex.sets?.length > 0) {
+        // Expand sets with comma-separated reps into individual sets
+        const expandedSets: { weight: number; reps: number; distance: number; duration: number }[] = [];
+        for (const s of ex.sets) {
+          const repsStr = String(s.reps || 0);
+          if (repsStr.includes(',')) {
+            repsStr.split(',').map((r: string) => r.trim()).filter(Boolean).forEach((r: string) => {
+              expandedSets.push({ weight: s.weight || 0, reps: parseInt(r) || 0, distance: 0, duration: 0 });
+            });
+          } else {
+            expandedSets.push({ weight: s.weight || 0, reps: parseInt(repsStr) || 0, distance: 0, duration: 0 });
+          }
+        }
+
         const queuedEx: QueuedExercise = {
           id: `${Date.now()}-${index}-${Math.random()}`,
           exerciseId: catalogExercise.id,
           name: catalogExercise.name,
-          sets: ex.sets.map((s: any) => ({
-            weight: s.weight || 0,
-            reps: s.reps || 0,
-            distance: 0,
-            duration: 0
-          }))
+          sets: expandedSets
         };
         setSessionQueue(prev => [...prev, queuedEx]);
       }
