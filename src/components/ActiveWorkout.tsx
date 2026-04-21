@@ -349,13 +349,23 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
 
   const currentInterval = block.intervals[intervalIndex];
   const nextInterval = block.intervals[intervalIndex + 1];
+  const [getReady, setGetReady] = useState(5);
+
+  // "GET READY" countdown before first interval
+  useEffect(() => {
+    if (getReady <= 0) return;
+    if (getReady <= 3) playCountdownBeep();
+    const t = setTimeout(() => setGetReady(p => p - 1), 1000);
+    return () => clearTimeout(t);
+  }, [getReady]);
 
   useEffect(() => {
+    if (getReady > 0) return;
     if (currentInterval) {
       setTimeLeft(currentInterval.seconds);
       setIsActive(true);
     }
-  }, [intervalIndex, currentInterval]);
+  }, [intervalIndex, currentInterval, getReady]);
 
   useEffect(() => {
     let interval: any = null;
@@ -425,7 +435,13 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
         </div>
       </div>
 
-      {/* CONTENT: TIMER OR CARD */}
+      {/* CONTENT: GET READY / TIMER / CARD */}
+      {getReady > 0 ? (
+        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+          <h3 className="text-white/60 font-bold uppercase tracking-widest text-sm mb-4">Get Ready</h3>
+          <div className="text-[120px] font-black text-white leading-none font-mono animate-pulse">{getReady}</div>
+        </div>
+      ) : (
       <div key={intervalIndex} className="flex-1 flex flex-col items-center justify-center p-8 text-center relative z-10 animate-in fade-in zoom-in-95 duration-300">
         {currentInterval.type === 'card' ? (
           <div className="animate-in fade-in zoom-in duration-300">
@@ -465,6 +481,7 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
           </>
         )}
       </div>
+      )}
 
       {/* FOOTER */}
       <div className="bg-black/30 p-4 backdrop-blur-md shrink-0">
