@@ -193,14 +193,15 @@ export async function getGroupChallengeProgress(groupId: string, challenge: Grou
         });
     } else if (challenge.metric === 'active_minutes') {
         const { data } = await supabase
-            .from('workouts')
-            .select('user_id, date')
+            .from('habit_logs')
+            .select('user_id, value')
             .in('user_id', memberIds)
+            .eq('habit_id', 'habit_exercise_minutes')
             .gte('date', challenge.start_date)
             .lte('date', challenge.end_date);
 
         (data || []).forEach(row => {
-            progress[row.user_id] = (progress[row.user_id] || 0) + 30;
+            progress[row.user_id] = (progress[row.user_id] || 0) + (Number(row.value) || 0);
         });
     } else if (challenge.metric === 'water_days') {
         const { data } = await supabase
