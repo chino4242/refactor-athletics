@@ -9,6 +9,7 @@ import { Play, Pause, SkipForward, RotateCcw, Calendar, CheckCircle, Info, Timer
 import ChecklistView from './ChecklistView';
 import { logWorkoutBlockAction, logTrainingAction } from '@/app/actions';
 import { getProfile } from '@/services/api';
+import { createClient } from '@/utils/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
 
 // --- SAFELIST CONSTANT REMOVED ---
@@ -962,6 +963,27 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
   const [showBlockComplete, setShowBlockComplete] = useState(false);
   const [engineChoice, setEngineChoice] = useState<Record<number, 'hiit' | 'zone2' | null>>({});
 
+  // HIIT vs Zone 2 recommendation
+  const [didHiitYesterday, setDidHiitYesterday] = useState(false);
+  useEffect(() => {
+    if (!userId) return;
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yStr = yesterday.toISOString().split('T')[0];
+    const sb = createClient();
+    sb.from('workouts').select('id').eq('user_id', userId).eq('date', yStr)
+      .like('exercise_id', 'block_%Tread%').limit(1)
+      .then(({ data }) => { if (data?.length) setDidHiitYesterday(true); });
+  }, [userId]);
+
+  const engineRecommendation = useMemo((): 'hiit' | 'zone2' => {
+    if (didHiitYesterday) return 'zone2';
+    const day = new Date().getDay(); // 0=Sun
+    // Mon(1)=HIIT, Tue(2)=Z2, Thu(4)=HIIT, Fri(5)=Z2, Sat(6)=Z2
+    if (day === 1 || day === 4) return 'hiit';
+    return 'zone2';
+  }, [didHiitYesterday]);
+
   // Swap exercise state
   const [swapTarget, setSwapTarget] = useState<{ blockIdx: number; exIdx: number; name: string; swapGroup: string } | null>(null);
   const [exerciseSwaps, setExerciseSwaps] = useState<Record<string, { name: string; catalogItem: CatalogItem }>>({});
@@ -1594,6 +1616,7 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
       mainView = (
         <EngineSelector
           key={`engine-${blockIndex}`}
+          recommendation={engineRecommendation}
           onSelect={(type, duration) => {
             setEngineChoice(prev => ({ ...prev, [blockIndex]: type }));
             if (type === 'zone2' && duration) {

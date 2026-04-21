@@ -5,11 +5,12 @@ import { Flame, Heart, Timer, ChevronRight } from 'lucide-react';
 
 interface Props {
     onSelect: (choice: 'hiit' | 'zone2', durationMinutes?: number) => void;
+    recommendation?: 'hiit' | 'zone2';
 }
 
 const DURATION_OPTIONS = [20, 30, 45, 60];
 
-export default function EngineSelector({ onSelect }: Props) {
+export default function EngineSelector({ onSelect, recommendation }: Props) {
     const [mode, setMode] = useState<'choose' | 'duration'>('choose');
     const [duration, setDuration] = useState(30);
 
@@ -76,15 +77,18 @@ export default function EngineSelector({ onSelect }: Props) {
 
             <button
                 onClick={() => onSelect('hiit')}
-                className="w-full p-5 bg-zinc-800 border border-zinc-700 rounded-2xl hover:border-orange-500 hover:bg-zinc-800/80 transition-all text-left group"
+                className={`w-full p-5 bg-zinc-800 border rounded-2xl hover:border-orange-500 hover:bg-zinc-800/80 transition-all text-left group ${recommendation === 'hiit' ? 'border-orange-500/50 ring-1 ring-orange-500/20' : 'border-zinc-700'}`}
             >
                 <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-orange-500/10 rounded-full flex items-center justify-center shrink-0">
                         <Flame size={24} className="text-orange-500" />
                     </div>
                     <div className="flex-1">
-                        <div className="text-white font-black uppercase text-sm">HIIT Intervals</div>
-                        <div className="text-zinc-500 text-xs mt-0.5">Today's programmed tread block</div>
+                        <div className="flex items-center gap-2">
+                            <div className="text-white font-black uppercase text-sm">HIIT Intervals</div>
+                            {recommendation === 'hiit' && <span className="text-[9px] bg-orange-500/20 text-orange-400 px-1.5 py-0.5 rounded font-bold uppercase">Recommended</span>}
+                        </div>
+                        <div className="text-zinc-500 text-xs mt-0.5">Today&apos;s programmed tread block</div>
                     </div>
                     <ChevronRight size={18} className="text-zinc-600 group-hover:text-orange-500 transition" />
                 </div>
@@ -92,14 +96,17 @@ export default function EngineSelector({ onSelect }: Props) {
 
             <button
                 onClick={() => setMode('duration')}
-                className="w-full p-5 bg-zinc-800 border border-zinc-700 rounded-2xl hover:border-emerald-500 hover:bg-zinc-800/80 transition-all text-left group"
+                className={`w-full p-5 bg-zinc-800 border rounded-2xl hover:border-emerald-500 hover:bg-zinc-800/80 transition-all text-left group ${recommendation === 'zone2' ? 'border-emerald-500/50 ring-1 ring-emerald-500/20' : 'border-zinc-700'}`}
             >
                 <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-emerald-500/10 rounded-full flex items-center justify-center shrink-0">
                         <Heart size={24} className="text-emerald-500" />
                     </div>
                     <div className="flex-1">
-                        <div className="text-white font-black uppercase text-sm">Zone 2 Steady State</div>
+                        <div className="flex items-center gap-2">
+                            <div className="text-white font-black uppercase text-sm">Zone 2 Steady State</div>
+                            {recommendation === 'zone2' && <span className="text-[9px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded font-bold uppercase">Recommended</span>}
+                        </div>
                         <div className="text-zinc-500 text-xs mt-0.5">Conversational pace, pick your duration</div>
                     </div>
                     <ChevronRight size={18} className="text-zinc-600 group-hover:text-emerald-500 transition" />
