@@ -98,6 +98,12 @@ export default function WorkoutReport({ sessionId, userId, onExit }: Props) {
     const prCount = exercises.filter(e => e.isPR).length;
     const dateStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
+    // Tread summary: aggregate block entries that look like tread intervals
+    const treadExercises = exercises.filter(e => e.isBlock && /tread|engine|run|row/i.test(e.name));
+    const treadXp = treadExercises.reduce((s, e) => s + e.xp, 0);
+    const treadIntervals = treadExercises.length;
+    const liftExercises = exercises.filter(e => !e.isBlock || !/tread|engine|run|row/i.test(e.name));
+
     const generateShareText = () => {
         const lines = [`🏋️ WORKOUT REPORT — ${dateStr}`, ''];
         for (const ex of exercises) {
@@ -176,7 +182,30 @@ export default function WorkoutReport({ sessionId, userId, onExit }: Props) {
 
             {/* Exercise Breakdown */}
             <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-2">
-                {exercises.map((ex, i) => (
+                {/* Tread Summary */}
+                {treadIntervals > 0 && (
+                    <div className="rounded-xl p-4 bg-orange-500/10 border border-orange-500/20">
+                        <div className="flex items-center gap-2 mb-3">
+                            <span className="text-lg">🏃</span>
+                            <span className="text-sm font-bold text-white">Treadmill Summary</span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-3">
+                            <div className="text-center">
+                                <div className="text-lg font-black text-white">{treadIntervals}</div>
+                                <div className="text-[10px] text-zinc-500 uppercase font-bold">Intervals</div>
+                            </div>
+                            <div className="text-center">
+                                <div className="text-lg font-black text-yellow-400">+{treadXp}</div>
+                                <div className="text-[10px] text-zinc-500 uppercase font-bold">XP</div>
+                            </div>
+                            <div className="text-center">
+                                <div className="text-lg font-black text-orange-400">~{Math.round(treadIntervals * 1.2 * 8)}</div>
+                                <div className="text-[10px] text-zinc-500 uppercase font-bold">Est. Cal</div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                {liftExercises.map((ex, i) => (
                     <div key={i} className={`rounded-xl p-3 border ${ex.isPR ? 'bg-yellow-500/5 border-yellow-500/30' : 'bg-zinc-800/50 border-zinc-800'}`}>
                         <div className="flex items-start justify-between">
                             <div className="flex-1">
