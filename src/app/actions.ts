@@ -453,6 +453,9 @@ export async function assignDefaultProgram(userId: string, trainingPath: string,
                 section: b.section,
                 target_duration_seconds: b.target_duration_seconds,
                 rest_seconds: b.rest_seconds,
+                is_superset: b.is_superset,
+                superset_group: b.superset_group,
+                exercises: b.exercises,
             };
         });
 
