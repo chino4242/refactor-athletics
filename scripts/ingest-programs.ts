@@ -408,41 +408,53 @@ async function main() {
   const workoutsDir = path.join(process.cwd(), 'public', 'workouts', subDir);
   
   for (const day of DAYS) {
+    // Ingest base variant (A)
     const filePath = path.join(workoutsDir, `${day}.txt`);
     if (!fs.existsSync(filePath)) {
       console.log(`⏭ ${day}: no file`);
       continue;
     }
-    
+    await ingestVariant(day, filePath, 'A', catalog);
+
+    // Ingest B/C variants if they exist
+    const variantsDir = path.join(workoutsDir, 'variants');
+    for (const v of ['B', 'C', 'D']) {
+      const vPath = path.join(variantsDir, `${day}-${v}.txt`);
+      if (fs.existsSync(vPath)) {
+        await ingestVariant(day, vPath, v, catalog);
+      }
+    }
+  }
+  
+  console.log('\nDone! Default programs ingested for path:', TRAINING_PATH);
+}
+
+async function ingestVariant(day: string, filePath: string, variant: string, catalog: Map<string, any>) {
     const content = fs.readFileSync(filePath, 'utf8');
     const parsed = parseTxtFile(content, catalog);
     
-    // Create the program
     const { data: program, error: progErr } = await supabase
       .from('workout_programs')
       .insert({
         user_id: null,
-        name: `${day} - Hybrid`,
+        name: `${day} - ${TRAINING_PATH}${variant !== 'A' ? ` (${variant})` : ''}`,
         is_default: true,
         training_path: TRAINING_PATH,
         day_of_week: day,
+        variant,
       })
       .select('id')
       .single();
     
     if (progErr || !program) {
-      console.error(`✗ ${day}: failed to create program`, progErr?.message);
-      continue;
+      console.error(`✗ ${day}${variant !== 'A' ? `-${variant}` : ''}: failed to create program`, progErr?.message);
+      return;
     }
     
-    // Flatten all blocks and insert
     const allBlocks: BlockRow[] = [];
     for (const section of parsed) {
       for (const block of section.blocks) {
-        allBlocks.push({
-          ...block,
-          workout_id: program.id,
-        });
+        allBlocks.push({ ...block, workout_id: program.id });
       }
     }
     
@@ -452,16 +464,13 @@ async function main() {
         .insert(allBlocks);
       
       if (blockErr) {
-        console.error(`✗ ${day}: failed to insert blocks`, blockErr.message);
+        console.error(`✗ ${day}-${variant}: failed to insert blocks`, blockErr.message);
       } else {
-        console.log(`✓ ${day}: ${allBlocks.length} blocks (program ${program.id})`);
+        console.log(`✓ ${day}${variant !== 'A' ? `-${variant}` : ''}: ${allBlocks.length} blocks (program ${program.id})`);
       }
     } else {
-      console.log(`⚠ ${day}: no blocks parsed`);
+      console.log(`⚠ ${day}-${variant}: no blocks parsed`);
     }
-  }
-  
-  console.log('\nDone! Default programs ingested for path:', TRAINING_PATH);
 }
 
 main().catch(console.error);

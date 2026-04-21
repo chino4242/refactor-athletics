@@ -181,20 +181,25 @@ export async function GET(request: Request) {
         userPath = profile?.selected_path || 'hybrid';
     }
 
-    const { data: defaultProg } = await supabase
+    // Pick variant based on week number (A/B/C rotation)
+    const weekNum = Math.floor((Date.now() - new Date('2026-01-05').getTime()) / (7 * 24 * 60 * 60 * 1000));
+    const { data: variants } = await supabase
         .from('workout_programs')
-        .select('id')
+        .select('id, variant')
         .eq('is_default', true)
         .eq('training_path', userPath)
         .eq('day_of_week', targetDay)
-        .limit(1)
-        .single();
+        .order('variant');
 
-    if (defaultProg) {
+    const variant = variants?.length
+        ? variants[weekNum % variants.length]
+        : null;
+
+    if (variant) {
         const { data: blocks } = await supabase
             .from('program_blocks')
             .select('*')
-            .eq('workout_id', defaultProg.id)
+            .eq('workout_id', variant.id)
             .order('block_order');
 
         if (blocks && blocks.length > 0) {
