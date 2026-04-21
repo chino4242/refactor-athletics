@@ -24,15 +24,15 @@
 
 [STRENGTH]
 2. The Armor: Wide Back Supersets
-Focus: Width and thickness. Lifting first means you can go much heavier on Pull-ups.
+Focus: Width and thickness across different planes.
 
-1. Superset (Pull-Ups + Lat Pulldown): 4 Sets. Rest: 60 sec.
-    ◦ Reps: Failure / 15
-    ◦ Tip: Go to failure on Pull-Ups.
+1. Superset (Pull-Ups + Barbell Row): 4 Sets. Rest: 60 sec.
+    ◦ Reps: Failure / 10-12
+    ◦ Tip: Go to failure on Pull-Ups, then heavy rows.
 
-2. Superset (BB Bent Over Row + DB Shrugs): 4 Sets. Rest: 60 sec.
-    ◦ Reps: 10-12 / 20
-    ◦ Tip: Heavy on Rows.
+2. Superset (Lat Pulldown + Face Pulls): 4 Sets. Rest: 60 sec.
+    ◦ Reps: 12 / 15
+    ◦ Tip: Controlled pulldowns, squeeze on face pulls.
 
 3. Superset (Single Arm Row + Incline Back Fly): 4 Sets. Rest: 60 sec.
     ◦ Reps: 8-10 / 12
@@ -40,9 +40,6 @@ Focus: Width and thickness. Lifting first means you can go much heavier on Pull-
 4. Finisher - Seated Row: 1 Set (2 mins).
     ◦ Reps: Max Reps
     ◦ Note: Cable Seated Row.
-
-5. Dumbbell RDL: 4 Sets x 12 reps. Rest: 60 sec.
-    ◦ Tip: Slow eccentric, squeeze hamstrings at bottom.
 
 
 [CORE]
