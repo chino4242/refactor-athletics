@@ -487,9 +487,14 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
       <div className="bg-black/30 p-4 backdrop-blur-md shrink-0">
         <div className="flex items-center gap-3 mb-2">
           <span className="text-[10px] font-bold bg-white/20 text-white px-2 py-1 rounded uppercase">Up Next</span>
-          <span className="text-sm text-white/80 truncate">
-            {nextInterval ? (nextInterval.raw_text || nextInterval.text) : "Block Complete"}
-          </span>
+          {nextInterval ? (
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-base font-bold text-white truncate">{nextInterval.zone || nextInterval.text || 'Next'}</span>
+              {nextInterval.seconds && <span className="text-sm text-white/50 font-mono shrink-0">{Math.floor(nextInterval.seconds / 60)}:{nextInterval.seconds % 60 < 10 ? '0' : ''}{nextInterval.seconds % 60}</span>}
+            </div>
+          ) : (
+            <span className="text-base font-bold text-white">Block Complete 🎉</span>
+          )}
         </div>
 
         <div className="grid grid-cols-3 gap-4 mt-2">
