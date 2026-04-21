@@ -106,6 +106,34 @@ function dbBlocksToWorkoutBlocks(blocks: any[], catalog: any[]): any[] {
                 target_duration_seconds: block.target_duration_seconds || null,
                 outdoor_alternative: block.outdoor_alternative || null,
             });
+        } else if (block.block_type === 'superset' && block.exercises) {
+            const exercises = (block.exercises as any[]).map(ex => {
+                const cat = catalogMap.get(ex.exercise_id);
+                return {
+                    name: cat?.name || ex.name || 'Exercise',
+                    exercise_id: ex.exercise_id || null,
+                    reps: ex.reps || '10',
+                    sets: block.target_sets || 3,
+                };
+            });
+            const sets = block.target_sets || 3;
+            const xp = sets * exercises.length * 15;
+
+            const sectionMap: Record<string, string> = {
+                warmup: 'Engine', main: 'Armor', core: 'Core Work', cooldown: 'Cooldown',
+            };
+
+            const nameList = exercises.map(e => e.name).join(' + ');
+            result.push({
+                name: `Superset (${nameList})`,
+                type: 'superset',
+                sets,
+                rest_seconds: block.rest_seconds || 60,
+                xp_value: xp,
+                section: sectionMap[block.section] || block.section || 'Armor',
+                tips: block.notes ? [block.notes] : [],
+                exercises,
+            });
         }
     }
 
@@ -143,6 +171,27 @@ export async function GET(request: Request) {
             }
             // Rest day — no blocks
             return NextResponse.json([]);
+        }
+    }
+
+    // Fallback: check default programs in DB
+    const { data: defaultProg } = await supabase
+        .from('workout_programs')
+        .select('id')
+        .eq('is_default', true)
+        .eq('day_of_week', targetDay)
+        .limit(1)
+        .single();
+
+    if (defaultProg) {
+        const { data: blocks } = await supabase
+            .from('program_blocks')
+            .select('*')
+            .eq('workout_id', defaultProg.id)
+            .order('block_order');
+
+        if (blocks && blocks.length > 0) {
+            return NextResponse.json(dbBlocksToWorkoutBlocks(blocks, catalog || []));
         }
     }
 
