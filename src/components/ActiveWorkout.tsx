@@ -359,6 +359,17 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
     return () => { wakeLock?.release(); document.removeEventListener('visibilitychange', onVisChange); };
   }, []);
 
+  const speak = (text: string) => {
+    try {
+      if (!('speechSynthesis' in window)) return;
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.rate = 1.1;
+      u.volume = 1;
+      speechSynthesis.speak(u);
+    } catch {}
+  };
+
   const currentInterval = block.intervals[intervalIndex];
   const nextInterval = block.intervals[intervalIndex + 1];
   const [getReady, setGetReady] = useState(5);
@@ -376,6 +387,8 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
     if (currentInterval) {
       setTimeLeft(currentInterval.seconds);
       setIsActive(true);
+      const zone = currentInterval.zone || currentInterval.text || '';
+      if (zone) speak(zone);
     }
   }, [intervalIndex, currentInterval, getReady]);
 
@@ -383,6 +396,10 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
     let interval: any = null;
     if (isActive && timeLeft > 0) {
       if (timeLeft <= 5) playCountdownBeep();
+      if (timeLeft === 5 && nextInterval) {
+        const next = nextInterval.zone || nextInterval.text || '';
+        if (next) speak(`${next} in 5 seconds`);
+      }
       interval = setInterval(() => setTimeLeft((p) => p - 1), 1000);
     } else if (timeLeft === 0 && isActive) {
       handleNext();
