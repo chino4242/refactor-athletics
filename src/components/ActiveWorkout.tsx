@@ -409,8 +409,14 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
             {currentInterval.zone}
           </h1>
           <span className="text-white/60 font-mono text-sm">
-            Block {blockIndex + 1} / {totalBlocks}
+            {intervalIndex + 1} / {block.intervals.length}
           </span>
+        </div>
+        {/* Progress bar */}
+        <div className="flex gap-1 mt-3">
+          {block.intervals.map((_: any, i: number) => (
+            <div key={i} className={`h-1 flex-1 rounded-full transition-all duration-300 ${i < intervalIndex ? 'bg-white' : i === intervalIndex ? 'bg-white/80 animate-pulse' : 'bg-white/20'}`} />
+          ))}
         </div>
       </div>
 
