@@ -347,6 +347,18 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
   const [isActive, setIsActive] = useState(false);
   const [earnedXp, setEarnedXp] = useState(0);
 
+  // Keep screen awake during tread block
+  useEffect(() => {
+    let wakeLock: any = null;
+    const acquire = async () => {
+      try { if ('wakeLock' in navigator) wakeLock = await (navigator as any).wakeLock.request('screen'); } catch {}
+    };
+    acquire();
+    const onVisChange = () => { if (document.visibilityState === 'visible') acquire(); };
+    document.addEventListener('visibilitychange', onVisChange);
+    return () => { wakeLock?.release(); document.removeEventListener('visibilitychange', onVisChange); };
+  }, []);
+
   const currentInterval = block.intervals[intervalIndex];
   const nextInterval = block.intervals[intervalIndex + 1];
   const [getReady, setGetReady] = useState(5);
