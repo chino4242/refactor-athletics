@@ -433,7 +433,7 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
           </div>
         ) : (
           <>
-            <div className="text-[120px] font-black text-white leading-none tracking-tighter drop-shadow-lg font-mono">
+            <div className={`text-[120px] font-black leading-none tracking-tighter drop-shadow-lg font-mono transition-colors duration-300 ${timeLeft <= 5 && timeLeft > 0 && isActive ? 'text-red-400 animate-pulse' : 'text-white'}`}>
               {isNaN(timeLeft) ? "--:--" :
                 `${Math.floor(timeLeft / 60)}:${timeLeft % 60 < 10 ? '0' : ''}${timeLeft % 60}`
               }
