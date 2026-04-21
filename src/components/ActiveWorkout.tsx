@@ -433,6 +433,16 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
           </div>
         ) : (
           <>
+            {(() => {
+              const txt = (currentInterval.note || '') + ' ' + (currentInterval.raw_text || '');
+              const m = txt.match(/(\d+(?:\.\d+)?)\s*%/);
+              return m ? (
+                <div className="absolute top-4 right-4 bg-black/30 backdrop-blur-sm rounded-xl px-3 py-2 flex items-center gap-1">
+                  <span className="text-2xl font-black text-white">{m[1]}%</span>
+                  <span className="text-[10px] text-white/60 uppercase font-bold">incline</span>
+                </div>
+              ) : null;
+            })()}
             <div className={`text-[120px] font-black leading-none tracking-tighter drop-shadow-lg font-mono transition-colors duration-300 ${timeLeft <= 5 && timeLeft > 0 && isActive ? 'text-red-400 animate-pulse' : 'text-white'}`}>
               {isNaN(timeLeft) ? "--:--" :
                 `${Math.floor(timeLeft / 60)}:${timeLeft % 60 < 10 ? '0' : ''}${timeLeft % 60}`
