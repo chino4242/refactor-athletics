@@ -346,6 +346,8 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
   const [timeLeft, setTimeLeft] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const [earnedXp, setEarnedXp] = useState(0);
+  const [showRecap, setShowRecap] = useState(false);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   // Keep screen awake during tread block
   useEffect(() => {
@@ -400,7 +402,7 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
         const next = nextInterval.zone || nextInterval.text || '';
         if (next) speak(`${next} in 5 seconds`);
       }
-      interval = setInterval(() => setTimeLeft((p) => p - 1), 1000);
+      interval = setInterval(() => { setTimeLeft((p) => p - 1); setElapsedSeconds((p) => p + 1); }, 1000);
     } else if (timeLeft === 0 && isActive) {
       handleNext();
     }
@@ -430,12 +432,51 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
       setIntervalIndex((prev) => prev + 1);
     } else {
       setIsActive(false);
-      onBlockComplete();
+      speak('Block complete. Nice work!');
+      setShowRecap(true);
     }
   };
 
 
   if (!currentInterval) return <div className="text-white p-8">Loading Interval...</div>;
+
+  if (showRecap) {
+    const totalIntervals = block.intervals.filter((i: any) => i.type === 'interval').length;
+    const mins = Math.floor(elapsedSeconds / 60);
+    const secs = elapsedSeconds % 60;
+    const estCals = Math.round(elapsedSeconds / 60 * 8); // ~8 cal/min rough estimate
+    return (
+      <div className="w-full max-w-md mx-auto h-[80vh] md:h-[600px] rounded-3xl overflow-hidden shadow-2xl flex flex-col bg-zinc-900 animate-in fade-in zoom-in-95 duration-300">
+        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center gap-6">
+          <div className="text-5xl">🔥</div>
+          <h2 className="text-2xl font-black text-white">Block Complete!</h2>
+          <div className="grid grid-cols-2 gap-4 w-full max-w-xs">
+            <div className="bg-zinc-800 rounded-xl p-4">
+              <p className="text-2xl font-black text-white font-mono">{mins}:{secs < 10 ? '0' : ''}{secs}</p>
+              <p className="text-xs text-white/50 uppercase font-bold mt-1">Duration</p>
+            </div>
+            <div className="bg-zinc-800 rounded-xl p-4">
+              <p className="text-2xl font-black text-yellow-400 font-mono">+{earnedXp}</p>
+              <p className="text-xs text-white/50 uppercase font-bold mt-1">XP Earned</p>
+            </div>
+            <div className="bg-zinc-800 rounded-xl p-4">
+              <p className="text-2xl font-black text-white font-mono">{totalIntervals}</p>
+              <p className="text-xs text-white/50 uppercase font-bold mt-1">Intervals</p>
+            </div>
+            <div className="bg-zinc-800 rounded-xl p-4">
+              <p className="text-2xl font-black text-orange-400 font-mono">~{estCals}</p>
+              <p className="text-xs text-white/50 uppercase font-bold mt-1">Est. Calories</p>
+            </div>
+          </div>
+        </div>
+        <div className="p-6 shrink-0">
+          <button onClick={() => onBlockComplete()} className="w-full bg-white text-black p-4 rounded-xl font-bold uppercase tracking-widest hover:scale-105 transition active:scale-95">
+            Continue Workout
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`w-full max-w-md mx-auto h-[80vh] md:h-[600px] rounded-3xl overflow-hidden shadow-2xl flex flex-col relative transition-colors duration-700 ${currentInterval.color}`}>
