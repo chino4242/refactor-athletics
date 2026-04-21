@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { X, Search, Zap } from 'lucide-react';
 import type { CatalogItem } from '@/types';
 import { logTrainingAction } from '@/app/actions';
+import { useToast } from '@/context/ToastContext';
 
 interface Props {
   userId: string;
@@ -44,7 +45,9 @@ export default function QuickLogModal({ userId, bodyweight, sex, catalog, onClos
 
   const exerciseType = selected?.type?.toLowerCase() || '';
   const isCardio = exerciseType.includes('time') || exerciseType.includes('duration') || exerciseType.includes('distance') || exerciseType === 'cardio' || ['Cardio', 'Cardio & Conditioning', 'Endurance & Speed'].includes(selected?.category || '');
-  const isBodyweight = exerciseType.includes('reps') || exerciseType === 'bodyweight';
+  const isBodyweight = exerciseType === 'reps_only';
+
+  const toast = useToast();
 
   const handleLog = async () => {
     if (!selected) return;
@@ -56,7 +59,8 @@ export default function QuickLogModal({ userId, bodyweight, sex, catalog, onClos
         duration: parseFloat(s.duration) ? parseFloat(s.duration) * 60 : 0, // min → sec
         distance: parseFloat(s.distance) || 0,
       }));
-      await logTrainingAction(userId, selected.id, bodyweight, sex, payload);
+      const result = await logTrainingAction(userId, selected.id, bodyweight, sex, payload);
+      toast.xp(`${selected.name} logged! +${result.xp_earned} XP${result.rank_name ? ` • ${result.rank_name}` : ''}`);
       onLogged();
       onClose();
     } catch (e) {
