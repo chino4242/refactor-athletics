@@ -441,6 +441,12 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
             <p className="text-white/90 text-lg font-medium mt-4 max-w-[90%] animate-pulse-slow">
               {currentInterval.note || currentInterval.raw_text}
             </p>
+            {(() => {
+              const remaining = timeLeft + block.intervals.slice(intervalIndex + 1).reduce((s: number, i: any) => s + (i.seconds || 0), 0);
+              const mins = Math.floor(remaining / 60);
+              const secs = remaining % 60;
+              return <p className="text-white/50 text-sm font-mono mt-2">{mins}:{secs < 10 ? '0' : ''}{secs} remaining</p>;
+            })()}
           </>
         )}
       </div>
