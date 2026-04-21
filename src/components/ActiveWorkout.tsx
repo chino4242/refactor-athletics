@@ -421,7 +421,7 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
       </div>
 
       {/* CONTENT: TIMER OR CARD */}
-      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center relative z-10 transition-all">
+      <div key={intervalIndex} className="flex-1 flex flex-col items-center justify-center p-8 text-center relative z-10 animate-in fade-in zoom-in-95 duration-300">
         {currentInterval.type === 'card' ? (
           <div className="animate-in fade-in zoom-in duration-300">
             <h3 className="text-white/60 font-bold uppercase tracking-widest text-sm mb-4">
