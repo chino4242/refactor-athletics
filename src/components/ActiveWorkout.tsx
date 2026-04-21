@@ -345,6 +345,7 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
   const [intervalIndex, setIntervalIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
   const [isActive, setIsActive] = useState(false);
+  const [earnedXp, setEarnedXp] = useState(0);
 
   const currentInterval = block.intervals[intervalIndex];
   const nextInterval = block.intervals[intervalIndex + 1];
@@ -382,6 +383,7 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
       const durationMin = currentInterval.seconds / 60;
       const earned = Math.ceil(Math.max(1, durationMin * rate));
 
+      setEarnedXp(prev => prev + earned);
       onIntervalComplete(currentInterval, earned);
     }
 
@@ -401,9 +403,12 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
 
       {/* HEADER */}
       <div className="bg-black/20 p-6 backdrop-blur-sm shrink-0">
-        <h2 className="text-white/80 font-bold uppercase tracking-widest text-xs">
-          {block.name}
-        </h2>
+        <div className="flex justify-between items-center">
+          <h2 className="text-white/80 font-bold uppercase tracking-widest text-xs">
+            {block.name}
+          </h2>
+          {earnedXp > 0 && <span className="text-xs font-bold text-yellow-400/90">+{earnedXp} XP</span>}
+        </div>
         <div className="flex justify-between items-end mt-1">
           <h1 className="text-white text-3xl font-black italic">
             {currentInterval.zone}
