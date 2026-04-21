@@ -1,12 +1,13 @@
 [TREADMILL]
 1. The Long Run: Zone 2
 Goal: Keep strictly conversational. 45-60 Mins.
-1. 10 min Base (Zone 2)
-2. 10 min Base (Zone 2)
-3. 10 min Base (Zone 2)
-4. 10 min Base (Zone 2)
-5. 10 min Base (Zone 2)
-6. 10 min Base (Zone 2)
+1. 5 min Easy Walk (warm up, build to jog)
+2. 10 min Base (Zone 2, flat)
+3. 10 min Base (Zone 2, 1-2% incline)
+4. 10 min Base (Zone 2, flat)
+5. 10 min Base (Zone 2, 1-2% incline)
+6. 10 min Base (Zone 2, flat)
+7. 5 min Easy Walk (cool down, bring HR down)
 
 [CORE]
 2. Optional Core
