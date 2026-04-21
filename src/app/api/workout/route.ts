@@ -174,11 +174,18 @@ export async function GET(request: Request) {
         }
     }
 
-    // Fallback: check default programs in DB
+    // Fallback: check default programs in DB for user's training path
+    let userPath = 'hybrid';
+    if (user) {
+        const { data: profile } = await supabase.from('users').select('selected_path').eq('id', user.id).single();
+        userPath = profile?.selected_path || 'hybrid';
+    }
+
     const { data: defaultProg } = await supabase
         .from('workout_programs')
         .select('id')
         .eq('is_default', true)
+        .eq('training_path', userPath)
         .eq('day_of_week', targetDay)
         .limit(1)
         .single();

@@ -21,7 +21,13 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-const TRAINING_PATH = 'hybrid'; // current programs are hybrid path
+const TRAINING_PATH = process.argv[2] || 'hybrid';
+const DIR_MAP: Record<string, string> = {
+  hybrid: 'weekly',
+  endurance: 'endurance',
+  strength: 'strength',
+  mobility: 'mobility',
+};
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 interface BlockRow {
@@ -379,6 +385,8 @@ function parseTxtFile(content: string, catalog: Map<string, string>): { section:
 
 async function main() {
   const catalog = await getCatalog();
+  const subDir = DIR_MAP[TRAINING_PATH] || TRAINING_PATH;
+  console.log(`Ingesting path: ${TRAINING_PATH} (from ${subDir}/)`);
   console.log(`Loaded ${catalog.size} catalog exercises`);
   
   // Clear existing defaults for this path
@@ -397,7 +405,7 @@ async function main() {
       .eq('training_path', TRAINING_PATH);
   }
   
-  const workoutsDir = path.join(process.cwd(), 'public', 'workouts', 'weekly');
+  const workoutsDir = path.join(process.cwd(), 'public', 'workouts', subDir);
   
   for (const day of DAYS) {
     const filePath = path.join(workoutsDir, `${day}.txt`);
