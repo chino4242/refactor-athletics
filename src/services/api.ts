@@ -193,11 +193,12 @@ export const getHistory = async (userId: string): Promise<HistoryItem[]> => {
 
 export const getHabitProgress = async (userId: string, startTs: number): Promise<any> => {
     const supabase = createClient();
+    const endTs = startTs + 86400; // end of day (24 hours)
     
-    // Query nutrition and habits tables with cache disabled
+    // Query nutrition and habits tables for the specific day
     const [nutrition, habits] = await Promise.all([
-        supabase.from('nutrition_logs').select('*').eq('user_id', userId).gte('timestamp', startTs).order('timestamp', { ascending: false }),
-        supabase.from('habit_logs').select('*').eq('user_id', userId).gte('timestamp', startTs).order('timestamp', { ascending: false })
+        supabase.from('nutrition_logs').select('*').eq('user_id', userId).gte('timestamp', startTs).lt('timestamp', endTs).order('timestamp', { ascending: false }),
+        supabase.from('habit_logs').select('*').eq('user_id', userId).gte('timestamp', startTs).lt('timestamp', endTs).order('timestamp', { ascending: false })
     ]);
 
     const totals: Record<string, number> = {};
