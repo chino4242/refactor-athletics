@@ -25,6 +25,8 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
     const [syncToken, setSyncToken] = useState(initialProfile?.sync_token || '');
     const [tokenCopied, setTokenCopied] = useState(false);
     const [generatingToken, setGeneratingToken] = useState(false);
+    const [whoopConnected, setWhoopConnected] = useState(!!initialProfile?.whoop_connected_at);
+    const [whoopSyncing, setWhoopSyncing] = useState(false);
 
     // Profile fields
     const [displayName, setDisplayName] = useState(initialProfile?.display_name || '');
@@ -85,6 +87,17 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
         navigator.clipboard.writeText(syncToken);
         setTokenCopied(true);
         setTimeout(() => setTokenCopied(false), 2000);
+    };
+
+    const syncWhoop = async () => {
+        setWhoopSyncing(true);
+        try {
+            const res = await fetch('/api/whoop/sync', { method: 'POST' });
+            const data = await res.json();
+            if (data.synced) toast.success(`Synced: ${data.synced.join(', ')}`);
+            else toast.error(data.error || 'Sync failed');
+        } catch { toast.error('Sync failed'); }
+        finally { setWhoopSyncing(false); }
     };
 
     const inputClass = "w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500 transition-colors font-mono";
@@ -245,9 +258,46 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                 <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
                     <div className="flex items-center gap-2 mb-2">
                         <Link2 size={16} className="text-blue-400" />
-                        <h2 className="text-sm font-black uppercase tracking-widest">Health Sync</h2>
+                        <h2 className="text-sm font-black uppercase tracking-widest">Integrations</h2>
                     </div>
-                    <p className="text-zinc-500 text-xs mb-4">Auto-sync steps, sleep, calories burned, and weight from Apple Health or Google Health Connect.</p>
+
+                    {/* WHOOP */}
+                    <div className="mb-4">
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                                <span className="text-lg">⌚</span>
+                                <span className="text-sm font-bold text-white">WHOOP</span>
+                            </div>
+                            {whoopConnected && <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-bold">Connected</span>}
+                        </div>
+                        <p className="text-zinc-500 text-xs mb-3">Auto-sync strain, recovery, sleep, and HRV.</p>
+                        {whoopConnected ? (
+                            <button
+                                onClick={syncWhoop}
+                                disabled={whoopSyncing}
+                                className="w-full py-2.5 bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition disabled:opacity-50"
+                            >
+                                {whoopSyncing ? 'Syncing...' : 'Sync Now'}
+                            </button>
+                        ) : (
+                            <a
+                                href="/api/whoop/auth"
+                                className="block w-full text-center py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition"
+                            >
+                                Connect WHOOP
+                            </a>
+                        )}
+                    </div>
+
+                    <hr className="border-zinc-800 my-4" />
+
+                    {/* Manual Sync Token */}
+                    <div>
+                        <div className="flex items-center gap-2 mb-2">
+                            <span className="text-lg">📱</span>
+                            <span className="text-sm font-bold text-white">Apple Health / Manual</span>
+                        </div>
+                        <p className="text-zinc-500 text-xs mb-3">Sync via Apple Shortcuts or HTTP webhook.</p>
 
                     {syncToken ? (
                         <div className="space-y-3">
@@ -294,6 +344,7 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                             {generatingToken ? 'Generating...' : 'Enable Health Sync'}
                         </button>
                     )}
+                    </div>
                 </div>
 
                 {/* Save Button */}
