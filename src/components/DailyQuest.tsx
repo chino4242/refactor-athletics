@@ -320,8 +320,8 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
               label: '🛡️ Discipline',
               desc: 'Streaks, journaling & self-control',
               habits: [
-                { type: 'vice', id: 'habit_no_alcohol', viceId: 'habit_alcohol', label: 'Avoid Alcohol', icon: '🍺', heatColor: 'bg-emerald-500 shadow-emerald-500/50 shadow-[0_0_5px]' },
-                { type: 'vice', id: 'habit_no_vice', viceId: 'habit_bad_habit', label: 'Avoid Vice', icon: '🛡️', heatColor: 'bg-fuchsia-500 shadow-fuchsia-500/50 shadow-[0_0_5px]' },
+                { type: 'vice', id: 'habit_no_alcohol', viceId: 'habit_no_alcohol', label: 'Avoid Alcohol', icon: '🍺', heatColor: 'bg-emerald-500 shadow-emerald-500/50 shadow-[0_0_5px]' },
+                { type: 'vice', id: 'habit_no_vice', viceId: 'habit_no_vice', label: 'Avoid Vice', icon: '🛡️', heatColor: 'bg-fuchsia-500 shadow-fuchsia-500/50 shadow-[0_0_5px]' },
                 { type: 'vice', id: 'habit_no_sugar', viceId: 'habit_sugar', label: 'Avoid Sugar', icon: '🍬', heatColor: 'bg-amber-500 shadow-amber-500/50 shadow-[0_0_5px]' },
                 { type: 'tap', id: 'habit_journaling', label: 'Journaling', icon: '📓', doneIcon: '✅', xp: 25, color: 'bg-yellow-500', heatColor: 'bg-yellow-500 shadow-yellow-500/50 shadow-[0_0_5px]' },
                 { type: 'card', id: 'habit_reading', label: 'Reading', icon: '📖', unit: 'pages', color: 'bg-pink-500', heatColor: 'bg-blue-500 shadow-blue-500/50 shadow-[0_0_5px]', goalKey: 'habit_reading', defaultGoal: 10, xp: 1 },
@@ -332,7 +332,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
 
           return categories.map(cat => {
             const visibleHabits = cat.habits.filter(h => {
-              const checkId = h.type === 'vice' ? h.id : h.id;
+              const checkId = h.type === 'vice' ? (h as any).viceId : h.id;
               return !isHidden(checkId);
             });
             if (visibleHabits.length === 0) return null;
