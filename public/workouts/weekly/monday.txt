@@ -1,5 +1,24 @@
+[ARMOR]
+2. The Armor: Push Supersets
+Focus: Heavy Pressing followed by Metabolic intervals.
+
+1. Superset (Bench Press + High Pull): 4 Sets. Rest: 60 sec.
+    ◦ Reps: 10, 8, 6, 4 / 10 (Bench / High Pull)
+    ◦ Tip: Increase weight on Bench Press each set.
+
+2. Superset (Incline Dumbbell Press + Skullcrusher): 4 Sets. Rest: 60 sec.
+    ◦ Reps: 10, 8, 6, 4 / 10
+    ◦ Tip: Upper chest focus on incline, control the eccentric on skullcrushers.
+
+3. Giant Set (Lateral Raise + Rear Delt Fly): 3 Rounds. Rest: 45 sec.
+    ◦ Reps: 12 / 12
+    ◦ Tip: No rest between exercises. Light weight, high control.
+
+3. The Engine: HIIT Run/Row
+Note: Transition 2 mins moderate row/jog to flush legs before starting.
+
 [ENGINE]
-3. Tread Block - 23.5 minutes
+3. Tread Block - Incline Pyramid
 Goal: maintain your push pace
 
 1. warm up: 3 min (Base Pace)
@@ -23,27 +42,6 @@ Goal: maintain your push pace
 19. 1 min walk
 20. 90 sec ALL OUT — 400m Effort (flat, track your distance)
 21. 1 min walk
-
-[ARMOR]
-2. The Armor: Push Supersets
-Focus: Heavy Pressing followed by Metabolic intervals.
-
-1. Superset (Bench Press + High Pull): 4 Sets. Rest: 60 sec.
-    ◦ Reps: 10, 8, 6, 4 / 10 (Bench / High Pull)
-    ◦ Tip: Increase weight on Bench Press each set.
-
-2. Superset (Incline Dumbbell Press + Skullcrusher): 4 Sets. Rest: 60 sec.
-    ◦ Reps: 10, 8, 6, 4 / 10
-    ◦ Tip: Upper chest focus on incline, control the eccentric on skullcrushers.
-
-3. Giant Set (Lateral Raise + Rear Delt Fly): 3 Rounds. Rest: 45 sec.
-    ◦ Reps: 12 / 12
-    ◦ Tip: No rest between exercises. Light weight, high control.
-
-3. The Engine: HIIT Run/Row
-Note: Transition 2 mins moderate row/jog to flush legs before starting.
-
-
 
 [CORE]
 4. The Core Blitz
