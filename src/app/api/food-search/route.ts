@@ -18,18 +18,22 @@ function usdaNutrient(nutrients: any[], name: string, unit?: string): number {
 }
 
 async function searchUSDA(query: string): Promise<FoodResult[]> {
-  const res = await fetch('https://api.nal.usda.gov/fdc/v1/foods/search?api_key=' + USDA_KEY, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      query,
-      dataType: ['Branded', 'Foundation', 'SR Legacy'],
-      pageSize: 15,
+  // Search branded and foundation separately — branded gets priority
+  const [brandedRes, foundationRes] = await Promise.all([
+    fetch('https://api.nal.usda.gov/fdc/v1/foods/search?api_key=' + USDA_KEY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, dataType: ['Branded'], pageSize: 10 }),
     }),
-  });
-  if (!res.ok) return [];
-  const data = await res.json();
-  return (data.foods || []).map((f: any) => ({
+    fetch('https://api.nal.usda.gov/fdc/v1/foods/search?api_key=' + USDA_KEY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, dataType: ['Foundation', 'SR Legacy'], pageSize: 5 }),
+    }),
+  ]);
+  const branded = brandedRes.ok ? (await brandedRes.json()).foods || [] : [];
+  const foundation = foundationRes.ok ? (await foundationRes.json()).foods || [] : [];
+  return [...branded, ...foundation].map((f: any) => ({
     id: `usda_${f.fdcId}`,
     name: f.description,
     brand: f.brandName || f.brandOwner || undefined,
@@ -46,8 +50,8 @@ async function searchUSDA(query: string): Promise<FoodResult[]> {
 
 async function searchOFF(query: string): Promise<FoodResult[]> {
   const res = await fetch(
-    `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=10&fields=code,product_name,brands,nutriments,serving_size`,
-    { headers: { 'User-Agent': 'RefactorAthletics/1.0' } }
+    `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=true&page_size=10&fields=code,product_name,brands,nutriments,serving_size`,
+    { headers: { 'User-Agent': 'RefactorAthletics/1.0 (contact@refactorathletics.com)' } }
   );
   if (!res.ok) return [];
   const data = await res.json();
