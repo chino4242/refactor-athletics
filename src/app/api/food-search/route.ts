@@ -106,9 +106,17 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ results: [] });
   }
 
-  // Search both in parallel, USDA first (whole foods), OFF second (packaged)
+  // Search both in parallel
   const [usda, off] = await Promise.all([searchUSDA(query), searchOFF(query)]);
 
-  // Interleave: USDA results first, then OFF
-  return NextResponse.json({ results: [...usda, ...off] });
+  // Interleave results, prioritizing brand matches
+  const q = query.toLowerCase();
+  const all = [...usda, ...off];
+  all.sort((a, b) => {
+    const aMatch = (a.brand?.toLowerCase().includes(q) || a.name.toLowerCase().includes(q)) ? 1 : 0;
+    const bMatch = (b.brand?.toLowerCase().includes(q) || b.name.toLowerCase().includes(q)) ? 1 : 0;
+    return bMatch - aMatch;
+  });
+
+  return NextResponse.json({ results: all.slice(0, 20) });
 }
