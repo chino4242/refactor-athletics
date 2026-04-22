@@ -23,7 +23,7 @@ async function searchUSDA(query: string): Promise<FoodResult[]> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       query,
-      dataType: ['Foundation', 'SR Legacy'],
+      dataType: ['Branded', 'Foundation', 'SR Legacy'],
       pageSize: 15,
     }),
   });
@@ -32,8 +32,9 @@ async function searchUSDA(query: string): Promise<FoodResult[]> {
   return (data.foods || []).map((f: any) => ({
     id: `usda_${f.fdcId}`,
     name: f.description,
+    brand: f.brandName || f.brandOwner || undefined,
     source: 'usda' as const,
-    servingSize: '100g',
+    servingSize: f.servingSize ? `${f.servingSize}${f.servingSizeUnit || 'g'}` : '100g',
     per100g: {
       calories: Math.round(usdaNutrient(f.foodNutrients, 'Energy', 'KCAL')),
       protein: Math.round(usdaNutrient(f.foodNutrients, 'Protein') * 10) / 10,
