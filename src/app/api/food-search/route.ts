@@ -109,14 +109,31 @@ export async function GET(request: NextRequest) {
   // Search both in parallel
   const [usda, off] = await Promise.all([searchUSDA(query), searchOFF(query)]);
 
-  // Interleave results, prioritizing brand matches
+  // Score and rank results by relevance
   const q = query.toLowerCase();
+  const words = q.split(/\s+/).filter(Boolean);
+  const score = (r: FoodResult) => {
+    const name = r.name.toLowerCase();
+    const brand = (r.brand || '').toLowerCase();
+    const full = `${brand} ${name}`;
+    let s = 0;
+    // Exact full query match in name or brand
+    if (name.includes(q)) s += 100;
+    if (brand.includes(q)) s += 80;
+    // Name starts with query
+    if (name.startsWith(q)) s += 50;
+    // Individual word matches
+    for (const w of words) {
+      if (brand.includes(w)) s += 15;
+      if (name.includes(w)) s += 10;
+    }
+    // Penalize very long names (usually less relevant)
+    if (full.length > 80) s -= 5;
+    return s;
+  };
+
   const all = [...usda, ...off];
-  all.sort((a, b) => {
-    const aMatch = (a.brand?.toLowerCase().includes(q) || a.name.toLowerCase().includes(q)) ? 1 : 0;
-    const bMatch = (b.brand?.toLowerCase().includes(q) || b.name.toLowerCase().includes(q)) ? 1 : 0;
-    return bMatch - aMatch;
-  });
+  all.sort((a, b) => score(b) - score(a));
 
   return NextResponse.json({ results: all.slice(0, 20) });
 }
