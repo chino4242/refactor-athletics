@@ -181,14 +181,14 @@ function parseTxtFile(content: string, catalog: Map<string, string>): { section:
         const incline = parseIncline(line);
         
         sections.push({
-          section: 'main',
+          section: 'Engine',
           blocks: [{
             block_order: blockOrder++,
             block_type: 'treadmill',
             duration_seconds: seconds,
             intensity,
             incline: incline || undefined,
-            section: 'main',
+            section: 'Engine',
           }]
         });
       }
