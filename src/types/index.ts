@@ -17,6 +17,7 @@ export interface UserProfileData {
     body_composition_goals?: Record<string, string>;
     available_equipment?: string[];
     measurement_mode?: 'tape' | 'scale';
+    sync_token?: string;
 }
 
 export interface NutritionTargets {

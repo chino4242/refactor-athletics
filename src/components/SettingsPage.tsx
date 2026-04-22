@@ -7,7 +7,7 @@ import { useToast } from '@/context/ToastContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useExperienceMode } from '@/context/ExperienceModeContext';
 import { THEMES } from '@/data/themes';
-import { Settings, User, Target, Palette, ChevronLeft } from 'lucide-react';
+import { Settings, User, Target, Palette, ChevronLeft, RefreshCw, Copy, Check, Link2 } from 'lucide-react';
 import type { UserProfileData } from '@/types';
 
 interface SettingsPageClientProps {
@@ -22,6 +22,9 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
     const { isClassic } = useExperienceMode();
     const [loading, setLoading] = useState(false);
     const [showThemes, setShowThemes] = useState(false);
+    const [syncToken, setSyncToken] = useState(initialProfile?.sync_token || '');
+    const [tokenCopied, setTokenCopied] = useState(false);
+    const [generatingToken, setGeneratingToken] = useState(false);
 
     // Profile fields
     const [displayName, setDisplayName] = useState(initialProfile?.display_name || '');
@@ -61,6 +64,27 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
         } finally {
             setLoading(false);
         }
+    };
+
+    const generateSyncToken = async () => {
+        setGeneratingToken(true);
+        try {
+            const res = await fetch('/api/sync/token', { method: 'POST' });
+            const data = await res.json();
+            if (data.token) {
+                setSyncToken(data.token);
+                toast.success('Sync token generated!');
+            } else {
+                toast.error('Failed to generate token');
+            }
+        } catch { toast.error('Failed to generate token'); }
+        finally { setGeneratingToken(false); }
+    };
+
+    const copySyncToken = () => {
+        navigator.clipboard.writeText(syncToken);
+        setTokenCopied(true);
+        setTimeout(() => setTokenCopied(false), 2000);
     };
 
     const inputClass = "w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500 transition-colors font-mono";
@@ -215,6 +239,61 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                             </div>
                         ))}
                     </div>
+                </div>
+
+                {/* Health Sync Section */}
+                <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+                    <div className="flex items-center gap-2 mb-2">
+                        <Link2 size={16} className="text-blue-400" />
+                        <h2 className="text-sm font-black uppercase tracking-widest">Health Sync</h2>
+                    </div>
+                    <p className="text-zinc-500 text-xs mb-4">Auto-sync steps, sleep, calories burned, and weight from Apple Health or Google Health Connect.</p>
+
+                    {syncToken ? (
+                        <div className="space-y-3">
+                            <div>
+                                <label className={labelClass}>Your Sync Token</label>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={syncToken}
+                                        readOnly
+                                        className="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-zinc-300 font-mono text-xs select-all"
+                                        onClick={e => (e.target as HTMLInputElement).select()}
+                                    />
+                                    <button
+                                        onClick={copySyncToken}
+                                        className="px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition shrink-0"
+                                    >
+                                        {tokenCopied ? <Check size={16} className="text-emerald-400" /> : <Copy size={16} className="text-zinc-400" />}
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="flex gap-2">
+                                <a
+                                    href="/sync/setup"
+                                    className="flex-1 text-center py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition"
+                                >
+                                    Setup Guide
+                                </a>
+                                <button
+                                    onClick={generateSyncToken}
+                                    disabled={generatingToken}
+                                    className="px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition text-zinc-400 text-xs"
+                                >
+                                    <RefreshCw size={14} className={generatingToken ? 'animate-spin' : ''} />
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <button
+                            onClick={generateSyncToken}
+                            disabled={generatingToken}
+                            className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase tracking-wider text-sm rounded-xl transition disabled:opacity-50"
+                        >
+                            {generatingToken ? 'Generating...' : 'Enable Health Sync'}
+                        </button>
+                    )}
                 </div>
 
                 {/* Save Button */}
