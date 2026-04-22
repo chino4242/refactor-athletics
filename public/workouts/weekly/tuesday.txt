@@ -1,4 +1,25 @@
+[STRENGTH]
+2. The Armor: Wide Back Supersets
+Focus: Width and thickness across different planes.
+
+1. Superset (Pull-Ups + Barbell Row): 4 Sets. Rest: 60 sec.
+    ◦ Reps: Failure / 10-12
+    ◦ Tip: Go to failure on Pull-Ups, then heavy rows.
+
+2. Superset (Lat Pulldown + Face Pulls): 4 Sets. Rest: 60 sec.
+    ◦ Reps: 12 / 15
+    ◦ Tip: Controlled pulldowns, squeeze on face pulls.
+
+3. Superset (Single Arm Row + Incline Back Fly): 4 Sets. Rest: 60 sec.
+    ◦ Reps: 8-10 / 12
+
+4. Finisher - Seated Row: 1 Set (2 mins).
+    ◦ Reps: Max Reps
+    ◦ Note: Cable Seated Row.
+
 [TREADMILL]
+3. The Engine: Descending Ladder
+Goal: Push durations shrink, incline rises. AO bursts between each.
 1. 3 min push (PW @ 4%+)
 2. 30 sec AO (PW @ 10%+)
 3. 90 sec WR, get to base when ready
@@ -21,26 +42,6 @@
 20. 30 sec AO (PW @ 10%+)
 21. 90 sec WR, get to base when ready
 22. 30 sec AO (PW @ 10%+)
-
-[STRENGTH]
-2. The Armor: Wide Back Supersets
-Focus: Width and thickness across different planes.
-
-1. Superset (Pull-Ups + Barbell Row): 4 Sets. Rest: 60 sec.
-    ◦ Reps: Failure / 10-12
-    ◦ Tip: Go to failure on Pull-Ups, then heavy rows.
-
-2. Superset (Lat Pulldown + Face Pulls): 4 Sets. Rest: 60 sec.
-    ◦ Reps: 12 / 15
-    ◦ Tip: Controlled pulldowns, squeeze on face pulls.
-
-3. Superset (Single Arm Row + Incline Back Fly): 4 Sets. Rest: 60 sec.
-    ◦ Reps: 8-10 / 12
-
-4. Finisher - Seated Row: 1 Set (2 mins).
-    ◦ Reps: Max Reps
-    ◦ Note: Cable Seated Row.
-
 
 [CORE]
 4. The Core
