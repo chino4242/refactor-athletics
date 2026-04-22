@@ -12,64 +12,71 @@ interface Props {
 export default function BarcodeScanner({ onResult, onClose }: Props) {
   const scannerRef = useRef<HTMLDivElement>(null);
   const html5QrCodeRef = useRef<any>(null);
+  const lookingRef = useRef(false);
+  const mountedRef = useRef(true);
   const [error, setError] = useState('');
   const [looking, setLooking] = useState(false);
 
   useEffect(() => {
-    let mounted = true;
+    mountedRef.current = true;
 
     const startScanner = async () => {
-      const { Html5Qrcode } = await import('html5-qrcode');
-      if (!mounted || !scannerRef.current) return;
-
-      const scanner = new Html5Qrcode('barcode-reader');
-      html5QrCodeRef.current = scanner;
-
       try {
+        const { Html5Qrcode } = await import('html5-qrcode');
+        if (!mountedRef.current || !scannerRef.current) return;
+
+        const scanner = new Html5Qrcode('barcode-reader');
+        html5QrCodeRef.current = scanner;
+
         await scanner.start(
           { facingMode: 'environment' },
           { fps: 10, qrbox: { width: 250, height: 100 }, aspectRatio: 1.5 },
           async (decodedText) => {
-            if (looking) return;
-            setLooking(true);
-            try {
-              await scanner.stop();
-            } catch {}
+            if (lookingRef.current) return;
+            lookingRef.current = true;
+            if (mountedRef.current) setLooking(true);
+
+            try { await scanner.stop(); } catch {}
+
             try {
               const res = await fetch(`/api/food-search?barcode=${encodeURIComponent(decodedText)}`);
+              if (!mountedRef.current) return;
               const data = await res.json();
               if (data.results?.length > 0) {
                 onResult(data.results[0]);
-              } else {
-                setError(`No food found for barcode: ${decodedText}`);
-                setLooking(false);
-                // Restart scanner
-                try {
-                  await scanner.start(
-                    { facingMode: 'environment' },
-                    { fps: 10, qrbox: { width: 250, height: 100 }, aspectRatio: 1.5 },
-                    () => {},
-                    () => {}
-                  );
-                } catch {}
+                return;
               }
+              setError(`No food found for barcode: ${decodedText}`);
             } catch {
-              setError('Lookup failed. Try again.');
-              setLooking(false);
+              if (mountedRef.current) setError('Lookup failed. Try again.');
             }
+
+            // Reset and restart
+            lookingRef.current = false;
+            if (mountedRef.current) setLooking(false);
+            try {
+              if (mountedRef.current) {
+                await scanner.start(
+                  { facingMode: 'environment' },
+                  { fps: 10, qrbox: { width: 250, height: 100 }, aspectRatio: 1.5 },
+                  () => {},
+                  () => {}
+                );
+              }
+            } catch {}
           },
-          () => {} // ignore scan failures
+          () => {}
         );
       } catch (err: any) {
-        setError(err?.message || 'Camera access denied');
+        if (mountedRef.current) setError(err?.message || 'Camera access denied');
       }
     };
 
     startScanner();
 
     return () => {
-      mounted = false;
-      html5QrCodeRef.current?.stop().catch(() => {});
+      mountedRef.current = false;
+      try { html5QrCodeRef.current?.stop().catch(() => {}); } catch {}
     };
   }, []);
 
