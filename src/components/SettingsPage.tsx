@@ -27,6 +27,8 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
     const [generatingToken, setGeneratingToken] = useState(false);
     const [whoopConnected, setWhoopConnected] = useState(!!initialProfile?.whoop_connected_at);
     const [whoopSyncing, setWhoopSyncing] = useState(false);
+    const [googleConnected, setGoogleConnected] = useState(!!initialProfile?.google_health_connected_at);
+    const [googleSyncing, setGoogleSyncing] = useState(false);
 
     // Profile fields
     const [displayName, setDisplayName] = useState(initialProfile?.display_name || '');
@@ -98,6 +100,17 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
             else toast.error(data.error || 'Sync failed');
         } catch { toast.error('Sync failed'); }
         finally { setWhoopSyncing(false); }
+    };
+
+    const syncGoogle = async () => {
+        setGoogleSyncing(true);
+        try {
+            const res = await fetch('/api/google-health/sync', { method: 'POST' });
+            const data = await res.json();
+            if (data.synced) toast.success(`Synced: ${data.synced.join(', ')}`);
+            else toast.error(data.error || 'Sync failed');
+        } catch { toast.error('Sync failed'); }
+        finally { setGoogleSyncing(false); }
     };
 
     const inputClass = "w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500 transition-colors font-mono";
@@ -285,6 +298,36 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                                 className="block w-full text-center py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition"
                             >
                                 Connect WHOOP
+                            </a>
+                        )}
+                    </div>
+
+                    <hr className="border-zinc-800 my-4" />
+
+                    {/* Google Health / Fitbit */}
+                    <div className="mb-4">
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                                <span className="text-lg">💚</span>
+                                <span className="text-sm font-bold text-white">Fitbit / Google Health</span>
+                            </div>
+                            {googleConnected && <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-bold">Connected</span>}
+                        </div>
+                        <p className="text-zinc-500 text-xs mb-3">Auto-sync steps, sleep, calories, and weight from Fitbit or Pixel Watch.</p>
+                        {googleConnected ? (
+                            <button
+                                onClick={syncGoogle}
+                                disabled={googleSyncing}
+                                className="w-full py-2.5 bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition disabled:opacity-50"
+                            >
+                                {googleSyncing ? 'Syncing...' : 'Sync Now'}
+                            </button>
+                        ) : (
+                            <a
+                                href="/api/google-health/auth"
+                                className="block w-full text-center py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition"
+                            >
+                                Connect Fitbit / Google
                             </a>
                         )}
                     </div>

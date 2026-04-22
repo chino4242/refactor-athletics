@@ -10,24 +10,39 @@ export async function GET(request: NextRequest) {
   const supabase = createServiceClient();
   const { data: users } = await supabase
     .from('users')
-    .select('id')
-    .not('whoop_access_token', 'is', null);
+    .select('id, whoop_access_token, google_health_access_token')
+    .or('whoop_access_token.not.is.null,google_health_access_token.not.is.null');
 
   if (!users?.length) return NextResponse.json({ synced: 0 });
 
-  const results: { userId: string; status: string }[] = [];
+  const results: { userId: string; service: string; status: string }[] = [];
 
   for (const user of users) {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/whoop/sync`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, cronSecret: process.env.CRON_SECRET }),
-      });
-      const data = await res.json();
-      results.push({ userId: user.id, status: data.synced ? 'ok' : data.error });
-    } catch (e: any) {
-      results.push({ userId: user.id, status: e.message });
+    if (user.whoop_access_token) {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/whoop/sync`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: user.id, cronSecret: process.env.CRON_SECRET }),
+        });
+        const data = await res.json();
+        results.push({ userId: user.id, service: 'whoop', status: data.synced ? 'ok' : data.error });
+      } catch (e: any) {
+        results.push({ userId: user.id, service: 'whoop', status: e.message });
+      }
+    }
+    if (user.google_health_access_token) {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/google-health/sync`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: user.id, cronSecret: process.env.CRON_SECRET }),
+        });
+        const data = await res.json();
+        results.push({ userId: user.id, service: 'google', status: data.synced ? 'ok' : data.error });
+      } catch (e: any) {
+        results.push({ userId: user.id, service: 'google', status: e.message });
+      }
     }
   }
 
