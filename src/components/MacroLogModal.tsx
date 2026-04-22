@@ -41,19 +41,23 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
     };
 
     const searchTimeoutRef = { current: null as NodeJS.Timeout | null };
+    const abortRef = { current: null as AbortController | null };
     const handleFoodSearch = (q: string) => {
         setFoodQuery(q);
         setSelectedFood(null);
         if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+        if (abortRef.current) abortRef.current.abort();
         if (q.length < 2) { setFoodResults([]); return; }
         searchTimeoutRef.current = setTimeout(async () => {
+            const controller = new AbortController();
+            abortRef.current = controller;
             setSearching(true);
             try {
-                const res = await fetch(`/api/food-search?q=${encodeURIComponent(q)}`);
+                const res = await fetch(`/api/food-search?q=${encodeURIComponent(q)}`, { signal: controller.signal });
                 const data = await res.json();
-                setFoodResults(data.results || []);
-            } catch { setFoodResults([]); }
-            finally { setSearching(false); }
+                if (!controller.signal.aborted) setFoodResults(data.results || []);
+            } catch (e: any) { if (e?.name !== 'AbortError') setFoodResults([]); }
+            finally { if (!controller.signal.aborted) setSearching(false); }
         }, 400);
     };
 
