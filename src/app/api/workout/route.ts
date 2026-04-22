@@ -156,7 +156,7 @@ export async function GET(request: Request) {
             .from('workout_programs')
             .select('id, name')
             .eq('user_id', user.id)
-            .eq('day_of_week', targetDay)
+            .ilike('day_of_week', targetDay)
             .single();
 
         if (program) {
@@ -188,7 +188,7 @@ export async function GET(request: Request) {
         .select('id, variant')
         .eq('is_default', true)
         .eq('training_path', userPath)
-        .eq('day_of_week', targetDay)
+        .ilike('day_of_week', targetDay)
         .order('variant');
 
     const variant = variants?.length
