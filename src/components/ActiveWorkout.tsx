@@ -15,6 +15,7 @@ import { v4 as uuidv4 } from 'uuid';
 // --- SAFELIST CONSTANT REMOVED ---
 
 import EquipmentVariantPicker, { getEquipmentVariants } from './EquipmentVariantPicker';
+import WeightCalculator from './WeightCalculator';
 
 // --- SUB-COMPONENT: EXERCISE VIEW ---
 function ExerciseView({ block, blockIndex, onComplete, fullHistory, catalog, exerciseSwaps, onSwap }: any) {
@@ -44,7 +45,7 @@ function ExerciseView({ block, blockIndex, onComplete, fullHistory, catalog, exe
   const catalogItem = overrideCatalogItem || swap?.catalogItem || defaultCatalogItem;
   const swapGroup = catalogItem?.swap_group || defaultCatalogItem?.swap_group;
 
-  const variants = useMemo(() => getEquipmentVariants(displayName, catalog || []), [displayName, catalog]);
+  const variants = useMemo(() => getEquipmentVariants(displayName, catalog || [], block.exercise_id), [displayName, catalog, block.exercise_id]);
 
   const updateWeight = (index: number, val: string) => {
     const newWeights = [...weights];
@@ -55,11 +56,20 @@ function ExerciseView({ block, blockIndex, onComplete, fullHistory, catalog, exe
   useEffect(() => {
     let interval: any = null;
     if (isResting && restTime > 0) {
+      if (restTime === 10) {
+        try {
+          if ('speechSynthesis' in window) {
+            speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance('10 seconds');
+            u.rate = 1.1; u.volume = 1;
+            speechSynthesis.speak(u);
+          }
+        } catch {}
+      }
       if (restTime <= 5) playCountdownBeep();
       interval = setInterval(() => setRestTime((p) => p - 1), 1000);
     } else if (restTime === 0 && isResting) {
       setIsResting(false);
-      // Optional: Play sound or vibrate here
     }
     return () => clearInterval(interval);
   }, [isResting, restTime]);
@@ -82,7 +92,7 @@ function ExerciseView({ block, blockIndex, onComplete, fullHistory, catalog, exe
   const progress = (completedSets.length / totalSets) * 100;
 
   return (
-    <div className="w-full max-w-md mx-auto h-[80vh] md:h-[600px] rounded-3xl overflow-hidden shadow-2xl flex flex-col relative bg-zinc-900 border border-zinc-800">
+    <div className="w-full max-w-md mx-auto h-[calc(100dvh-80px)] md:h-[600px] rounded-3xl overflow-hidden shadow-2xl flex flex-col relative bg-zinc-900 border border-zinc-800">
 
       {/* 🟢 HISTORY MODAL */}
       {showHistoryModal && catalogItem && (
@@ -194,23 +204,23 @@ function ExerciseView({ block, blockIndex, onComplete, fullHistory, catalog, exe
             return (
               <div
                 key={i}
-                className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all duration-300 group ${isDone
+                className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all duration-300 group ${isDone
                   ? 'bg-green-500/10 border-green-500/50 text-green-500'
                   : 'bg-zinc-800 border-zinc-700'
                   }`}
               >
                 {/* Weight + Reps Inputs */}
-                <div className="flex flex-col mr-4 gap-2">
+                <div className="flex flex-col mr-3 gap-1.5">
                   <div>
                     <span className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Weight</span>
-                    <div className="flex gap-1">
+                    <div className="flex gap-1 items-center">
                       <input
                         type="text"
                         inputMode="decimal"
                         placeholder="lbs"
                         value={weights[i]}
                         onChange={(e) => updateWeight(i, e.target.value)}
-                        className="bg-zinc-900 text-white border border-zinc-600 rounded p-2 w-20 text-center font-mono text-sm focus:border-orange-500 focus:outline-none"
+                        className="bg-zinc-900 text-white border border-zinc-600 rounded p-1.5 w-16 text-center font-mono text-sm focus:border-orange-500 focus:outline-none"
                         onClick={(e) => e.stopPropagation()}
                       />
                       <div className="flex flex-col gap-0.5">
@@ -233,6 +243,7 @@ function ExerciseView({ block, blockIndex, onComplete, fullHistory, catalog, exe
                           -5
                         </button>
                       </div>
+                      <WeightCalculator onUse={(w) => updateWeight(i, String(w))} />
                     </div>
                   </div>
                   <div>
@@ -247,7 +258,7 @@ function ExerciseView({ block, blockIndex, onComplete, fullHistory, catalog, exe
                         next[i] = e.target.value;
                         setRepsInputs(next);
                       }}
-                      className="bg-zinc-900 text-white border border-zinc-600 rounded p-2 w-20 text-center font-mono text-sm focus:border-orange-500 focus:outline-none"
+                      className="bg-zinc-900 text-white border border-zinc-600 rounded p-1.5 w-16 text-center font-mono text-sm focus:border-orange-500 focus:outline-none"
                       onClick={(e) => e.stopPropagation()}
                     />
                   </div>
@@ -410,6 +421,7 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
 
   const handleNext = () => {
     // 🟢 NEW: Log the completed interval immediately
+    let earned = 0;
     if (currentInterval && onIntervalComplete) {
       // Calculate dynamic XP based on Intensity * Duration
       let rate = 5; // Default (Base/Recovery) - 5 XP/min
@@ -421,7 +433,7 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
 
       // Minimum 1 XP if it's very short
       const durationMin = currentInterval.seconds / 60;
-      const earned = Math.ceil(Math.max(1, durationMin * rate));
+      earned = Math.ceil(Math.max(1, durationMin * rate));
 
       setEarnedXp(prev => prev + earned);
       onIntervalComplete(currentInterval, earned);
@@ -431,7 +443,7 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
       setIntervalIndex((prev) => prev + 1);
     } else {
       setIsActive(false);
-      onBlockComplete();
+      onBlockComplete(false, [], earnedXp + earned);
     }
   };
 
@@ -439,7 +451,7 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
   if (!currentInterval) return <div className="text-white p-8">Loading Interval...</div>;
 
   return (
-    <div className={`w-full max-w-md mx-auto h-[80vh] md:h-[600px] rounded-3xl overflow-hidden shadow-2xl flex flex-col relative transition-colors duration-700 ${currentInterval.color}`}>
+    <div className={`w-full max-w-md mx-auto h-[calc(100dvh-80px)] md:h-[600px] rounded-3xl overflow-hidden shadow-2xl flex flex-col relative transition-colors duration-700 ${currentInterval.color}`}>
 
       {/* HEADER */}
       <div className="bg-black/20 p-6 backdrop-blur-sm shrink-0">
@@ -447,7 +459,7 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
           <h2 className="text-white/80 font-bold uppercase tracking-widest text-xs">
             {block.name}
           </h2>
-          {earnedXp > 0 && <span className="text-xs font-bold text-yellow-400/90">+{earnedXp} XP</span>}
+          {earnedXp > 0 && <span className="text-xs font-bold text-yellow-400/90">XP Earned: {earnedXp}</span>}
         </div>
         <div className="flex justify-between items-end mt-1">
           <h1 className="text-white text-3xl font-black italic">
@@ -575,11 +587,21 @@ function SupersetView({ block, blockIndex, onComplete, fullHistory, catalog, exe
   useEffect(() => {
     let interval: any = null;
     if (isResting && restTime > 0) {
+      if (restTime === 10) {
+        try {
+          if ('speechSynthesis' in window) {
+            speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance('10 seconds');
+            u.rate = 1.1; u.volume = 1;
+            speechSynthesis.speak(u);
+          }
+        } catch {}
+      }
       if (restTime <= 5) playCountdownBeep();
       interval = setInterval(() => setRestTime((p) => p - 1), 1000);
     } else if (restTime === 0 && isResting) {
       setIsResting(false);
-      playCountdownBeep(); // Play final beep
+      playCountdownBeep();
     }
     return () => clearInterval(interval);
   }, [isResting, restTime]);
@@ -635,7 +657,7 @@ function SupersetView({ block, blockIndex, onComplete, fullHistory, catalog, exe
   const isAllComplete = totalCompleted === totalSlots;
 
   return (
-    <div className="w-full max-w-md mx-auto h-[80vh] md:h-[600px] rounded-3xl overflow-hidden shadow-2xl flex flex-col relative bg-zinc-900 border border-zinc-800">
+    <div className="w-full max-w-md mx-auto h-[calc(100dvh-80px)] md:h-[600px] rounded-3xl overflow-hidden shadow-2xl flex flex-col relative bg-zinc-900 border border-zinc-800">
 
       {/* 🟢 HISTORY MODAL */}
       {selectedExerciseForHistory && (
@@ -744,7 +766,7 @@ function SupersetView({ block, blockIndex, onComplete, fullHistory, catalog, exe
                   const displayName = swap?.name || ex.name;
                   const defaultCatalogItem = catalog?.find((c: any) => c.name.toLowerCase() === displayName.toLowerCase());
                   const catalogItem = variantOverrides[exIdx] || swap?.catalogItem || defaultCatalogItem;
-                  const exVariants = getEquipmentVariants(displayName, catalog || []);
+                  const exVariants = getEquipmentVariants(displayName, catalog || [], ex.exercise_id);
                   const swapGroup = catalogItem?.swap_group || defaultCatalogItem?.swap_group;
 
                   return (
@@ -1214,7 +1236,7 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
     return newRawValue > prevBest && prevBest > 0;
   };
 
-  const handleBlockComplete = async (skipped: boolean = false, exercisesData: any[] = []) => {
+  const handleBlockComplete = async (skipped: boolean = false, exercisesData: any[] = [], timerXp?: number) => {
     const isExerciseBlock = ['checklist_exercise', 'list', 'superset'].includes(currentBlock.type);
 
     if (skipped) {
@@ -1269,6 +1291,22 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
             sessionId
           );
           if (onLogComplete) onLogComplete();
+          // Show celebration for timer/treadmill blocks
+          const displayXp = timerXp || currentBlock.xp_value;
+          setBlockResults([{
+            name: currentBlock.name,
+            xp_earned: displayXp,
+            level: 0,
+            rank_name: null,
+            hasStandards: false,
+            isPR: false,
+            value: 'Complete',
+          }]);
+          setShowBlockComplete(true);
+          const newCompleted = [...completedIndices, blockIndex];
+          setCompletedIndices(newCompleted);
+          if (newCompleted.length === workoutData.length) setIsComplete(true);
+          return;
         }
       } catch (e) {
         console.error("Failed to log block:", e);

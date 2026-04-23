@@ -30,13 +30,13 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
         if (userId) {
             const supabase = createClient();
             Promise.all([
-                supabase.from('body_measurements').select('*').eq('user_id', userId).order('timestamp', { ascending: false }).limit(1),
+                supabase.from('body_measurements').select('*').eq('user_id', userId).order('timestamp', { ascending: true }),
                 supabase.from('users').select('body_composition_goals, bodyweight').eq('id', userId).single()
             ]).then(([measurement, profile]) => {
                 console.log('Latest measurement:', measurement.data);
                 console.log('User profile:', profile.data);
                 if (measurement.data && measurement.data.length > 0) {
-                    setBodyCompHistory([measurement.data[0]]);
+                    setBodyCompHistory(measurement.data);
                 }
                 setUserProfile(profile.data);
             });
@@ -116,6 +116,20 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                             <div className={`text-4xl font-black italic ${physiquePoints.color}`}>
                                 {physiquePoints.score > 0 ? '+' : ''}{physiquePoints.score}
                             </div>
+                            {(physiquePoints.leanMassDelta !== undefined || physiquePoints.fatPctDelta !== undefined) && (
+                                <div className="flex gap-3 justify-center mt-1">
+                                    {physiquePoints.leanMassDelta !== undefined && (
+                                        <span className={`text-[10px] font-bold ${physiquePoints.leanMassDelta > 0 ? 'text-emerald-400' : physiquePoints.leanMassDelta < 0 ? 'text-rose-400' : 'text-zinc-500'}`}>
+                                            {physiquePoints.leanMassDelta > 0 ? '+' : ''}{physiquePoints.leanMassDelta} lbs muscle
+                                        </span>
+                                    )}
+                                    {physiquePoints.fatPctDelta !== undefined && (
+                                        <span className={`text-[10px] font-bold ${physiquePoints.fatPctDelta < 0 ? 'text-emerald-400' : physiquePoints.fatPctDelta > 0 ? 'text-rose-400' : 'text-zinc-500'}`}>
+                                            {physiquePoints.fatPctDelta > 0 ? '+' : ''}{physiquePoints.fatPctDelta}% body fat
+                                        </span>
+                                    )}
+                                </div>
+                            )}
                             <div className="text-[10px] text-emerald-500/70 group-hover:text-emerald-400 mt-1 transition">Log body comp to track trends →</div>
                         </Link>
 
