@@ -14,8 +14,11 @@ interface Props {
   onSelect: (item: CatalogItem) => void;
 }
 
-export function getEquipmentVariants(exerciseName: string, catalog: CatalogItem[]): CatalogItem[] {
-  const match = catalog.find(c => c.name.toLowerCase() === exerciseName.toLowerCase().trim());
+export function getEquipmentVariants(exerciseName: string, catalog: CatalogItem[], exerciseId?: string): CatalogItem[] {
+  const name = exerciseName.toLowerCase().trim();
+  const match = catalog.find(c => c.name.toLowerCase() === name)
+    || (exerciseId && catalog.find(c => c.id === exerciseId))
+    || catalog.find(c => name.includes(c.name.toLowerCase()) || c.name.toLowerCase().includes(name));
   if (!match) return [];
   const baseId = match.normalizes_to || match.id;
   const variants = catalog.filter(c => c.id === baseId || c.normalizes_to === baseId);

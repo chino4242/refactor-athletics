@@ -57,11 +57,17 @@ function dbBlocksToWorkoutBlocks(blocks: any[], catalog: any[]): any[] {
             const factor = b.intensity === 'all_out' ? 0.4 : b.intensity === 'push' ? 0.2 : 0.1;
             xp += Math.floor(secs * factor);
         }
+        // Add XP for warmup + cooldown (10 min base @ 0.1/sec)
+        xp += Math.floor(600 * 0.1);
+
+        // Inject 5-min Zone 2 warmup and cooldown
+        const warmup = { type: 'interval' as const, seconds: 300, zone: 'Base Pace', color: 'bg-green-500', note: 'Zone 2 — warm up', raw_text: '5 min Base (Warm-Up)' };
+        const cooldown = { type: 'interval' as const, seconds: 300, zone: 'Base Pace', color: 'bg-green-500', note: 'Zone 2 — cool down', raw_text: '5 min Base (Cool Down)' };
 
         result.push({
-            name: `Tread Block - ${totalMins} min`,
+            name: `Tread Block - ${totalMins + 10} min`,
             type: 'timer',
-            intervals,
+            intervals: [warmup, ...intervals, cooldown],
             section: treadmillSection,
             xp_value: xp,
         });

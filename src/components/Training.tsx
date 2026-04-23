@@ -157,7 +157,7 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
   const currentExercise = catalog.find(e => e.id === selectedExerciseId);
 
   // Equipment variant lookup
-  const equipmentVariants = useMemo(() => getEquipmentVariants(currentExercise?.name || '', catalog), [currentExercise, catalog]);
+  const equipmentVariants = useMemo(() => getEquipmentVariants(currentExercise?.name || '', catalog, currentExercise?.id), [currentExercise, catalog]);
 
   const type = currentExercise?.type || 'weight_reps';
   // 🟢 NEW: Check for Calories Unit

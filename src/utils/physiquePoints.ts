@@ -5,11 +5,36 @@ export function calculatePhysiquePoints(
     bodyCompHistory: Array<Record<string, any>>,
     goals: Record<string, string>,
     mode: 'tape' | 'scale' = 'tape'
-): { score: number; status: string; color: string } {
+): { score: number; status: string; color: string; leanMassDelta?: number; fatPctDelta?: number } {
     if (bodyCompHistory.length < 2) return { score: 0, status: 'No Data', color: 'text-zinc-400' };
 
     const metrics = mode === 'scale' ? SCALE_METRICS : TAPE_METRICS;
     let score = 0;
+
+    // Track lean mass and fat % deltas for scale mode
+    let leanMassDelta: number | undefined;
+    let fatPctDelta: number | undefined;
+
+    if (mode === 'scale') {
+        const muscleMetrics = ['left_arm_muscle', 'right_arm_muscle', 'trunk_muscle', 'left_leg_muscle', 'right_leg_muscle'] as const;
+        let totalMuscleBase = 0, totalMuscleCurr = 0, hasMuscle = false;
+        for (const m of muscleMetrics) {
+            let base: number | null = null, curr: number | null = null;
+            for (const row of bodyCompHistory) {
+                const v = row[m];
+                if (v !== undefined && v !== null) { if (base === null) base = Number(v); curr = Number(v); }
+            }
+            if (base !== null && curr !== null) { totalMuscleBase += base; totalMuscleCurr += curr; hasMuscle = true; }
+        }
+        if (hasMuscle) leanMassDelta = Math.round((totalMuscleCurr - totalMuscleBase) * 10) / 10;
+
+        let fatBase: number | null = null, fatCurr: number | null = null;
+        for (const row of bodyCompHistory) {
+            const v = row.body_fat_percentage;
+            if (v !== undefined && v !== null) { if (fatBase === null) fatBase = Number(v); fatCurr = Number(v); }
+        }
+        if (fatBase !== null && fatCurr !== null) fatPctDelta = Math.round((fatCurr - fatBase) * 10) / 10;
+    }
 
     metrics.forEach(metric => {
         const goal = goals[metric];
@@ -47,5 +72,5 @@ export function calculatePhysiquePoints(
     else if (roundedScore < -5) { status = '🚨 Off Track'; color = 'text-rose-400'; }
     else if (roundedScore < 0) { status = '⚠️ Slipping'; color = 'text-yellow-400'; }
 
-    return { score: roundedScore, status, color };
+    return { score: roundedScore, status, color, leanMassDelta, fatPctDelta };
 }
