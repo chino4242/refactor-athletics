@@ -76,7 +76,8 @@ export async function resetPassword(formData: FormData) {
     });
 
     if (error) {
-        return redirect('/login?message=Could not send reset email');
+        console.error('Password reset error:', error.message);
+        return redirect(`/login?message=${encodeURIComponent(error.message)}`);
     }
 
     return redirect('/login?message=Check your email for a password reset link');
