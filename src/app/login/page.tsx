@@ -1,4 +1,4 @@
-import { login, signup } from './actions';
+import { login, signup, resetPassword } from './actions';
 
 export default async function LoginPage({
     searchParams,
@@ -56,7 +56,16 @@ export default async function LoginPage({
                             />
                         </div>
 
-                        <div className="pt-4 space-y-3">
+                        <div className="flex justify-end">
+                            <button
+                                formAction={resetPassword}
+                                className="text-xs text-zinc-500 hover:text-orange-400 transition-colors"
+                            >
+                                Forgot password?
+                            </button>
+                        </div>
+
+                        <div className="pt-2 space-y-3">
                             <button
                                 formAction={login}
                                 className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white font-black uppercase tracking-widest text-sm py-4 rounded-xl hover:from-orange-500 hover:to-red-500 transition-all shadow-[0_0_20px_rgba(249,115,22,0.3)]"
