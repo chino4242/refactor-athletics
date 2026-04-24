@@ -59,6 +59,7 @@ export default async function LoginPage({
                         <div className="flex justify-end">
                             <button
                                 formAction={resetPassword}
+                                formNoValidate
                                 className="text-xs text-zinc-500 hover:text-orange-400 transition-colors"
                             >
                                 Forgot password?
