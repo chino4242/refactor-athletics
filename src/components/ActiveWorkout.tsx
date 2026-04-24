@@ -358,6 +358,7 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
   const [timeLeft, setTimeLeft] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const [earnedXp, setEarnedXp] = useState(0);
+  const [outdoor, setOutdoor] = useState(false);
 
   // Keep screen awake during tread block
   useEffect(() => {
@@ -399,7 +400,7 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
     if (currentInterval) {
       setTimeLeft(currentInterval.seconds);
       setIsActive(true);
-      const zone = currentInterval.zone || currentInterval.text || '';
+      const zone = outdoor && currentInterval.outdoor_alternative ? currentInterval.outdoor_alternative : (currentInterval.zone || currentInterval.text || '');
       if (zone) speak(zone);
     }
   }, [intervalIndex, currentInterval, getReady]);
@@ -459,11 +460,16 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
           <h2 className="text-white/80 font-bold uppercase tracking-widest text-xs">
             {block.name}
           </h2>
-          {earnedXp > 0 && <span className="text-xs font-bold text-yellow-400/90">XP Earned: {earnedXp}</span>}
+          <div className="flex items-center gap-3">
+            {earnedXp > 0 && <span className="text-xs font-bold text-yellow-400/90">XP Earned: {earnedXp}</span>}
+            <button onClick={() => setOutdoor(o => !o)} className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg transition ${outdoor ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-zinc-800/50 text-white/50 border border-white/10'}`}>
+              {outdoor ? '🌳 Outdoor' : '🏃 Indoor'}
+            </button>
+          </div>
         </div>
         <div className="flex justify-between items-end mt-1">
           <h1 className="text-white text-3xl font-black italic">
-            {currentInterval.zone}
+            {outdoor && currentInterval.outdoor_alternative ? currentInterval.outdoor_alternative : currentInterval.zone}
           </h1>
           <span className="text-white/60 font-mono text-sm">
             {intervalIndex + 1} / {block.intervals.length}
@@ -496,7 +502,7 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
           </div>
         ) : (
           <>
-            {(() => {
+            {!outdoor && (() => {
               const txt = (currentInterval.note || '') + ' ' + (currentInterval.raw_text || '');
               const m = txt.match(/(\d+(?:\.\d+)?)\s*%/);
               return m ? (
@@ -512,7 +518,7 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
               }
             </div>
             <p className="text-white/90 text-lg font-medium mt-4 max-w-[90%] animate-pulse-slow">
-              {currentInterval.note || currentInterval.raw_text}
+              {outdoor && currentInterval.outdoor_alternative ? currentInterval.outdoor_alternative : (currentInterval.note || currentInterval.raw_text)}
             </p>
             {(() => {
               const remaining = timeLeft + block.intervals.slice(intervalIndex + 1).reduce((s: number, i: any) => s + (i.seconds || 0), 0);
