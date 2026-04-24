@@ -24,8 +24,8 @@ export default function CreatePublicChallengeModal({ userId, displayName, onCrea
         if (!name.trim()) return;
         setCreating(true);
         const preset = CHALLENGE_PRESETS[metric];
-        const start = new Date().toISOString().split('T')[0];
-        const end = new Date(Date.now() + duration * 86400000).toISOString().split('T')[0];
+        const start = new Date().toLocaleDateString('en-CA');
+        const end = new Date(Date.now() + duration * 86400000).toLocaleDateString('en-CA');
 
         const res = await fetch('/api/public-challenges', {
             method: 'POST',

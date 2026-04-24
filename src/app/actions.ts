@@ -2,6 +2,18 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+
+function getLocalDate(ts?: number): string {
+    const d = ts ? new Date(ts * 1000) : new Date();
+    // Read user's timezone from cookie (set by client), fallback to UTC
+    let tz = 'UTC';
+    try {
+        const cookieStore = cookies();
+        tz = (cookieStore as any).get?.('timezone')?.value || 'UTC';
+    } catch {}
+    return d.toLocaleDateString('en-CA', { timeZone: tz });
+}
 
 export async function logHabitAction(
     userId: string,
@@ -13,7 +25,7 @@ export async function logHabitAction(
 ) {
     const supabase = await createClient();
     const ts = timestamp || Math.floor(Date.now() / 1000);
-    const dateStr = new Date(ts * 1000).toISOString().split('T')[0];
+    const dateStr = getLocalDate(ts);
 
     // Route to appropriate table based on habitId
     if (habitId.startsWith('macro_')) {
@@ -206,6 +218,21 @@ export async function logTrainingAction(
     const rankName = rankNames[userLevel] || "Peasant";
     const xpEarned = userLevel > 0 ? userLevel * 50 : 0;
 
+    // Calculate distance to next rank threshold
+    let nextThresholdLbs: number | null = null;
+    let nextRankName: string | null = null;
+    const nextIdx = currentLevelIndex + 1;
+    if (nextIdx < levels.length) {
+        const nextThreshold = levels[nextIdx];
+        const currentRaw = isXBW ? comparisonValue * bodyweight : comparisonValue;
+        const targetRaw = isXBW ? nextThreshold * bodyweight : nextThreshold;
+        const gap = Math.round(targetRaw / normalizationFactor - bestValue);
+        if (gap > 0 && gap <= 10) {
+            nextThresholdLbs = gap;
+            nextRankName = rankNames[userLevel + 1] || null;
+        }
+    }
+
     // Calculate total XP from sets
     let totalXp = 0;
     for (const set of sets) {
@@ -231,7 +258,7 @@ export async function logTrainingAction(
     totalXp += xpEarned; // Add rank XP
 
     const ts = Math.floor(Date.now() / 1000);
-    const dateStr = new Date(ts * 1000).toISOString().split('T')[0];
+    const dateStr = getLocalDate(ts);
 
     // For 5RM exercises, show lbs instead of xBW
     const displayUnit = is5RM ? 'lbs' : (standards.unit || '');
@@ -267,7 +294,9 @@ export async function logTrainingAction(
         level: userLevel,
         rank_name: rankName,
         raw_value: bestValue,
-        value: workoutData.value
+        value: workoutData.value,
+        next_threshold_lbs: nextThresholdLbs,
+        next_rank_name: nextRankName,
     };
 }
 
@@ -282,7 +311,7 @@ export async function logWorkoutBlockAction(
 ) {
     const supabase = await createClient();
     const ts = Math.floor(Date.now() / 1000);
-    const dateStr = new Date(ts * 1000).toISOString().split('T')[0];
+    const dateStr = getLocalDate(ts);
 
     const { error } = await supabase
         .from('workouts')
@@ -326,7 +355,7 @@ export async function logBodyMeasurementAction(
 ) {
     const supabase = await createClient();
     const ts = timestamp || Math.floor(Date.now() / 1000);
-    const dateStr = new Date(ts * 1000).toISOString().split('T')[0];
+    const dateStr = getLocalDate(ts);
     const xp = 5;
 
     // Check for existing row on this date to merge measurements

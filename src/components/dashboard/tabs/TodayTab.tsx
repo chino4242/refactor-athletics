@@ -83,7 +83,7 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                 });
                 
                 // Get today's XP from all tables
-                const todayDate = new Date().toISOString().split('T')[0];
+                const todayDate = new Date().toLocaleDateString('en-CA');
                 const [{ data: wXp }, { data: nXp }, { data: hXp }] = await Promise.all([
                     supabase.from('workouts').select('xp').eq('user_id', userId).eq('date', todayDate),
                     supabase.from('nutrition_logs').select('xp').eq('user_id', userId).gte('timestamp', startOfDay),
@@ -118,7 +118,7 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                     
                     for (const w of sessionItems) {
                         const id = w.exercise_id || '';
-                        if (id.includes('treadmill')) {
+                        if (id.toLowerCase().includes('tread')) {
                             treadmillSets++;
                             continue;
                         }
@@ -132,6 +132,7 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                     
                     const lifts = Object.entries(liftMap)
                         .map(([name, volume]) => ({ name, volume }))
+                        .filter(l => l.volume > 0)
                         .sort((a, b) => b.volume - a.volume);
 
                     setLastWorkout({

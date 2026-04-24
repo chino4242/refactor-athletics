@@ -296,7 +296,7 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
             const rankName = getThemeDetails(data.rank_level).name;
             const optimisticLog: HistoryItem = {
                 exercise_id: exerciseId,
-                date: new Date().toISOString().split('T')[0],
+                date: new Date().toLocaleDateString('en-CA'),
                 value: formattedValue,
                 level: newLevel,
                 timestamp: Date.now(),

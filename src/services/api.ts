@@ -1,6 +1,7 @@
 import type { UserProfileData, NutritionTargets, HistoryItem, UserStats, Challenge, ChallengeGoal, DuelResponse, MilestoneResponse } from '@/types';
 export type { HistoryItem, CatalogItem } from '@/types';
 import { createClient } from '@/utils/supabase/client';
+import { getLocalDateStr } from '@/utils/date';
 
 
 export const getProfile = async (userId: string): Promise<UserProfileData | null> => {
@@ -78,7 +79,7 @@ export const saveProfile = async (profile: UserProfileData): Promise<any> => {
 export const logHabit = async (userId: string, habitId: string, value: number, bodyweight?: number, label?: string, timestamp?: number): Promise<any> => {
     const supabase = createClient();
     const ts = timestamp || Math.floor(Date.now() / 1000);
-    const dateStr = new Date(ts * 1000).toISOString().split('T')[0];
+    const dateStr = getLocalDateStr(new Date(ts * 1000));
 
     // Assign generic XP
     const xp = habitId.includes('meal_prep') ? 100 : (habitId.includes('sleep') ? 15 : 10);
@@ -330,7 +331,7 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
         d.setHours(0, 0, 0, 0);
 
         for (let i = 0; i < 365; i++) {
-            const dateStr = d.toISOString().split('T')[0];
+            const dateStr = getLocalDateStr(d);
             if (viceDates.has(dateStr)) break; // Failed this day
             if (virtueDates.has(dateStr)) streak++; // Logged success
             else if (i === 0) {} // Today not logged yet, keep going
@@ -432,7 +433,7 @@ export const logTraining = async (
     }
 
     const ts = Math.floor(Date.now() / 1000);
-    const dateStr = new Date(ts * 1000).toISOString().split('T')[0];
+    const dateStr = getLocalDateStr(new Date(ts * 1000));
 
     const { data, error } = await supabase
         .from('history')
@@ -465,7 +466,7 @@ export const logWorkoutBlock = async (
 ): Promise<any> => {
     const supabase = createClient();
     const ts = Math.floor(Date.now() / 1000);
-    const dateStr = new Date(ts * 1000).toISOString().split('T')[0];
+    const dateStr = getLocalDateStr(new Date(ts * 1000));
 
     const { data, error } = await supabase
         .from('history')
@@ -756,7 +757,7 @@ export const calculateRank = async (
     }
 
     const ts = Math.floor(Date.now() / 1000);
-    const dateStr = new Date(ts * 1000).toISOString().split('T')[0];
+    const dateStr = getLocalDateStr(new Date(ts * 1000));
     const userLevelNum = currentLevelIndex + 1;
     const xpEarned = userLevelNum > 0 ? userLevelNum * 50 : 0;
 

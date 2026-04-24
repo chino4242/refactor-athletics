@@ -22,7 +22,7 @@ export default function HabitHeatmap({ history, habitId, label, colorClass, days
 
         relevant.forEach(item => {
             const date = new Date(item.timestamp * 1000);
-            const str = date.toISOString().split('T')[0];
+            const str = date.toLocaleDateString('en-CA');
             const current = dateMap.get(str) || 0;
             // Sum raw_value (default to 1 if missing/binary)
             const value = item.raw_value !== undefined ? item.raw_value : 1;
@@ -61,7 +61,7 @@ export default function HabitHeatmap({ history, habitId, label, colorClass, days
             const week = [];
             for (let i = 0; i < 7; i++) {
                 const dayDate = new Date(current);
-                const dayStr = dayDate.toISOString().split('T')[0];
+                const dayStr = dayDate.toLocaleDateString('en-CA');
 
                 const val = heatmapData.get(dayStr) || 0;
                 const isDone = val > 0;
@@ -104,7 +104,7 @@ export default function HabitHeatmap({ history, habitId, label, colorClass, days
         today.setHours(0, 0, 0, 0);
         const d = new Date(today);
         while (true) {
-            const str = d.toISOString().split('T')[0];
+            const str = d.toLocaleDateString('en-CA');
             if (heatmapData.has(str) && (heatmapData.get(str) || 0) > 0) {
                 count++;
                 d.setDate(d.getDate() - 1);

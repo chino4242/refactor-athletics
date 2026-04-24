@@ -68,7 +68,7 @@ export default function PublicChallengeDetail({ challengeId, currentUserId }: Pr
     const isParticipant = participants.some(p => p.user_id === currentUserId);
     const myRank = participants.findIndex(p => p.user_id === currentUserId) + 1;
 
-    const now = new Date().toISOString().split('T')[0];
+    const now = new Date().toLocaleDateString('en-CA');
     const daysLeft = Math.max(0, Math.ceil((new Date(challenge.end_date).getTime() - new Date(now).getTime()) / 86400000));
 
     return (
