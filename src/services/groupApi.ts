@@ -77,7 +77,7 @@ export async function getUserGroups(userId: string): Promise<GroupWithDetails[]>
     // Use local date minus 1 day buffer so challenges stay visible through end_date in all US timezones
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    const cutoff = yesterday.toISOString().split('T')[0];
+    const cutoff = yesterday.toLocaleDateString('en-CA');
 
     // Fetch groups, all members, and active challenges in parallel
     const [groupsRes, membersRes, challengesRes] = await Promise.all([
@@ -332,7 +332,7 @@ export async function createChallenge(groupId: string, metric: string, target: n
         target,
         name: `Weekly ${metric} challenge`,
         startDate: weekStart,
-        endDate: weekEnd.toISOString().split('T')[0],
+        endDate: weekEnd.toLocaleDateString('en-CA'),
     });
 }
 
@@ -341,5 +341,5 @@ function getWeekStart(): string {
     const day = now.getDay();
     const diff = now.getDate() - day + (day === 0 ? -6 : 1);
     const monday = new Date(now.setDate(diff));
-    return monday.toISOString().split('T')[0];
+    return monday.toLocaleDateString('en-CA');
 }

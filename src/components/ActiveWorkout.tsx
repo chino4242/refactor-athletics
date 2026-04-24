@@ -991,7 +991,7 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
     if (!userId) return;
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    const yStr = yesterday.toISOString().split('T')[0];
+    const yStr = yesterday.toLocaleDateString('en-CA');
     const sb = createClient();
     sb.from('workouts').select('id').eq('user_id', userId).eq('date', yStr)
       .like('exercise_id', 'block_%Tread%').limit(1)
@@ -1060,7 +1060,7 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
   useEffect(() => {
     if (!workoutData.length || !fullHistory.length) return;
 
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toLocaleDateString('en-CA');
     const todayLogs = fullHistory.filter(h => h.date === today && h.exercise_id);
     if (!todayLogs.length) return;
 
@@ -1419,6 +1419,9 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
                   {r.isPR && <span className="ml-1.5 text-yellow-400 text-[10px]">🏆 PR</span>}
                 </p>
                 <p className="text-[11px] text-zinc-500">{r.value}</p>
+                {r.next_threshold_lbs && r.next_rank_name && (
+                  <p className="text-[10px] text-orange-400 font-semibold mt-0.5">🔥 {r.next_threshold_lbs} lbs to {r.next_rank_name}</p>
+                )}
               </div>
               {r.hasStandards && r.level > 0 ? (
                 <span className={`text-[10px] font-bold px-2 py-1 rounded-lg shrink-0 ml-2 ${
