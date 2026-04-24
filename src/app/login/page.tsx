@@ -21,7 +21,7 @@ export default async function LoginPage({
                         </h1>
                         <div className="w-12 h-0.5 bg-gradient-to-r from-orange-600 to-red-600 rounded-full mt-3 mb-4"></div>
                         <p className="text-zinc-400 text-sm text-center leading-relaxed max-w-xs">
-                            Track your workouts, build consistency, and watch your progress compound — whether you&apos;re chasing personal bests or leveling up your character.
+                            Every rep counts. Track workouts, nutrition, and daily habits — earn ranks based on real performance, and watch your Power Level grow over time.
                         </p>
                     </div>
 
