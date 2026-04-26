@@ -273,8 +273,13 @@ function ExerciseView({ block, blockIndex, onComplete, fullHistory, catalog, exe
                       SET {i + 1}
                     </span>
                   </div>
+                </button>
 
-                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${isDone ? 'bg-green-500 border-green-500' : 'border-zinc-500 group-hover:border-zinc-400'
+                <button
+                  onClick={() => toggleSet(i)}
+                  className="ml-3 flex-shrink-0"
+                >
+                  <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-colors ${isDone ? 'bg-green-500 border-green-500' : 'border-zinc-500 group-hover:border-zinc-400'
                     }`}>
                     {isDone && <CheckCircle size={16} className="text-black" />}
                   </div>
