@@ -976,6 +976,28 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
   const [completedIndices, setCompletedIndices] = useState<number[]>([]);
   const [skippedIndices, setSkippedIndices] = useState<number[]>([]);
 
+  // Persist progress to localStorage
+  const progressKey = `workout_progress_${selectedDate || new Date().toLocaleDateString('en-CA')}`;
+
+  useEffect(() => {
+    if (completedIndices.length > 0 || skippedIndices.length > 0) {
+      localStorage.setItem(progressKey, JSON.stringify({ completedIndices, skippedIndices, blockIndex }));
+    }
+  }, [completedIndices, skippedIndices, blockIndex, progressKey]);
+
+  // Restore progress from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(progressKey);
+      if (saved) {
+        const { completedIndices: ci, skippedIndices: si, blockIndex: bi } = JSON.parse(saved);
+        if (ci?.length) setCompletedIndices(prev => [...new Set([...prev, ...ci])]);
+        if (si?.length) setSkippedIndices(prev => [...new Set([...prev, ...si])]);
+        if (bi > 0) setBlockIndex(bi);
+      }
+    } catch {}
+  }, [progressKey]);
+
   // NEW: History State
   const [showLibrary, setShowLibrary] = useState(false);
   const [expandedSection, setExpandedSection] = useState<number | null>(null);
@@ -1291,7 +1313,7 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
           if (onLogComplete) onLogComplete();
           const newCompleted = [...completedIndices, blockIndex];
           setCompletedIndices(newCompleted);
-          if (newCompleted.length === workoutData.length) setIsComplete(true);
+          if (newCompleted.length === workoutData.length) { setIsComplete(true); localStorage.removeItem(progressKey); }
           return;
         } else if (!isExerciseBlock && currentBlock.xp_value > 0) {
           await logWorkoutBlockAction(
@@ -1316,7 +1338,7 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
           setShowBlockComplete(true);
           const newCompleted = [...completedIndices, blockIndex];
           setCompletedIndices(newCompleted);
-          if (newCompleted.length === workoutData.length) setIsComplete(true);
+          if (newCompleted.length === workoutData.length) { setIsComplete(true); localStorage.removeItem(progressKey); }
           return;
         }
       } catch (e) {
@@ -1333,6 +1355,7 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
 
     if (newCompleted.length === workoutData.length) {
       setIsComplete(true);
+      localStorage.removeItem(progressKey);
       return;
     }
 
