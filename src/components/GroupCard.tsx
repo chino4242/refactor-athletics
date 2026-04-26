@@ -29,6 +29,7 @@ export default function GroupCard({ userId }: GroupCardProps) {
     const [challengeModalGroupId, setChallengeModalGroupId] = useState<string | null>(null);
     const [historyGroupId, setHistoryGroupId] = useState<string | null>(null);
     const [challengeHistory, setChallengeHistory] = useState<GroupChallenge[]>([]);
+    const [challengeResult, setChallengeResult] = useState<{ success: boolean; name: string; total: number; target: number; mvp: string | null } | null>(null);
 
     const partyLabel = isClassic ? 'Group' : 'Party';
     const challengeLabel = isClassic ? 'Group Challenge' : 'Party Quest';
@@ -49,7 +50,25 @@ export default function GroupCard({ userId }: GroupCardProps) {
 
                     // Lazy finalize if expired
                     if (isChallengeExpired(g.activeChallenge) && !g.activeChallenge.completed) {
-                        await finalizeGroupChallenge(g.activeChallenge, progress);
+                        const result = await finalizeGroupChallenge(g.activeChallenge, progress);
+                        const total = Object.values(progress).reduce((s, v) => s + v, 0);
+                        const success = total >= g.activeChallenge.target;
+
+                        // Find MVP name
+                        let mvpName: string | null = null;
+                        if (success && result.mvp_user_id) {
+                            const member = g.members.find(m => m.user_id === result.mvp_user_id);
+                            mvpName = member?.display_name || null;
+                        }
+
+                        setChallengeResult({
+                            success,
+                            name: g.activeChallenge.name || `${g.activeChallenge.metric} challenge`,
+                            total,
+                            target: g.activeChallenge.target,
+                            mvp: mvpName,
+                        });
+
                         // Reload to get updated state
                         const refreshed = await getUserGroups(userId);
                         setGroups(refreshed);
@@ -349,6 +368,52 @@ export default function GroupCard({ userId }: GroupCardProps) {
                     onCreated={() => { setChallengeModalGroupId(null); loadGroups(); }}
                 />
             )}
+
+            {/* Challenge Result Overlay */}
+            {challengeResult && (
+                <ChallengeResultOverlay result={challengeResult} onDismiss={() => setChallengeResult(null)} />
+            )}
+        </div>
+    );
+}
+
+function ChallengeResultOverlay({ result, onDismiss }: { result: { success: boolean; name: string; total: number; target: number; mvp: string | null }; onDismiss: () => void }) {
+    useEffect(() => {
+        if (result.success) {
+            import('canvas-confetti').then(({ default: confetti }) => {
+                confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+                setTimeout(() => confetti({ particleCount: 80, spread: 60, origin: { y: 0.5, x: 0.3 } }), 300);
+                setTimeout(() => confetti({ particleCount: 80, spread: 60, origin: { y: 0.5, x: 0.7 } }), 600);
+            });
+        }
+    }, [result.success]);
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={onDismiss}>
+            <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-8 max-w-sm w-full text-center space-y-4 animate-in zoom-in-95 duration-300" onClick={e => e.stopPropagation()}>
+                <div className="text-6xl">{result.success ? '🏆' : '💀'}</div>
+                <h2 className={`text-2xl font-black tracking-tight ${result.success ? 'text-emerald-400' : 'text-red-400'}`}>
+                    {result.success ? 'CHALLENGE COMPLETE!' : 'CHALLENGE FAILED'}
+                </h2>
+                <p className="text-sm text-zinc-400">{result.name}</p>
+                <div className="bg-zinc-800 rounded-xl p-4">
+                    <div className="text-3xl font-black text-white tabular-nums">
+                        {result.total.toLocaleString()} <span className="text-lg text-zinc-500">/ {result.target.toLocaleString()}</span>
+                    </div>
+                    <div className={`text-xs font-bold mt-1 ${result.success ? 'text-emerald-400' : 'text-red-400'}`}>
+                        {result.success ? `${Math.round((result.total / result.target) * 100)}% — Target crushed!` : `${Math.round((result.total / result.target) * 100)}% — So close!`}
+                    </div>
+                </div>
+                {result.success && result.mvp && (
+                    <div className="flex items-center justify-center gap-2 text-amber-400">
+                        <span className="text-lg">👑</span>
+                        <span className="text-sm font-bold">MVP: {result.mvp}</span>
+                    </div>
+                )}
+                <button onClick={onDismiss} className={`w-full py-3 rounded-xl font-bold text-white transition-colors ${result.success ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-zinc-700 hover:bg-zinc-600'}`}>
+                    {result.success ? 'Claim Victory' : 'Next Time'}
+                </button>
+            </div>
         </div>
     );
 }
