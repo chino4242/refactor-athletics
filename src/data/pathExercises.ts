@@ -14,6 +14,7 @@ export const PATH_KEY_EXERCISES: Record<string, string[]> = {
     'deep_squat_hold', 'active_hang', 'overhead_squat_hold', 'cossack_squat',
     'wall_slide', 'shoulder_dislocate', 'plank', 'push_ups',
     'body_weight_squat', 'pull_up', 'goblet_squat', 'rdl',
+    'turkish_get_up', 'kettlebell_swing', 'kettlebell_windmill', 'kettlebell_halo',
   ],
   hybrid: [
     'bench_press', 'back_squat', 'deadlift', 'pull_up', 'run_1_mile',

@@ -17,7 +17,7 @@ export const PATHS = {
     mobility: {
         name: 'Mobility',
         emoji: '🧘',
-        description: 'Flexibility and movement. Monk archetype.',
+        description: 'Flexibility, movement, and kettlebell flow. Monk archetype.',
     },
 } as const;
 
