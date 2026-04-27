@@ -1272,7 +1272,6 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
     const isExerciseBlock = ['checklist_exercise', 'list', 'superset'].includes(currentBlock.type);
 
     if (skipped) {
-      console.log("Block skipped. No XP awarded.");
       setSkippedIndices(prev => [...prev, blockIndex]);
     } else if (userId && currentBlock) {
       try {
@@ -1384,11 +1383,6 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
     setViewMode('HUB');
   };
 
-  // Debug logging
-  console.log('ActiveWorkout Debug:', {
-    blockIndex,
-    totalBlocks: workoutData.length
-  });
   // Render correct view based on block type
   let mainView;
 
@@ -1612,7 +1606,6 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
     if (!userId || !currentBlock) return;
 
     try {
-      console.log(`Submitting Interval XP: ${intervalData.zone || intervalData.text} (${xpShare} XP)`);
       await logWorkoutBlockAction(
         userId,
         `${currentBlock.name} - ${intervalData.zone || "Interval"}`,

@@ -51,7 +51,7 @@ export async function logHabitAction(
         }
 
         revalidatePath('/');
-        return { xp_earned: xp };
+        return { xp_earned: xp, timestamp: ts };
     } else if (habitId.startsWith('habit_')) {
         // Habit logging - scaled XP
         let xp = 10;
@@ -94,10 +94,24 @@ export async function logHabitAction(
         }
 
         revalidatePath('/');
-        return { xp_earned: xp };
+        return { xp_earned: xp, timestamp: ts };
     } else {
         throw new Error(`Unknown habit type: ${habitId}`);
     }
+}
+
+export async function resetHabitTodayAction(userId: string, habitId: string, date?: string) {
+    const supabase = await createClient();
+    const dateStr = date || new Date().toLocaleDateString('en-CA');
+
+    if (habitId.startsWith('macro_')) {
+        await supabase.from('nutrition_logs').delete().eq('user_id', userId).eq('date', dateStr).eq('macro_type', habitId.replace('macro_', ''));
+    } else {
+        await supabase.from('habit_logs').delete().eq('user_id', userId).eq('date', dateStr).eq('habit_id', habitId);
+    }
+
+    revalidatePath('/');
+    return { status: 'ok' };
 }
 
 export async function deleteHistoryItemAction(userId: string, timestamp: number) {
@@ -130,7 +144,6 @@ export async function logTrainingAction(
     sets: any[],
     sessionId?: string
 ) {
-    console.log("logTrainingAction called with:", { userId, exerciseId, bodyweight, sex, sets });
     const supabase = await createClient();
     
     // Fetch catalog and user profile
@@ -277,7 +290,6 @@ export async function logTrainingAction(
         ...(sessionId ? { session_id: sessionId } : {})
     };
 
-    console.log("Saving workout:", workoutData);
 
     const { error } = await supabase
         .from('workouts')

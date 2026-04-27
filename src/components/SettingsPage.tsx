@@ -53,6 +53,10 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                 sex,
                 bodyweight,
                 habit_targets: targets,
+                nutrition_targets: {
+                    ...initialProfile?.nutrition_targets,
+                    water: targets.habit_water,
+                },
                 selected_theme: currentTheme,
             });
             toast.success('Settings saved!');

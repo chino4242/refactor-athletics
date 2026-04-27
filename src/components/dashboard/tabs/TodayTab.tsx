@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Calendar, Dumbbell, ChevronRight, Share2 } from 'lucide-react';
 import type { Workout } from '@/types';
-import { getHistory, getHabitProgress } from '@/services/api';
+import { getHabitProgress } from '@/services/api';
 import { createClient } from '@/utils/supabase/client';
 import { useExperienceMode } from '@/context/ExperienceModeContext';
 import { useTheme } from '@/context/ThemeContext';
@@ -55,8 +55,6 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                     const todayName = dayNames[today.getDay()];
                     
                     const todayWorkout = weeklySchedule.find((day: any) => day.day === todayName);
-                    console.log('Today workout from schedule:', todayWorkout);
-                    
                     if (todayWorkout) {
                         setTodayScheduled({
                             name: todayWorkout.title,
@@ -74,7 +72,6 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                 
                 // Get today's habit progress
                 const habitProgress = await getHabitProgress(userId, startOfDay);
-                console.log('Today progress loaded:', habitProgress);
                 setTodayProgress({
                     calories: habitProgress?.totals?.macro_calories || 0,
                     caloriesBurned: habitProgress?.totals?.macro_calories_burned || 0,
@@ -91,11 +88,14 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                 ]);
                 const totalXp = [...(wXp || []), ...(nXp || []), ...(hXp || [])].reduce((s, r) => s + (r.xp || 0), 0);
                 
-                // Get max daily XP (all-time best day)
+                // Get max daily XP (best day in last 30 days — good enough for the progress bar)
+                const thirtyDaysAgo = new Date();
+                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                const cutoffDate = thirtyDaysAgo.toLocaleDateString('en-CA');
                 const [{ data: allW }, { data: allN }, { data: allH }] = await Promise.all([
-                    supabase.from('workouts').select('date, xp').eq('user_id', userId),
-                    supabase.from('nutrition_logs').select('date, xp').eq('user_id', userId),
-                    supabase.from('habit_logs').select('date, xp').eq('user_id', userId),
+                    supabase.from('workouts').select('date, xp').eq('user_id', userId).gte('date', cutoffDate),
+                    supabase.from('nutrition_logs').select('date, xp').eq('user_id', userId).gte('date', cutoffDate),
+                    supabase.from('habit_logs').select('date, xp').eq('user_id', userId).gte('date', cutoffDate),
                 ]);
                 const dailyTotals: Record<string, number> = {};
                 for (const r of [...(allW || []), ...(allN || []), ...(allH || [])]) {
@@ -105,9 +105,14 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                 
                 setTodayProgress((prev: any) => ({ ...prev, xp: totalXp, maxDailyXp }));
                 
-                // Get last completed workout from history
-                const history = await getHistory(userId);
-                const workouts = history.filter(item => item.rank_name);
+                // Get last completed workout (recent only)
+                const { data: recentWorkouts } = await supabase
+                    .from('workouts')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .order('date', { ascending: false })
+                    .limit(30);
+                const workouts = (recentWorkouts || []).filter(item => item.rank_name);
                 if (workouts.length > 0) {
                     const latest = workouts[workouts.length - 1];
                     const sessionItems = workouts.filter(w => w.date === latest.date);
@@ -152,10 +157,14 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
         loadTodayData();
     }, [userId]);
 
-    console.log('TodayTab render:', { loading, profile: !!profile });
-
     if (loading) {
-        return <div className="text-zinc-400 text-center py-8">Loading...</div>;
+        return (
+            <div className="space-y-4 animate-pulse">
+                <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 h-32" />
+                <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 h-40" />
+                <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 h-24" />
+            </div>
+        );
     }
 
     return (

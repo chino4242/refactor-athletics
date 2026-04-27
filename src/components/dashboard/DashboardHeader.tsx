@@ -33,8 +33,6 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                 supabase.from('body_measurements').select('*').eq('user_id', userId).order('timestamp', { ascending: true }),
                 supabase.from('users').select('body_composition_goals, bodyweight').eq('id', userId).single()
             ]).then(([measurement, profile]) => {
-                console.log('Latest measurement:', measurement.data);
-                console.log('User profile:', profile.data);
                 if (measurement.data && measurement.data.length > 0) {
                     setBodyCompHistory(measurement.data);
                 }

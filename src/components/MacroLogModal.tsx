@@ -31,6 +31,12 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
     const [searching, setSearching] = useState(false);
     const [selectedFood, setSelectedFood] = useState<FoodResult | null>(null);
     const [servingGrams, setServingGrams] = useState('100');
+
+    const parseServingGrams = (s?: string): string => {
+        if (!s) return '100';
+        const match = s.match(/([\d.]+)\s*g/i);
+        return match ? String(Math.round(parseFloat(match[1]))) : '100';
+    };
     const [showScanner, setShowScanner] = useState(false);
 
     const handleNutritionData = (data: any) => {
@@ -190,11 +196,18 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                                         <input type="number" value={servingGrams} onChange={e => setServingGrams(e.target.value)}
                                             className="w-full bg-zinc-900 border border-zinc-700 rounded px-2 py-1.5 text-sm text-white text-center focus:border-orange-500 outline-none" />
                                     </div>
-                                    <div className="flex gap-1">
-                                        {[100, 150, 200].map(g => (
-                                            <button key={g} onClick={() => setServingGrams(String(g))}
-                                                className={`text-[9px] px-2 py-1.5 rounded border transition ${servingGrams === String(g) ? 'border-orange-500 text-orange-400' : 'border-zinc-700 text-zinc-500'}`}>{g}g</button>
-                                        ))}
+                                    <div className="flex gap-1 flex-wrap">
+                                        {(() => {
+                                            const actual = parseServingGrams(selectedFood.servingSize);
+                                            const presets = [actual, '100', '150', '200'];
+                                            const unique = [...new Set(presets)];
+                                            return unique.map(g => (
+                                                <button key={g} onClick={() => setServingGrams(g)}
+                                                    className={`text-[9px] px-2 py-1.5 rounded border transition ${servingGrams === g ? 'border-orange-500 text-orange-400' : 'border-zinc-700 text-zinc-500'}`}>
+                                                    {g === actual && actual !== '100' ? `${g}g ★` : `${g}g`}
+                                                </button>
+                                            ));
+                                        })()}
                                     </div>
                                 </div>
                                 {/* Calculated macros */}
@@ -236,7 +249,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                                     <p className="text-xs text-zinc-500 text-center py-4">No results found</p>
                                 )}
                                 {foodResults.map(food => (
-                                    <button key={food.id} onClick={() => { setSelectedFood(food); setServingGrams('100'); }}
+                                    <button key={food.id} onClick={() => { setSelectedFood(food); setServingGrams(parseServingGrams(food.servingSize)); }}
                                         className="w-full text-left px-3 py-2 rounded-lg hover:bg-zinc-800 transition flex items-center justify-between">
                                         <div className="min-w-0 flex-1">
                                             <div className="text-sm text-white truncate">{food.name}</div>
@@ -355,7 +368,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
             </div>
             {showScanner && (
                 <BarcodeScanner
-                    onResult={(food) => { setSelectedFood(food); setServingGrams('100'); setShowScanner(false); setTab('search'); }}
+                    onResult={(food) => { setSelectedFood(food); setServingGrams(parseServingGrams(food.servingSize)); setShowScanner(false); setTab('search'); }}
                     onClose={() => setShowScanner(false)}
                 />
             )}

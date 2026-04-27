@@ -215,7 +215,6 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
 
   const handleFinishWorkout = async () => {
     if (!userId || sessionQueue.length === 0) return;
-    console.log("Starting workout submission...", { userId, sessionQueue });
     setIsSubmitting(true);
     let totalXp = 0;
     const newAchievements: Array<{type: 'rankup' | 'pr', exerciseName: string, level?: number, value?: string, rankName?: string}> = [];
@@ -225,7 +224,6 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
       const exerciseIds = sessionQueue.map(item => item.exerciseId);
       const previousBests: Record<string, {level: number, raw_value: number}> = {};
       
-      console.log("Checking for achievements. History:", history.length, "exercises");
       
       for (const exId of exerciseIds) {
         const prevLogs = history.filter(h => h.exercise_id === exId);
@@ -233,24 +231,18 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
           const bestLevel = Math.max(...prevLogs.map(h => h.level || 0));
           const bestValue = Math.max(...prevLogs.map(h => parseFloat(h.value) || 0));
           previousBests[exId] = { level: bestLevel, raw_value: bestValue };
-          console.log(`Previous best for ${exId}:`, previousBests[exId]);
         } else {
-          console.log(`No previous logs for ${exId}`);
         }
       }
       
       for (const item of sessionQueue) {
-        console.log("Logging workout:", item);
         const result = await logTrainingAction(userId, item.exerciseId, bodyweight, sex, item.sets);
-        console.log("Workout logged, result:", result);
         totalXp += result.xp_earned;
         
         // Check for rank up
         const prevBest = previousBests[item.exerciseId];
-        console.log(`Checking ${item.exerciseId}: new level=${result.level}, prev level=${prevBest?.level}, new value=${result.raw_value}, prev value=${prevBest?.raw_value}`);
         
         if (result.level !== undefined && prevBest && result.level > prevBest.level) {
-          console.log("RANK UP DETECTED!");
           newAchievements.push({
             type: 'rankup',
             exerciseName: item.name,
@@ -261,7 +253,6 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
         
         // Check for PR (new best raw value)
         if (result.raw_value !== undefined && prevBest && result.raw_value > prevBest.raw_value) {
-          console.log("PR DETECTED!");
           newAchievements.push({
             type: 'pr',
             exerciseName: item.name,

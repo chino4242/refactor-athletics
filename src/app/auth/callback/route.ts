@@ -8,7 +8,6 @@ export async function GET(request: Request) {
     const type = searchParams.get('type');
     const next = searchParams.get('next') || '/';
 
-    console.log('Auth callback hit:', { code: !!code, token_hash: !!token_hash, type, next, fullUrl: request.url });
 
     const supabase = await createClient();
 

@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { getHabitProgress, getHistory, getProfile, saveProfile } from '@/services/api';
 import { useTheme } from '@/context/ThemeContext';
 import { THEMES } from '@/data/themes';
-import { logHabitAction, deleteHistoryItemAction } from '@/app/actions';
+import { logHabitAction, deleteHistoryItemAction, resetHabitTodayAction } from '@/app/actions';
 import { useToast } from '@/context/ToastContext';
 import LevelUpOverlay from './LevelUpOverlay';
 import NutritionTracker from './NutritionTracker';
@@ -166,6 +166,7 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
         unit={unit}
         colorClass={color}
         onLog={(val, lbl) => handleLog(habitId, val, lbl)}
+        onReset={() => { resetHabitTodayAction(userId, habitId).then(() => fetchProgress()); }}
         enableTotalSync={opts?.sync}
         setOnly={opts?.setOnly}
         loading={loading === habitId}

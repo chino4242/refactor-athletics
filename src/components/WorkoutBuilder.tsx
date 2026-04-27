@@ -83,7 +83,6 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
         return matchesCategory && matchesSearch;
     });
 
-    console.log('Filtered catalog:', filteredCatalog.length, 'exercises for category:', selectedCategory);
 
     useEffect(() => {
         loadWorkouts();
@@ -172,8 +171,6 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
     const loadCatalog = async () => {
         try {
             const data = await getTrainingCatalog();
-            console.log('Loaded catalog:', data.length, 'exercises');
-            console.log('Sample exercise:', data[0]);
             setCatalog(data);
         } catch (e) {
             console.error('Failed to load catalog:', e);
