@@ -78,7 +78,6 @@ export default function ProfileCard({
                 is_onboarded: true,
                 display_name: displayName,
             });
-            console.log("Profile saved successfully:", result);
             onProfileUpdate(formWeight, calculatedAge, formSex);
             setIsEditing(false);
             router.refresh(); // Refresh server-rendered data

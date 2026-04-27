@@ -11,7 +11,7 @@ import HabitSettings from './HabitSettings';
 import BodyCompositionModal from './BodyCompositionModal';
 import HabitCard from './HabitCard';
 import ViceToggle from './ViceToggle';
-import { logHabitAction, deleteHistoryItemAction } from '@/app/actions';
+import { logHabitAction, deleteHistoryItemAction, resetHabitTodayAction } from '@/app/actions';
 
 interface DailyQuestProps {
   userId: string;
@@ -28,6 +28,7 @@ interface DailyQuestProps {
 // Edit Mode for Toggling Habits
 export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateTs, stats, initialProfile /* , activeChallenge, onStartChallenge, onChallengeUpdate */ }: DailyQuestProps) {
   const [loading, setLoading] = useState<string | null>(null);
+  const [lastLoggedTs, setLastLoggedTs] = useState<number | null>(null);
   const [totals, setTotals] = useState<Record<string, number>>({});
   const toast = useToast();
 
@@ -81,6 +82,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
     try {
       const timestamp = targetDateTs || undefined;
       const result = await logHabitAction(userId, habitId, value, bodyweight, label, timestamp);
+      setLastLoggedTs(result.timestamp);
       toast.xp(`${label} Logged! +${result.xp_earned} XP`);
       onXpEarned();
       fetchProgress(); // Re-fetch totals locally while we wait for full Server Component migration
@@ -210,7 +212,6 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
             const loadProfile = async () => {
               try {
                 const data = await getProfile(userId);
-                console.log("Profile reloaded, hidden_habits:", data?.hidden_habits);
                 if (data) setProfile(data);
               } catch (e) { console.error("Profile reload fail", e); }
             };
@@ -381,6 +382,8 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
                               unit={habit.unit}
                               colorClass={habit.color}
                               onLog={(val, label) => handleLog(h.id, val, label)}
+                              onUndo={lastLoggedTs ? () => { handleDelete(lastLoggedTs); setLastLoggedTs(null); } : undefined}
+                              onReset={() => { resetHabitTodayAction(userId, h.id).then(() => fetchProgress()); }}
                               loading={loading === h.id}
                               xp={habit.xp}
                               weekDots={getWeekDots(h.id, habitGoal)}

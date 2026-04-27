@@ -41,7 +41,6 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             ]);
             const dbMode = profileData?.data?.experience_mode;
             if (dbMode === 'rpg' || dbMode === 'classic') setMode(dbMode);
-            console.log('Dashboard loaded:', { statsData, duelsData: duelsData?.length, programsData: programsData?.length });
             setStats(statsData);
             setActiveDuels(duelsData || []);
             setPrograms(programsData || []);

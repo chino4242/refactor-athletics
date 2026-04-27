@@ -7,16 +7,12 @@ const anthropic = new Anthropic({
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('Screenshot upload request received');
-    console.log('API Key present:', !!process.env.ANTHROPIC_API_KEY);
-    console.log('API Key length:', process.env.ANTHROPIC_API_KEY?.length);
     
     const formData = await request.formData();
     const file = formData.get('image') as File;
     const type = formData.get('type') as string;
     const subtype = formData.get('subtype') as string | null;
 
-    console.log('File:', file?.name, 'Type:', type);
 
     if (!file) {
       console.error('No image provided');
@@ -34,7 +30,6 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes);
     const base64Image = buffer.toString('base64');
 
-    console.log('Image converted to base64, size:', base64Image.length);
 
     // Determine media type
     const mediaType = file.type.includes('png') ? 'image/png' : 'image/jpeg';
@@ -90,7 +85,6 @@ export async function POST(request: NextRequest) {
 }`
     };
 
-    console.log('Calling Claude API...');
 
     // Fetch few-shot examples for this type
     const promptKey = (type === 'body_comp' ? `body_comp_${subtype || 'tape'}` : type) as keyof typeof prompts;
@@ -137,17 +131,14 @@ export async function POST(request: NextRequest) {
       ],
     });
 
-    console.log('Claude response received');
 
     const content = response.content[0];
     const text = content.type === 'text' ? content.text : '';
-    console.log('Extracted text:', text);
     
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
     const { image_description, ...data } = parsed;
 
-    console.log('Parsed data:', data);
 
     return NextResponse.json({ success: true, data, image_description: image_description || '' });
   } catch (error) {

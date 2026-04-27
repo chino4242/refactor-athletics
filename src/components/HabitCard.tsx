@@ -11,6 +11,8 @@ interface HabitCardProps {
     unit: string;
     colorClass: string; // e.g. "bg-orange-500" or "text-orange-500" - we will parse or expect bg base
     onLog: (amount: number, label: string) => void;
+    onUndo?: () => void;
+    onReset?: () => void;
     enableTotalSync?: boolean; // For Steps
     setOnly?: boolean; // Force "set" mode, hide add/quick buttons
     loading?: boolean;
@@ -26,6 +28,8 @@ export default function HabitCard({
     unit,
     colorClass,
     onLog,
+    onUndo,
+    onReset,
     enableTotalSync = false,
     setOnly = false,
     loading = false,
@@ -35,6 +39,8 @@ export default function HabitCard({
     const [isEditing, setIsEditing] = useState(false);
     const [value, setValue] = useState('');
     const [mode, setMode] = useState<'add' | 'total'>(setOnly ? 'total' : 'add');
+    const [justLogged, setJustLogged] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
 
     // Auto-focus input when editing starts
@@ -68,7 +74,10 @@ export default function HabitCard({
         onLog(finalVal, logLabel);
         setValue('');
         setIsEditing(false);
-        setMode('add'); // Reset mode
+        setMode('add');
+        setSubmitting(false);
+        setJustLogged(true);
+        setTimeout(() => setJustLogged(false), 1200);
     };
 
     if (isEditing) {
@@ -76,12 +85,22 @@ export default function HabitCard({
             <div className={`relative p-3 rounded-xl border border-zinc-700 bg-zinc-900 group animate-fade-in`}>
                 <div className="flex justify-between items-center mb-2">
                     <span className="text-xs font-bold text-zinc-500 uppercase">{label}</span>
-                    <button
-                        onClick={() => setIsEditing(false)}
-                        className="text-xs text-zinc-600 hover:text-white uppercase font-bold px-2 py-1.5"
-                    >
-                        Cancel
-                    </button>
+                    <div className="flex items-center gap-2">
+                        {current > 0 && onReset && (
+                            <button
+                                onClick={() => { onReset(); setIsEditing(false); }}
+                                className="text-[10px] text-red-400 hover:text-red-300 font-bold px-2 py-1 rounded bg-red-500/10 border border-red-500/20"
+                            >
+                                Reset to 0
+                            </button>
+                        )}
+                        <button
+                            onClick={() => setIsEditing(false)}
+                            className="text-xs text-zinc-600 hover:text-white uppercase font-bold px-2 py-1.5"
+                        >
+                            Cancel
+                        </button>
+                    </div>
                 </div>
 
                 {enableTotalSync && !setOnly && (
@@ -116,11 +135,11 @@ export default function HabitCard({
                         placeholder={mode === 'total' ? String(current) : unit}
                     />
                     <button
-                        onClick={handleSubmit}
-                        disabled={loading || !value}
-                        className={`px-4 py-2.5 rounded font-bold text-xs uppercase tracking-wider transition-all ${loading ? 'opacity-50' : `hover:opacity-90 active:scale-95 text-white ${colorClass}`}`}
+                        onClick={() => { setSubmitting(true); handleSubmit(); }}
+                        disabled={loading || submitting || !value}
+                        className={`px-4 py-2.5 rounded font-bold text-xs uppercase tracking-wider transition-all ${loading || submitting ? 'opacity-50' : `hover:opacity-90 active:scale-95 text-white ${colorClass}`}`}
                     >
-                        {loading ? '...' : (mode === 'total' ? 'SET' : 'LOG')}
+                        {submitting ? '...' : (mode === 'total' ? 'SET' : 'LOG')}
                     </button>
                 </div>
             </div>
@@ -133,14 +152,22 @@ export default function HabitCard({
             onClick={() => !loading && setIsEditing(true)}
             className="w-full text-left relative group outline-none"
         >
-            <div className={`p-2 bg-zinc-900/50 hover:bg-zinc-900 rounded-xl border border-zinc-800/50 hover:border-zinc-700 transition-all duration-300`}>
+            <div className={`p-2 bg-zinc-900/50 hover:bg-zinc-900 rounded-xl border transition-all duration-300 ${justLogged ? 'border-emerald-500 bg-emerald-500/5' : 'border-zinc-800/50 hover:border-zinc-700'}`}>
 
                 {/* Header */}
                 <div className="flex justify-between items-center mb-1.5">
                     <div className="flex items-center gap-2">
-                        {/* If icon is string assume emoji, else node */}
                         {typeof icon === 'string' ? <span className="text-sm">{icon}</span> : icon}
                         <span className="text-[10px] uppercase font-bold text-zinc-400 group-hover:text-zinc-300 transition-colors">{label}</span>
+                        {justLogged && <span className="text-[10px] text-emerald-400 font-bold animate-pulse">✓</span>}
+                        {justLogged && onUndo && (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onUndo(); setJustLogged(false); }}
+                                className="text-[10px] text-red-400 hover:text-red-300 font-bold px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/20"
+                            >
+                                Undo
+                            </button>
+                        )}
                     </div>
                     <div className="flex items-center gap-1.5">
                         <span className={`text-[10px] font-mono font-bold ${isCompleted ? 'text-emerald-500' : textColor}`}>
