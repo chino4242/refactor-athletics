@@ -976,7 +976,14 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
   const [completedIndices, setCompletedIndices] = useState<number[]>([]);
   const [skippedIndices, setSkippedIndices] = useState<number[]>([]);
 
-  // Persist progress to localStorage
+  // NEW: History State
+  const [showLibrary, setShowLibrary] = useState(false);
+  const [expandedSection, setExpandedSection] = useState<number | null>(null);
+  const [workoutDates, setWorkoutDates] = useState<string[]>([]);
+  const [selectedDate, setSelectedDate] = useState<string | null>(initialDate || null);
+  const [weeklySchedule, setWeeklySchedule] = useState<any[]>([]);
+
+  // Persist workout progress to localStorage
   const progressKey = `workout_progress_${selectedDate || new Date().toLocaleDateString('en-CA')}`;
 
   useEffect(() => {
@@ -985,7 +992,6 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
     }
   }, [completedIndices, skippedIndices, blockIndex, progressKey]);
 
-  // Restore progress from localStorage on mount
   useEffect(() => {
     try {
       const saved = localStorage.getItem(progressKey);
@@ -997,13 +1003,6 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
       }
     } catch {}
   }, [progressKey]);
-
-  // NEW: History State
-  const [showLibrary, setShowLibrary] = useState(false);
-  const [expandedSection, setExpandedSection] = useState<number | null>(null);
-  const [workoutDates, setWorkoutDates] = useState<string[]>([]);
-  const [selectedDate, setSelectedDate] = useState<string | null>(initialDate || null);
-  const [weeklySchedule, setWeeklySchedule] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'schedule' | 'history'>('schedule');
 
   // 🟢 NEW: Full History & Catalog for Drill-Down
