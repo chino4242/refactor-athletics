@@ -6,6 +6,7 @@ import { useTheme } from '@/context/ThemeContext';
 import { THEMES } from '@/data/themes';
 import { logHabitAction, deleteHistoryItemAction, resetHabitTodayAction } from '@/app/actions';
 import { useToast } from '@/context/ToastContext';
+import { Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import LevelUpOverlay from './LevelUpOverlay';
 import NutritionTracker from './NutritionTracker';
 import HabitCard from './HabitCard';
@@ -66,6 +67,30 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
   const [loading, setLoading] = useState<string | null>(null);
   const [totals, setTotals] = useState<Record<string, number>>({});
   const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [showTodayLog, setShowTodayLog] = useState(false);
+  const [todayLog, setTodayLog] = useState<any[]>([]);
+
+  const loadTodayLog = useCallback(async () => {
+    const { createClient } = await import('@/utils/supabase/client');
+    const supabase = createClient();
+    const todayDate = new Date().toLocaleDateString('en-CA');
+    // Also check tomorrow's date to catch entries saved with UTC before timezone fix
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowDate = tomorrow.toLocaleDateString('en-CA');
+    const dates = [todayDate, tomorrowDate];
+    const [w, n, h] = await Promise.all([
+      supabase.from('workouts').select('id, exercise_id, value, xp, timestamp, date').eq('user_id', userId).in('date', dates),
+      supabase.from('nutrition_logs').select('id, macro_type, amount, xp, timestamp, date, label').eq('user_id', userId).in('date', dates),
+      supabase.from('habit_logs').select('id, habit_id, value, xp, timestamp, date').eq('user_id', userId).in('date', dates),
+    ]);
+    const items = [
+      ...(w.data || []).map(r => ({ name: r.exercise_id?.replace(/_/g, ' '), value: r.value, xp: r.xp, timestamp: r.timestamp })),
+      ...(n.data || []).map(r => ({ name: r.label || r.macro_type, value: `${r.amount}`, xp: r.xp, timestamp: r.timestamp })),
+      ...(h.data || []).map(r => ({ name: r.habit_id?.replace('habit_', '').replace(/_/g, ' '), value: `${r.value}`, xp: r.xp, timestamp: r.timestamp })),
+    ].sort((a, b) => b.timestamp - a.timestamp);
+    setTodayLog(items);
+  }, [userId]);
   const [profile, setProfile] = useState<UserProfileData | null>(initialProfile || null);
   const [showSettings, setShowSettings] = useState(false);
   const [bodyCompHistory, setBodyCompHistory] = useState<any[]>([]);
@@ -86,7 +111,8 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
     const data = await getHabitProgress(userId, selectedDateTs);
     if (data.status === 'success') setTotals(data.totals);
     getHistory(userId).then(setHistory);
-  }, [userId, selectedDateTs]);
+    loadTodayLog();
+  }, [userId, selectedDateTs, loadTodayLog]);
 
   useEffect(() => { fetchProgress(); }, [fetchProgress]);
   useEffect(() => { if (initialProfile) setProfile(initialProfile); }, [initialProfile]);
@@ -234,6 +260,38 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
           </button>
         </div>
       </div>
+
+      {/* Today's Log — quick view + delete */}
+      {todayLog.length > 0 && (
+        <div className="mx-2 mb-2">
+          <button onClick={() => setShowTodayLog(!showTodayLog)} className="flex items-center justify-between w-full text-left px-3 py-2 rounded-lg bg-zinc-900/50 border border-zinc-800/50 hover:border-zinc-700 transition">
+            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Today&apos;s Log ({todayLog.length})</span>
+            {showTodayLog ? <ChevronUp size={14} className="text-zinc-600" /> : <ChevronDown size={14} className="text-zinc-600" />}
+          </button>
+          {showTodayLog && (
+            <div className="mt-1 space-y-1 max-h-48 overflow-y-auto">
+              {todayLog.map((item, i) => (
+                <div key={i} className="flex items-center justify-between px-3 py-2 bg-zinc-900/30 rounded-lg">
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-medium text-zinc-300 truncate capitalize">{item.name}</div>
+                    <div className="text-[10px] text-zinc-600">{item.value} · {item.xp || 0} XP</div>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      if (!confirm('Delete this entry?')) return;
+                      await deleteHistoryItemAction(userId, item.timestamp);
+                      fetchProgress();
+                    }}
+                    className="ml-2 p-1.5 text-zinc-600 hover:text-red-400 transition flex-shrink-0"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex gap-1.5 px-2 overflow-x-auto no-scrollbar">

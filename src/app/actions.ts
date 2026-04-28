@@ -6,11 +6,11 @@ import { cookies } from "next/headers";
 
 function getLocalDate(ts?: number): string {
     const d = ts ? new Date(ts * 1000) : new Date();
-    // Read user's timezone from cookie (set by client), fallback to UTC
-    let tz = 'UTC';
+    // Read user's timezone from cookie (set by client), fallback to America/New_York
+    let tz = 'America/New_York';
     try {
         const cookieStore = cookies();
-        tz = (cookieStore as any).get?.('timezone')?.value || 'UTC';
+        tz = (cookieStore as any).get?.('timezone')?.value || 'America/New_York';
     } catch {}
     return d.toLocaleDateString('en-CA', { timeZone: tz });
 }
@@ -252,7 +252,9 @@ export async function logTrainingAction(
         let setXp = 0;
         if (exerciseType.includes('time') || exerciseType.includes('duration') || exerciseType.includes('distance') || exerciseType === 'cardio') {
             if (set.duration && set.duration > 0) {
-                setXp = Math.floor(set.duration * 8 * xpFactor);
+                // Duration may be in minutes or seconds — normalize to minutes
+                const durationMins = set.duration > 300 ? set.duration / 60 : set.duration;
+                setXp = Math.floor(durationMins * 8 * xpFactor);
             } else if (set.distance && set.distance > 0) {
                 const estMinutes = (set.distance / 1609.34) * 10;
                 setXp = Math.floor(estMinutes * 8 * xpFactor);
