@@ -364,6 +364,46 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
   const [isActive, setIsActive] = useState(false);
   const [earnedXp, setEarnedXp] = useState(0);
   const [outdoor, setOutdoor] = useState(false);
+  const [showDistancePrompt, setShowDistancePrompt] = useState(false);
+  const [distanceInput, setDistanceInput] = useState('');
+  const [finalXp, setFinalXp] = useState(0);
+
+  // Persist timer state for background resume
+  const timerKey = `active_timer_${blockIndex}`;
+  useEffect(() => {
+    if (isActive && timeLeft > 0) {
+      const intervalStartedAt = Date.now() - ((block.intervals[intervalIndex]?.seconds || 0) - timeLeft) * 1000;
+      localStorage.setItem(timerKey, JSON.stringify({ intervalIndex, intervalStartedAt, earnedXp, blockIndex }));
+    }
+  }, [intervalIndex, isActive, timerKey]);
+
+  // Restore timer state on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(timerKey);
+      if (!saved) return;
+      const state = JSON.parse(saved);
+      if (state.blockIndex !== blockIndex) { localStorage.removeItem(timerKey); return; }
+      const elapsed = Math.floor((Date.now() - state.intervalStartedAt) / 1000);
+      let idx = state.intervalIndex;
+      let remaining = (block.intervals[idx]?.seconds || 0) - elapsed;
+      let xp = state.earnedXp || 0;
+      // Auto-advance through completed intervals
+      while (remaining <= 0 && idx < block.intervals.length - 1) {
+        idx++;
+        remaining += block.intervals[idx]?.seconds || 0;
+      }
+      if (idx < block.intervals.length && remaining > 0) {
+        setIntervalIndex(idx);
+        setTimeLeft(remaining);
+        setEarnedXp(xp);
+        setIsActive(true);
+        setGetReady(0);
+      } else {
+        localStorage.removeItem(timerKey);
+      }
+    } catch { localStorage.removeItem(timerKey); }
+  }, []);
 
   // Keep screen awake during tread block
   useEffect(() => {
@@ -449,12 +489,47 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
       setIntervalIndex((prev) => prev + 1);
     } else {
       setIsActive(false);
-      onBlockComplete(false, [], earnedXp + earned);
+      localStorage.removeItem(timerKey);
+      setFinalXp(earnedXp + earned);
+      setShowDistancePrompt(true);
     }
+  };
+
+  const handleDistanceSubmit = () => {
+    const distance = parseFloat(distanceInput) || 0;
+    onBlockComplete(false, [], finalXp, distance);
+    setShowDistancePrompt(false);
   };
 
 
   if (!currentInterval) return <div className="text-white p-8">Loading Interval...</div>;
+
+  if (showDistancePrompt) {
+    return (
+      <div className="w-full max-w-md mx-auto flex flex-col items-center justify-center gap-6 p-8">
+        <div className="text-5xl">🏁</div>
+        <h2 className="text-xl font-black text-white uppercase tracking-tight">Block Complete!</h2>
+        <p className="text-sm text-zinc-400 text-center">How far did you go? (optional)</p>
+        <div className="w-full max-w-[200px]">
+          <span className="text-[9px] text-zinc-500 uppercase block text-center mb-1">Miles</span>
+          <input
+            type="text"
+            inputMode="decimal"
+            value={distanceInput}
+            onChange={e => setDistanceInput(e.target.value)}
+            placeholder="0.0"
+            autoFocus
+            className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-center text-lg text-white font-mono focus:border-orange-500 outline-none"
+          />
+        </div>
+        <div className="flex gap-3 w-full max-w-[280px]">
+          <button onClick={handleDistanceSubmit} className="flex-1 bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 rounded-xl transition">
+            {distanceInput ? 'Save & Continue' : 'Skip'}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`w-full max-w-md mx-auto h-[calc(100dvh-80px)] md:h-[600px] rounded-3xl overflow-hidden shadow-2xl flex flex-col relative transition-colors duration-700 ${currentInterval.color}`}>
@@ -981,28 +1056,18 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
   const [expandedSection, setExpandedSection] = useState<number | null>(null);
   const [workoutDates, setWorkoutDates] = useState<string[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(initialDate || null);
+
+  // Persist active workout indicator for banner on other pages
+  useEffect(() => {
+    if (workoutData.length > 0 && !isComplete) {
+      localStorage.setItem('active_workout', JSON.stringify({ path: window.location.pathname, date: selectedDate || new Date().toLocaleDateString('en-CA') }));
+    }
+    return () => { if (isComplete) localStorage.removeItem('active_workout'); };
+  }, [workoutData, isComplete, selectedDate]);
   const [weeklySchedule, setWeeklySchedule] = useState<any[]>([]);
 
   // Persist workout progress to localStorage
   const progressKey = `workout_progress_${selectedDate || new Date().toLocaleDateString('en-CA')}`;
-
-  useEffect(() => {
-    if (completedIndices.length > 0 || skippedIndices.length > 0) {
-      localStorage.setItem(progressKey, JSON.stringify({ completedIndices, skippedIndices, blockIndex }));
-    }
-  }, [completedIndices, skippedIndices, blockIndex, progressKey]);
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(progressKey);
-      if (saved) {
-        const { completedIndices: ci, skippedIndices: si, blockIndex: bi } = JSON.parse(saved);
-        if (ci?.length) setCompletedIndices(prev => [...new Set([...prev, ...ci])]);
-        if (si?.length) setSkippedIndices(prev => [...new Set([...prev, ...si])]);
-        if (bi > 0) setBlockIndex(bi);
-      }
-    } catch {}
-  }, [progressKey]);
   const [activeTab, setActiveTab] = useState<'schedule' | 'history'>('schedule');
 
   // 🟢 NEW: Full History & Catalog for Drill-Down
@@ -1016,6 +1081,36 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
   const [blockResults, setBlockResults] = useState<any[] | null>(null);
   const [showBlockComplete, setShowBlockComplete] = useState(false);
   const [engineChoice, setEngineChoice] = useState<Record<number, 'hiit' | 'zone2' | null>>({});
+
+  // Persist and restore workout progress
+  useEffect(() => {
+    if (completedIndices.length > 0 || skippedIndices.length > 0 || blockIndex > 0) {
+      localStorage.setItem(progressKey, JSON.stringify({ completedIndices, skippedIndices, blockIndex, viewMode, engineChoice, workoutData }));
+    }
+  }, [completedIndices, skippedIndices, blockIndex, viewMode, engineChoice, workoutData, progressKey]);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(progressKey);
+      if (saved) {
+        const { completedIndices: ci, skippedIndices: si, blockIndex: bi, viewMode: vm, engineChoice: ec, workoutData: wd } = JSON.parse(saved);
+        if (ci?.length) setCompletedIndices(prev => [...new Set([...prev, ...ci])]);
+        if (si?.length) setSkippedIndices(prev => [...new Set([...prev, ...si])]);
+        if (bi > 0) setBlockIndex(bi);
+        if (ec) setEngineChoice(ec);
+        if (wd?.length) setWorkoutData(wd);
+      }
+      // Only resume WORKOUT view if there's an active timer running
+      const timerKeys = Object.keys(localStorage).filter(k => k.startsWith('active_timer_'));
+      if (timerKeys.length > 0) {
+        const timerState = JSON.parse(localStorage.getItem(timerKeys[0]) || '{}');
+        if (timerState.blockIndex !== undefined) {
+          setBlockIndex(timerState.blockIndex);
+          setViewMode('WORKOUT');
+        }
+      }
+    } catch {}
+  }, [progressKey]);
 
   // HIIT vs Zone 2 recommendation
   const [didHiitYesterday, setDidHiitYesterday] = useState(false);
@@ -1142,6 +1237,18 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
   const loadWorkout = async (date?: string) => {
     setIsLoading(true);
     try {
+      // Skip API fetch if resuming from saved progress (has workout data already restored)
+      const hasSavedProgress = localStorage.getItem(progressKey);
+      if (hasSavedProgress) {
+        try {
+          const saved = JSON.parse(hasSavedProgress);
+          if (saved.workoutData?.length) {
+            setIsLoading(false);
+            return;
+          }
+        } catch {}
+      }
+
       const data = await getActiveWorkout(date);
       setWorkoutData(data || []);
       setSelectedDate(date || null);
@@ -1152,15 +1259,16 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
       setSkippedIndices([]);
 
       // Decide View Mode
-      // If we confirm it has multiple sections, go to HUB. Else START immediately?
-      // Actually, let's always default to HUB if sections > 1 for that "Mission" feel.
-      // But we need to wait for data to know.
-      // We'll set it in the effect below or here.
-      const uniqueSections = new Set((data || []).map((b: any) => b.section || 'General'));
-      if (uniqueSections.size > 1) {
-        setViewMode('HUB');
+      const hasActiveTimer = Object.keys(localStorage).some(k => k.startsWith('active_timer_'));
+      if (hasSavedProgress || hasActiveTimer) {
+        // Will be restored by the progress restore effect
       } else {
-        setViewMode('WORKOUT');
+        const uniqueSections = new Set((data || []).map((b: any) => b.section || 'General'));
+        if (uniqueSections.size > 1) {
+          setViewMode('HUB');
+        } else {
+          setViewMode('WORKOUT');
+        }
       }
 
     } catch (err) {
@@ -1268,7 +1376,7 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
     return newRawValue > prevBest && prevBest > 0;
   };
 
-  const handleBlockComplete = async (skipped: boolean = false, exercisesData: any[] = [], timerXp?: number) => {
+  const handleBlockComplete = async (skipped: boolean = false, exercisesData: any[] = [], timerXp?: number, distance?: number) => {
     const isExerciseBlock = ['checklist_exercise', 'list', 'superset'].includes(currentBlock.type);
 
     if (skipped) {
@@ -1315,7 +1423,8 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
           return;
         } else if (!isExerciseBlock && currentBlock.xp_value > 0) {
           await logWorkoutBlockAction(
-            userId, currentBlock.name, currentBlock.description || `${currentBlock.sets || 1} Sets`,
+            userId, currentBlock.name,
+            distance ? `${distance} mi` : (currentBlock.description || `${currentBlock.sets || 1} Sets`),
             currentBlock.xp_value,
             currentBlock.type === 'card' || currentBlock.name.includes('Tread') ? 'Cardio' : 'Strength',
             exercisesData,
@@ -1331,7 +1440,7 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
             rank_name: null,
             hasStandards: false,
             isPR: false,
-            value: 'Complete',
+            value: distance ? `${distance} mi` : 'Complete',
           }]);
           setShowBlockComplete(true);
           const newCompleted = [...completedIndices, blockIndex];
