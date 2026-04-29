@@ -21,6 +21,7 @@ import ToastContainer from "@/components/ui/Toast";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import InstallPrompt from "@/components/InstallPrompt";
 import TimezoneSync from "@/components/TimezoneSync";
+import ActiveWorkoutBanner from "@/components/ActiveWorkoutBanner";
 
 export const metadata: Metadata = {
   title: "Refactor Athletics",
@@ -69,6 +70,7 @@ export default function RootLayout({
                 </main>
               </div>
               <MobileNav />
+              <ActiveWorkoutBanner />
             </div>
             <ToastContainer />
           </ToastProvider>

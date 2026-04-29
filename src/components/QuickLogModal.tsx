@@ -32,7 +32,7 @@ export default function QuickLogModal({ userId, bodyweight, sex, catalog, onClos
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
   const [selected, setSelected] = useState<CatalogItem | null>(null);
-  const [sets, setSets] = useState([{ weight: '', reps: '', duration: '', distance: '' }]);
+  const [sets, setSets] = useState([{ weight: '', reps: '', duration: '', seconds: '', distance: '' }]);
   const [logging, setLogging] = useState(false);
 
   const filtered = useMemo(() => {
@@ -56,7 +56,7 @@ export default function QuickLogModal({ userId, bodyweight, sex, catalog, onClos
       const payload = sets.map(s => ({
         weight: parseFloat(s.weight) || 0,
         reps: parseInt(s.reps) || 0,
-        duration: parseFloat(s.duration) ? parseFloat(s.duration) * 60 : 0, // min → sec
+        duration: (parseFloat(s.duration) || 0) * 60 + (parseFloat(s.seconds) || 0), // min+sec → total sec
         distance: parseFloat(s.distance) || 0,
       }));
       const result = await logTrainingAction(userId, selected.id, bodyweight, sex, payload);
@@ -70,7 +70,7 @@ export default function QuickLogModal({ userId, bodyweight, sex, catalog, onClos
     }
   };
 
-  const addSet = () => setSets(prev => [...prev, { weight: '', reps: '', duration: '', distance: '' }]);
+  const addSet = () => setSets(prev => [...prev, { weight: '', reps: '', duration: '', seconds: '', distance: '' }]);
   const updateSet = (i: number, field: string, val: string) => setSets(prev => prev.map((s, idx) => idx === i ? { ...s, [field]: val } : s));
 
   // Exercise picker
@@ -155,16 +155,22 @@ export default function QuickLogModal({ userId, bodyweight, sex, catalog, onClos
             <div key={i} className="flex items-center gap-2">
               <span className="text-[10px] text-zinc-600 w-6 text-center">{i + 1}</span>
               {isCardio ? (
-                <>
-                  <div className="flex flex-col flex-1">
-                    <span className="text-[8px] text-zinc-600 text-center mb-0.5">MINUTES</span>
-                    <input type="text" inputMode="decimal" placeholder="—" value={s.duration} onChange={e => updateSet(i, 'duration', e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1.5 text-center text-sm text-white focus:border-orange-500 outline-none" />
+                <div className="flex-1 space-y-2">
+                  <div className="flex gap-2">
+                    <div className="flex flex-col flex-1">
+                      <span className="text-[8px] text-zinc-600 text-center mb-0.5">MIN</span>
+                      <input type="text" inputMode="numeric" placeholder="0" value={s.duration} onChange={e => updateSet(i, 'duration', e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1.5 text-center text-sm text-white focus:border-orange-500 outline-none" />
+                    </div>
+                    <div className="flex flex-col flex-1">
+                      <span className="text-[8px] text-zinc-600 text-center mb-0.5">SEC</span>
+                      <input type="text" inputMode="numeric" placeholder="0" value={s.seconds} onChange={e => updateSet(i, 'seconds', e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1.5 text-center text-sm text-white focus:border-orange-500 outline-none" />
+                    </div>
                   </div>
-                  <div className="flex flex-col flex-1">
-                    <span className="text-[8px] text-zinc-600 text-center mb-0.5">MILES</span>
-                    <input type="text" inputMode="decimal" placeholder="—" value={s.distance} onChange={e => updateSet(i, 'distance', e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1.5 text-center text-sm text-white focus:border-orange-500 outline-none" />
+                  <div className="flex flex-col">
+                    <span className="text-[8px] text-zinc-600 text-center mb-0.5">DISTANCE (MILES)</span>
+                    <input type="text" inputMode="decimal" placeholder="0.0" value={s.distance} onChange={e => updateSet(i, 'distance', e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1.5 text-center text-sm text-white focus:border-orange-500 outline-none" />
                   </div>
-                </>
+                </div>
               ) : isBodyweight ? (
                 <div className="flex flex-col flex-1">
                   <span className="text-[8px] text-zinc-600 text-center mb-0.5">REPS</span>
