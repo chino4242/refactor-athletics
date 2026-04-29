@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { startOfWeek, addDays, format } from 'date-fns';
-import { getWeeklySchedule } from '@/services/api';
+import { getWeeklySchedule, getProfile } from '@/services/api';
 import { useTheme } from '@/context/ThemeContext';
 import { THEMES } from '@/data/themes';
 import ActiveWorkout from './ActiveWorkout';
+import ProgramOverview from './ProgramOverview';
 import { ChevronDown, Settings, Zap } from 'lucide-react';
 import Link from 'next/link';
 import QuickLogModal from './QuickLogModal';
@@ -54,6 +55,12 @@ export default function TrainingV2({ userId, bodyweight, sex, age, initialHistor
   const [showQuickLog, setShowQuickLog] = useState(false);
 
   const todayStr = format(new Date(), 'yyyy-MM-dd');
+  const [userPath, setUserPath] = useState('hybrid');
+
+  // Load user path
+  useEffect(() => {
+    getProfile(userId).then(p => { if (p?.selected_path) setUserPath(p.selected_path); });
+  }, [userId]);
 
   // Load schedule
   useEffect(() => {
@@ -100,6 +107,9 @@ export default function TrainingV2({ userId, bodyweight, sex, age, initialHistor
 
   return (
     <div className="max-w-3xl mx-auto flex flex-col gap-4 pb-32" style={{ backgroundImage: theme.bgTexture }}>
+
+      {/* Program Overview */}
+      <ProgramOverview userId={userId} path={userPath} />
 
       {/* Today's Workout — Hero Card */}
       {today && (
