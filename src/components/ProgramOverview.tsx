@@ -82,9 +82,10 @@ export default function ProgramOverview({ userId, path }: { userId: string; path
 
             // Determine type from exercises
             const hasStrength = exercises.some(e => e.section === 'Strength');
-            const type = prog.name.includes('Recovery') ? 'Recovery' : hasStrength ? 'Strength + Cardio' : 'Cardio + Core';
+            const hasExercises = exercises.length > 0;
+            const type = !hasExercises ? 'Rest' : prog.name.includes('Recovery') ? 'Recovery' : hasStrength ? 'Strength + Cardio' : 'Cardio + Core';
 
-            overviews.push({ day, name: prog.name.replace(/ - hybrid.*/, '').replace(/Active /, ''), type, exercises });
+            overviews.push({ day, name: hasExercises ? prog.name.replace(/ - hybrid.*/, '').replace(/Active /, '') : 'Rest Day', type, exercises });
         }
 
         setDays(overviews);
