@@ -7,6 +7,35 @@ import ExerciseHistoryModal from './ExerciseHistoryModal'; // 🟢 NEW
 import { playCountdownBeep } from '../utils/audio';
 import { Play, Pause, SkipForward, RotateCcw, Calendar, CheckCircle, Info, Timer, ChevronRight, ArrowLeftRight } from 'lucide-react';
 import ChecklistView from './ChecklistView';
+
+// Shared rest timer bar — fixed at top of viewport
+function RestTimerBar({ restTime, totalRest, onSkip }: { restTime: number; totalRest: number; onSkip: () => void }) {
+  const progress = totalRest > 0 ? ((totalRest - restTime) / totalRest) * 100 : 0;
+
+  useEffect(() => {
+    if (restTime === 0) {
+      try { navigator.vibrate?.(200); } catch {}
+    }
+  }, [restTime]);
+
+  if (restTime <= 0) return null;
+
+  return (
+    <div className="fixed top-0 left-0 right-0 z-50 animate-in slide-in-from-top-2">
+      <div className="h-1 bg-zinc-800">
+        <div className="h-full bg-blue-500 transition-all duration-1000" style={{ width: `${progress}%` }} />
+      </div>
+      <div className="bg-zinc-900/95 backdrop-blur-sm border-b border-zinc-800 px-4 py-2 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Timer size={14} className="text-blue-400 animate-pulse" />
+          <span className="text-xs font-bold text-zinc-400 uppercase">Rest</span>
+        </div>
+        <span className="text-lg font-mono font-black text-white">{Math.floor(restTime / 60)}:{(restTime % 60).toString().padStart(2, '0')}</span>
+        <button onClick={onSkip} className="text-[10px] font-bold text-zinc-500 hover:text-white px-2 py-1 rounded bg-zinc-800 transition">SKIP</button>
+      </div>
+    </div>
+  );
+}
 import { logWorkoutBlockAction, logTrainingAction } from '@/app/actions';
 import { getProfile } from '@/services/api';
 import { useTheme } from '@/context/ThemeContext';
@@ -26,7 +55,25 @@ function ExerciseView({ block, blockIndex, onComplete, fullHistory, catalog, exe
   const [restTime, setRestTime] = useState(0);
   const [isResting, setIsResting] = useState(false);
   const totalSets = block.sets || 1;
-  const [weights, setWeights] = useState<string[]>(Array(totalSets).fill(''));
+  const [weights, setWeights] = useState<string[]>(() => {
+    // Auto-fill from last session
+    if (!fullHistory || !catalog) return Array(totalSets).fill('');
+    const exId = block.exercise_id || '';
+    const name = (block.name || '').replace(/^\d+\.\s*/, '').toLowerCase().trim();
+    const logs = (fullHistory || [])
+      .filter((h: any) => {
+        const hId = (h.exercise_id || '').toLowerCase();
+        return hId === exId.toLowerCase() || hId.includes(name) || name.includes(hId);
+      })
+      .sort((a: any, b: any) => b.timestamp - a.timestamp);
+    if (logs.length > 0) {
+      const lastSets = logs[0].details || logs[0].data || [];
+      if (lastSets.length > 0 && lastSets[0].weight) {
+        return Array(totalSets).fill(String(lastSets[0].weight));
+      }
+    }
+    return Array(totalSets).fill('');
+  });
   const [repsInputs, setRepsInputs] = useState<string[]>(() => {
     if (block.reps_list) return block.reps_list.map((r: number | null) => r != null ? String(r) : '');
     const parsed = parseInt(String(block.reps_per_set), 10);
@@ -53,6 +100,12 @@ function ExerciseView({ block, blockIndex, onComplete, fullHistory, catalog, exe
   const updateWeight = (index: number, val: string) => {
     const newWeights = [...weights];
     newWeights[index] = val;
+    // Carry forward to subsequent empty sets
+    if (val) {
+      for (let i = index + 1; i < newWeights.length; i++) {
+        if (!newWeights[i]) newWeights[i] = val;
+      }
+    }
     setWeights(newWeights);
   };
 
@@ -166,11 +219,54 @@ function ExerciseView({ block, blockIndex, onComplete, fullHistory, catalog, exe
           const last = logs[0];
           const sets = last.details || last.data || [];
           const summary = sets.map((s: any) => s.weight ? `${s.weight}×${s.reps}` : `${s.reps} reps`).join(', ');
+
+          // Progressive overload target
+          let targetHint = null;
+          if (catalogItem?.standards?.brackets && last.level !== undefined) {
+            const sexKey = 'male'; // TODO: get from profile
+            const brackets = catalogItem.standards.brackets[sexKey] || [];
+            const ageBracket = brackets[0];
+            const levels = ageBracket?.levels || [];
+            const nextLevel = (last.level || 0) + 1;
+            if (nextLevel < levels.length) {
+              const nextThreshold = levels[nextLevel];
+              const normFactor = catalogItem.normalization_factor || 1.0;
+              const isXBW = catalogItem.standards.unit === 'xBW';
+              const is5RM = (catalogItem.name || '').toLowerCase().includes('5rm');
+              const bestWeight = Math.max(...sets.map((s: any) => s.weight || 0));
+              const typicalReps = sets[0]?.reps || 10;
+
+              // Reverse the comparison: threshold → actual weight needed
+              // For xBW: threshold is in xBW units, multiply by bodyweight
+              // Then reverse normalization and Epley
+              let rawThreshold = isXBW ? nextThreshold * 180 : nextThreshold; // approximate bodyweight
+              let targetWeight: number;
+              if (is5RM) {
+                targetWeight = rawThreshold / normFactor;
+              } else {
+                // Reverse Epley: weight = threshold / (1 + reps/30) / normFactor
+                targetWeight = rawThreshold / (1 + typicalReps / 30) / normFactor;
+              }
+              targetWeight = Math.round(targetWeight / 5) * 5; // Round to nearest 5 lbs
+              const diff = targetWeight - bestWeight;
+              if (diff > 0 && diff < 100) {
+                targetHint = { weight: targetWeight, diff, level: nextLevel };
+              }
+            }
+          }
+
           return (
-            <div className="mt-2 px-2 py-1.5 bg-zinc-800/50 border border-zinc-700/50 rounded-lg">
-              <span className="text-[10px] text-zinc-500">Last: </span>
-              <span className="text-[10px] text-zinc-300 font-mono">{summary}</span>
-            </div>
+            <>
+              <div className="mt-2 px-2 py-1.5 bg-zinc-800/50 border border-zinc-700/50 rounded-lg">
+                <span className="text-[10px] text-zinc-500">Last: </span>
+                <span className="text-[10px] text-zinc-300 font-mono">{summary}</span>
+              </div>
+              {targetHint && (
+                <div className="mt-1 px-2 py-1.5 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+                  <span className="text-[10px] text-orange-400 font-bold">🎯 Hit {targetHint.weight} lbs (+{targetHint.diff}) to reach next rank</span>
+                </div>
+              )}
+            </>
           );
         })()}
       </div>
@@ -293,28 +389,8 @@ function ExerciseView({ block, blockIndex, onComplete, fullHistory, catalog, exe
         </div>
       </div>
 
-      {/* REST TIMER OVERLAY */}
-      {isResting && (
-        <div className="absolute inset-x-0 bottom-[100px] mx-6 bg-black/80 backdrop-blur-md rounded-2xl border border-zinc-700 p-4 flex items-center justify-between animate-in slide-in-from-bottom-4 shadow-2xl z-20">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 animate-pulse">
-              <Timer size={20} />
-            </div>
-            <div>
-              <div className="text-zinc-400 text-xs font-bold uppercase tracking-wider">Resting</div>
-              <div className="text-white font-mono text-xl font-bold">
-                0:{restTime < 10 ? '0' : ''}{restTime}
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={() => setIsResting(false)}
-            className="text-sm bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2.5 rounded-lg transition font-bold"
-          >
-            SKIP
-          </button>
-        </div>
-      )}
+      {/* REST TIMER */}
+      <RestTimerBar restTime={restTime} totalRest={block.rest_seconds || 90} onSkip={() => setIsResting(false)} />
 
       {/* FOOTER ACTION */}
       <div className="bg-zinc-900 border-t border-zinc-800 p-4 shrink-0">
@@ -657,7 +733,25 @@ function TimerView({ block, blockIndex, totalBlocks, onBlockComplete, onInterval
 // --- SUB-COMPONENT: SUPERSET VIEW ---
 function SupersetView({ block, blockIndex, onComplete, fullHistory, catalog, exerciseSwaps, onSwap }: any) {
   const [completedSets, setCompletedSets] = useState<Record<number, number[]>>({});
-  const [weights, setWeights] = useState<Record<string, string>>({});
+  const [weights, setWeights] = useState<Record<string, string>>(() => {
+    const initial: Record<string, string> = {};
+    const exs = block.exercises || [];
+    const sets = block.sets || 3;
+    exs.forEach((ex: any, exIdx: number) => {
+      const exName = (ex.name || '').toLowerCase();
+      const logs = (fullHistory || [])
+        .filter((h: any) => (h.exercise_id || '').toLowerCase().includes(exName) || exName.includes((h.exercise_id || '').toLowerCase()))
+        .sort((a: any, b: any) => b.timestamp - a.timestamp);
+      if (logs.length > 0) {
+        const lastSets = logs[0].details || logs[0].data || [];
+        const lastWeight = lastSets[0]?.weight;
+        if (lastWeight) {
+          for (let s = 0; s < sets; s++) initial[`${exIdx}-${s}`] = String(lastWeight);
+        }
+      }
+    });
+    return initial;
+  });
   const [reps, setReps] = useState<Record<string, string>>({});
 
   const [selectedExerciseForHistory, setSelectedExerciseForHistory] = useState<CatalogItem | null>(null);
@@ -950,28 +1044,8 @@ function SupersetView({ block, blockIndex, onComplete, fullHistory, catalog, exe
 
       </div>
 
-      {/* REST TIMER OVERLAY */}
-      {isResting && (
-        <div className="absolute inset-x-0 bottom-[100px] mx-6 bg-purple-900/90 backdrop-blur-md rounded-2xl border border-purple-500/50 p-4 flex items-center justify-between animate-in slide-in-from-bottom-4 shadow-2xl z-20">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white animate-pulse">
-              <Timer size={20} />
-            </div>
-            <div>
-              <div className="text-purple-200 text-xs font-bold uppercase tracking-wider">Next Round</div>
-              <div className="text-white font-mono text-xl font-bold">
-                0:{restTime < 10 ? '0' : ''}{restTime}
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={() => setIsResting(false)}
-            className="text-xs bg-black/40 hover:bg-black/60 text-white px-3 py-2 rounded-lg transition uppercase font-bold tracking-wider"
-          >
-            SKIP
-          </button>
-        </div>
-      )}
+      {/* REST TIMER */}
+      <RestTimerBar restTime={restTime} totalRest={block.rest_seconds || 60} onSkip={() => setIsResting(false)} />
 
       {/* FOOTER ACTION */}
       <div className="bg-zinc-900 border-t border-zinc-800 p-4 shrink-0">
@@ -1679,6 +1753,17 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
                     </h3>
                     <p className="text-[10px] text-zinc-500 mt-0.5">
                       {sectionDoneCount}/{section.count} blocks {section.isDone ? '✓' : ''}
+                      {!section.isDone && (() => {
+                        const sectionBlocks = section.indices.map((i: number) => workoutData[i]);
+                        const estMins = sectionBlocks.reduce((s: number, b: any) => {
+                          if (b.type === 'timer' && b.intervals) return s + b.intervals.reduce((t: number, i: any) => t + (i.seconds || 0), 0) / 60;
+                          if (b.type === 'checklist_exercise') return s + (b.sets || 3) * ((b.rest_seconds || 60) + 30) / 60;
+                          if (b.type === 'superset') return s + (b.sets || 3) * ((b.rest_seconds || 60) + 45) / 60;
+                          return s;
+                        }, 0);
+                        const totalXp = sectionBlocks.reduce((s: number, b: any) => s + (b.xp_value || 0), 0);
+                        return <span> · ~{Math.round(estMins)} min · {totalXp} XP</span>;
+                      })()}
                     </p>
                   </div>
 
@@ -1696,10 +1781,29 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
                         return (
                           <div key={bIdx} className="flex items-center gap-2.5 text-sm">
                             <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${isSkipped ? 'bg-zinc-700' : isDone ? 'bg-emerald-400' : 'bg-zinc-600'}`} />
-                            <span className={`${isDone ? 'text-zinc-500 line-through' : isSkipped ? 'text-zinc-600 italic' : 'text-zinc-300'}`}>
-                              {block.name || block.type}
-                            </span>
+                            <div className="flex-1 min-w-0">
+                              <span className={`${isDone ? 'text-zinc-500 line-through' : isSkipped ? 'text-zinc-600 italic' : 'text-zinc-300'}`}>
+                                {block.name || block.type}
+                              </span>
+                              {!isDone && !isSkipped && (
+                                <div className="text-[9px] text-zinc-600 mt-0.5">
+                                  {block.type === 'checklist_exercise' && block.sets && (
+                                    <span>{block.sets}×{block.target_duration_seconds ? `${block.target_duration_seconds}s` : (block.reps_per_set || '?')} {block.rest_seconds ? `· ${block.rest_seconds}s rest` : ''}</span>
+                                  )}
+                                  {block.type === 'superset' && block.exercises && (
+                                    <span>{block.sets || 3} rounds · {block.exercises.length} exercises</span>
+                                  )}
+                                  {block.type === 'timer' && block.intervals && (
+                                    <span>{Math.round(block.intervals.reduce((s: number, i: any) => s + (i.seconds || 0), 0) / 60)} min</span>
+                                  )}
+                                  {block.tips?.[0] && <span className="ml-1 italic">— {block.tips[0].substring(0, 40)}{block.tips[0].length > 40 ? '...' : ''}</span>}
+                                </div>
+                              )}
+                            </div>
                             {isSkipped && <span className="text-[9px] text-zinc-600 border border-zinc-700 px-1 rounded">Skip</span>}
+                            {!isDone && !isSkipped && block.xp_value > 0 && (
+                              <span className="text-[9px] text-zinc-700 font-mono shrink-0">{block.xp_value}xp</span>
+                            )}
                           </div>
                         );
                       })}
