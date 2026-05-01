@@ -9,6 +9,9 @@ import { Play, Pause, SkipForward, RotateCcw, Calendar, CheckCircle, Info, Timer
 import ChecklistView from './ChecklistView';
 import { logWorkoutBlockAction, logTrainingAction } from '@/app/actions';
 import { getProfile } from '@/services/api';
+import { useTheme } from '@/context/ThemeContext';
+import { THEMES } from '@/data/themes';
+import { useExperienceMode } from '@/context/ExperienceModeContext';
 import { createClient } from '@/utils/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -1046,6 +1049,22 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
   const [isLoading, setIsLoading] = useState(true);
   const [sessionId] = useState(() => uuidv4());
 
+  // Theme-aware rank names
+  const { currentTheme } = useTheme();
+  const { isClassic } = useExperienceMode();
+  const theme = THEMES[currentTheme] || THEMES.athlete;
+  const getThemedRankName = (level: number): string => {
+    if (isClassic) {
+      const classicNames = ['Unranked', 'Level 1', 'Level 2', 'Level 3', 'Level 4', 'Level 5', 'Level 6'];
+      return classicNames[level] || `Level ${level}`;
+    }
+    const rankKey = `level${level}`;
+    const themed = theme.ranks?.[rankKey]?.name;
+    if (themed) return themed.replace(/^Level \d+:\s*/, '');
+    const defaults = ['Peasant', 'Rookie', 'Amateur', 'Contender', 'Pro', 'Champion', 'Legend'];
+    return defaults[level] || 'Unknown';
+  };
+
   // 🟢 NEW: Mission HUB State
   const [viewMode, setViewMode] = useState<'HUB' | 'WORKOUT'>('HUB');
   const [completedIndices, setCompletedIndices] = useState<number[]>([]);
@@ -1556,7 +1575,7 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
                 </p>
                 <p className="text-[11px] text-zinc-500">{r.value}</p>
                 {r.next_threshold_lbs && r.next_rank_name && (
-                  <p className="text-[10px] text-orange-400 font-semibold mt-0.5">🔥 {r.next_threshold_lbs} lbs to {r.next_rank_name}</p>
+                  <p className="text-[10px] text-orange-400 font-semibold mt-0.5">🔥 {r.next_threshold_lbs} lbs to {getThemedRankName((r.level || 0) + 1)}</p>
                 )}
               </div>
               {r.hasStandards && r.level > 0 ? (
@@ -1565,7 +1584,7 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
                   r.level >= 2 ? 'bg-zinc-700/80 text-zinc-300 border border-zinc-600/30' :
                   'bg-zinc-800 text-zinc-400 border border-zinc-700/30'
                 }`}>
-                  {r.rank_name}
+                  {getThemedRankName(r.level || 0)}
                 </span>
               ) : (
                 <span className="text-[10px] text-zinc-600 shrink-0 ml-2">+{r.xp_earned} XP</span>
