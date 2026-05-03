@@ -17,6 +17,6 @@ export const config = {
          * - icon-*.png (PWA icons)
          * Feel free to modify this pattern to include more paths.
          */
-        '/((?!_next/static|_next/image|favicon.ico|manifest.json|sw.js|icon-.*\\.png|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+        '/((?!_next/static|_next/image|favicon.ico|manifest.json|sw.js|icon-.*\\.png|api/sync|api/cron|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
     ],
 }
