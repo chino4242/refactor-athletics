@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveProfile } from '@/services/api';
 import { useToast } from '@/context/ToastContext';
@@ -29,6 +29,28 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
     const [whoopSyncing, setWhoopSyncing] = useState(false);
     const [googleConnected, setGoogleConnected] = useState(!!initialProfile?.google_health_connected_at);
     const [googleSyncing, setGoogleSyncing] = useState(false);
+
+    // Handle OAuth redirect feedback
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('whoop') === 'connected') {
+            setWhoopConnected(true);
+            toast.success('WHOOP connected successfully!');
+            window.history.replaceState({}, '', '/settings');
+        } else if (params.get('whoop') === 'error') {
+            const detail = params.get('whoop_error');
+            toast.error(detail ? `WHOOP error: ${decodeURIComponent(detail)}` : 'Failed to connect WHOOP. Please try again.');
+            window.history.replaceState({}, '', '/settings');
+        }
+        if (params.get('google') === 'connected') {
+            setGoogleConnected(true);
+            toast.success('Google Health connected successfully!');
+            window.history.replaceState({}, '', '/settings');
+        } else if (params.get('google') === 'error') {
+            toast.error('Failed to connect Google Health. Please try again.');
+            window.history.replaceState({}, '', '/settings');
+        }
+    }, []);
 
     // Profile fields
     const [displayName, setDisplayName] = useState(initialProfile?.display_name || '');
@@ -289,13 +311,21 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                         </div>
                         <p className="text-zinc-500 text-xs mb-3">Auto-sync strain, recovery, sleep, and HRV.</p>
                         {whoopConnected ? (
-                            <button
-                                onClick={syncWhoop}
-                                disabled={whoopSyncing}
-                                className="w-full py-2.5 bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition disabled:opacity-50"
-                            >
-                                {whoopSyncing ? 'Syncing...' : 'Sync Now'}
-                            </button>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={syncWhoop}
+                                    disabled={whoopSyncing}
+                                    className="flex-1 py-2.5 bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition disabled:opacity-50"
+                                >
+                                    {whoopSyncing ? 'Syncing...' : 'Sync Now'}
+                                </button>
+                                <button
+                                    onClick={() => { setWhoopConnected(false); }}
+                                    className="px-3 py-2.5 bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-red-400 text-xs font-bold rounded-xl transition"
+                                >
+                                    Disconnect
+                                </button>
+                            </div>
                         ) : (
                             <a
                                 href="/api/whoop/auth"

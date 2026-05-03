@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { createServiceClient } from '@/utils/supabase/service';
-import { getValidToken, getTodayCycle, getLatestRecovery, getLatestSleep } from '@/lib/whoop';
+import { getValidToken, getTodayCycle, getLatestRecovery, getLatestSleep, getBodyMeasurement } from '@/lib/whoop';
 
 export async function POST(request: NextRequest) {
   // Support both authenticated user and cron with userId param
@@ -66,6 +66,16 @@ export async function POST(request: NextRequest) {
 
       await upsertHabit(supabase, userId, 'habit_sleep', today, ts, sleepHours, Math.round(sleepHours * 2));
       synced.push(`sleep: ${sleepHours}h`);
+    }
+
+    // Fetch weight
+    const body = await getBodyMeasurement(token).catch(() => null);
+    if (body?.weight_kilogram) {
+      const weightLbs = Math.round(body.weight_kilogram * 2.20462 * 10) / 10;
+      await supabase.from('users').update({ bodyweight: weightLbs }).eq('id', userId);
+      await supabase.from('body_measurements').delete().eq('user_id', userId).eq('date', today);
+      await supabase.from('body_measurements').insert({ user_id: userId, date: today, weight: weightLbs, timestamp: ts });
+      synced.push(`weight: ${weightLbs} lbs`);
     }
 
     return NextResponse.json({ synced });

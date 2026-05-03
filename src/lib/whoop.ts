@@ -127,3 +127,8 @@ export async function getLatestSleep(token: string) {
 export async function getWhoopProfile(token: string) {
   return whoopGet(token, '/v2/user/profile/basic');
 }
+
+// Get body measurements (weight)
+export async function getBodyMeasurement(token: string) {
+  return whoopGet(token, '/v2/user/measurement/body');
+}

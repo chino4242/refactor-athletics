@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     const profile = await getWhoopProfile(tokens.access_token);
 
     const service = createServiceClient();
-    await service.from('users').update({
+    const { error: updateError } = await service.from('users').update({
       whoop_access_token: tokens.access_token,
       whoop_refresh_token: tokens.refresh_token,
       whoop_user_id: String(profile.user_id),
@@ -42,10 +42,16 @@ export async function GET(request: NextRequest) {
       whoop_connected_at: new Date().toISOString(),
     }).eq('id', user.id);
 
-    settingsUrl.searchParams.set('whoop', 'connected');
+    if (updateError) {
+      console.error('WHOOP DB update error:', updateError);
+      settingsUrl.searchParams.set('whoop', 'error');
+    } else {
+      settingsUrl.searchParams.set('whoop', 'connected');
+    }
   } catch (e: any) {
-    console.error('WHOOP OAuth callback error:', e);
+    console.error('WHOOP OAuth callback error:', e.message || e);
     settingsUrl.searchParams.set('whoop', 'error');
+    settingsUrl.searchParams.set('whoop_error', encodeURIComponent(e.message || 'Unknown error'));
   }
 
   const response = NextResponse.redirect(settingsUrl.toString());

@@ -323,6 +323,8 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
               {renderHabitCard('habit_stand_hours', 'Stand', '🧍', profile?.habit_targets?.habit_stand_hours || 12, 'hrs', 'bg-sky-500', { sync: true })}
             </div>
             {!isHidden('habit_day_strain') && renderHabitCard('habit_day_strain', 'Day Strain', '🔥', profile?.habit_targets?.habit_day_strain || 14, 'strain', 'bg-amber-500', { sync: true, setOnly: true })}
+            {!isHidden('habit_recovery') && renderHabitCard('habit_recovery', 'Recovery', '💚', profile?.habit_targets?.habit_recovery || 100, '%', 'bg-emerald-500', { sync: true, setOnly: true })}
+            {!isHidden('habit_hrv') && renderHabitCard('habit_hrv', 'HRV', '💓', profile?.habit_targets?.habit_hrv || 100, 'ms', 'bg-purple-500', { sync: true, setOnly: true })}
             {!isHidden('habit_supplements') && (
               <button
                 onClick={() => handleLog('habit_supplements', 1, 'Supplements')}
