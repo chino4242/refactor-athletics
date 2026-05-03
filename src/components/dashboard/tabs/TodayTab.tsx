@@ -212,6 +212,8 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                                         `💪 Exercise: ${habits['habit_exercise_minutes'] || 0} min`,
                                         `💤 Sleep: ${habits['habit_sleep'] || 0} hrs`,
                                         habits['habit_day_strain'] ? `🔥 Day Strain: ${habits['habit_day_strain']}` : '',
+                                        habits['habit_recovery'] ? `💚 Recovery: ${habits['habit_recovery']}%` : '',
+                                        habits['habit_hrv'] ? `💓 HRV: ${habits['habit_hrv']}ms` : '',
                                         exerciseCount > 0 ? `🏋️ Volume: ${totalVolume.toLocaleString()} lbs | +${totalXp} XP` : '', '',
                                         '🥗 NUTRITION',
                                         `🥩 Protein: ${protein}/${nt.protein || 150}g`,

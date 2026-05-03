@@ -139,7 +139,7 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                             </div>
                             {(() => {
                                 const target = userProfile?.body_composition_goals?.target_weight;
-                                const currentWeight = bodyCompHistory[0]?.weight || userProfile?.bodyweight;
+                                const currentWeight = bodyCompHistory[bodyCompHistory.length - 1]?.weight || userProfile?.bodyweight;
                                 
                                 if (currentWeight && target) {
                                     const targetNum = parseFloat(target);

@@ -1,0 +1,15 @@
+{
+  "categories": [{
+    "name": "Refactor Athletics",
+    "shortcuts": [{
+      "name": "Sync Health Data",
+      "method": "POST",
+      "url": "https://your-app-url.vercel.app/api/sync",
+      "authentication": "bearer",
+      "authToken": "YOUR_TOKEN",
+      "contentType": "application/json",
+      "bodyContent": "[{\"type\":\"steps\",\"value\":0},{\"type\":\"sleep\",\"value\":0},{\"type\":\"calories_burned\",\"value\":0}]",
+      "description": "Sync steps, sleep, and calories to Refactor Athletics. Edit the values before running."
+    }]
+  }]
+}

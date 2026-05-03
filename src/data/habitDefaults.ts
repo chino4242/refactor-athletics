@@ -4,6 +4,7 @@ export const ALL_HABITS = [
   'habit_creatine', 'habit_no_alcohol', 'habit_no_vice', 'habit_sugar',
   'habit_journaling', 'habit_reading', 'habit_mobility', 'habit_cold_plunge',
   'habit_sauna', 'habit_meditation', 'habit_fasting',
+  'habit_day_strain', 'habit_recovery', 'habit_hrv',
 ] as const;
 
 // Habits visible by default for everyone

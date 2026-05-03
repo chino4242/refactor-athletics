@@ -17,6 +17,9 @@ export interface UserProfileData {
     body_composition_goals?: Record<string, string>;
     available_equipment?: string[];
     measurement_mode?: 'tape' | 'scale';
+    sync_token?: string;
+    whoop_connected_at?: string;
+    google_health_connected_at?: string;
 }
 
 export interface NutritionTargets {

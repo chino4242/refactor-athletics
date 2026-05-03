@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveProfile } from '@/services/api';
 import { useToast } from '@/context/ToastContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useExperienceMode } from '@/context/ExperienceModeContext';
 import { THEMES } from '@/data/themes';
-import { Settings, User, Target, Palette, ChevronLeft } from 'lucide-react';
+import { Settings, User, Target, Palette, ChevronLeft, RefreshCw, Copy, Check, Link2 } from 'lucide-react';
 import type { UserProfileData } from '@/types';
 
 interface SettingsPageClientProps {
@@ -22,6 +22,35 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
     const { isClassic } = useExperienceMode();
     const [loading, setLoading] = useState(false);
     const [showThemes, setShowThemes] = useState(false);
+    const [syncToken, setSyncToken] = useState(initialProfile?.sync_token || '');
+    const [tokenCopied, setTokenCopied] = useState(false);
+    const [generatingToken, setGeneratingToken] = useState(false);
+    const [whoopConnected, setWhoopConnected] = useState(!!initialProfile?.whoop_connected_at);
+    const [whoopSyncing, setWhoopSyncing] = useState(false);
+    const [googleConnected, setGoogleConnected] = useState(!!initialProfile?.google_health_connected_at);
+    const [googleSyncing, setGoogleSyncing] = useState(false);
+
+    // Handle OAuth redirect feedback
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('whoop') === 'connected') {
+            setWhoopConnected(true);
+            toast.success('WHOOP connected successfully!');
+            window.history.replaceState({}, '', '/settings');
+        } else if (params.get('whoop') === 'error') {
+            const detail = params.get('whoop_error');
+            toast.error(detail ? `WHOOP error: ${decodeURIComponent(detail)}` : 'Failed to connect WHOOP. Please try again.');
+            window.history.replaceState({}, '', '/settings');
+        }
+        if (params.get('google') === 'connected') {
+            setGoogleConnected(true);
+            toast.success('Google Health connected successfully!');
+            window.history.replaceState({}, '', '/settings');
+        } else if (params.get('google') === 'error') {
+            toast.error('Failed to connect Google Health. Please try again.');
+            window.history.replaceState({}, '', '/settings');
+        }
+    }, []);
 
     // Profile fields
     const [displayName, setDisplayName] = useState(initialProfile?.display_name || '');
@@ -65,6 +94,49 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
         } finally {
             setLoading(false);
         }
+    };
+
+    const generateSyncToken = async () => {
+        setGeneratingToken(true);
+        try {
+            const res = await fetch('/api/sync/token', { method: 'POST' });
+            const data = await res.json();
+            if (data.token) {
+                setSyncToken(data.token);
+                toast.success('Sync token generated!');
+            } else {
+                toast.error('Failed to generate token');
+            }
+        } catch { toast.error('Failed to generate token'); }
+        finally { setGeneratingToken(false); }
+    };
+
+    const copySyncToken = () => {
+        navigator.clipboard.writeText(syncToken);
+        setTokenCopied(true);
+        setTimeout(() => setTokenCopied(false), 2000);
+    };
+
+    const syncWhoop = async () => {
+        setWhoopSyncing(true);
+        try {
+            const res = await fetch('/api/whoop/sync', { method: 'POST' });
+            const data = await res.json();
+            if (data.synced) toast.success(`Synced: ${data.synced.join(', ')}`);
+            else toast.error(data.error || 'Sync failed');
+        } catch { toast.error('Sync failed'); }
+        finally { setWhoopSyncing(false); }
+    };
+
+    const syncGoogle = async () => {
+        setGoogleSyncing(true);
+        try {
+            const res = await fetch('/api/google-health/sync', { method: 'POST' });
+            const data = await res.json();
+            if (data.synced) toast.success(`Synced: ${data.synced.join(', ')}`);
+            else toast.error(data.error || 'Sync failed');
+        } catch { toast.error('Sync failed'); }
+        finally { setGoogleSyncing(false); }
     };
 
     const inputClass = "w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500 transition-colors font-mono";
@@ -218,6 +290,137 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                                 <span className="text-zinc-500 text-xs w-10">{unit}</span>
                             </div>
                         ))}
+                    </div>
+                </div>
+
+                {/* Health Sync Section */}
+                <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+                    <div className="flex items-center gap-2 mb-2">
+                        <Link2 size={16} className="text-blue-400" />
+                        <h2 className="text-sm font-black uppercase tracking-widest">Integrations</h2>
+                    </div>
+
+                    {/* WHOOP */}
+                    <div className="mb-4">
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                                <span className="text-lg">⌚</span>
+                                <span className="text-sm font-bold text-white">WHOOP</span>
+                            </div>
+                            {whoopConnected && <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-bold">Connected</span>}
+                        </div>
+                        <p className="text-zinc-500 text-xs mb-3">Auto-sync strain, recovery, sleep, and HRV.</p>
+                        {whoopConnected ? (
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={syncWhoop}
+                                    disabled={whoopSyncing}
+                                    className="flex-1 py-2.5 bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition disabled:opacity-50"
+                                >
+                                    {whoopSyncing ? 'Syncing...' : 'Sync Now'}
+                                </button>
+                                <button
+                                    onClick={() => { setWhoopConnected(false); }}
+                                    className="px-3 py-2.5 bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-red-400 text-xs font-bold rounded-xl transition"
+                                >
+                                    Disconnect
+                                </button>
+                            </div>
+                        ) : (
+                            <a
+                                href="/api/whoop/auth"
+                                className="block w-full text-center py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition"
+                            >
+                                Connect WHOOP
+                            </a>
+                        )}
+                    </div>
+
+                    <hr className="border-zinc-800 my-4" />
+
+                    {/* Google Health / Fitbit */}
+                    <div className="mb-4">
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                                <span className="text-lg">💚</span>
+                                <span className="text-sm font-bold text-white">Fitbit / Google Health</span>
+                            </div>
+                            {googleConnected && <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-bold">Connected</span>}
+                        </div>
+                        <p className="text-zinc-500 text-xs mb-3">Auto-sync steps, sleep, calories, and weight from Fitbit or Pixel Watch.</p>
+                        {googleConnected ? (
+                            <button
+                                onClick={syncGoogle}
+                                disabled={googleSyncing}
+                                className="w-full py-2.5 bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition disabled:opacity-50"
+                            >
+                                {googleSyncing ? 'Syncing...' : 'Sync Now'}
+                            </button>
+                        ) : (
+                            <a
+                                href="/api/google-health/auth"
+                                className="block w-full text-center py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition"
+                            >
+                                Connect Fitbit / Google
+                            </a>
+                        )}
+                    </div>
+
+                    <hr className="border-zinc-800 my-4" />
+
+                    {/* Manual Sync Token */}
+                    <div>
+                        <div className="flex items-center gap-2 mb-2">
+                            <span className="text-lg">📱</span>
+                            <span className="text-sm font-bold text-white">Apple Health / Manual</span>
+                        </div>
+                        <p className="text-zinc-500 text-xs mb-3">Sync via Apple Shortcuts or HTTP webhook.</p>
+
+                    {syncToken ? (
+                        <div className="space-y-3">
+                            <div>
+                                <label className={labelClass}>Your Sync Token</label>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={syncToken}
+                                        readOnly
+                                        className="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-zinc-300 font-mono text-xs select-all"
+                                        onClick={e => (e.target as HTMLInputElement).select()}
+                                    />
+                                    <button
+                                        onClick={copySyncToken}
+                                        className="px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition shrink-0"
+                                    >
+                                        {tokenCopied ? <Check size={16} className="text-emerald-400" /> : <Copy size={16} className="text-zinc-400" />}
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="flex gap-2">
+                                <a
+                                    href="/sync/setup"
+                                    className="flex-1 text-center py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition"
+                                >
+                                    Setup Guide
+                                </a>
+                                <button
+                                    onClick={generateSyncToken}
+                                    disabled={generatingToken}
+                                    className="px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition text-zinc-400 text-xs"
+                                >
+                                    <RefreshCw size={14} className={generatingToken ? 'animate-spin' : ''} />
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <button
+                            onClick={generateSyncToken}
+                            disabled={generatingToken}
+                            className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase tracking-wider text-sm rounded-xl transition disabled:opacity-50"
+                        >
+                            {generatingToken ? 'Generating...' : 'Enable Health Sync'}
+                        </button>
+                    )}
                     </div>
                 </div>
 

@@ -34,6 +34,9 @@ export const getProfile = async (userId: string): Promise<UserProfileData | null
         habit_targets: data.habit_targets,
         body_composition_goals: data.body_composition_goals,
         measurement_mode: data.measurement_mode,
+        sync_token: data.sync_token,
+        whoop_connected_at: data.whoop_connected_at,
+        google_health_connected_at: data.google_health_connected_at,
     };
 };
 
