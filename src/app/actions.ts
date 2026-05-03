@@ -33,6 +33,16 @@ export async function logHabitAction(
         const macroType = habitId.replace('macro_', ''); // 'protein', 'carbs', 'fat', 'calories'
         const xp = 10;
 
+        // "Set" mode for calories_burned: replace today's entries instead of adding
+        if (macroType === 'calories_burned') {
+            await supabase
+                .from('nutrition_logs')
+                .delete()
+                .eq('user_id', userId)
+                .eq('date', dateStr)
+                .eq('macro_type', macroType);
+        }
+
         const { error } = await supabase
             .from('nutrition_logs')
             .insert({
