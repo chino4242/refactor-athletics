@@ -22,16 +22,16 @@ function RestTimerBar({ restTime, totalRest, onSkip }: { restTime: number; total
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 animate-in slide-in-from-top-2">
-      <div className="h-1 bg-zinc-800">
-        <div className="h-full bg-blue-500 transition-all duration-1000" style={{ width: `${progress}%` }} />
-      </div>
-      <div className="bg-zinc-900/95 backdrop-blur-sm border-b border-zinc-800 px-4 py-2 flex items-center justify-between">
+      <div className="bg-blue-600 px-4 py-3 flex items-center justify-between shadow-lg shadow-blue-900/40">
         <div className="flex items-center gap-2">
-          <Timer size={14} className="text-blue-400 animate-pulse" />
-          <span className="text-xs font-bold text-zinc-400 uppercase">Rest</span>
+          <Timer size={16} className="text-white animate-pulse" />
+          <span className="text-xs font-bold text-white/80 uppercase">Rest</span>
         </div>
-        <span className="text-lg font-mono font-black text-white">{Math.floor(restTime / 60)}:{(restTime % 60).toString().padStart(2, '0')}</span>
-        <button onClick={onSkip} className="text-[10px] font-bold text-zinc-500 hover:text-white px-2 py-1 rounded bg-zinc-800 transition">SKIP</button>
+        <span className="text-xl font-mono font-black text-white">{Math.floor(restTime / 60)}:{(restTime % 60).toString().padStart(2, '0')}</span>
+        <button onClick={onSkip} className="text-[10px] font-bold text-white/70 hover:text-white px-3 py-1.5 rounded bg-white/15 hover:bg-white/25 transition">SKIP</button>
+      </div>
+      <div className="h-1 bg-blue-900">
+        <div className="h-full bg-blue-300 transition-all duration-1000" style={{ width: `${progress}%` }} />
       </div>
     </div>
   );
@@ -96,6 +96,7 @@ function ExerciseView({ block, blockIndex, onComplete, fullHistory, catalog, exe
   const swapGroup = catalogItem?.swap_group || defaultCatalogItem?.swap_group;
 
   const variants = useMemo(() => getEquipmentVariants(displayName, catalog || [], block.exercise_id), [displayName, catalog, block.exercise_id]);
+  const isRepsOnly = catalogItem?.type === 'reps_only' || catalogItem?.standards?.unit?.toLowerCase() === 'reps';
 
   const updateWeight = (index: number, val: string) => {
     const newWeights = [...weights];
@@ -205,8 +206,23 @@ function ExerciseView({ block, blockIndex, onComplete, fullHistory, catalog, exe
         )}
 
         <p className="text-zinc-400 text-sm mt-1 font-mono">
-          {block.sets} Sets × {block.reps_per_set} Reps • {block.rest_seconds || 90}s Rest
+          {isRepsOnly
+            ? <>{block.sets} Sets × Max Reps • {block.rest_seconds || 90}s Rest</>
+            : <>{block.sets} Sets × {block.reps_per_set} Reps • {block.rest_seconds || 90}s Rest</>
+          }
         </p>
+
+        {/* Plate Calculator — barbell/smith only */}
+        {(() => {
+          const equip = catalogItem?.required_equipment || [];
+          const id = catalogItem?.id || '';
+          if (!equip.includes('barbell') && !equip.includes('smith_machine') && !id.startsWith('smith_')) return null;
+          return (
+            <div className="mt-2">
+              <WeightCalculator onUse={(w) => { for (let i = 0; i < (block.sets || 4); i++) updateWeight(i, String(w)); }} />
+            </div>
+          );
+        })()}
 
         {/* Last time hint */}
         {(() => {
@@ -310,6 +326,7 @@ function ExerciseView({ block, blockIndex, onComplete, fullHistory, catalog, exe
               >
                 {/* Weight + Reps Inputs */}
                 <div className="flex flex-col mr-3 gap-1.5">
+                  {!isRepsOnly && (
                   <div>
                     <span className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Weight</span>
                     <div className="flex gap-1 items-center">
@@ -342,9 +359,9 @@ function ExerciseView({ block, blockIndex, onComplete, fullHistory, catalog, exe
                           -5
                         </button>
                       </div>
-                      <WeightCalculator onUse={(w) => updateWeight(i, String(w))} />
                     </div>
                   </div>
+                  )}
                   <div>
                     <span className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Reps</span>
                     <input
@@ -865,8 +882,15 @@ function SupersetView({ block, blockIndex, onComplete, fullHistory, catalog, exe
           {block.name.replace(/^\d+\.\s*/, '').replace(/Superset\s*/i, '').replace(/[()]/g, '')}
         </h1>
         <p className="text-zinc-400 text-sm mt-1 font-mono">
-          {block.sets} Rounds × {exercises.length} Exercises
+          {block.sets} Rounds × {exercises.length} Exercises • {block.rest_seconds || 90}s Rest
         </p>
+        <div className="flex flex-wrap gap-2 mt-2">
+          {exercises.map((ex: any, i: number) => (
+            <span key={i} className="text-xs bg-purple-500/10 text-purple-300 border border-purple-500/20 rounded-full px-2 py-0.5">
+              {ex.name}: <span className="font-bold">{ex.reps || '?'} reps</span>
+            </span>
+          ))}
+        </div>
       </div>
 
       {/* SCROLLABLE CONTENT */}
@@ -951,6 +975,7 @@ function SupersetView({ block, blockIndex, onComplete, fullHistory, catalog, exe
                   const catalogItem = variantOverrides[exIdx] || swap?.catalogItem || defaultCatalogItem;
                   const exVariants = getEquipmentVariants(displayName, catalog || [], ex.exercise_id);
                   const swapGroup = catalogItem?.swap_group || defaultCatalogItem?.swap_group;
+                  const exIsRepsOnly = catalogItem?.type === 'reps_only' || catalogItem?.standards?.unit?.toLowerCase() === 'reps';
 
                   return (
                     <div key={exIdx} className={`rounded-xl border transition-all ${isDone ? 'bg-green-500/10 border-green-500/40' : 'bg-zinc-800 border-zinc-700'}`}>
@@ -958,6 +983,7 @@ function SupersetView({ block, blockIndex, onComplete, fullHistory, catalog, exe
 
                       {/* Weight + Reps Inputs */}
                       <div className="flex gap-1 shrink-0">
+                        {!exIsRepsOnly && (
                         <div className="flex flex-col w-12">
                           <span className="text-[8px] text-zinc-600 text-center mb-0.5">LBS</span>
                           <input
@@ -970,6 +996,7 @@ function SupersetView({ block, blockIndex, onComplete, fullHistory, catalog, exe
                             onClick={(e) => e.stopPropagation()}
                           />
                         </div>
+                        )}
                         <div className="flex flex-col w-10">
                           <span className="text-[8px] text-zinc-600 text-center mb-0.5">REPS</span>
                           <input
@@ -992,6 +1019,9 @@ function SupersetView({ block, blockIndex, onComplete, fullHistory, catalog, exe
                         <div className="flex flex-col">
                           <span className={`font-bold text-sm leading-tight ${isDone ? 'text-zinc-400 line-through' : 'text-white'}`}>
                             {displayName}
+                          </span>
+                          <span className="text-[10px] text-purple-400 font-mono mt-0.5">
+                            {ex.reps_list?.[setIdx] != null ? `${ex.reps_list[setIdx]} reps` : ex.reps && ex.reps !== '10' ? `${ex.reps} reps` : ''}
                           </span>
                         </div>
 
@@ -1034,6 +1064,16 @@ function SupersetView({ block, blockIndex, onComplete, fullHistory, catalog, exe
                         <EquipmentVariantPicker variants={exVariants} selectedId={catalogItem?.id || ''} onSelect={(item) => setVariantOverrides(prev => ({ ...prev, [exIdx]: item }))} />
                       </div>
                     )}
+                    {setIdx === 0 && (() => {
+                      const equip = catalogItem?.required_equipment || [];
+                      const id = catalogItem?.id || '';
+                      if (!equip.includes('barbell') && !equip.includes('smith_machine') && !id.startsWith('smith_')) return null;
+                      return (
+                        <div className="px-3 pb-2">
+                          <WeightCalculator onUse={(w) => { for (let s = 0; s < totalSets; s++) updateWeight(exIdx, s, String(w)); }} />
+                        </div>
+                      );
+                    })()}
                     </div>
                   );
                 })}
@@ -1152,10 +1192,11 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
 
   // Persist active workout indicator for banner on other pages
   useEffect(() => {
-    if (workoutData.length > 0 && !isComplete) {
+    if (isComplete) {
+      localStorage.removeItem('active_workout');
+    } else if (workoutData.length > 0) {
       localStorage.setItem('active_workout', JSON.stringify({ path: window.location.pathname, date: selectedDate || new Date().toLocaleDateString('en-CA') }));
     }
-    return () => { if (isComplete) localStorage.removeItem('active_workout'); };
   }, [workoutData, isComplete, selectedDate]);
   const [weeklySchedule, setWeeklySchedule] = useState<any[]>([]);
 
@@ -1713,12 +1754,30 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
             </div>
             <div className="text-right">
               <span className="text-2xl font-black text-white">{overallProgress}%</span>
-              <p className="text-[10px] text-zinc-500">{completedCount}/{totalBlocks} blocks</p>
+              <p className="text-[10px] text-zinc-500">{completedCount} of {totalBlocks} blocks done</p>
             </div>
           </div>
           <div className="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
             <div className="h-full bg-gradient-to-r from-orange-500 to-red-500 transition-all duration-500 rounded-full" style={{ width: `${overallProgress}%` }} />
           </div>
+          {/* Next up CTA */}
+          {completedCount < totalBlocks && (() => {
+            const nextIdx = workoutData.findIndex((_: any, i: number) => !completedIndices.includes(i) && !skippedIndices.includes(i));
+            if (nextIdx < 0) return null;
+            const next = workoutData[nextIdx];
+            return (
+              <button
+                onClick={() => { setBlockIndex(nextIdx); setViewMode('WORKOUT'); }}
+                className="mt-3 w-full bg-orange-600 hover:bg-orange-500 text-white rounded-xl px-4 py-3 flex items-center justify-between transition-colors"
+              >
+                <div className="text-left">
+                  <span className="text-[10px] text-white/60 uppercase font-bold">Next Up</span>
+                  <p className="text-sm font-bold">{(next.name || next.type).replace(/^\d+\.\s*/, '')}</p>
+                </div>
+                <span className="text-sm font-bold">Start →</span>
+              </button>
+            );
+          })()}
         </div>
 
         {/* Sections */}
@@ -1952,15 +2011,31 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
         >
           <div className="flex items-center gap-1.5">
             {viewMode === 'WORKOUT' && <span className="text-zinc-500 text-sm">‹</span>}
-            <span className="text-[10px] font-bold uppercase tracking-widest text-orange-400">Active Workout</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-orange-400">
+              Block {completedIndices.length + 1} of {workoutData.length} · Today&apos;s Workout
+            </span>
           </div>
         </button>
-        <div className="text-xs text-zinc-500 font-medium">
-          {completedIndices.length}/{workoutData.length} blocks
-        </div>
       </div>
 
       {mainView}
+
+      {/* End Workout — always available */}
+      {viewMode === 'WORKOUT' && (
+        <div className="mt-3 text-center">
+          <button
+            onClick={() => {
+              if (window.confirm('End workout early? Completed blocks are already saved.')) {
+                setIsComplete(true);
+                localStorage.removeItem(progressKey);
+              }
+            }}
+            className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest hover:text-red-500 transition-colors py-2"
+          >
+            End Workout
+          </button>
+        </div>
+      )}
 
       {/* Library Drawer */}
       {showLibrary && (
