@@ -67,7 +67,7 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
   const [loading, setLoading] = useState<string | null>(null);
   const [totals, setTotals] = useState<Record<string, number>>({});
   const [history, setHistory] = useState<HistoryItem[]>([]);
-  const [showTodayLog, setShowTodayLog] = useState(false);
+  const [showTodayLog, setShowTodayLog] = useState(true);
   const [todayLog, setTodayLog] = useState<any[]>([]);
 
   const loadTodayLog = useCallback(async () => {
@@ -278,11 +278,10 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
                   </div>
                   <button
                     onClick={async () => {
-                      if (!confirm('Delete this entry?')) return;
                       await deleteHistoryItemAction(userId, item.timestamp);
                       fetchProgress();
                     }}
-                    className="ml-2 p-1.5 text-zinc-600 hover:text-red-400 transition flex-shrink-0"
+                    className="ml-2 p-1.5 text-zinc-600 hover:text-red-400 active:text-red-500 transition flex-shrink-0"
                   >
                     <Trash2 size={14} />
                   </button>

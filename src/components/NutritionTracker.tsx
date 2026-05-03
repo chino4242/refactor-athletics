@@ -183,13 +183,9 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
         if (!val || val <= 0) return;
         setBurnLoading(true);
         try {
-            const current = totals['macro_calories_burned'] || 0;
-            const diff = val - current;
-            if (diff !== 0) {
-                await logHabitAction(userId, 'macro_calories_burned', diff, userProfile.bodyweight, 'Calories Burned');
-                await new Promise(resolve => setTimeout(resolve, 500));
-                onUpdate();
-            }
+            await logHabitAction(userId, 'macro_calories_burned', val, userProfile.bodyweight, 'Calories Burned');
+            await new Promise(resolve => setTimeout(resolve, 500));
+            onUpdate();
             setBurnInput('');
         } catch (e) {
             console.error(e);
