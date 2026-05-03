@@ -51,11 +51,13 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
     const [activityLevel, setActivityLevel] = useState<ActivityLevel>('active');
     const [macroGoal, setMacroGoal] = useState<MacroGoal>('maintain');
     const [calcResult, setCalcResult] = useState<MacroResult | null>(null);
+    const [syncToken, setSyncToken] = useState('');
+    const [generatingToken, setGeneratingToken] = useState(false);
 
     // Classic mode skips theme selection (step 4)
     const steps = experienceMode === 'classic'
-        ? [1, 2, 3, 5, 6, 7, 8, 9]
-        : [1, 2, 3, 4, 5, 6, 7, 8, 9];
+        ? [1, 2, 3, 5, 6, 7, 8, 9, 10]
+        : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
     const currentIndex = steps.indexOf(step);
     const totalSteps = steps.length;
@@ -152,6 +154,7 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                         {step === 7 && 'Set Your Goal'}
                         {step === 8 && 'Your Equipment'}
                         {step === 9 && 'Your Nutrition Plan'}
+                        {step === 10 && 'Connect Your Health Data'}
                     </h2>
                 </div>
 
@@ -506,6 +509,76 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                         )}
 
                         <p className="text-xs text-zinc-500">You can adjust these anytime in Quest Settings.</p>
+                    </div>
+                )}
+
+                {/* Step 10: Health Sync */}
+                {step === 10 && (
+                    <div className="space-y-4">
+                        <p className="text-zinc-400 text-sm">Auto-sync steps, sleep, calories, and more from your wearable. You can always set this up later in Settings.</p>
+
+                        {/* WHOOP */}
+                        <a
+                            href="/api/whoop/auth"
+                            className="block w-full p-4 rounded-lg border-2 border-zinc-700 bg-zinc-800 hover:border-emerald-500 transition-all text-left"
+                        >
+                            <div className="flex items-center gap-3">
+                                <span className="text-2xl">⌚</span>
+                                <div>
+                                    <div className="text-sm font-bold text-white">Connect WHOOP</div>
+                                    <div className="text-xs text-zinc-400">Strain, recovery, HRV, sleep, calories</div>
+                                </div>
+                            </div>
+                        </a>
+
+                        {/* Health Connect / Apple Health */}
+                        <div className="p-4 rounded-lg border-2 border-zinc-700 bg-zinc-800 space-y-3">
+                            <div className="flex items-center gap-3">
+                                <span className="text-2xl">📱</span>
+                                <div>
+                                    <div className="text-sm font-bold text-white">Health Connect / Apple Health</div>
+                                    <div className="text-xs text-zinc-400">Steps, sleep, calories, weight, and more via HC Webhook app</div>
+                                </div>
+                            </div>
+                            {syncToken ? (
+                                <div className="bg-zinc-900 rounded-lg p-3">
+                                    <span className="text-[10px] text-zinc-500 uppercase font-bold">Your Webhook URL</span>
+                                    <div className="flex gap-1.5 mt-1">
+                                        <code className="flex-1 text-[10px] text-zinc-300 bg-zinc-950 px-2 py-1.5 rounded break-all">{typeof window !== 'undefined' ? `${window.location.origin}/api/sync/health-connect?token=${syncToken}` : ''}</code>
+                                        <button onClick={() => navigator.clipboard.writeText(`${window.location.origin}/api/sync/health-connect?token=${syncToken}`)} className="px-2 py-1 bg-zinc-800 rounded hover:bg-zinc-700 transition shrink-0 self-start text-zinc-400 text-xs">
+                                            Copy
+                                        </button>
+                                    </div>
+                                    <p className="text-zinc-600 text-[10px] mt-2">Paste this URL in the HC Webhook app.</p>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={async () => {
+                                        setGeneratingToken(true);
+                                        try {
+                                            const res = await fetch('/api/sync/token', { method: 'POST' });
+                                            const data = await res.json();
+                                            if (data.token) setSyncToken(data.token);
+                                        } catch {}
+                                        setGeneratingToken(false);
+                                    }}
+                                    disabled={generatingToken}
+                                    className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition disabled:opacity-50"
+                                >
+                                    {generatingToken ? 'Generating...' : 'Generate Webhook URL'}
+                                </button>
+                            )}
+                            <div className="flex gap-2">
+                                <a href="https://play.google.com/store/apps/details?id=com.hcwebhook.app" target="_blank" rel="noopener" className="flex-1 text-center py-2 bg-zinc-700 hover:bg-zinc-600 text-white text-[10px] font-bold uppercase rounded-lg transition">
+                                    Android App
+                                </a>
+                                <a href="https://apps.apple.com/app/health-webhook/id6763619597" target="_blank" rel="noopener" className="flex-1 text-center py-2 bg-zinc-700 hover:bg-zinc-600 text-white text-[10px] font-bold uppercase rounded-lg transition">
+                                    iOS App
+                                </a>
+                            </div>
+                        </div>
+
+                        <p className="text-xs text-zinc-500 text-center">Skip this step if you prefer to track manually.</p>
                     </div>
                 )}
 
