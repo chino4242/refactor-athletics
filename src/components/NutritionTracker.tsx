@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { saveProfile, getWeeklyProgress } from '../services/api';
-import { logHabitAction } from '@/app/actions';
+import { logHabitAction, resetHabitTodayAction } from '@/app/actions';
 import type { UserProfileData, NutritionTargets, HistoryItem } from '@/types';
 import MacroLogModal from './MacroLogModal';
 import ScreenshotUploader from './ScreenshotUploader';
-import { Plus, Flame } from 'lucide-react';
+import { Plus, Flame, X } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, Cell } from 'recharts';
 
 interface NutritionTrackerProps {
@@ -226,7 +226,14 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
                 <div className="mb-3">
                     <div className="flex justify-between text-xs font-bold text-zinc-400 uppercase mb-1">
                         <span>{label}</span>
-                        <span className={color}>{Math.round(filled)} / {dailyTarget} {unit}</span>
+                        <div className="flex items-center gap-2">
+                            <span className={color}>{Math.round(filled)} / {dailyTarget} {unit}</span>
+                            {filled > 0 && (
+                                <button onClick={async () => { await resetHabitTodayAction(userId, macroKey); onUpdate(); }} className="text-zinc-600 hover:text-red-400 transition" title="Reset today">
+                                    <X size={12} />
+                                </button>
+                            )}
+                        </div>
                     </div>
                     <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden">
                         <div 
@@ -410,8 +417,13 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
                         <span className="text-xs font-bold text-zinc-400 uppercase flex items-center gap-1">
                             <Flame size={12} className="text-red-500" /> Calories Burned
                         </span>
-                        <span className="text-xs font-bold text-red-400">
+                        <span className="text-xs font-bold text-red-400 flex items-center gap-2">
                             {Math.round(totals['macro_calories_burned'] || 0)} / {targets.calories_burned || 2500} kcal
+                            {(totals['macro_calories_burned'] || 0) > 0 && (
+                                <button onClick={async () => { await resetHabitTodayAction(userId, 'macro_calories_burned'); onUpdate(); }} className="text-zinc-600 hover:text-red-400 transition" title="Reset today">
+                                    <X size={12} />
+                                </button>
+                            )}
                         </span>
                     </div>
                     <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden mb-2">
