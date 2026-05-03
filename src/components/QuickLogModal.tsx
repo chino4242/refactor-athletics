@@ -23,7 +23,7 @@ const QUICK_PICKS = [
   { id: 'swimming', emoji: '🏊', label: 'Swim' },
   { id: 'rowing_general', emoji: '🚣', label: 'Row' },
   { id: 'elliptical', emoji: '🏃‍♀️', label: 'Elliptical' },
-  { id: 'push_up', emoji: '💪', label: 'Push-Ups' },
+  { id: 'push_ups', emoji: '💪', label: 'Push-Ups' },
   { id: 'pull_up', emoji: '🏋️', label: 'Pull-Ups' },
   { id: 'run_1_mile', emoji: '⏱️', label: '1mi Run' },
 ];

@@ -3,7 +3,7 @@ export const PATHS = {
         name: 'Hybrid',
         emoji: '⚔️',
         description: 'Balanced training across Strength, Power, and Endurance.',
-        philosophy: 'The Hybrid path follows a push/pull/legs split with integrated cardio conditioning. Monday targets chest, shoulders, and triceps. Tuesday hits back and biceps. Thursday is heavy compound day — squats, deadlifts, and overhead press. Friday isolates arms. Every training day includes a core circuit and a cardio block (HIIT or Zone 2, alternating). This program builds a well-rounded athlete who can lift heavy, run hard, and recover smart.',
+        philosophy: 'The Hybrid path combines strength training with cardio conditioning four days a week. Monday is chest, shoulders, and triceps. Tuesday hits back and biceps. Thursday is heavy compound day — squats, deadlifts, and overhead press. Friday isolates arms. Saturday is cardio and core. Wednesday and Sunday are rest days. Every training day includes a core circuit and a cardio block (HIIT or Zone 2, alternating). This program builds a well-rounded athlete who can lift heavy, run hard, and recover smart.',
     },
     strength: {
         name: 'Strength',

@@ -33,8 +33,9 @@ export default function WeightCalculator({ onUse }: Props) {
 
   if (!open) {
     return (
-      <button onClick={() => setOpen(true)} className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition" title="Plate Calculator">
+      <button onClick={() => setOpen(true)} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700 transition text-xs font-bold" title="Plate Calculator">
         <Calculator size={14} />
+        <span>Plate Calculator</span>
       </button>
     );
   }
