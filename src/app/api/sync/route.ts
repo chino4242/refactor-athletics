@@ -115,7 +115,6 @@ export async function POST(request: NextRequest) {
             timestamp: ts,
             value: item.value,
             xp,
-            label: 'Health Sync',
           });
 
         results.push({ type: item.type, status: error ? error.message : 'ok' });

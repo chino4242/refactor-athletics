@@ -88,6 +88,6 @@ export async function POST(request: NextRequest) {
 async function upsertHabit(supabase: any, userId: string, habitId: string, date: string, ts: number, value: number, xp: number) {
   await supabase.from('habit_logs').delete().eq('user_id', userId).eq('habit_id', habitId).eq('date', date);
   await supabase.from('habit_logs').insert({
-    user_id: userId, habit_id: habitId, date, timestamp: ts, value, xp, label: 'WHOOP Sync',
+    user_id: userId, habit_id: habitId, date, timestamp: ts, value, xp,
   });
 }
