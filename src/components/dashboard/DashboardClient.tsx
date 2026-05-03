@@ -54,6 +54,11 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
 
     useEffect(() => {
         loadData();
+        // Background sync WHOOP/Google data if connected, then refresh
+        fetch('/api/whoop/sync', { method: 'POST' })
+            .then(r => r.json())
+            .then(d => { if (d.synced?.length) loadData(); })
+            .catch(() => {});
     }, [userId]);
 
     // Pull to refresh handlers
