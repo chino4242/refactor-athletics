@@ -12,6 +12,8 @@ export async function POST(request: NextRequest) {
     if (!user) return NextResponse.json({ error: 'Invalid sync token' }, { status: 401 });
 
     const body = await request.json();
+    console.log('HC Webhook payload keys:', Object.keys(body));
+    console.log('HC Webhook payload:', JSON.stringify(body).slice(0, 2000));
     const today = new Date().toISOString().split('T')[0];
     const ts = Math.floor(Date.now() / 1000);
     const synced: string[] = [];
