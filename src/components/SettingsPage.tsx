@@ -368,46 +368,40 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
 
                     <hr className="border-zinc-800 my-4" />
 
-                    {/* Manual Sync Token */}
+                    {/* Health Connect / Manual Sync */}
                     <div>
                         <div className="flex items-center gap-2 mb-2">
                             <span className="text-lg">📱</span>
-                            <span className="text-sm font-bold text-white">Apple Health / Manual</span>
+                            <span className="text-sm font-bold text-white">Health Connect / Apple Health</span>
                         </div>
-                        <p className="text-zinc-500 text-xs mb-3">Sync via Apple Shortcuts or HTTP webhook.</p>
+                        <p className="text-zinc-500 text-xs mb-3">Auto-sync steps, sleep, calories, and weight from your phone.</p>
 
                     {syncToken ? (
                         <div className="space-y-3">
-                            <div>
-                                <label className={labelClass}>Your Sync Token</label>
-                                <div className="flex gap-2">
-                                    <input
-                                        type="text"
-                                        value={syncToken}
-                                        readOnly
-                                        className="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-zinc-300 font-mono text-xs select-all"
-                                        onClick={e => (e.target as HTMLInputElement).select()}
-                                    />
-                                    <button
-                                        onClick={copySyncToken}
-                                        className="px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition shrink-0"
-                                    >
-                                        {tokenCopied ? <Check size={16} className="text-emerald-400" /> : <Copy size={16} className="text-zinc-400" />}
+                            <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-3">
+                                <span className="text-[10px] text-zinc-600 uppercase font-bold">Your Webhook URL</span>
+                                <div className="flex gap-1.5 mt-1">
+                                    <code className="flex-1 text-[11px] text-zinc-300 bg-zinc-900 px-2 py-1.5 rounded break-all">{typeof window !== 'undefined' ? `${window.location.origin}/api/sync/health-connect?token=${syncToken}` : ''}</code>
+                                    <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/api/sync/health-connect?token=${syncToken}`); toast.success('URL copied!'); }} className="px-2 py-1 bg-zinc-800 rounded hover:bg-zinc-700 transition shrink-0 self-start">
+                                        <Copy size={12} className="text-zinc-400" />
                                     </button>
                                 </div>
+                                <p className="text-zinc-600 text-[10px] mt-2">Paste this as the webhook URL in HC Webhook. No headers needed.</p>
                             </div>
+                            <a
+                                href="https://play.google.com/store/apps/details?id=com.hcwebhook.app"
+                                target="_blank"
+                                rel="noopener"
+                                className="block w-full text-center py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition"
+                            >
+                                Get HC Webhook (Android)
+                            </a>
+                            <p className="text-zinc-600 text-[10px] text-center">Paste the URL above into HC Webhook → Webhooks. Select Steps, Sleep, Calories, Weight.</p>
                             <div className="flex gap-2">
-                                <a
-                                    href="/sync/setup"
-                                    className="flex-1 text-center py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition"
-                                >
-                                    Setup Guide
+                                <a href="/sync/setup" className="flex-1 text-center py-2 bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition">
+                                    Full Guide
                                 </a>
-                                <button
-                                    onClick={generateSyncToken}
-                                    disabled={generatingToken}
-                                    className="px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition text-zinc-400 text-xs"
-                                >
+                                <button onClick={generateSyncToken} disabled={generatingToken} className="px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition text-zinc-400 text-xs">
                                     <RefreshCw size={14} className={generatingToken ? 'animate-spin' : ''} />
                                 </button>
                             </div>
