@@ -8,9 +8,10 @@ export async function POST(request: NextRequest) {
     if (!token) return NextResponse.json({ error: 'Missing token' }, { status: 401 });
 
     const supabase = createServiceClient();
-    const { data: user } = await supabase.from('users').select('id, bodyweight').eq('sync_token', token).single();
+    const { data: user } = await supabase.from('users').select('id, bodyweight, whoop_connected_at').eq('sync_token', token).single();
     if (!user) return NextResponse.json({ error: 'Invalid sync token' }, { status: 401 });
 
+    const hasWhoop = !!user.whoop_connected_at;
     const body = await request.json();
     console.log('HC Webhook payload keys:', Object.keys(body));
     console.log('HC Webhook payload:', JSON.stringify(body).slice(0, 2000));
@@ -26,8 +27,8 @@ export async function POST(request: NextRequest) {
       synced.push(`steps: ${total}`);
     }
 
-    // Sleep — longest session
-    if (body.sleep?.length) {
+    // Sleep — longest session (skip if WHOOP connected — WHOOP is more accurate)
+    if (body.sleep?.length && !hasWhoop) {
       const longest = body.sleep.reduce((max: any, s: any) => (s.duration_seconds || 0) > (max.duration_seconds || 0) ? s : max, body.sleep[0]);
       const hours = Math.round((longest.duration_seconds || 0) / 3600 * 10) / 10;
       if (hours > 0) {
@@ -36,8 +37,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Active calories
-    if (body.active_calories?.length) {
+    // Active calories (skip if WHOOP connected — WHOOP tracks continuously)
+    if (body.active_calories?.length && !hasWhoop) {
       const total = Math.round(body.active_calories.reduce((s: number, r: any) => s + (r.calories || 0), 0));
       await supabase.from('nutrition_logs').delete().eq('user_id', user.id).eq('date', today).eq('macro_type', 'calories_burned');
       await supabase.from('nutrition_logs').insert({
@@ -56,8 +57,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // HRV — latest reading
-    if (body.heart_rate_variability?.length) {
+    // HRV — latest reading (skip if WHOOP connected)
+    if (body.heart_rate_variability?.length && !hasWhoop) {
       const latest = body.heart_rate_variability[body.heart_rate_variability.length - 1];
       const ms = latest.heartRateVariabilityMillis || latest.millis || latest.value;
       if (ms) {
@@ -66,8 +67,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Resting heart rate — latest
-    if (body.resting_heart_rate?.length) {
+    // Resting heart rate — latest (skip if WHOOP connected)
+    if (body.resting_heart_rate?.length && !hasWhoop) {
       const latest = body.resting_heart_rate[body.resting_heart_rate.length - 1];
       const bpm = latest.beatsPerMinute || latest.bpm || latest.value;
       if (bpm) {
