@@ -58,6 +58,20 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Exercise sessions — sum duration to minutes
+    if (body.exercise?.length) {
+      const totalMin = Math.round(body.exercise.reduce((s: number, r: any) => {
+        const dur = r.duration_seconds || r.durationSeconds || 0;
+        if (dur > 0) return s + dur / 60;
+        if (r.start_time && r.end_time) return s + (new Date(r.end_time).getTime() - new Date(r.start_time).getTime()) / 60000;
+        return s;
+      }, 0));
+      if (totalMin > 0) {
+        await upsertHabit(supabase, user.id, 'habit_exercise_minutes', today, ts, totalMin, Math.min(totalMin * 2, 100));
+        synced.push(`exercise: ${totalMin} min`);
+      }
+    }
+
     // HRV — latest reading (skip if WHOOP connected)
     if (body.heart_rate_variability?.length && !hasWhoop) {
       const latest = body.heart_rate_variability[body.heart_rate_variability.length - 1];
