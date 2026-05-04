@@ -50,7 +50,7 @@ import EquipmentVariantPicker, { getEquipmentVariants } from './EquipmentVariant
 import WeightCalculator from './WeightCalculator';
 
 // --- SUB-COMPONENT: EXERCISE VIEW ---
-function ExerciseView({ block, blockIndex, onComplete, fullHistory, catalog, exerciseSwaps, onSwap }: any) {
+function ExerciseView({ block, blockIndex, onComplete, fullHistory, catalog, exerciseSwaps, onSwap, userProfile }: any) {
   const [completedSets, setCompletedSets] = useState<number[]>([]);
   const [restTime, setRestTime] = useState(0);
   const [isResting, setIsResting] = useState(false);
@@ -404,9 +404,66 @@ function ExerciseView({ block, blockIndex, onComplete, fullHistory, catalog, exe
             );
           })}
         </div>
-      </div>
 
-      {/* REST TIMER */}
+        {/* Live rank estimate */}
+        {!isRepsOnly && catalogItem?.standards?.brackets && completedSets.length > 0 && (() => {
+          const age = userProfile?.age || 25;
+          const sex = (userProfile?.sex || 'male').toLowerCase();
+          const bw = userProfile?.bodyweight || 180;
+          const sexKey = sex === 'female' ? 'female' : 'male';
+          const brackets = catalogItem.standards.brackets[sexKey];
+          if (!brackets?.length) return null;
+          const bracket = brackets.find((b: any) => age >= b.min && age <= b.max) || brackets[0];
+          if (!bracket?.levels) return null;
+          const normFactor = catalogItem.normalization_factor || 1;
+          const unit = catalogItem.standards.unit || 'lbs';
+          const isXBW = unit === 'xBW';
+
+          // Compute best Epley from completed sets
+          const completedData = completedSets.map((i: number) => ({
+            weight: parseFloat(weights[i] || '0'),
+            reps: parseInt(repsInputs[i], 10) || 10,
+          })).filter((s: any) => s.weight > 0);
+          if (completedData.length === 0) return null;
+
+          const bestEpley = Math.max(...completedData.map((s: any) => s.weight * (1 + s.reps / 30)));
+          let normalized = bestEpley * normFactor;
+          if (isXBW && bw > 0) normalized = normalized / bw;
+
+          // Find current level from this session
+          let currentLevel = 0;
+          for (let i = 0; i < bracket.levels.length; i++) {
+            if (normalized >= bracket.levels[i]) currentLevel = i + 1;
+          }
+
+          // Next threshold
+          if (currentLevel >= 5) return (
+            <div className="mx-4 mb-2 px-3 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-center">
+              <span className="text-[11px] font-bold text-emerald-400">⚡ Max rank on this exercise!</span>
+            </div>
+          );
+
+          const nextThreshold = bracket.levels[currentLevel];
+          const rawNeeded = isXBW ? nextThreshold * bw : nextThreshold;
+          const weightNeeded = Math.ceil(rawNeeded / normFactor);
+          const currentBest = Math.round(bestEpley);
+          const gap = weightNeeded - currentBest;
+
+          if (gap <= 0) return (
+            <div className="mx-4 mb-2 px-3 py-2 bg-orange-500/10 border border-orange-500/20 rounded-xl text-center">
+              <span className="text-[11px] font-bold text-orange-400">⚡ You&apos;re in range for the next rank!</span>
+            </div>
+          );
+
+          if (gap <= 30) return (
+            <div className="mx-4 mb-2 px-3 py-2 bg-zinc-800/80 border border-zinc-700/50 rounded-xl text-center">
+              <span className="text-[11px] text-zinc-400">🎯 <span className="font-bold text-orange-400">{gap} lbs</span> more to next rank</span>
+            </div>
+          );
+
+          return null;
+        })()}
+      </div>
       <RestTimerBar restTime={restTime} totalRest={block.rest_seconds || 90} onSkip={() => setIsResting(false)} />
 
       {/* FOOTER ACTION */}
@@ -1960,6 +2017,7 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
         exerciseSwaps={exerciseSwaps}
         onSwap={(exIdx: number, name: string, swapGroup: string) => setSwapTarget({ blockIdx: blockIndex, exIdx, name, swapGroup })}
         onComplete={handleBlockComplete}
+        userProfile={userProfile}
       />
     );
   } else if (currentBlock.type === 'list') {
