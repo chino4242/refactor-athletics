@@ -33,6 +33,15 @@ const HABIT_CATALOG = {
       { id: 'habit_meditation', label: 'Meditation', desc: 'Mindfulness or breathing practice', hasTarget: true, min: 5, max: 30, step: 5, unit: 'min', color: 'accent-indigo-500' },
     ],
   },
+  wearable: {
+    label: '⌚ Wearable Sync',
+    habits: [
+      { id: 'habit_day_strain', label: 'Day Strain', desc: 'WHOOP daily strain score', hasTarget: true, min: 1, max: 21, step: 1, unit: 'strain', color: 'accent-amber-500' },
+      { id: 'habit_recovery', label: 'Recovery', desc: 'WHOOP recovery percentage', hasTarget: true, min: 10, max: 100, step: 10, unit: '%', color: 'accent-emerald-500' },
+      { id: 'habit_hrv', label: 'HRV', desc: 'Heart rate variability (ms)', hasTarget: true, min: 10, max: 200, step: 10, unit: 'ms', color: 'accent-purple-500' },
+      { id: 'habit_resting_hr', label: 'Resting HR', desc: 'Resting heart rate (bpm)', hasTarget: true, min: 40, max: 100, step: 5, unit: 'bpm', color: 'accent-red-500' },
+    ],
+  },
   discipline: {
     label: '🛡️ Discipline',
     habits: [
@@ -51,7 +60,7 @@ export default function HabitSettings({ isOpen, onClose, userProfile, onUpdate }
     const [nutritionTargets, setNutritionTargets] = useState<Record<string, number>>({});
     const [hidden, setHidden] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
-    const [expandedCats, setExpandedCats] = useState<Record<string, boolean>>({ health: true, recovery: true, discipline: true });
+    const [expandedCats, setExpandedCats] = useState<Record<string, boolean>>({ health: true, recovery: true, wearable: true, discipline: true });
     const [showCalc, setShowCalc] = useState(false);
     const [activityLevel, setActivityLevel] = useState<ActivityLevel>('active');
     const [macroGoal, setMacroGoal] = useState<MacroGoal>(() => {
