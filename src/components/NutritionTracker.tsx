@@ -49,7 +49,7 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
     const [burnLoading, setBurnLoading] = useState(false);
 
     // Weekly State
-    const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
+    const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('weekly');
     const [weeklyData, setWeeklyData] = useState<Record<number, Record<string, number>>>({}); // Day Index -> Totals
 
 
