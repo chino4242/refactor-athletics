@@ -15,6 +15,7 @@ interface Props {
     catalog: any[];
     stats: UserStats | null;
     pathExerciseIds: string[];
+    percentile: number | null;
 }
 
 // Map power level to a tier (0-5) using thresholds
@@ -45,7 +46,7 @@ function getStandardsForExercise(exercise: any, age: number, sex: string): numbe
     return bracket?.levels || null;
 }
 
-export default function PowerLevelPage({ userId, profile, history, catalog, stats, pathExerciseIds }: Props) {
+export default function PowerLevelPage({ userId, profile, history, catalog, stats, pathExerciseIds, percentile }: Props) {
     const themeKey = (typeof window !== 'undefined' && localStorage.getItem('pg_theme')) || profile?.selected_theme || 'athlete';
     const theme = THEMES[themeKey] || THEMES['athlete'];
     const sex = profile?.sex || 'M';
@@ -134,6 +135,9 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                             {rankName}
                         </div>
                         <p className="text-[9px] text-zinc-500 mt-0.5 max-w-[240px]">{rankDesc}</p>
+                        {percentile !== null && (
+                            <p className="text-[10px] font-bold text-orange-400 mt-2">Stronger than {percentile}% of athletes</p>
+                        )}
                     </div>
 
                     {/* Progress to next tier */}
