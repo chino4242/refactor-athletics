@@ -1718,8 +1718,21 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
       <div className="w-full max-w-md mx-auto flex flex-col items-center justify-center text-center px-4">
         {/* Level Up Celebration */}
         {levelUps.length > 0 && (
-          <div className="mb-4 w-full">
-            {levelUps.map((r: any, i: number) => (
+          <div className="mb-4 w-full relative overflow-hidden">
+            {/* Confetti particles */}
+            <div className="absolute inset-0 pointer-events-none">
+              {Array.from({ length: 20 }).map((_, i) => (
+                <div key={i} className="absolute w-2 h-2 rounded-full animate-confetti" style={{
+                  left: `${Math.random() * 100}%`,
+                  backgroundColor: ['#f97316', '#ef4444', '#eab308', '#22c55e', '#3b82f6', '#a855f7'][i % 6],
+                  animationDelay: `${Math.random() * 0.5}s`,
+                  animationDuration: `${1 + Math.random()}s`,
+                }} />
+              ))}
+            </div>
+            {levelUps.map((r: any, i: number) => {
+              if (i === 0) try { navigator.vibrate?.([100, 50, 200]); } catch {}
+              return (
               <div key={i} className="bg-gradient-to-r from-orange-600/20 to-red-600/20 border border-orange-500/30 rounded-2xl p-4 mb-2 animate-in zoom-in-95">
                 <div className="text-2xl mb-1">⚡</div>
                 <div className="text-xs font-bold text-orange-400 uppercase tracking-widest">Rank Up!</div>
@@ -1730,7 +1743,8 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
                   <span className="text-sm font-black text-orange-400">{getThemedRankName(r.level)}</span>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
         {/* Progress ring */}
