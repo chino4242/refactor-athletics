@@ -262,36 +262,6 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
       </div>
 
       {/* Today's Log — quick view + delete */}
-      {todayLog.length > 0 && (
-        <div className="mx-2 mb-2">
-          <button onClick={() => setShowTodayLog(!showTodayLog)} className="flex items-center justify-between w-full text-left px-3 py-2 rounded-lg bg-zinc-900/50 border border-zinc-800/50 hover:border-zinc-700 transition">
-            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Today&apos;s Log ({todayLog.length})</span>
-            {showTodayLog ? <ChevronUp size={14} className="text-zinc-600" /> : <ChevronDown size={14} className="text-zinc-600" />}
-          </button>
-          {showTodayLog && (
-            <div className="mt-1 space-y-1 max-h-48 overflow-y-auto">
-              {todayLog.map((item, i) => (
-                <div key={i} className="flex items-center justify-between px-3 py-2 bg-zinc-900/30 rounded-lg">
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs font-medium text-zinc-300 truncate capitalize">{item.name}</div>
-                    <div className="text-[10px] text-zinc-600">{item.value} · {item.xp || 0} XP</div>
-                  </div>
-                  <button
-                    onClick={async () => {
-                      await deleteHistoryItemAction(userId, item.timestamp);
-                      fetchProgress();
-                    }}
-                    className="ml-2 p-1.5 text-zinc-600 hover:text-red-400 active:text-red-500 transition flex-shrink-0"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
       {/* Tabs */}
       <div className="flex gap-1.5 px-2 overflow-x-auto no-scrollbar">
         {TABS.map(tab => (
@@ -338,6 +308,37 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
               >
                 💊 Supplements {(totals['habit_supplements'] || 0) > 0 ? '✓' : '— tap to log'}
               </button>
+            )}
+
+            {/* Today's Log */}
+            {todayLog.length > 0 && (
+              <div className="mt-2">
+                <button onClick={() => setShowTodayLog(!showTodayLog)} className="flex items-center justify-between w-full text-left px-3 py-2 rounded-lg bg-zinc-900/50 border border-zinc-800/50 hover:border-zinc-700 transition">
+                  <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Today&apos;s Log ({todayLog.length})</span>
+                  {showTodayLog ? <ChevronUp size={14} className="text-zinc-600" /> : <ChevronDown size={14} className="text-zinc-600" />}
+                </button>
+                {showTodayLog && (
+                  <div className="mt-1 space-y-1 max-h-48 overflow-y-auto">
+                    {todayLog.map((item, i) => (
+                      <div key={i} className="flex items-center justify-between px-3 py-2 bg-zinc-900/30 rounded-lg">
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs font-medium text-zinc-300 truncate capitalize">{item.name}</div>
+                          <div className="text-[10px] text-zinc-600">{item.value} · {item.xp || 0} XP</div>
+                        </div>
+                        <button
+                          onClick={async () => {
+                            await deleteHistoryItemAction(userId, item.timestamp);
+                            fetchProgress();
+                          }}
+                          className="ml-2 p-1.5 text-zinc-600 hover:text-red-400 active:text-red-500 transition flex-shrink-0"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
           </div>
         )}
