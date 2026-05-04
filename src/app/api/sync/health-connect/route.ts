@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
 
     // Filter records to only include those from today (HC Webhook sends 48hr window)
     const isToday = (r: any) => {
-      const t = r.start_time || r.end_time || r.time;
+      const t = r.start_time || r.end_time || r.time || r.session_start_time || r.startTime;
       if (!t) return true; // no timestamp = include
       try { return new Date(t).toLocaleDateString('en-CA', { timeZone: tz }) === today; } catch { return true; }
     };
@@ -72,6 +72,8 @@ export async function POST(request: NextRequest) {
 
     // Exercise sessions — sum duration to minutes
     if (body.exercise?.length) {
+      console.log('HC exercise records:', body.exercise.length, 'today filter:', body.exercise.filter(isToday).length);
+      console.log('HC exercise sample:', JSON.stringify(body.exercise[0]).slice(0, 500));
       const todayExercise = body.exercise.filter(isToday);
       const totalMin = Math.round(todayExercise.reduce((s: number, r: any) => {
         const dur = r.duration_seconds || r.durationSeconds || 0;
