@@ -21,7 +21,9 @@ export async function POST(request: NextRequest) {
   if (!token) return NextResponse.json({ error: 'WHOOP not connected or token expired' }, { status: 400 });
 
   const supabase = createServiceClient();
-  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+  const { data: userRow } = await supabase.from('users').select('timezone').eq('id', userId).single();
+  const tz = userRow?.timezone || 'America/New_York';
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: tz });
   const ts = Math.floor(Date.now() / 1000);
   const synced: string[] = [];
 

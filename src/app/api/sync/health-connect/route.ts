@@ -8,14 +8,15 @@ export async function POST(request: NextRequest) {
     if (!token) return NextResponse.json({ error: 'Missing token' }, { status: 401 });
 
     const supabase = createServiceClient();
-    const { data: user } = await supabase.from('users').select('id, bodyweight, whoop_connected_at').eq('sync_token', token).single();
+    const { data: user } = await supabase.from('users').select('id, bodyweight, whoop_connected_at, timezone').eq('sync_token', token).single();
     if (!user) return NextResponse.json({ error: 'Invalid sync token' }, { status: 401 });
 
     const hasWhoop = !!user.whoop_connected_at;
     const body = await request.json();
     console.log('HC Webhook payload keys:', Object.keys(body));
     console.log('HC Webhook payload:', JSON.stringify(body).slice(0, 2000));
-    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+    const tz = user.timezone || 'America/New_York';
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: tz });
     const ts = Math.floor(Date.now() / 1000);
     const synced: string[] = [];
     const bodyMeasurements: Record<string, any> = {};
