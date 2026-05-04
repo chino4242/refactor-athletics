@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
 
   const supabase = createServiceClient();
   const today = new Date();
-  const dateStr = today.toISOString().split('T')[0];
+  const dateStr = today.toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
   const ts = Math.floor(Date.now() / 1000);
   const synced: string[] = [];
 

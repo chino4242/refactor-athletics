@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
         continue;
       }
 
-      const dateStr = item.date || new Date().toISOString().split('T')[0];
+      const dateStr = item.date || new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
       const ts = Math.floor(new Date(`${dateStr}T12:00:00Z`).getTime() / 1000);
 
       if (item.type === 'weight') {

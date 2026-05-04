@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     console.log('HC Webhook payload keys:', Object.keys(body));
     console.log('HC Webhook payload:', JSON.stringify(body).slice(0, 2000));
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
     const ts = Math.floor(Date.now() / 1000);
     const synced: string[] = [];
     const bodyMeasurements: Record<string, any> = {};

@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
   if (!token) return NextResponse.json({ error: 'WHOOP not connected or token expired' }, { status: 400 });
 
   const supabase = createServiceClient();
-  const today = new Date().toISOString().split('T')[0];
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
   const ts = Math.floor(Date.now() / 1000);
   const synced: string[] = [];
 
