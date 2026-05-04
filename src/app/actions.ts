@@ -161,6 +161,9 @@ export async function logTrainingAction(
         supabase.from('catalog').select('*').eq('id', exerciseId).single(),
         supabase.from('users').select('age').eq('id', userId).single()
     ]);
+
+    // Get previous best level for this exercise
+    const { data: prevBest } = await supabase.from('workouts').select('level').eq('user_id', userId).eq('exercise_id', exerciseId).order('level', { ascending: false }).limit(1).single();
     
     const catalogItem = catalogResult.data;
     const age = profileResult.data?.age || 25;
@@ -316,6 +319,7 @@ export async function logTrainingAction(
     return { 
         xp_earned: totalXp,
         level: userLevel,
+        previous_level: prevBest?.level || 0,
         rank_name: rankName,
         raw_value: bestValue,
         value: workoutData.value,

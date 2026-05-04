@@ -1655,9 +1655,27 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
     const completedCount = completedIndices.length;
     const totalBlocks = workoutData.length;
     const progressPct = Math.round((completedCount / totalBlocks) * 100);
+    const levelUps = blockResults.filter((r: any) => r.level > 0 && r.level > (r.previous_level || 0));
 
     return (
       <div className="w-full max-w-md mx-auto flex flex-col items-center justify-center text-center px-4">
+        {/* Level Up Celebration */}
+        {levelUps.length > 0 && (
+          <div className="mb-4 w-full">
+            {levelUps.map((r: any, i: number) => (
+              <div key={i} className="bg-gradient-to-r from-orange-600/20 to-red-600/20 border border-orange-500/30 rounded-2xl p-4 mb-2 animate-in zoom-in-95">
+                <div className="text-2xl mb-1">⚡</div>
+                <div className="text-xs font-bold text-orange-400 uppercase tracking-widest">Rank Up!</div>
+                <div className="text-lg font-black text-white mt-1">{r.name}</div>
+                <div className="flex items-center justify-center gap-2 mt-2">
+                  <span className="text-xs text-zinc-500">{getThemedRankName(r.previous_level || 0)}</span>
+                  <span className="text-orange-400">→</span>
+                  <span className="text-sm font-black text-orange-400">{getThemedRankName(r.level)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         {/* Progress ring */}
         <div className="relative w-20 h-20 mb-4">
           <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
