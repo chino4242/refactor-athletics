@@ -51,6 +51,17 @@ import WeightCalculator from './WeightCalculator';
 
 // --- SUB-COMPONENT: EXERCISE VIEW ---
 function ExerciseView({ block, blockIndex, onComplete, fullHistory, catalog, exerciseSwaps, onSwap, userProfile }: any) {
+  // Smart rest time based on exercise type
+  const smartRest = (() => {
+    if (block.rest_seconds) return block.rest_seconds;
+    const section = (block.section || '').toLowerCase();
+    if (section.includes('core')) return 30;
+    if (section.includes('warmup') || section.includes('cooldown')) return 30;
+    const name = (block.name || '').toLowerCase();
+    const isCompound = ['squat', 'bench', 'deadlift', 'overhead press', 'ohp', 'barbell row', 'clean', 'snatch'].some(c => name.includes(c));
+    if (isCompound) return 90;
+    return 60;
+  })();
   const [completedSets, setCompletedSets] = useState<number[]>([]);
   const [restTime, setRestTime] = useState(0);
   const [isResting, setIsResting] = useState(false);
@@ -139,7 +150,7 @@ function ExerciseView({ block, blockIndex, onComplete, fullHistory, catalog, exe
       setCompletedSets([...completedSets, setIndex]);
       // Start rest timer if not the last set
       if (completedSets.length < totalSets - 1) {
-        setRestTime(block.rest_seconds || 90);
+        setRestTime(block.rest_seconds || smartRest);
         setIsResting(true);
       }
     }
@@ -207,8 +218,8 @@ function ExerciseView({ block, blockIndex, onComplete, fullHistory, catalog, exe
 
         <p className="text-zinc-400 text-sm mt-1 font-mono">
           {isRepsOnly
-            ? <>{block.sets} Sets × Max Reps • {block.rest_seconds || 90}s Rest</>
-            : <>{block.sets} Sets × {block.reps_per_set} Reps • {block.rest_seconds || 90}s Rest</>
+            ? <>{block.sets} Sets × Max Reps • {smartRest}s Rest</>
+            : <>{block.sets} Sets × {block.reps_per_set} Reps • {smartRest}s Rest</>
           }
         </p>
 
@@ -464,7 +475,7 @@ function ExerciseView({ block, blockIndex, onComplete, fullHistory, catalog, exe
           return null;
         })()}
       </div>
-      <RestTimerBar restTime={restTime} totalRest={block.rest_seconds || 90} onSkip={() => setIsResting(false)} />
+      <RestTimerBar restTime={restTime} totalRest={smartRest} onSkip={() => setIsResting(false)} />
 
       {/* FOOTER ACTION */}
       <div className="bg-zinc-900 border-t border-zinc-800 p-4 shrink-0">
@@ -894,7 +905,7 @@ function SupersetView({ block, blockIndex, onComplete, fullHistory, catalog, exe
 
       // Start Rest Timer if Round is Complete AND it's not the last round
       if (isRoundComplete && setIdx < totalSets - 1) {
-        setRestTime(90); // Default 90s for supersets
+        setRestTime(block.rest_seconds || 60); // Supersets default 60s
         setIsResting(true);
       }
     }
