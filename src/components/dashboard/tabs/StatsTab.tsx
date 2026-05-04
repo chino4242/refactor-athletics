@@ -129,6 +129,45 @@ export default function StatsTab({ userId, stats }: StatsTabProps) {
                 </div>
             </Link>
 
+            {/* Recent PRs */}
+            {(() => {
+                const twoWeeksAgo = new Date();
+                twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+                const cutoff = twoWeeksAgo.toISOString().split('T')[0];
+                const bestByExercise = new Map<string, { raw_value: number; value: string; date: string }>();
+                for (const w of history) {
+                    if (!w.raw_value || !w.exercise_id) continue;
+                    const prev = bestByExercise.get(w.exercise_id);
+                    if (!prev || w.raw_value > prev.raw_value) {
+                        bestByExercise.set(w.exercise_id, { raw_value: w.raw_value, value: w.value, date: w.date });
+                    }
+                }
+                const prs = Array.from(bestByExercise.entries())
+                    .filter(([, v]) => v.date >= cutoff)
+                    .map(([id, v]) => ({ name: id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()), value: v.value, date: v.date }))
+                    .slice(0, 5);
+                if (!prs.length) return null;
+                return (
+                    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                            <span className="text-lg">🏆</span>
+                            <h3 className="text-xs font-bold text-yellow-400 uppercase tracking-wider">Recent PRs</h3>
+                        </div>
+                        <div className="space-y-2">
+                            {prs.map((pr, i) => (
+                                <div key={i} className="flex items-center justify-between">
+                                    <span className="text-sm text-white font-medium truncate flex-1">{pr.name}</span>
+                                    <div className="text-right shrink-0 ml-2">
+                                        <span className="text-sm font-bold text-yellow-400">{pr.value}</span>
+                                        <span className="text-[9px] text-zinc-600 ml-1.5">{new Date(pr.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            })()}
+
             {/* Recent Activity */}
             <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-3">
