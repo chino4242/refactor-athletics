@@ -164,6 +164,10 @@ export async function POST(request: NextRequest) {
 }
 
 async function upsertHabit(supabase: any, userId: string, habitId: string, date: string, ts: number, value: number, xp: number) {
+  // Only overwrite if sync value is higher than what's already there (preserves manual entries)
+  const { data: existing } = await supabase.from('habit_logs').select('value').eq('user_id', userId).eq('habit_id', habitId).eq('date', date).order('timestamp', { ascending: false }).limit(1).single();
+  if (existing && existing.value >= value) return;
+
   await supabase.from('habit_logs').delete().eq('user_id', userId).eq('habit_id', habitId).eq('date', date);
   await supabase.from('habit_logs').insert({
     user_id: userId, habit_id: habitId, date, timestamp: ts, value, xp,
