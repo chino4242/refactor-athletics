@@ -65,8 +65,9 @@ export async function getValidToken(userId: string): Promise<string | null> {
       whoop_token_expires_at: new Date(Date.now() + tokens.expires_in * 1000).toISOString(),
     }).eq('id', userId);
     return tokens.access_token;
-  } catch {
+  } catch (e: any) {
     // Refresh failed — token revoked
+    console.error('WHOOP token refresh failed:', e.message);
     await supabase.from('users').update({
       whoop_access_token: null,
       whoop_refresh_token: null,
