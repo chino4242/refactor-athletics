@@ -223,7 +223,23 @@ export const getHabitProgress = async (userId: string, startTs: number): Promise
 };
 
 export const getWeeklyProgress = async (userId: string, startTs: number): Promise<any> => {
-    return getHabitProgress(userId, startTs);
+    const supabase = createClient();
+    const endTs = startTs + 86400 * 7;
+
+    const [nutrition, habits] = await Promise.all([
+        supabase.from('nutrition_logs').select('macro_type, amount, timestamp').eq('user_id', userId).gte('timestamp', startTs).lt('timestamp', endTs),
+        supabase.from('habit_logs').select('habit_id, value, timestamp').eq('user_id', userId).gte('timestamp', startTs).lt('timestamp', endTs),
+    ]);
+
+    const items: any[] = [];
+    for (const n of nutrition.data || []) {
+        items.push({ exercise_id: `macro_${n.macro_type}`, value: String(n.amount), timestamp: n.timestamp });
+    }
+    for (const h of habits.data || []) {
+        items.push({ exercise_id: h.habit_id, value: String(h.value), timestamp: h.timestamp });
+    }
+
+    return { items };
 };
 
 export const getUserStats = async (userId: string): Promise<UserStats | null> => {
