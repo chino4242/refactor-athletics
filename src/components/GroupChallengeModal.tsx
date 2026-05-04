@@ -55,10 +55,16 @@ export default function GroupChallengeModal({ isOpen, groupId, userId, onClose, 
             start = new Date(now);
             start.setDate(now.getDate() + daysUntilSat);
         } else if (preset.days === 5) {
-            // Work week: next Monday
-            const daysUntilMon = (1 - dayOfWeek + 7) % 7 || 7;
+            // Work week: closest Monday
             start = new Date(now);
-            start.setDate(now.getDate() + daysUntilMon);
+            const daysSinceMonday = (dayOfWeek + 6) % 7; // Mon=0, Tue=1, ... Sun=6
+            if (daysSinceMonday <= 2) {
+                // Mon-Wed: go back to this Monday
+                start.setDate(now.getDate() - daysSinceMonday);
+            } else {
+                // Thu-Sun: go forward to next Monday
+                start.setDate(now.getDate() + (7 - daysSinceMonday));
+            }
         } else {
             // Start tomorrow
             start = new Date(now);
