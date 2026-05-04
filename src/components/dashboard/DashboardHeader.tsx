@@ -20,6 +20,7 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
     const [mounted, setMounted] = useState(false);
     const [bodyCompHistory, setBodyCompHistory] = useState<any[]>([]);
     const [userProfile, setUserProfile] = useState<any>(null);
+    const [streak, setStreak] = useState(0);
     const { currentTheme } = useTheme();
     const { isClassic } = useExperienceMode();
     const theme = THEMES[currentTheme] || THEMES['athlete'];
@@ -31,12 +32,31 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
             const supabase = createClient();
             Promise.all([
                 supabase.from('body_measurements').select('*').eq('user_id', userId).order('timestamp', { ascending: true }),
-                supabase.from('users').select('body_composition_goals, bodyweight').eq('id', userId).single()
-            ]).then(([measurement, profile]) => {
+                supabase.from('users').select('body_composition_goals, bodyweight').eq('id', userId).single(),
+                // Streak: get distinct dates with any activity in last 90 days
+                supabase.from('workouts').select('date').eq('user_id', userId).gte('date', new Date(Date.now() - 90 * 86400000).toISOString().split('T')[0]),
+                supabase.from('habit_logs').select('date').eq('user_id', userId).gte('date', new Date(Date.now() - 90 * 86400000).toISOString().split('T')[0]),
+            ]).then(([measurement, profile, workouts, habits]) => {
                 if (measurement.data && measurement.data.length > 0) {
                     setBodyCompHistory(measurement.data);
                 }
                 setUserProfile(profile.data);
+
+                // Calculate streak from distinct active dates
+                const dates = new Set<string>();
+                (workouts.data || []).forEach((w: any) => dates.add(w.date));
+                (habits.data || []).forEach((h: any) => dates.add(h.date));
+                let count = 0;
+                const d = new Date();
+                d.setHours(0, 0, 0, 0);
+                // Check today first, if not active yet check from yesterday
+                const todayStr = d.toISOString().split('T')[0];
+                if (!dates.has(todayStr)) d.setDate(d.getDate() - 1);
+                while (dates.has(d.toISOString().split('T')[0])) {
+                    count++;
+                    d.setDate(d.getDate() - 1);
+                }
+                setStreak(count);
             });
         }
     }, [userId]);
@@ -169,6 +189,15 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                             <div className="text-[10px] text-cyan-500/70 group-hover:text-cyan-400 mt-1 transition">Update weight →</div>
                         </Link>
                     </div>
+
+                    {/* Streak */}
+                    {streak > 0 && (
+                        <div className="flex items-center justify-center gap-2 mb-4 py-2">
+                            <span className="text-lg">🔥</span>
+                            <span className="text-sm font-black text-white">{streak} Day Streak</span>
+                            {streak >= 7 && <span className="text-[10px] bg-orange-500/15 text-orange-400 px-2 py-0.5 rounded-full font-bold border border-orange-500/20">{streak >= 30 ? 'Legendary' : streak >= 14 ? 'On Fire' : 'Rolling'}</span>}
+                        </div>
+                    )}
 
                     {/* Player Level & XP */}
                     <div>
