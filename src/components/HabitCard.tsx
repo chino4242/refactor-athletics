@@ -74,7 +74,7 @@ export default function HabitCard({
         onLog(finalVal, logLabel);
         setValue('');
         setIsEditing(false);
-        setMode('add');
+        if (!setOnly) setMode('add');
         setSubmitting(false);
         setJustLogged(true);
         setTimeout(() => setJustLogged(false), 1200);
