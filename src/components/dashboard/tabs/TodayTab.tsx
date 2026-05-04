@@ -25,6 +25,7 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
     const [todayScheduled, setTodayScheduled] = useState<any>(null);
     const [lastWorkout, setLastWorkout] = useState<{ date: string; totalXp: number; lifts: { name: string; volume: number }[]; treadmillSets: number } | null>(null);
     const [weeklySummary, setWeeklySummary] = useState<{ workouts: number; xp: number; habitsHit: number; habitsTotal: number; weightChange: number | null } | null>(null);
+    const [recentPRs, setRecentPRs] = useState<{ name: string; value: string; date: string }[]>([]);
     const [todayProgress, setTodayProgress] = useState<any>({
         calories: 0,
         caloriesBurned: 0,
@@ -63,6 +64,27 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                 const recentWeights = measurements.filter((m: any) => m.weight).slice(-2);
                 const weightChange = recentWeights.length >= 2 ? Math.round((recentWeights[recentWeights.length - 1].weight - recentWeights[recentWeights.length - 2].weight) * 10) / 10 : null;
                 setWeeklySummary({ workouts: wDates.size, xp: totalXpWeek, habitsHit: habitDays.size, habitsTotal: 7, weightChange });
+
+                // Recent PRs — find exercises where a log in last 14 days is the all-time best
+                const twoWeeksAgo = new Date();
+                twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+                const { data: allWorkouts } = await supabase.from('workouts').select('exercise_id, raw_value, value, date').eq('user_id', userId).order('date', { ascending: false });
+                if (allWorkouts?.length) {
+                    const bestByExercise = new Map<string, { raw_value: number; value: string; date: string }>();
+                    for (const w of allWorkouts) {
+                        if (!w.raw_value || !w.exercise_id) continue;
+                        const prev = bestByExercise.get(w.exercise_id);
+                        if (!prev || w.raw_value > prev.raw_value) {
+                            bestByExercise.set(w.exercise_id, { raw_value: w.raw_value, value: w.value, date: w.date });
+                        }
+                    }
+                    const cutoff = twoWeeksAgo.toISOString().split('T')[0];
+                    const prs = Array.from(bestByExercise.entries())
+                        .filter(([, v]) => v.date >= cutoff)
+                        .map(([id, v]) => ({ name: id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()), value: v.value, date: v.date }))
+                        .slice(0, 5);
+                    setRecentPRs(prs);
+                }
                 
                 // Get today's workout from weekly schedule API (same as Train page)
                 const today = new Date();
@@ -217,6 +239,28 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                     )}
                 </div>
             )}
+
+            {/* Recent PRs */}
+            {recentPRs.length > 0 && (
+                <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                        <span className="text-lg">🏆</span>
+                        <h3 className="text-xs font-bold text-yellow-400 uppercase tracking-wider">Recent PRs</h3>
+                    </div>
+                    <div className="space-y-2">
+                        {recentPRs.map((pr, i) => (
+                            <div key={i} className="flex items-center justify-between">
+                                <span className="text-sm text-white font-medium truncate flex-1">{pr.name}</span>
+                                <div className="text-right shrink-0 ml-2">
+                                    <span className="text-sm font-bold text-yellow-400">{pr.value}</span>
+                                    <span className="text-[9px] text-zinc-600 ml-1.5">{new Date(pr.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {/* Daily Quest Summary */}
             {profile && (
                 <div>
