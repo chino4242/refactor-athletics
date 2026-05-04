@@ -12,6 +12,10 @@ The application uses **Supabase** (PostgreSQL) as its primary backend.
   - **selected_path** (text): Training path (hybrid, strength, endurance, mobility)
   - **experience_mode** (text): 'rpg' or 'classic' — drives UI label swaps via `ExperienceModeContext`
   - **available_equipment** (jsonb): Array of equipment IDs user has access to (e.g., `["barbell", "dumbbells", "treadmill"]`)
+  - **whoop_access_token**, **whoop_refresh_token**, **whoop_user_id**, **whoop_token_expires_at**, **whoop_connected_at**: WHOOP OAuth integration fields
+  - **google_health_*** : Google Health Connect OAuth fields
+  - **sync_token** (text): Token for Health Connect webhook and Apple Shortcuts sync
+  - **timezone** (text): User's IANA timezone (e.g., `America/New_York`), used by all sync endpoints to avoid duplicate entries
 - **catalog**: Exercise library with standards, categories, and XP factors
   - **standards** (jsonb): Contains `brackets` (age/sex-based thresholds), `scoring` (higher_is_better/lower_is_better), and `unit` (lbs, sec, reps, xBW)
   - **xp_factor** (numeric): Multiplier for XP calculation (default: 1)
@@ -28,6 +32,7 @@ The application uses **Supabase** (PostgreSQL) as its primary backend.
 - **body_measurements**: Body composition tracking
   - Tape mode: weight, waist, arms, chest, legs, shoulders (inches)
   - Scale mode: weight, body_fat_percentage, per-region muscle (lbs) and fat (%) — left_arm_muscle, right_arm_muscle, trunk_muscle, left_leg_muscle, right_leg_muscle, left_arm_fat, right_arm_fat, trunk_fat, left_leg_fat, right_leg_fat
+  - Additional health metrics: **lean_body_mass**, **vo2_max**, **bmr**, **height** (synced from Health Connect / WHOOP)
   - `measurement_mode` column: 'tape' or 'scale'
   - Supports delete individual measurements (`deleteBodyMeasurementAction`) and reset all (`deleteAllBodyMeasurementsAction`)
 - **workout_programs**: Custom workout templates
@@ -68,6 +73,12 @@ RLS is active on all tables:
 16. `20260406_public_challenges.sql` - Public challenges table
 17. `20260406_screenshot_examples.sql` - Screenshot examples for Claude few-shot parsing
 18. `20260413_scale_fat_columns.sql` - Per-region fat % columns, rename muscle→scale
+19. `20260422_whoop_oauth.sql` - WHOOP OAuth fields on users (access_token, refresh_token, user_id, expires_at, connected_at)
+20. `20260422_sync_token.sql` - Sync token column on users for Health Connect webhook auth
+21. `20260422_google_health.sql` - Google Health Connect OAuth fields on users
+22. `20260503_health_metrics.sql` - Added lean_body_mass, vo2_max, bmr, height to body_measurements
+23. `20260503_user_timezone.sql` - Added timezone column to users
+24. `20260503_merge_duplicate_catalog.sql` - Merged 7 duplicate catalog entries (push_up/push_ups, dip/dips, etc.)
 
 **Note**: After running migrations that modify table schemas, Supabase's PostgREST API server caches the old schema. You must either:
 - Restart the Supabase project (Settings → General → Restart project)
@@ -116,6 +127,9 @@ There are two distinct progression metrics for a user:
 - **Shared Utilities** (`src/utils/physiquePoints.ts`): `calculatePhysiquePoints()` — used by TrackPage, ProgressMetrics, DashboardHeader, and BodyCompositionModal
 - **Workout Parser** (`src/utils/workoutParser.ts`): Parses workout text descriptions into structured exercise data
 - **parseReps** (`src/utils/parseReps.ts`): Utility for parsing rep schemes from text (e.g., "3x10", "5-5-5-3-3")
+- **WHOOP Client** (`src/lib/whoop.ts`): WHOOP API client (token exchange, refresh, cycle/recovery/sleep/body measurement endpoints)
+- **Google Health Client** (`src/lib/google-health.ts`): Google Health API client
+- **Service Role Client** (`src/utils/supabase/service.ts`): Service role Supabase client for sync/cron endpoints that bypass RLS
 - **EquipmentVariantPicker** (`src/components/EquipmentVariantPicker.tsx`): Select equipment variant (barbell/dumbbell/smith) per exercise during logging
 - **EngineSelector** (`src/components/EngineSelector.tsx`): Engine/mode selector component
 
@@ -176,7 +190,7 @@ The dashboard (`/dashboard`) is the default landing page after login, featuring 
 - **Empty States**: Motivational messages with CTAs for all empty sections
 
 ### 4.3 Onboarding Wizard
-New users see an 8-step wizard before accessing the dashboard:
+New users see a 10-step wizard before accessing the dashboard:
 1. **Liability Waiver**: Assumption of risk and waiver of liability (must accept to proceed)
 2. **Experience Mode**: "What brings you here?" — choose RPG ("Compete & Level Up") or Classic ("Track & Improve")
 3. **Introduction**: Explains Refactor Athletics concept (adapts text based on chosen mode)
@@ -185,6 +199,8 @@ New users see an 8-step wizard before accessing the dashboard:
 6. **Personal Info**: Age, sex (with "prefer not to say" option), current weight
 7. **Goal Setting**: Target weight
 8. **Equipment Checklist**: Select available equipment (barbell, dumbbells, kettlebells, smith machine, pull-up bar, bench, squat rack, cables, treadmill, rower, assault bike, ski erg, resistance bands, yoga mat, rings, plyo box, outdoor running, bodyweight only)
+9. **Quest Settings**: Configure habit visibility and targets
+10. **Health Sync**: Connect WHOOP, Google Health, or Health Connect webhook for automatic data sync
 
 After completion, `is_onboarded` flag is set to true, `waiver_accepted_at` timestamp is saved, `experience_mode` is stored in both the database and localStorage, and user sees normal dashboard.
 
@@ -311,9 +327,68 @@ All mode-aware labels are driven by `ExperienceModeContext` (`src/context/Experi
 | Workouts | 20 | `workouts` count |
 | Hydration Days | 35 | `habit_logs` (habit_water) unique days |
 
-## 10. Future Features & Design Documents
+## 10. Health Sync & Integrations
 
-### 10.1 Character Creation System
+### 10.1 WHOOP Integration
+- **Full OAuth flow**: Auth (`/api/whoop/auth`), callback (`/api/whoop/callback`), token refresh
+- **WHOOP API client** (`src/lib/whoop.ts`): Token exchange, refresh, cycle/recovery/sleep/body measurement endpoints
+- **Auto-sync on dashboard load**: Background sync refreshes if new WHOOP data available
+- **Vercel cron job** (`/api/cron/whoop-sync`): Runs at 6 AM UTC daily for all connected users; configured in `vercel.json`
+- **Data synced**: Strain, recovery, HRV, sleep, calories burned, weight, resting HR
+
+### 10.2 Health Connect Webhook
+- **Endpoint**: `/api/sync/health-connect` — accepts HC Webhook app's native JSON format
+- **Token-in-URL auth**: No headers needed (e.g., `/api/sync/health-connect?token=xxx`) for easy HC Webhook app setup
+- **12 supported data types**: Steps, sleep, active calories, weight, hydration, body fat, HRV, resting HR, lean body mass, VO2 max, BMR, height, exercise minutes
+- **Exercise minutes**: Auto-synced from Health Connect exercise sessions
+
+### 10.3 Google Health Connect
+- **Google Health API client** (`src/lib/google-health.ts`): OAuth flow and data sync
+- **Routes**: `/api/google-health/auth`, `/api/google-health/callback`, `/api/google-health/sync`
+
+### 10.4 Data Priority
+When WHOOP is connected, sleep/calories burned/HRV/resting HR come from WHOOP. Steps/weight/body composition come from Health Connect. This prevents conflicting data from multiple sources.
+
+### 10.5 Manual Sync & Setup
+- **Manual sync token endpoint** (`/api/sync/token`): Generates a token for Apple Shortcuts / HTTP webhook integration
+- **Sync setup page** (`/sync/setup`): Instructions for iOS (Apple Shortcuts) and Android (HC Webhook app)
+- **Settings page**: Integrations section with WHOOP connect/disconnect, Google Health connect, Health Connect webhook URL with copy button
+
+### 10.6 Auth & Timezone
+- **Auth middleware** excludes `/api/sync` and `/api/cron` endpoints (they use token-based or cron secret auth)
+- **Per-user timezone** stored in DB (`users.timezone`), read by all sync endpoints to avoid duplicate entries (previously UTC caused duplicates after 8 PM ET)
+- **TimezoneSync component** saves timezone to DB (not just cookie)
+- **Service role client** (`src/utils/supabase/service.ts`): Used by sync/cron endpoints that bypass RLS
+
+### 10.7 Wearable Habits
+- New habits: `habit_day_strain`, `habit_recovery`, `habit_hrv`, `habit_resting_hr`
+- **Wearable Sync** category added to Quest Settings (HabitSettings) with toggles
+- Recovery and HRV cards shown on Track page and Dashboard summary
+
+## 11. Active Workout UX
+
+### 11.1 Workout Flow
+- **Day-level progress**: 'Block X of Y · Today's Workout' header shows position in program
+- **'Next Up' CTA** on HUB view to advance to next block
+- **'End Workout' button** available from any active block (exercises, supersets, treadmill)
+- **Workout-in-progress banner** (`ActiveWorkoutBanner.tsx`): Shows when workout is active, auto-clears on completion, dismiss (X) button
+
+### 11.2 Superset & Exercise Display
+- **Prescribed rep targets** shown in SupersetView header (per-exercise pills) and per-row labels
+- **Reps-only exercises** (push-ups, dips, chin-ups): Weight input hidden, header shows 'Max Reps'
+- **Plate Calculator**: Only shows for barbell/smith exercises, more prominent labeled button, fills all sets
+
+### 11.3 Rest Timer
+- **RestTimerBar redesigned**: Solid blue background with white text, more prominent and visible
+
+### 11.4 Rank Progression During Workout
+- **Live rank nudge**: After each completed set, shows gap to next rank (within 30 lbs shows target, threshold crossed shows celebration)
+- **Rank-up celebration on block complete**: Shows before → after rank with themed names when crossing a threshold
+- `logTrainingAction` now returns `previous_level` for rank-up detection
+
+## 12. Future Features & Design Documents
+
+### 12.1 Character Creation System
 A comprehensive RPG-style character creation and customization system is planned. See `CHARACTER_CREATION_DESIGN.md` for full specifications including:
 - SVG base bodies + PNG gear overlays approach
 - Database schema for character config and gear catalog
