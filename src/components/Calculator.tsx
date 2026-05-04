@@ -146,7 +146,7 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
 
     // Smart Unit Logic
     const standardUnit = currentExercise?.standards?.unit;
-    const isTimeBased = standardUnit === 'seconds' || standardUnit === 'time' || currentExercise?.unit === 'time';
+    const isTimeBased = ['seconds', 'sec', 'time'].includes((standardUnit || '').toLowerCase()) || currentExercise?.unit === 'time';
     const isDistanceTime = currentExercise?.type === 'distance_time';
 
     let unitLabel = 'Score';
