@@ -1698,10 +1698,10 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
       return {
         type: 'interval',
         seconds: chunkMin * 60,
-        zone: 'Base Pace',
+        zone: 'Comfortable',
         color: 'bg-green-500',
-        note: 'Zone 2 — conversational pace',
-        raw_text: `${chunkMin} min Base (Zone 2)`,
+        note: 'Easy pace — conversational',
+        raw_text: `${chunkMin} min Comfortable`,
       };
     }),
   });

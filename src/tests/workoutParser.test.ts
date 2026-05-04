@@ -21,8 +21,8 @@ describe('workoutParser - treadmill blocks', () => {
         it('should have multiple intervals including push and all-out', () => {
             const intervals = treadBlocks[0].intervals.filter((i: any) => i.type === 'interval');
             expect(intervals.length).toBeGreaterThan(10);
-            expect(intervals.some((i: any) => i.zone === 'Push Pace')).toBe(true);
-            expect(intervals.some((i: any) => i.zone === 'All Out')).toBe(true);
+            expect(intervals.some((i: any) => i.zone === 'Challenging')).toBe(true);
+            expect(intervals.some((i: any) => i.zone === 'Full Send')).toBe(true);
         });
     });
 
@@ -37,12 +37,12 @@ describe('workoutParser - treadmill blocks', () => {
         it('should have push and base intervals', () => {
             const intervals = treadBlocks[0].intervals.filter((i: any) => i.type === 'interval');
             expect(intervals.length).toBeGreaterThan(10);
-            expect(intervals.some((i: any) => i.zone === 'Push Pace')).toBe(true);
-            expect(intervals.some((i: any) => i.zone === 'Base Pace')).toBe(true);
+            expect(intervals.some((i: any) => i.zone === 'Challenging')).toBe(true);
+            expect(intervals.some((i: any) => i.zone === 'Comfortable')).toBe(true);
         });
 
         it('push intervals should reference inclines 4-6%', () => {
-            const intervals = treadBlocks[0].intervals.filter((i: any) => i.type === 'interval' && i.zone === 'Push Pace');
+            const intervals = treadBlocks[0].intervals.filter((i: any) => i.type === 'interval' && i.zone === 'Challenging');
             const rawTexts = intervals.map((i: any) => i.raw_text);
             expect(rawTexts.some((t: string) => t.includes('4%'))).toBe(true);
             expect(rawTexts.some((t: string) => t.includes('5%'))).toBe(true);

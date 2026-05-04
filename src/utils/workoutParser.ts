@@ -61,11 +61,11 @@ function parseTimeToSeconds(line: string): number | null {
 function getZoneAndColor(text: string): [string, string] {
     const lower = text.toLowerCase();
     if (lower.includes("base to push")) return ["Base to Push", "bg-gradient-to-r from-green-500 to-orange-500"];
-    if (lower.includes("push to all out") || lower.includes("push to ao")) return ["Push to All Out", "bg-gradient-to-r from-orange-500 to-red-600"];
-    if (lower.includes("base to all out") || lower.includes("base to ao")) return ["Base to All Out", "bg-gradient-to-r from-green-500 to-red-600"];
-    if (lower.includes("all out") || lower.includes(" ao ") || lower.endsWith(" ao") || lower.startsWith("ao ")) return ["All Out", "bg-red-600"];
-    if (lower.includes("push")) return ["Push Pace", "bg-orange-500"];
-    if (lower.includes("base")) return ["Base Pace", "bg-green-500"];
+    if (lower.includes("push to all out") || lower.includes("push to ao")) return ["Challenging → Full Send", "bg-gradient-to-r from-orange-500 to-red-600"];
+    if (lower.includes("base to all out") || lower.includes("base to ao")) return ["Comfortable → Full Send", "bg-gradient-to-r from-green-500 to-red-600"];
+    if (lower.includes("all out") || lower.includes(" ao ") || lower.endsWith(" ao") || lower.startsWith("ao ")) return ["Full Send", "bg-red-600"];
+    if (lower.includes("push")) return ["Challenging", "bg-orange-500"];
+    if (lower.includes("base")) return ["Comfortable", "bg-green-500"];
     if (lower.includes("walking recovery") || lower.split(/\s+/).includes("wr")) return ["Walking Recovery", "bg-zinc-600 border border-zinc-500"];
 
     if (["surge", "climb", "uphill", "increase", "sprint"].some(x => lower.includes(x))) {
@@ -73,7 +73,7 @@ function getZoneAndColor(text: string): [string, string] {
         return ["Instruction", "bg-orange-500"];
     }
 
-    if (["jog", "tread", "steady", "warm"].some(x => lower.includes(x))) return ["Base Pace", "bg-green-500"];
+    if (["jog", "tread", "steady", "warm"].some(x => lower.includes(x))) return ["Comfortable", "bg-green-500"];
     if (lower.includes("recover") || lower.includes("rest") || lower.includes("walk")) return ["Recovery", "bg-blue-900/40 text-blue-200"];
 
     return ["Instruction", "bg-zinc-800"];
@@ -130,8 +130,8 @@ function parseTreadmillSection(text: string, sectionName = "Engine"): any[] {
     if (currentBlock) blocks.push(currentBlock);
 
     // Inject 5-min Zone 2 warmup and cooldown, then calculate XP
-    const warmup = { type: 'interval', seconds: 300, zone: 'Base Pace', color: 'bg-green-500', note: 'Zone 2 — warm up', raw_text: '5 min Base (Warm-Up)' };
-    const cooldown = { type: 'interval', seconds: 300, zone: 'Base Pace', color: 'bg-green-500', note: 'Zone 2 — cool down', raw_text: '5 min Base (Cool Down)' };
+    const warmup = { type: 'interval', seconds: 300, zone: 'Comfortable', color: 'bg-green-500', note: 'Easy pace — warm up', raw_text: '5 min Comfortable (Warm-Up)' };
+    const cooldown = { type: 'interval', seconds: 300, zone: 'Comfortable', color: 'bg-green-500', note: 'Easy pace — cool down', raw_text: '5 min Comfortable (Cool Down)' };
 
     for (const block of blocks) {
         block.intervals = [warmup, ...block.intervals, cooldown];

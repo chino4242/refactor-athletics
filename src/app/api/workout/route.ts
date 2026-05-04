@@ -16,11 +16,11 @@ function dateToDayName(dateStr: string): string {
 
 function intensityToZone(intensity: string | null): [string, string] {
     switch (intensity) {
-        case 'all_out': return ['All Out', 'bg-red-600'];
-        case 'push': return ['Push Pace', 'bg-orange-500'];
-        case 'zone2': return ['Base Pace', 'bg-green-500'];
-        case 'base': return ['Base Pace', 'bg-green-500'];
-        default: return ['Base Pace', 'bg-green-500'];
+        case 'all_out': return ['Full Send', 'bg-red-600'];
+        case 'push': return ['Challenging', 'bg-orange-500'];
+        case 'zone2': return ['Comfortable', 'bg-green-500'];
+        case 'base': return ['Comfortable', 'bg-green-500'];
+        default: return ['Comfortable', 'bg-green-500'];
     }
 }
 
@@ -61,8 +61,8 @@ function dbBlocksToWorkoutBlocks(blocks: any[], catalog: any[]): any[] {
         xp += Math.floor(600 * 0.1);
 
         // Inject 5-min Zone 2 warmup and cooldown
-        const warmup = { type: 'interval' as const, seconds: 300, zone: 'Base Pace', color: 'bg-green-500', note: 'Zone 2 — warm up', raw_text: '5 min Base (Warm-Up)' };
-        const cooldown = { type: 'interval' as const, seconds: 300, zone: 'Base Pace', color: 'bg-green-500', note: 'Zone 2 — cool down', raw_text: '5 min Base (Cool Down)' };
+        const warmup = { type: 'interval' as const, seconds: 300, zone: 'Comfortable', color: 'bg-green-500', note: 'Easy pace — warm up', raw_text: '5 min Comfortable (Warm-Up)' };
+        const cooldown = { type: 'interval' as const, seconds: 300, zone: 'Comfortable', color: 'bg-green-500', note: 'Easy pace — cool down', raw_text: '5 min Comfortable (Cool Down)' };
 
         result.push({
             name: `Tread Block - ${totalMins + 10} min`,
