@@ -24,6 +24,7 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
     const [profile, setProfile] = useState<any>(null);
     const [todayScheduled, setTodayScheduled] = useState<any>(null);
     const [lastWorkout, setLastWorkout] = useState<{ date: string; totalXp: number; lifts: { name: string; volume: number }[]; treadmillSets: number } | null>(null);
+    const [weeklySummary, setWeeklySummary] = useState<{ workouts: number; xp: number; habitsHit: number; habitsTotal: number; weightChange: number | null } | null>(null);
     const [todayProgress, setTodayProgress] = useState<any>({
         calories: 0,
         caloriesBurned: 0,
@@ -45,6 +46,23 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                     .eq('id', userId)
                     .single();
                 setProfile(profileData);
+
+                // Weekly summary — last 7 days
+                const weekAgo = new Date();
+                weekAgo.setDate(weekAgo.getDate() - 7);
+                const weekStr = weekAgo.toISOString().split('T')[0];
+                const [weekWorkouts, weekHabits, weekMeasurements] = await Promise.all([
+                    supabase.from('workouts').select('xp, date').eq('user_id', userId).gte('date', weekStr),
+                    supabase.from('habit_logs').select('date, habit_id').eq('user_id', userId).gte('date', weekStr),
+                    supabase.from('body_measurements').select('weight, date').eq('user_id', userId).order('date', { ascending: true }).limit(100),
+                ]);
+                const wDates = new Set((weekWorkouts.data || []).map((w: any) => w.date));
+                const totalXpWeek = (weekWorkouts.data || []).reduce((s: number, w: any) => s + (w.xp || 0), 0);
+                const habitDays = new Set((weekHabits.data || []).map((h: any) => h.date));
+                const measurements = weekMeasurements.data || [];
+                const recentWeights = measurements.filter((m: any) => m.weight).slice(-2);
+                const weightChange = recentWeights.length >= 2 ? Math.round((recentWeights[recentWeights.length - 1].weight - recentWeights[recentWeights.length - 2].weight) * 10) / 10 : null;
+                setWeeklySummary({ workouts: wDates.size, xp: totalXpWeek, habitsHit: habitDays.size, habitsTotal: 7, weightChange });
                 
                 // Get today's workout from weekly schedule API (same as Train page)
                 const today = new Date();
@@ -169,6 +187,36 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
 
     return (
         <div className="space-y-4">
+            {/* Weekly Summary */}
+            {weeklySummary && (weeklySummary.workouts > 0 || weeklySummary.habitsHit > 0) && (
+                <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700/50 rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                        <span className="text-lg">📊</span>
+                        <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Last 7 Days</h3>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3 text-center">
+                        <div>
+                            <div className="text-2xl font-black text-white">{weeklySummary.workouts}</div>
+                            <div className="text-[10px] text-zinc-500">Workouts</div>
+                        </div>
+                        <div>
+                            <div className="text-2xl font-black text-orange-400">+{weeklySummary.xp.toLocaleString()}</div>
+                            <div className="text-[10px] text-zinc-500">{isClassic ? 'Points' : 'XP'}</div>
+                        </div>
+                        <div>
+                            <div className="text-2xl font-black text-emerald-400">{weeklySummary.habitsHit}/{weeklySummary.habitsTotal}</div>
+                            <div className="text-[10px] text-zinc-500">Active Days</div>
+                        </div>
+                    </div>
+                    {weeklySummary.weightChange !== null && (
+                        <div className="mt-3 pt-3 border-t border-zinc-800 text-center">
+                            <span className={`text-xs font-bold ${weeklySummary.weightChange < 0 ? 'text-emerald-400' : weeklySummary.weightChange > 0 ? 'text-rose-400' : 'text-zinc-500'}`}>
+                                {weeklySummary.weightChange > 0 ? '+' : ''}{weeklySummary.weightChange} lbs this week
+                            </span>
+                        </div>
+                    )}
+                </div>
+            )}
             {/* Daily Quest Summary */}
             {profile && (
                 <div>
