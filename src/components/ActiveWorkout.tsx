@@ -1912,6 +1912,21 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
                         const isDone = completedIndices.includes(bIdx);
                         const isSkipped = skippedIndices.includes(bIdx);
 
+                        // Last session weight lookup
+                        const lastWeights = !isDone && !isSkipped && fullHistory ? (() => {
+                          const exercises = block.type === 'superset' ? (block.exercises || []) : [block];
+                          return exercises.map((ex: any) => {
+                            const name = (ex.name || '').toLowerCase().replace(/^\d+\.\s*/, '').trim();
+                            const exId = ex.exercise_id || catalog?.find((c: any) => c.name.toLowerCase() === name)?.id;
+                            if (!exId) return null;
+                            const log = fullHistory.find((h: any) => h.exercise_id === exId && (h.details?.length || h.data?.length));
+                            if (!log) return null;
+                            const sets = log.details || log.data || [];
+                            const w = sets[0]?.weight;
+                            return w ? { name: ex.name || block.name, weight: w } : null;
+                          }).filter(Boolean);
+                        })() : [];
+
                         return (
                           <div key={bIdx} className="flex items-center gap-2.5 text-sm">
                             <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${isSkipped ? 'bg-zinc-700' : isDone ? 'bg-emerald-400' : 'bg-zinc-600'}`} />
@@ -1931,6 +1946,11 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
                                     <span>{Math.round(block.intervals.reduce((s: number, i: any) => s + (i.seconds || 0), 0) / 60)} min</span>
                                   )}
                                   {block.tips?.[0] && <span className="ml-1 italic">— {block.tips[0].substring(0, 40)}{block.tips[0].length > 40 ? '...' : ''}</span>}
+                                </div>
+                              )}
+                              {lastWeights && lastWeights.length > 0 && (
+                                <div className="text-[9px] text-zinc-500 mt-0.5 font-mono">
+                                  Last: {lastWeights.map((lw: any) => `${lw.weight} lbs`).join(' / ')}
                                 </div>
                               )}
                             </div>
