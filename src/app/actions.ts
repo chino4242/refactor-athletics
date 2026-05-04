@@ -31,7 +31,10 @@ export async function logHabitAction(
     if (habitId.startsWith('macro_')) {
         // Nutrition logging
         const macroType = habitId.replace('macro_', ''); // 'protein', 'carbs', 'fat', 'calories'
-        const xp = 10;
+
+        // XP: 2 per entry, capped at 30/day
+        const { count: todayCount } = await supabase.from('nutrition_logs').select('id', { count: 'exact', head: true }).eq('user_id', userId).eq('date', dateStr);
+        const xp = (todayCount || 0) * 2 < 30 ? 2 : 0;
 
         // "Set" mode for calories_burned: replace today's entries instead of adding
         if (macroType === 'calories_burned') {
