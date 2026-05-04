@@ -54,9 +54,20 @@ export async function getValidToken(userId: string): Promise<string | null> {
   if (!user?.whoop_access_token) return null;
 
   const expiresAt = new Date(user.whoop_token_expires_at).getTime();
+  // Still valid — use it
   if (Date.now() < expiresAt - 60000) return user.whoop_access_token;
 
-  // Token expired or about to — refresh
+  // If token was refreshed very recently (within 30s), another request likely just refreshed it — re-read
+  if (Date.now() < expiresAt + 30000) {
+    const { data: fresh } = await supabase.from('users').select('whoop_access_token, whoop_token_expires_at').eq('id', userId).single();
+    if (fresh?.whoop_access_token && new Date(fresh.whoop_token_expires_at).getTime() > Date.now()) {
+      return fresh.whoop_access_token;
+    }
+  }
+
+  if (!user.whoop_refresh_token) return null;
+
+  // Token expired — refresh
   try {
     const tokens = await refreshTokens(user.whoop_refresh_token);
     await supabase.from('users').update({
@@ -66,13 +77,8 @@ export async function getValidToken(userId: string): Promise<string | null> {
     }).eq('id', userId);
     return tokens.access_token;
   } catch (e: any) {
-    // Refresh failed — token revoked
     console.error('WHOOP token refresh failed:', e.message);
-    await supabase.from('users').update({
-      whoop_access_token: null,
-      whoop_refresh_token: null,
-      whoop_token_expires_at: null,
-    }).eq('id', userId);
+    // Don't wipe tokens — might be a transient error or race condition
     return null;
   }
 }
