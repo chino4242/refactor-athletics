@@ -128,27 +128,37 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                         <Link href="/track#body-comp" className="group text-center">
                             <div className="flex items-center justify-center gap-2 mb-2">
                                 <span className="text-xl">💪</span>
-                                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider group-hover:text-emerald-400 transition">Body Composition</span>
-                                <InfoTooltip text="Tracks positive body composition changes that may not show up on the scale — like losing inches, gaining muscle, or dropping body fat %. Compares your earliest and latest measurements to score progress toward your goals. Positive = improving, negative = regressing." size={14} />
+                                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider group-hover:text-emerald-400 transition">{isClassic ? 'Body Comp' : 'Physique'}</span>
                             </div>
-                            <div className={`text-4xl font-black italic ${physiquePoints.color}`}>
-                                {physiquePoints.score > 0 ? '+' : ''}{physiquePoints.score}
-                            </div>
-                            {(physiquePoints.leanMassDelta !== undefined || physiquePoints.fatPctDelta !== undefined) && (
-                                <div className="flex gap-3 justify-center mt-1">
-                                    {physiquePoints.leanMassDelta !== undefined && (
-                                        <span className={`text-[10px] font-bold ${physiquePoints.leanMassDelta > 0 ? 'text-emerald-400' : physiquePoints.leanMassDelta < 0 ? 'text-rose-400' : 'text-zinc-500'}`}>
-                                            {physiquePoints.leanMassDelta > 0 ? '+' : ''}{physiquePoints.leanMassDelta} lbs muscle
-                                        </span>
-                                    )}
-                                    {physiquePoints.fatPctDelta !== undefined && (
-                                        <span className={`text-[10px] font-bold ${physiquePoints.fatPctDelta < 0 ? 'text-emerald-400' : physiquePoints.fatPctDelta > 0 ? 'text-rose-400' : 'text-zinc-500'}`}>
-                                            {physiquePoints.fatPctDelta > 0 ? '+' : ''}{physiquePoints.fatPctDelta}% body fat
-                                        </span>
-                                    )}
-                                </div>
-                            )}
-                            <div className="text-[10px] text-emerald-500/70 group-hover:text-emerald-400 mt-1 transition">Log body comp to track trends →</div>
+                            {(() => {
+                                const hasLean = physiquePoints.leanMassDelta !== undefined;
+                                const hasFat = physiquePoints.fatPctDelta !== undefined;
+                                if (!hasLean && !hasFat) return (
+                                    <>
+                                        <div className={`text-4xl font-black italic ${physiquePoints.color}`}>
+                                            {physiquePoints.score > 0 ? '+' : ''}{physiquePoints.score}
+                                        </div>
+                                        <div className="text-[10px] text-zinc-600 mt-1">pts</div>
+                                    </>
+                                );
+                                return (
+                                    <div className="space-y-1 mt-1">
+                                        {hasLean && (
+                                            <div className={`text-sm font-black ${physiquePoints.leanMassDelta! > 0 ? 'text-emerald-400' : physiquePoints.leanMassDelta! < 0 ? 'text-rose-400' : 'text-zinc-500'}`}>
+                                                {physiquePoints.leanMassDelta! > 0 ? '+' : ''}{physiquePoints.leanMassDelta} lbs
+                                                <span className="text-[9px] text-zinc-500 font-medium ml-1">muscle</span>
+                                            </div>
+                                        )}
+                                        {hasFat && (
+                                            <div className={`text-sm font-black ${physiquePoints.fatPctDelta! < 0 ? 'text-emerald-400' : physiquePoints.fatPctDelta! > 0 ? 'text-rose-400' : 'text-zinc-500'}`}>
+                                                {physiquePoints.fatPctDelta! > 0 ? '+' : ''}{physiquePoints.fatPctDelta}%
+                                                <span className="text-[9px] text-zinc-500 font-medium ml-1">body fat</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })()}
+                            <div className="text-[10px] text-emerald-500/70 group-hover:text-emerald-400 mt-1 transition">Track body comp →</div>
                         </Link>
 
                         {/* Weight */}
