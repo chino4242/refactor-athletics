@@ -46,7 +46,7 @@ function getStandardsForExercise(exercise: any, age: number, sex: string): numbe
 }
 
 export default function PowerLevelPage({ userId, profile, history, catalog, stats, pathExerciseIds }: Props) {
-    const themeKey = profile?.selected_theme || 'athlete';
+    const themeKey = (typeof window !== 'undefined' && localStorage.getItem('pg_theme')) || profile?.selected_theme || 'athlete';
     const theme = THEMES[themeKey] || THEMES['athlete'];
     const sex = profile?.sex || 'M';
     const age = profile?.age || 25;

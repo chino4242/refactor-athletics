@@ -69,6 +69,7 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
 
     const handleThemeSelect = (themeKey: string) => {
         setCurrentTheme(themeKey);
+        saveProfile({ user_id: userId, selected_theme: themeKey }).catch(() => {});
     };
 
     const handleSave = async () => {
