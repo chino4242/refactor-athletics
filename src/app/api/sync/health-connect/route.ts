@@ -21,11 +21,21 @@ export async function POST(request: NextRequest) {
     const synced: string[] = [];
     const bodyMeasurements: Record<string, any> = {};
 
-    // Steps
+    // Filter records to only include those from today (HC Webhook sends 48hr window)
+    const isToday = (r: any) => {
+      const t = r.start_time || r.end_time || r.time;
+      if (!t) return true; // no timestamp = include
+      try { return new Date(t).toLocaleDateString('en-CA', { timeZone: tz }) === today; } catch { return true; }
+    };
+
+    // Steps — only today's records
     if (body.steps?.length) {
-      const total = body.steps.reduce((s: number, r: any) => s + (r.count || 0), 0);
-      await upsertHabit(supabase, user.id, 'habit_steps', today, ts, total, Math.min(Math.round(total * 0.005), 75));
-      synced.push(`steps: ${total}`);
+      const todaySteps = body.steps.filter(isToday);
+      const total = todaySteps.reduce((s: number, r: any) => s + (r.count || 0), 0);
+      if (total > 0) {
+        await upsertHabit(supabase, user.id, 'habit_steps', today, ts, total, Math.min(Math.round(total * 0.005), 75));
+        synced.push(`steps: ${total}`);
+      }
     }
 
     // Sleep — longest session (skip if WHOOP connected — WHOOP is more accurate)
@@ -40,7 +50,8 @@ export async function POST(request: NextRequest) {
 
     // Active calories (skip if WHOOP connected — WHOOP tracks continuously)
     if (body.active_calories?.length && !hasWhoop) {
-      const total = Math.round(body.active_calories.reduce((s: number, r: any) => s + (r.calories || 0), 0));
+      const todayCals = body.active_calories.filter(isToday);
+      const total = Math.round(todayCals.reduce((s: number, r: any) => s + (r.calories || 0), 0));
       await supabase.from('nutrition_logs').delete().eq('user_id', user.id).eq('date', today).eq('macro_type', 'calories_burned');
       await supabase.from('nutrition_logs').insert({
         user_id: user.id, date: today, timestamp: ts,
@@ -51,7 +62,8 @@ export async function POST(request: NextRequest) {
 
     // Hydration — liters to oz
     if (body.hydration?.length) {
-      const totalOz = Math.round(body.hydration.reduce((s: number, r: any) => s + (r.liters || 0), 0) * 33.814);
+      const todayHydration = body.hydration.filter(isToday);
+      const totalOz = Math.round(todayHydration.reduce((s: number, r: any) => s + (r.liters || 0), 0) * 33.814);
       if (totalOz > 0) {
         await upsertHabit(supabase, user.id, 'habit_water', today, ts, totalOz, Math.round(totalOz * 0.25));
         synced.push(`water: ${totalOz} oz`);
@@ -60,7 +72,8 @@ export async function POST(request: NextRequest) {
 
     // Exercise sessions — sum duration to minutes
     if (body.exercise?.length) {
-      const totalMin = Math.round(body.exercise.reduce((s: number, r: any) => {
+      const todayExercise = body.exercise.filter(isToday);
+      const totalMin = Math.round(todayExercise.reduce((s: number, r: any) => {
         const dur = r.duration_seconds || r.durationSeconds || 0;
         if (dur > 0) return s + dur / 60;
         if (r.start_time && r.end_time) return s + (new Date(r.end_time).getTime() - new Date(r.start_time).getTime()) / 60000;
