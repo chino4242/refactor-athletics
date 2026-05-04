@@ -112,7 +112,7 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
             };
             fetchWeekly();
         }
-    }, [viewMode, userId, totals]);
+    }, [viewMode, userId, JSON.stringify(totals)]);
 
     const handleSaveTargets = async () => {
         setLoading(true);
