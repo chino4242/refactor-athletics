@@ -40,17 +40,16 @@ export default function TrainingV2({ userId, bodyweight, sex, age, initialHistor
   const { theme: _theme } = useTheme();
   const theme = _theme || THEMES.athlete;
   const [weekDays, setWeekDays] = useState<DayPlan[]>([]);
-  const [selectedDayStr, setSelectedDayStr] = useState(() => {
-    if (typeof window === 'undefined') return '';
+  const [selectedDayStr, setSelectedDayStr] = useState('');
+  const [showActiveWorkout, setShowActiveWorkout] = useState(false);
+
+  // Check for active workout after hydration
+  useEffect(() => {
     if (localStorage.getItem('active_workout')) {
-      return new Date().toLocaleDateString('en-CA');
+      setShowActiveWorkout(true);
+      setSelectedDayStr(new Date().toLocaleDateString('en-CA'));
     }
-    return '';
-  });
-  const [showActiveWorkout, setShowActiveWorkout] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return !!localStorage.getItem('active_workout');
-  });
+  }, []);
   const [showWeekView, setShowWeekView] = useState(false);
   const [showQuickLog, setShowQuickLog] = useState(false);
 

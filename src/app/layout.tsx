@@ -42,11 +42,23 @@ export const viewport = {
   themeColor: "#10b981",
 };
 
-export default function RootLayout({
+import { createClient } from "@/utils/supabase/server";
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  let initialTheme = 'athlete';
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data } = await supabase.from('users').select('selected_theme').eq('id', user.id).single();
+      if (data?.selected_theme) initialTheme = data.selected_theme;
+    }
+  } catch {}
+
   return (
     <html lang="en">
       <head>
@@ -56,7 +68,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased selection:bg-orange-500/30`}
         suppressHydrationWarning
       >
-        <ThemeProvider>
+        <ThemeProvider initialTheme={initialTheme}>
           <ExperienceModeProvider>
           <ToastProvider>
             <ServiceWorkerRegistration />

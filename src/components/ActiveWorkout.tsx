@@ -1223,6 +1223,7 @@ interface ActiveWorkoutProps {
 import ProtocolBriefing from './ProtocolBriefing';
 import WorkoutReport from './WorkoutReport';
 import EngineSelector from './EngineSelector';
+import RecoverySelector from './RecoverySelector';
 
 export default function ActiveWorkout({ userId, onLogComplete, initialDate }: ActiveWorkoutProps) {
   const [blockIndex, setBlockIndex] = useState(0);
@@ -1440,16 +1441,18 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
   const loadWorkout = async (date?: string) => {
     setIsLoading(true);
     try {
-      // Skip API fetch if resuming from saved progress (has workout data already restored)
+      // Skip API fetch if resuming from saved progress (has valid workout data)
       const hasSavedProgress = localStorage.getItem(progressKey);
       if (hasSavedProgress) {
         try {
           const saved = JSON.parse(hasSavedProgress);
-          if (saved.workoutData?.length) {
+          if (saved.workoutData?.length > 0 && saved.workoutData[0]?.type) {
             setIsLoading(false);
             return;
           }
         } catch {}
+        // Invalid/stale saved progress — clear it
+        localStorage.removeItem(progressKey);
       }
 
       const data = await getActiveWorkout(date);
@@ -1458,24 +1461,27 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
 
       // Check DB for already-completed blocks today
       let dbCompleted: number[] = [];
-      if (data?.length && userId) {
-        const supabase = (await import('@/utils/supabase/client')).createClient();
-        const todayStr = (date || new Date().toLocaleDateString('en-CA'));
-        const { data: todayWorkouts } = await supabase.from('workouts').select('exercise_id').eq('user_id', userId).eq('date', todayStr);
-        if (todayWorkouts?.length) {
-          const loggedIds = new Set(todayWorkouts.map((w: any) => w.exercise_id));
-          data.forEach((block: any, idx: number) => {
-            if (block.exercise_id && loggedIds.has(block.exercise_id)) dbCompleted.push(idx);
-            if (block.exercises) {
-              const allLogged = block.exercises.every((ex: any) => {
-                const exId = ex.exercise_id || ex.name?.toLowerCase().replace(/\s+/g, '_');
-                return exId && loggedIds.has(exId);
-              });
-              if (allLogged) dbCompleted.push(idx);
-            }
-          });
+      try {
+        if (data?.length && userId) {
+          const { createClient: createBrowserClient } = await import('@/utils/supabase/client');
+          const supabase = createBrowserClient();
+          const todayStr = (date || new Date().toLocaleDateString('en-CA'));
+          const { data: todayWorkouts } = await supabase.from('workouts').select('exercise_id').eq('user_id', userId).eq('date', todayStr);
+          if (todayWorkouts?.length) {
+            const loggedIds = new Set(todayWorkouts.map((w: any) => w.exercise_id));
+            data.forEach((block: any, idx: number) => {
+              if (block.exercise_id && loggedIds.has(block.exercise_id)) dbCompleted.push(idx);
+              if (block.exercises) {
+                const allLogged = block.exercises.every((ex: any) => {
+                  const exId = ex.exercise_id || ex.name?.toLowerCase().replace(/\s+/g, '_');
+                  return exId && loggedIds.has(exId);
+                });
+                if (allLogged) dbCompleted.push(idx);
+              }
+            });
+          }
         }
-      }
+      } catch (e) { console.error('DB completion check failed:', e); }
 
       // Reset State
       setBlockIndex(0);
@@ -2080,6 +2086,26 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
           Open Library
         </button>
       </div>
+    );
+  } else if (currentBlock.type === 'recovery_selector') {
+    mainView = (
+      <RecoverySelector
+        key={blockIndex}
+        onSelect={(choice, duration) => {
+          // Generate a simple timer block for the chosen activity
+          const labels: Record<string, string> = { walk: 'Walk', yoga: 'Yoga / Stretching', foam_roll: 'Foam Rolling' };
+          const timerBlock = {
+            name: labels[choice] || 'Recovery',
+            type: 'timer',
+            section: 'Recovery',
+            xp_value: Math.floor(duration * 3),
+            intervals: [{ type: 'interval', seconds: duration * 60, zone: labels[choice], color: 'bg-emerald-500', note: 'Easy pace — recover', raw_text: `${duration} min ${labels[choice]}` }],
+          };
+          const newData = [...workoutData];
+          newData[blockIndex] = timerBlock;
+          setWorkoutData(newData);
+        }}
+      />
     );
   } else if (currentBlock.type === 'checklist_exercise') {
     mainView = (

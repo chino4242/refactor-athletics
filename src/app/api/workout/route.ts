@@ -93,11 +93,67 @@ function dbBlocksToWorkoutBlocks(blocks: any[], catalog: any[]): any[] {
             const xp = Math.floor(sets * reps * xpFactor);
 
             const sectionMap: Record<string, string> = {
-                warmup: 'Engine',
+                warmup: 'Warmup',
                 main: 'Armor',
                 core: 'Core Work',
                 cooldown: 'Cooldown',
             };
+
+            // Recovery selector — first warmup block in a recovery workout
+            if (block.section === 'warmup' && block.exercise_id === 'foam_rolling') {
+                result.push({
+                    name: 'Active Recovery',
+                    type: 'recovery_selector',
+                    section: 'Recovery',
+                    xp_value: 20,
+                });
+                continue;
+            }
+
+            // Mobility/recovery exercises with duration → collect into timer block
+            const catCategory = cat?.category || '';
+            const isMobilityExercise = ['Mobility', 'Flexibility', 'Recovery'].includes(catCategory) || 
+                ['stretch', 'hang', 'hold', 'opener', 'foam', 'dislocate'].some(k => (block.exercise_id || '').includes(k));
+            const isMobilityTimer = block.target_duration_seconds && !block.target_reps && isMobilityExercise;
+
+            if (isMobilityTimer) {
+                // Check if last result block is already a mobility timer we can append to
+                const lastResult = result[result.length - 1];
+                if (lastResult?.type === 'timer' && lastResult?._isMobility) {
+                    for (let s = 0; s < sets; s++) {
+                        lastResult.intervals.push({
+                            type: 'interval',
+                            seconds: block.target_duration_seconds,
+                            zone: name,
+                            color: 'bg-emerald-500',
+                            note: sets > 1 ? `Round ${s + 1}` : null,
+                            raw_text: `${name} — ${block.target_duration_seconds}s`,
+                        });
+                    }
+                    lastResult.xp_value += Math.floor(sets * block.target_duration_seconds * 0.05);
+                } else {
+                    const intervals = [];
+                    for (let s = 0; s < sets; s++) {
+                        intervals.push({
+                            type: 'interval',
+                            seconds: block.target_duration_seconds,
+                            zone: name,
+                            color: 'bg-emerald-500',
+                            note: sets > 1 ? `Round ${s + 1}` : null,
+                            raw_text: `${name} — ${block.target_duration_seconds}s`,
+                        });
+                    }
+                    result.push({
+                        name: 'Mobility Circuit',
+                        type: 'timer',
+                        _isMobility: true,
+                        intervals,
+                        section: 'Mobility',
+                        xp_value: Math.floor(sets * block.target_duration_seconds * 0.05),
+                    });
+                }
+                continue;
+            }
 
             result.push({
                 name,

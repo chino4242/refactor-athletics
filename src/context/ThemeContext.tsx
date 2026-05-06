@@ -11,25 +11,30 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
-    const [currentTheme, setCurrentTheme] = useState<string>('athlete');
+export function ThemeProvider({ children, initialTheme }: { children: ReactNode; initialTheme?: string }) {
+    const [currentTheme, setCurrentTheme] = useState<string>(() => {
+        if (initialTheme) return initialTheme;
+        if (typeof window !== 'undefined') return localStorage.getItem('pg_theme') || 'athlete';
+        return 'athlete';
+    });
 
-    useEffect(() => {
-        const savedTheme = localStorage.getItem('pg_theme') || 'athlete';
-        setCurrentTheme(savedTheme);
-    }, []);
-
+    // Sync localStorage as cache when theme changes
     useEffect(() => {
         localStorage.setItem('pg_theme', currentTheme);
         document.documentElement.setAttribute('data-theme', currentTheme);
     }, [currentTheme]);
 
+    // If server provides a new initialTheme (e.g., after profile load), update
+    useEffect(() => {
+        if (initialTheme && initialTheme !== currentTheme) {
+            setCurrentTheme(initialTheme);
+        }
+    }, [initialTheme]);
+
     const theme = useMemo(() => THEMES[currentTheme] || THEMES.athlete, [currentTheme]);
 
-    const DEFAULT_THEME = THEMES.athlete;
-
     return (
-        <ThemeContext.Provider value={{ currentTheme, setCurrentTheme, theme: theme || DEFAULT_THEME }}>
+        <ThemeContext.Provider value={{ currentTheme, setCurrentTheme, theme: theme || THEMES.athlete }}>
             {children}
         </ThemeContext.Provider>
     );
