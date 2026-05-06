@@ -13,8 +13,6 @@ export async function POST(request: NextRequest) {
 
     const hasWhoop = !!user.whoop_connected_at;
     const body = await request.json();
-    console.log('HC Webhook payload keys:', Object.keys(body));
-    console.log('HC Webhook payload:', JSON.stringify(body).slice(0, 2000));
     const tz = user.timezone || 'America/New_York';
     const today = new Date().toLocaleDateString('en-CA', { timeZone: tz });
     const ts = Math.floor(Date.now() / 1000);
@@ -72,8 +70,6 @@ export async function POST(request: NextRequest) {
 
     // Exercise sessions — sum duration to minutes
     if (body.exercise?.length) {
-      console.log('HC exercise records:', body.exercise.length, 'today filter:', body.exercise.filter(isToday).length);
-      console.log('HC exercise sample:', JSON.stringify(body.exercise[0]).slice(0, 500));
       const todayExercise = body.exercise.filter(isToday);
       const totalMin = Math.round(todayExercise.reduce((s: number, r: any) => {
         const dur = r.duration_seconds || r.durationSeconds || 0;
