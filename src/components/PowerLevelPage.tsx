@@ -77,7 +77,7 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                 currentLevel,
                 nextThreshold,
                 unit,
-                bestValue: entry.best?.value || entry.best?.raw_value || 0,
+                bestValue: entry.best?.raw_value || parseFloat(String(entry.best?.value).replace(/[^0-9.]/g, '')) || 0,
             };
         }).filter((x): x is NonNullable<typeof x> => x !== null).sort((a, b) => b.currentLevel - a.currentLevel || (b.bestValue as number) - (a.bestValue as number));
     }, [groupedTrophies, catalog, age, sex, pathSet]);
@@ -326,6 +326,91 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                     })}
                 </div>
             </div>}
+
+            {/* === THRESHOLDS REFERENCE === */}
+            {exerciseData.length > 0 && (
+                <div>
+                    <h2 className="text-sm font-black text-white uppercase tracking-wider mb-1">Rank Thresholds</h2>
+                    <p className="text-[10px] text-zinc-600 mb-3">What you need to hit for each level (age {age}, {sex.toLowerCase() === 'female' ? 'female' : 'male'})</p>
+                    <p className="text-[9px] text-zinc-700 mb-4 italic">Your &quot;Best&quot; is calculated using the Epley formula: weight × (1 + reps/30). This estimates your 1RM from any set — so 185 lbs × 8 reps = 234 lbs estimated max.</p>
+
+                    {/* Desktop table */}
+                    <div className="hidden md:block overflow-x-auto">
+                        <table className="w-full text-xs">
+                            <thead>
+                                <tr className="border-b border-zinc-800">
+                                    <th className="text-left py-2 text-zinc-500 font-bold uppercase">Exercise</th>
+                                    <th className="text-center py-2 text-zinc-500 font-bold">Best</th>
+                                    <th className="text-center py-2 text-zinc-600">Lv.1</th>
+                                    <th className="text-center py-2 text-zinc-600">Lv.2</th>
+                                    <th className="text-center py-2 text-zinc-600">Lv.3</th>
+                                    <th className="text-center py-2 text-zinc-600">Lv.4</th>
+                                    <th className="text-center py-2 text-zinc-600">Lv.5</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {(() => {
+                                    const catalogMap = new Map(catalog.map((c: any) => [c.id, c]));
+                                    return exerciseData.map(ex => {
+                                        const cleanId = ex.exerciseId.replace(/^(five_rm_|one_rm_|est_1rm_)/, '');
+                                        const catItem = catalogMap.get(cleanId) || catalogMap.get(ex.exerciseId);
+                                        const levels = getStandardsForExercise(catItem, age, sex);
+                                        if (!levels) return null;
+                                        const unit = catItem?.standards?.unit || '';
+                                        const unitLabel = unit === 'xBW' ? 'xBW' : unit === 'Sec' || unit === 'sec' || unit === 'seconds' ? 's' : unit === 'Reps' || unit === 'reps' ? '' : 'lbs';
+                                        const isXBW = unit === 'xBW';
+                                        const bw = profile?.bodyweight || 180;
+                                        return (
+                                            <tr key={ex.exerciseId} className="border-b border-zinc-800/50">
+                                                <td className="py-2 text-white font-medium">{ex.displayName}</td>
+                                                <td className="text-center py-2 text-orange-400 font-bold">{ex.bestValue ? `${Math.round(ex.bestValue)}` : '—'}</td>
+                                                {levels.map((t: number, i: number) => (
+                                                    <td key={i} className={`text-center py-2 font-mono ${ex.currentLevel > i ? 'text-emerald-400' : ex.currentLevel === i ? 'text-orange-400 font-bold' : 'text-zinc-600'}`}>
+                                                        {isXBW ? <><div>{Math.round(t * bw)}</div><div className="text-[9px] opacity-50">{t}x</div></> : <>{t}{unitLabel}</>}
+                                                    </td>
+                                                ))}
+                                            </tr>
+                                        );
+                                    }).filter(Boolean);
+                                })()}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Mobile cards */}
+                    <div className="md:hidden space-y-2">
+                        {(() => {
+                            const catalogMap = new Map(catalog.map((c: any) => [c.id, c]));
+                            return exerciseData.map(ex => {
+                                const cleanId = ex.exerciseId.replace(/^(five_rm_|one_rm_|est_1rm_)/, '');
+                                const catItem = catalogMap.get(cleanId) || catalogMap.get(ex.exerciseId);
+                                const levels = getStandardsForExercise(catItem, age, sex);
+                                if (!levels) return null;
+                                const unit = catItem?.standards?.unit || '';
+                                const unitLabel = unit === 'xBW' ? 'xBW' : unit === 'Sec' || unit === 'sec' || unit === 'seconds' ? 's' : unit === 'Reps' || unit === 'reps' ? '' : 'lbs';
+                                const isXBW = unit === 'xBW';
+                                const bw = profile?.bodyweight || 180;
+                                return (
+                                    <div key={ex.exerciseId} className="bg-zinc-900/50 border border-zinc-800/50 rounded-xl p-3">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-xs font-bold text-white">{ex.displayName}</span>
+                                            <span className="text-[10px] text-orange-400 font-bold">Best: {ex.bestValue ? Math.round(ex.bestValue) : '—'}{isXBW ? ' lbs' : unitLabel}</span>
+                                        </div>
+                                        <div className="grid grid-cols-5 gap-1">
+                                            {levels.map((t: number, i: number) => (
+                                                <div key={i} className={`text-center py-1.5 rounded-lg text-[10px] font-mono ${ex.currentLevel > i ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : ex.currentLevel === i ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : 'bg-zinc-800/50 text-zinc-600 border border-zinc-800'}`}>
+                                                    <div className="font-bold">{isXBW ? Math.round(t * bw) : t}</div>
+                                                    <div className="text-[8px] opacity-60">{isXBW ? `${t}x` : `Lv.${i + 1}`}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                );
+                            }).filter(Boolean);
+                        })()}
+                    </div>
+                </div>
+            )}
 
             {/* Empty state */}
             {exerciseData.length === 0 && (
