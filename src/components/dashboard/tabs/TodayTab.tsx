@@ -169,6 +169,49 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
 
     return (
         <div className="space-y-4">
+            {/* Smart CTA */}
+            {profile && (() => {
+                const hour = new Date().getHours();
+                const hasWorkout = lastWorkout?.date === new Date().toLocaleDateString('en-CA');
+                const hasFood = todayProgress.calories > 0;
+                const hasScheduled = !!todayScheduled;
+
+                if (hasScheduled && !hasWorkout) return (
+                    <Link href="/train" className="block w-full bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-xl px-4 py-4 flex items-center justify-between shadow-lg shadow-orange-900/20 active:scale-[0.98] transition">
+                        <div>
+                            <div className="text-[10px] text-white/60 uppercase font-bold">Today&apos;s Workout</div>
+                            <div className="text-sm font-bold">{todayScheduled.title || 'Ready to train'}</div>
+                        </div>
+                        <span className="text-sm font-bold">Start →</span>
+                    </Link>
+                );
+                if (!hasFood && hour >= 7 && hour < 11) return (
+                    <Link href="/track" className="block w-full bg-zinc-800 border border-zinc-700 text-white rounded-xl px-4 py-3 flex items-center justify-between hover:border-zinc-600 transition">
+                        <div className="flex items-center gap-2"><span>🥗</span><span className="text-sm font-medium">Log Breakfast</span></div>
+                        <span className="text-xs text-zinc-500">→</span>
+                    </Link>
+                );
+                if (!hasFood && hour >= 11 && hour < 15) return (
+                    <Link href="/track" className="block w-full bg-zinc-800 border border-zinc-700 text-white rounded-xl px-4 py-3 flex items-center justify-between hover:border-zinc-600 transition">
+                        <div className="flex items-center gap-2"><span>🥗</span><span className="text-sm font-medium">Log Lunch</span></div>
+                        <span className="text-xs text-zinc-500">→</span>
+                    </Link>
+                );
+                if (!hasFood && hour >= 17 && hour < 21) return (
+                    <Link href="/track" className="block w-full bg-zinc-800 border border-zinc-700 text-white rounded-xl px-4 py-3 flex items-center justify-between hover:border-zinc-600 transition">
+                        <div className="flex items-center gap-2"><span>🥗</span><span className="text-sm font-medium">Log Dinner</span></div>
+                        <span className="text-xs text-zinc-500">→</span>
+                    </Link>
+                );
+                if (hasWorkout && todayProgress.steps < (profile.habit_targets?.habit_steps || 10000) * 0.5) return (
+                    <div className="w-full bg-zinc-800/50 border border-zinc-700/50 text-white rounded-xl px-4 py-3 flex items-center justify-between">
+                        <div className="flex items-center gap-2"><span>👣</span><span className="text-sm font-medium text-zinc-400">{todayProgress.steps.toLocaleString()} / {(profile.habit_targets?.habit_steps || 10000).toLocaleString()} steps</span></div>
+                        <span className="text-[10px] text-zinc-600">Keep moving</span>
+                    </div>
+                );
+                return null;
+            })()}
+
             {/* Daily Quest Summary */}
             {profile && (
                 <div>

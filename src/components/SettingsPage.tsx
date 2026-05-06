@@ -313,6 +313,7 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                         </div>
                         <p className="text-zinc-500 text-xs mb-3">Auto-sync strain, recovery, sleep, and HRV.</p>
                         {whoopConnected ? (
+                            <>
                             <div className="flex gap-2">
                                 <button
                                     onClick={syncWhoop}
@@ -329,6 +330,7 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                                 </button>
                             </div>
                             {lastWhoopSync && <p className="text-[10px] text-zinc-600 mt-2 text-center">Last synced: {lastWhoopSync}</p>}
+                            </>
                         ) : (
                             <a
                                 href="/api/whoop/auth"
@@ -429,6 +431,28 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                 >
                     {loading ? 'Saving...' : 'Save Settings'}
                 </button>
+
+                {/* Delete Account */}
+                <div className="mt-8 pt-6 border-t border-zinc-800">
+                    <button
+                        onClick={async () => {
+                            if (!window.confirm('Are you sure you want to delete your account? This will permanently remove all your data including workouts, habits, nutrition logs, and body measurements. This cannot be undone.')) return;
+                            if (!window.confirm('This is irreversible. Type DELETE to confirm... (tap OK to proceed)')) return;
+                            try {
+                                const res = await fetch('/api/account/delete', { method: 'DELETE' });
+                                if (res.ok) {
+                                    window.location.href = '/login';
+                                } else {
+                                    toast.error('Failed to delete account');
+                                }
+                            } catch { toast.error('Failed to delete account'); }
+                        }}
+                        className="w-full py-3 text-red-500 hover:text-red-400 text-xs font-bold uppercase tracking-widest transition"
+                    >
+                        Delete Account
+                    </button>
+                    <p className="text-[10px] text-zinc-700 text-center mt-1">Permanently deletes all your data. This cannot be undone.</p>
+                </div>
             </div>
         </div>
     );

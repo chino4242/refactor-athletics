@@ -61,11 +61,16 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
   }, [selectedDate]);
 
   // --- Tab state ---
-  const [activeTab, setActiveTab] = useState<TabId>('health');
+  const [activeTab, setActiveTab] = useState<TabId>(() => {
+    if (typeof window !== 'undefined') return (localStorage.getItem('track_tab') as TabId) || 'health';
+    return 'health';
+  });
+  const handleTabChange = (tab: TabId) => { setActiveTab(tab); localStorage.setItem('track_tab', tab); };
 
   // --- Data state ---
   const [loading, setLoading] = useState<string | null>(null);
   const [totals, setTotals] = useState<Record<string, number>>({});
+  const [pageReady, setPageReady] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [showTodayLog, setShowTodayLog] = useState(true);
   const [todayLog, setTodayLog] = useState<any[]>([]);
@@ -112,6 +117,7 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
     if (data.status === 'success') setTotals(data.totals);
     getHistory(userId).then(setHistory);
     loadTodayLog();
+    setPageReady(true);
   }, [userId, selectedDateTs, loadTodayLog]);
 
   useEffect(() => { fetchProgress(); }, [fetchProgress]);
@@ -203,6 +209,15 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
   };
 
   return (
+  if (!pageReady) return (
+    <div className="max-w-3xl mx-auto flex flex-col gap-4 pb-32 animate-pulse px-2">
+      <div className="h-10 bg-zinc-900 rounded-xl" />
+      <div className="flex gap-1.5">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-10 flex-1 bg-zinc-900 rounded-xl" />)}</div>
+      <div className="space-y-2.5">{Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-20 bg-zinc-900 rounded-xl border border-zinc-800" />)}</div>
+    </div>
+  );
+
+  return (
     <div className="max-w-3xl mx-auto flex flex-col gap-4 relative pb-32" style={{ backgroundImage: theme.bgTexture }}>
       {showLevelUp && <LevelUpOverlay level={showLevelUp} onClose={() => setShowLevelUp(null)} />}
 
@@ -267,7 +282,7 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
         {TABS.map(tab => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => handleTabChange(tab.id)}
             className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
               activeTab === tab.id
                 ? 'bg-gradient-to-b from-zinc-700/80 to-zinc-800/80 text-white border border-zinc-600/50 shadow-lg shadow-black/20'

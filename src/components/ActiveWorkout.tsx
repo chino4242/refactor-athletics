@@ -1282,6 +1282,7 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
   // Block completion results & continue/stop prompt
   const [blockResults, setBlockResults] = useState<any[] | null>(null);
   const [showBlockComplete, setShowBlockComplete] = useState(false);
+  const [showEndConfirm, setShowEndConfirm] = useState(false);
   const [engineChoice, setEngineChoice] = useState<Record<number, 'hiit' | 'zone2' | null>>({});
 
   // Persist and restore workout progress
@@ -1455,14 +1456,39 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
       setWorkoutData(data || []);
       setSelectedDate(date || null);
 
+      // Check DB for already-completed blocks today
+      let dbCompleted: number[] = [];
+      if (data?.length && userId) {
+        const supabase = (await import('@/utils/supabase/client')).createClient();
+        const todayStr = (date || new Date().toLocaleDateString('en-CA'));
+        const { data: todayWorkouts } = await supabase.from('workouts').select('exercise_id').eq('user_id', userId).eq('date', todayStr);
+        if (todayWorkouts?.length) {
+          const loggedIds = new Set(todayWorkouts.map((w: any) => w.exercise_id));
+          data.forEach((block: any, idx: number) => {
+            if (block.exercise_id && loggedIds.has(block.exercise_id)) dbCompleted.push(idx);
+            if (block.exercises) {
+              const allLogged = block.exercises.every((ex: any) => {
+                const exId = ex.exercise_id || ex.name?.toLowerCase().replace(/\s+/g, '_');
+                return exId && loggedIds.has(exId);
+              });
+              if (allLogged) dbCompleted.push(idx);
+            }
+          });
+        }
+      }
+
       // Reset State
       setBlockIndex(0);
-      setCompletedIndices([]);
+      setCompletedIndices(dbCompleted);
       setSkippedIndices([]);
 
       // Decide View Mode
       const hasActiveTimer = Object.keys(localStorage).some(k => k.startsWith('active_timer_'));
-      if (hasSavedProgress || hasActiveTimer) {
+      if (dbCompleted.length > 0) {
+        // DB has completions — clear stale localStorage and show HUB
+        localStorage.removeItem(progressKey);
+        setViewMode('HUB');
+      } else if (hasSavedProgress || hasActiveTimer) {
         // Will be restored by the progress restore effect
       } else {
         const uniqueSections = new Set((data || []).map((b: any) => b.section || 'General'));
@@ -1953,7 +1979,12 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
                         })() : [];
 
                         return (
-                          <div key={bIdx} className="flex items-center gap-2.5 text-sm">
+                          <button
+                            key={bIdx}
+                            onClick={() => { if (!isDone && !isSkipped) { setBlockIndex(bIdx); setViewMode('WORKOUT'); } }}
+                            disabled={isDone || isSkipped}
+                            className={`w-full flex items-center gap-2.5 text-sm text-left ${!isDone && !isSkipped ? 'hover:bg-zinc-800/50 active:scale-[0.98]' : ''} rounded-lg px-2 py-1.5 -mx-2 transition`}
+                          >
                             <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${isSkipped ? 'bg-zinc-700' : isDone ? 'bg-emerald-400' : 'bg-zinc-600'}`} />
                             <div className="flex-1 min-w-0">
                               <span className={`${isDone ? 'text-zinc-500 line-through' : isSkipped ? 'text-zinc-600 italic' : 'text-zinc-300'}`}>
@@ -1979,11 +2010,10 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
                                 </div>
                               )}
                             </div>
-                            {isSkipped && <span className="text-[9px] text-zinc-600 border border-zinc-700 px-1 rounded">Skip</span>}
                             {!isDone && !isSkipped && block.xp_value > 0 && (
                               <span className="text-[9px] text-zinc-700 font-mono shrink-0">{block.xp_value}xp</span>
                             )}
-                          </div>
+                          </button>
                         );
                       })}
                     </div>
@@ -2145,16 +2175,36 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
       {viewMode === 'WORKOUT' && (
         <div className="mt-3 text-center">
           <button
-            onClick={() => {
-              if (window.confirm('End workout early? Completed blocks are already saved.')) {
-                setIsComplete(true);
-                localStorage.removeItem(progressKey);
-              }
-            }}
+            onClick={() => setShowEndConfirm(true)}
             className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest hover:text-red-500 transition-colors py-2"
           >
             End Workout
           </button>
+        </div>
+      )}
+
+      {/* End Workout Confirmation Modal */}
+      {showEndConfirm && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in">
+          <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 max-w-sm w-full text-center">
+            <div className="text-3xl mb-3">🏁</div>
+            <h3 className="text-lg font-black text-white mb-2">End Workout?</h3>
+            <p className="text-sm text-zinc-400 mb-6">Completed blocks are already saved. You can always come back and finish later.</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowEndConfirm(false)}
+                className="flex-1 py-3 bg-zinc-800 border border-zinc-700 text-zinc-300 font-bold text-sm rounded-xl hover:bg-zinc-700 transition"
+              >
+                Keep Going
+              </button>
+              <button
+                onClick={() => { setShowEndConfirm(false); setIsComplete(true); localStorage.removeItem(progressKey); }}
+                className="flex-1 py-3 bg-red-600 hover:bg-red-500 text-white font-bold text-sm rounded-xl transition"
+              >
+                End Workout
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

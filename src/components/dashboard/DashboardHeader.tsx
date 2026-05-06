@@ -209,6 +209,19 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                         </div>
                     )}
 
+                    {/* Sync staleness indicator */}
+                    {mounted && (() => {
+                        const lastSync = localStorage.getItem('last_health_sync');
+                        if (!lastSync) return null;
+                        const hoursAgo = Math.round((Date.now() - new Date(lastSync).getTime()) / 3600000);
+                        if (hoursAgo < 2) return null;
+                        return (
+                            <div className="text-center mb-3">
+                                <span className="text-[9px] text-zinc-600">Health data synced {hoursAgo}h ago</span>
+                            </div>
+                        );
+                    })()}
+
                     {/* Player Level & XP */}
                     <div>
                         <div className="flex items-center justify-between mb-2">

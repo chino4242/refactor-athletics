@@ -111,6 +111,11 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
         if (formData.path) {
             await assignDefaultProgram(userId, formData.path, formData.equipment || []);
         }
+        // Trigger immediate health sync from all connected sources
+        await Promise.all([
+            fetch('/api/whoop/sync', { method: 'POST' }).catch(() => {}),
+            fetch('/api/google-health/sync', { method: 'POST' }).catch(() => {}),
+        ]);
         router.refresh();
     };
 

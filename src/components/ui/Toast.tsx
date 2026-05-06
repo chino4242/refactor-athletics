@@ -54,7 +54,7 @@ export default function ToastContainer() {
     const { toasts } = useToast();
 
     return (
-        <div className="fixed bottom-24 left-0 right-0 md:bottom-8 md:right-8 md:left-auto md:w-auto z-[100] flex flex-col items-center md:items-end gap-2 p-4 pointer-events-none">
+        <div className="fixed bottom-28 left-0 right-0 md:bottom-8 md:right-8 md:left-auto md:w-auto z-[100] flex flex-col items-center md:items-end gap-2 p-4 pointer-events-none">
             <AnimatePresence mode='popLayout'>
                 {toasts.map((toast) => (
                     <ToastMessage key={toast.id} {...toast} />

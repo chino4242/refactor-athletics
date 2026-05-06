@@ -57,7 +57,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
         // Background sync WHOOP/Google data if connected, then refresh
         fetch('/api/whoop/sync', { method: 'POST' })
             .then(r => r.json())
-            .then(d => { if (d.synced?.length) loadData(); })
+            .then(d => { if (d.synced?.length) { loadData(); localStorage.setItem('last_health_sync', new Date().toISOString()); } })
             .catch(() => {});
     }, [userId]);
 
