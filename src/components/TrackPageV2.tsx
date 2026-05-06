@@ -208,7 +208,6 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
     );
   };
 
-  return (
   if (!pageReady) return (
     <div className="max-w-3xl mx-auto flex flex-col gap-4 pb-32 animate-pulse px-2">
       <div className="h-10 bg-zinc-900 rounded-xl" />
