@@ -10,7 +10,7 @@ export async function GET() {
   const state = randomBytes(8).toString('hex');
   const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/whoop/callback`;
 
-  const scopes = ['read:recovery', 'read:cycles', 'read:sleep', 'read:profile', 'read:body_measurement'];
+  const scopes = ['read:recovery', 'read:cycles', 'read:sleep', 'read:profile', 'read:body_measurement', 'offline'];
 
   const url = new URL('https://api.prod.whoop.com/oauth/oauth2/auth');
   url.searchParams.set('client_id', process.env.WHOOP_CLIENT_ID!);
