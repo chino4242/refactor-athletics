@@ -27,6 +27,7 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
     const [generatingToken, setGeneratingToken] = useState(false);
     const [whoopConnected, setWhoopConnected] = useState(!!initialProfile?.whoop_connected_at);
     const [whoopSyncing, setWhoopSyncing] = useState(false);
+    const [lastWhoopSync, setLastWhoopSync] = useState<string | null>(null);
     const [googleConnected, setGoogleConnected] = useState(!!initialProfile?.google_health_connected_at);
     const [googleSyncing, setGoogleSyncing] = useState(false);
 
@@ -123,7 +124,7 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
         try {
             const res = await fetch('/api/whoop/sync', { method: 'POST' });
             const data = await res.json();
-            if (data.synced) toast.success(`Synced: ${data.synced.join(', ')}`);
+            if (data.synced) { toast.success(`Synced: ${data.synced.join(', ')}`); setLastWhoopSync(new Date().toLocaleTimeString()); }
             else toast.error(data.error || 'Sync failed');
         } catch { toast.error('Sync failed'); }
         finally { setWhoopSyncing(false); }
@@ -327,6 +328,7 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                                     Disconnect
                                 </button>
                             </div>
+                            {lastWhoopSync && <p className="text-[10px] text-zinc-600 mt-2 text-center">Last synced: {lastWhoopSync}</p>}
                         ) : (
                             <a
                                 href="/api/whoop/auth"
