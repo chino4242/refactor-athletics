@@ -81,6 +81,72 @@ export async function POST(request: NextRequest) {
         await upsertHabit(supabase, user.id, 'habit_exercise_minutes', today, ts, totalMin, Math.min(totalMin * 2, 100));
         synced.push(`exercise: ${totalMin} min`);
       }
+
+      // Log individual exercise sessions to workouts table
+      const HC_TYPE_MAP: Record<number, string> = {
+        46: 'running_generic', 47: 'running_generic', // Running, Running Treadmill
+        8: 'cycling', 9: 'cycling',                   // Biking, Biking Stationary
+        26: 'hiking', 69: 'walking',
+        43: 'rowing_general', 44: 'rowing_general',   // Rowing, Rowing Machine
+        56: 'strength_training', 57: 'stretching',
+        58: 'swimming', 59: 'swimming',               // Open water, Pool
+        75: 'yoga',
+      };
+
+      for (const ex of todayExercise) {
+        const dur = ex.duration_seconds || 0;
+        const distMeters = ex.distance_meters || 0;
+        const typeCode = parseInt(ex.type) || 0;
+        const catalogId = HC_TYPE_MAP[typeCode];
+        if (!catalogId || dur < 60) continue; // Skip very short sessions
+
+        // Check for rankable runs
+        const isRun = typeCode === 46 || typeCode === 47;
+        const distMiles = distMeters / 1609.34;
+        let rankedExerciseId: string | null = null;
+        let rankValue: number | null = null;
+
+        if (isRun && distMiles >= 0.9 && distMiles <= 1.1) {
+          // ~1 mile run — rank by time in seconds
+          rankedExerciseId = 'run_1_mile';
+          rankValue = dur;
+        } else if (isRun && distMeters >= 350 && distMeters <= 450) {
+          // ~400m run — rank by time in seconds
+          rankedExerciseId = 'run_400m';
+          rankValue = dur;
+        }
+
+        if (rankedExerciseId && rankValue) {
+          // Log as ranked workout via logTrainingAction
+          const { logTrainingAction } = await import('@/app/actions');
+          try {
+            const result = await logTrainingAction(
+              user.id, rankedExerciseId, user.bodyweight || 180, 'male',
+              [{ duration: rankValue, reps: 1, weight: 0 }]
+            );
+            synced.push(`${rankedExerciseId}: ${Math.floor(rankValue / 60)}:${String(Math.round(rankValue % 60)).padStart(2, '0')} (Lv.${result.level})`);
+          } catch (e: any) {
+            console.error('Failed to log ranked exercise:', e.message);
+          }
+        } else {
+          // Log as generic cardio/activity workout
+          const xp = Math.floor((dur / 60) * 8); // 8 XP per minute
+          const exerciseName = catalogId.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
+          const durationMin = Math.round(dur / 60);
+          const value = distMeters > 100 ? `${distMiles.toFixed(2)} mi` : `${durationMin} min`;
+
+          // Only log if not already logged today for this type
+          const { data: existing } = await supabase.from('workouts')
+            .select('id').eq('user_id', user.id).eq('exercise_id', catalogId).eq('date', today).limit(1);
+          if (!existing?.length) {
+            await supabase.from('workouts').insert({
+              user_id: user.id, exercise_id: catalogId, timestamp: ts, date: today,
+              value, raw_value: dur, sets: null, level: 0, xp, rank_name: null,
+            });
+            synced.push(`${exerciseName}: ${value}`);
+          }
+        }
+      }
     }
 
     // HRV — latest reading (skip if WHOOP connected)
