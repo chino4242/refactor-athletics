@@ -86,11 +86,12 @@ export async function POST(request: NextRequest) {
       const HC_TYPE_MAP: Record<number, string> = {
         46: 'running_generic', 47: 'running_generic', // Running, Running Treadmill
         8: 'cycling', 9: 'cycling',                   // Biking, Biking Stationary
-        26: 'hiking', 69: 'walking',
+        26: 'running_generic',                        // Hiking → running_generic
         43: 'rowing_general', 44: 'rowing_general',   // Rowing, Rowing Machine
-        56: 'strength_training', 57: 'stretching',
+        57: 'stretching',
         58: 'swimming', 59: 'swimming',               // Open water, Pool
         75: 'yoga',
+        // 56 (strength_training) and 69 (walking) excluded — tracked via manual logging and steps
       };
 
       for (const ex of todayExercise) {
