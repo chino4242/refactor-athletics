@@ -81,9 +81,6 @@ function dbBlocksToWorkoutBlocks(blocks: any[], catalog: any[]): any[] {
             continue;
         }
 
-        // Flush any pending treadmill blocks before an exercise
-        flushTreadmill();
-
         if (block.block_type === 'exercise') {
             const cat = catalogMap.get(block.exercise_id);
             const name = cat?.name || (block.exercise_id || 'Exercise').replace(/_/g, ' ');
