@@ -170,72 +170,6 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
 
     return (
         <div className="space-y-4">
-            {/* Smart CTA */}
-            {profile && (() => {
-                const hour = new Date().getHours();
-                const hasWorkout = lastWorkout?.date === new Date().toLocaleDateString('en-CA');
-                const hasFood = todayProgress.calories > 0;
-                const hasScheduled = !!todayScheduled;
-
-                if (hasScheduled && !hasWorkout) return (
-                    <Link href="/train" className="block w-full bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-xl px-4 py-4 flex items-center justify-between shadow-lg shadow-orange-900/20 active:scale-[0.98] transition">
-                        <div>
-                            <div className="text-[10px] text-white/60 uppercase font-bold">Today&apos;s Workout</div>
-                            <div className="text-sm font-bold">{todayScheduled.title || 'Ready to train'}</div>
-                        </div>
-                        <span className="text-sm font-bold">Start →</span>
-                    </Link>
-                );
-                if (!hasFood && hour >= 7 && hour < 11) return (
-                    <Link href="/track" className="block w-full bg-zinc-800 border border-zinc-700 text-white rounded-xl px-4 py-3 flex items-center justify-between hover:border-zinc-600 transition">
-                        <div className="flex items-center gap-2"><span>🥗</span><span className="text-sm font-medium">Log Breakfast</span></div>
-                        <span className="text-xs text-zinc-500">→</span>
-                    </Link>
-                );
-                if (!hasFood && hour >= 11 && hour < 15) return (
-                    <Link href="/track" className="block w-full bg-zinc-800 border border-zinc-700 text-white rounded-xl px-4 py-3 flex items-center justify-between hover:border-zinc-600 transition">
-                        <div className="flex items-center gap-2"><span>🥗</span><span className="text-sm font-medium">Log Lunch</span></div>
-                        <span className="text-xs text-zinc-500">→</span>
-                    </Link>
-                );
-                if (!hasFood && hour >= 17 && hour < 21) return (
-                    <Link href="/track" className="block w-full bg-zinc-800 border border-zinc-700 text-white rounded-xl px-4 py-3 flex items-center justify-between hover:border-zinc-600 transition">
-                        <div className="flex items-center gap-2"><span>🥗</span><span className="text-sm font-medium">Log Dinner</span></div>
-                        <span className="text-xs text-zinc-500">→</span>
-                    </Link>
-                );
-                if (hasWorkout && todayProgress.steps < (profile.habit_targets?.habit_steps || 10000) * 0.5) return (
-                    <div className="w-full bg-zinc-800/50 border border-zinc-700/50 text-white rounded-xl px-4 py-3 flex items-center justify-between">
-                        <div className="flex items-center gap-2"><span>👣</span><span className="text-sm font-medium text-zinc-400">{todayProgress.steps.toLocaleString()} / {(profile.habit_targets?.habit_steps || 10000).toLocaleString()} steps</span></div>
-                        <span className="text-[10px] text-zinc-600">Keep moving</span>
-                    </div>
-                );
-                return null;
-            })()}
-
-            {/* Next Level Up — power level nudge */}
-            {profile && (() => {
-                // Show top 2 exercises closest to next rank (from stats if available)
-                const quests = (stats as any)?.nextLevelQuests;
-                if (!quests?.length) return null;
-                return (
-                    <Link href="/power-level" className="block bg-zinc-900 border border-zinc-800 rounded-xl p-3 hover:border-zinc-700 transition">
-                        <div className="flex items-center gap-2 mb-2">
-                            <span className="text-sm">⚡</span>
-                            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Next Level Up</span>
-                        </div>
-                        <div className="space-y-1.5">
-                            {quests.slice(0, 3).map((q: any, i: number) => (
-                                <div key={i} className="flex items-center justify-between">
-                                    <span className="text-xs text-zinc-300">{q.name}</span>
-                                    <span className="text-xs font-bold text-orange-400">{q.target}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </Link>
-                );
-            })()}
-
             {/* Daily Quest Summary */}
             {profile && (
                 <div>
@@ -314,7 +248,6 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
                         {(() => {
                             const net = Math.round(todayProgress.calories - todayProgress.caloriesBurned);
                             const netTarget = profile.nutrition_targets?.net_calorie_target || -500;
-                            // For deficit (negative target): net must be <= target. For surplus (positive): net must be >= target.
                             const netMet = netTarget < 0 ? net <= netTarget : net >= netTarget;
                             return (
                         <div className={`rounded-lg p-2.5 text-center transition-colors ${
@@ -397,6 +330,72 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
                 </Link>
                 </div>
             )}
+
+            {/* Smart CTA */}
+            {profile && (() => {
+                const hour = new Date().getHours();
+                const hasWorkout = lastWorkout?.date === new Date().toLocaleDateString('en-CA');
+                const hasFood = todayProgress.calories > 0;
+                const hasScheduled = !!todayScheduled;
+
+                if (hasScheduled && !hasWorkout) return (
+                    <Link href="/train" className="block w-full bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-xl px-4 py-4 flex items-center justify-between shadow-lg shadow-orange-900/20 active:scale-[0.98] transition">
+                        <div>
+                            <div className="text-[10px] text-white/60 uppercase font-bold">Today&apos;s Workout</div>
+                            <div className="text-sm font-bold">{todayScheduled.title || 'Ready to train'}</div>
+                        </div>
+                        <span className="text-sm font-bold">Start →</span>
+                    </Link>
+                );
+                if (!hasFood && hour >= 7 && hour < 11) return (
+                    <Link href="/track" className="block w-full bg-zinc-800 border border-zinc-700 text-white rounded-xl px-4 py-3 flex items-center justify-between hover:border-zinc-600 transition">
+                        <div className="flex items-center gap-2"><span>🥗</span><span className="text-sm font-medium">Log Breakfast</span></div>
+                        <span className="text-xs text-zinc-500">→</span>
+                    </Link>
+                );
+                if (!hasFood && hour >= 11 && hour < 15) return (
+                    <Link href="/track" className="block w-full bg-zinc-800 border border-zinc-700 text-white rounded-xl px-4 py-3 flex items-center justify-between hover:border-zinc-600 transition">
+                        <div className="flex items-center gap-2"><span>🥗</span><span className="text-sm font-medium">Log Lunch</span></div>
+                        <span className="text-xs text-zinc-500">→</span>
+                    </Link>
+                );
+                if (!hasFood && hour >= 17 && hour < 21) return (
+                    <Link href="/track" className="block w-full bg-zinc-800 border border-zinc-700 text-white rounded-xl px-4 py-3 flex items-center justify-between hover:border-zinc-600 transition">
+                        <div className="flex items-center gap-2"><span>🥗</span><span className="text-sm font-medium">Log Dinner</span></div>
+                        <span className="text-xs text-zinc-500">→</span>
+                    </Link>
+                );
+                if (hasWorkout && todayProgress.steps < (profile.habit_targets?.habit_steps || 10000) * 0.5) return (
+                    <div className="w-full bg-zinc-800/50 border border-zinc-700/50 text-white rounded-xl px-4 py-3 flex items-center justify-between">
+                        <div className="flex items-center gap-2"><span>👣</span><span className="text-sm font-medium text-zinc-400">{todayProgress.steps.toLocaleString()} / {(profile.habit_targets?.habit_steps || 10000).toLocaleString()} steps</span></div>
+                        <span className="text-[10px] text-zinc-600">Keep moving</span>
+                    </div>
+                );
+                return null;
+            })()}
+
+            {/* Next Level Up — power level nudge */}
+            {profile && (() => {
+                // Show top 2 exercises closest to next rank (from stats if available)
+                const quests = (stats as any)?.nextLevelQuests;
+                if (!quests?.length) return null;
+                return (
+                    <Link href="/power-level" className="block bg-zinc-900 border border-zinc-800 rounded-xl p-3 hover:border-zinc-700 transition">
+                        <div className="flex items-center gap-2 mb-2">
+                            <span className="text-sm">⚡</span>
+                            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Next Level Up</span>
+                        </div>
+                        <div className="space-y-1.5">
+                            {quests.slice(0, 3).map((q: any, i: number) => (
+                                <div key={i} className="flex items-center justify-between">
+                                    <span className="text-xs text-zinc-300">{q.name}</span>
+                                    <span className="text-xs font-bold text-orange-400">{q.target}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </Link>
+                );
+            })()}
 
             {/* Today's Workout + Last Workout - Side by Side */}
             <div className="grid grid-cols-2 gap-3">
