@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# iOS/Capacitor (lives on feature/capacitor-ios branch only)
+ios/
