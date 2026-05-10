@@ -111,9 +111,9 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
     };
 
     const parseServingGrams = (s?: string): string => {
-        if (!s) return '100';
+        if (!s) return '';
         const match = s.match(/([\d.]+)\s*g/i);
-        return match ? String(Math.round(parseFloat(match[1]))) : '100';
+        return match ? String(Math.round(parseFloat(match[1]))) : '';
     };
     const [showScanner, setShowScanner] = useState(false);
 
@@ -294,11 +294,12 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                                         <label className="text-[9px] text-zinc-500 uppercase block mb-0.5">Serving (g)</label>
                                         <input type="number" value={servingGrams} onChange={e => setServingGrams(e.target.value)}
                                             className="w-full bg-zinc-900 border border-zinc-700 rounded px-2 py-1.5 text-sm text-white text-center focus:border-orange-500 outline-none" />
+                                        {selectedFood.servingLabel && <div className="text-[9px] text-zinc-500 mt-0.5 text-center">{selectedFood.servingLabel}</div>}
                                     </div>
                                     <div className="flex gap-1 flex-wrap">
                                         {(() => {
                                             const actual = parseServingGrams(selectedFood.servingSize);
-                                            const presets = [actual, '100', '150', '200'];
+                                            const presets = actual ? [actual, '100', '150', '200'] : ['50', '100', '150', '200'];
                                             const unique = [...new Set(presets)];
                                             return unique.map(g => (
                                                 <button key={g} onClick={() => setServingGrams(g)}
@@ -355,7 +356,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                                         <span className="text-[10px] font-bold text-yellow-400 uppercase tracking-wider">★ Favorites</span>
                                         <div className="mt-1 space-y-1">
                                             {favorites.map(food => (
-                                                <button key={food.name} onClick={() => { setSelectedFood(food); setServingGrams(parseServingGrams(food.servingSize)); }}
+                                                <button key={food.name} onClick={() => { setSelectedFood(food); setServingGrams(parseServingGrams(food.servingSize) || '100'); }}
                                                     className="w-full text-left p-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg hover:border-yellow-500/30 transition">
                                                     <div className="text-xs font-medium text-white truncate">{food.name}</div>
                                                     <div className="text-[10px] text-zinc-500">P:{food.per100g.protein} C:{food.per100g.carbs} F:{food.per100g.fat} per 100g</div>
@@ -370,7 +371,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                                         <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">🕐 Recent</span>
                                         <div className="mt-1 space-y-1">
                                             {recents.filter(r => !favorites.some(f => f.name === r.name)).slice(0, 5).map(food => (
-                                                <button key={food.name} onClick={() => { setSelectedFood(food); setServingGrams(parseServingGrams(food.servingSize)); }}
+                                                <button key={food.name} onClick={() => { setSelectedFood(food); setServingGrams(parseServingGrams(food.servingSize) || '100'); }}
                                                     className="w-full text-left p-2 bg-zinc-800/30 border border-zinc-800/50 rounded-lg hover:border-zinc-600 transition">
                                                     <div className="text-xs font-medium text-zinc-300 truncate">{food.name}</div>
                                                     <div className="text-[10px] text-zinc-600">P:{food.per100g.protein} C:{food.per100g.carbs} F:{food.per100g.fat}</div>

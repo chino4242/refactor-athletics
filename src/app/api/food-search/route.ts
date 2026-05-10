@@ -6,6 +6,7 @@ export interface FoodResult {
   brand?: string;
   source: 'usda' | 'off';
   servingSize?: string;
+  servingLabel?: string;
   per100g: { calories: number; protein: number; carbs: number; fat: number };
 }
 
@@ -38,7 +39,8 @@ async function searchUSDA(query: string): Promise<FoodResult[]> {
     name: f.description,
     brand: f.brandName || f.brandOwner || undefined,
     source: 'usda' as const,
-    servingSize: f.servingSize ? `${f.servingSize}${f.servingSizeUnit || 'g'}` : '100g',
+    servingSize: f.servingSize ? `${f.servingSize}${f.servingSizeUnit || 'g'}` : undefined,
+    servingLabel: f.householdServingFullText || undefined,
     per100g: {
       calories: Math.round(usdaNutrient(f.foodNutrients, 'Energy', 'KCAL')),
       protein: Math.round(usdaNutrient(f.foodNutrients, 'Protein') * 10) / 10,
