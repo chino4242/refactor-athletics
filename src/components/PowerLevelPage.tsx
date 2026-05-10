@@ -200,7 +200,7 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                     return {
                         id, name: catItem.name, currentLevel, nextLevel: currentLevel + 1,
                         target: formatThreshold(nextThreshold, unit, bw),
-                        bestFormatted: bestValue > 0 ? formatThreshold(bestValue, unit, bw) : null,
+                        bestFormatted: bestValue > 0 ? (unit.toLowerCase() === 'xbw' ? `${Math.round(bestValue)} lbs` : formatThreshold(bestValue, unit, bw)) : null,
                         gap, isTime, hasBest: bestValue > 0,
                     };
                 }).filter(Boolean).sort((a: any, b: any) => {
@@ -444,7 +444,7 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                                         return (
                                             <tr key={ex.exerciseId} className="border-b border-zinc-800/50">
                                                 <td className="py-2 text-white font-medium">{ex.displayName}</td>
-                                                <td className="text-center py-2 text-orange-400 font-bold">{ex.bestValue ? formatThreshold(ex.bestValue, unit, bw) : '—'}</td>
+                                                <td className="text-center py-2 text-orange-400 font-bold">{ex.bestValue ? (isXBW ? `${Math.round(ex.bestValue)} lbs` : formatThreshold(ex.bestValue, unit, bw)) : '—'}</td>
                                                 {levels.map((t: number, i: number) => (
                                                     <td key={i} className={`text-center py-2 font-mono ${ex.currentLevel > i ? 'text-emerald-400' : ex.currentLevel === i ? 'text-orange-400 font-bold' : 'text-zinc-600'}`}>
                                                         {isXBW ? <><div>{Math.round(t * bw)}</div><div className="text-[9px] opacity-50">{t}x</div></> : formatThreshold(t, unit, bw)}
@@ -475,7 +475,7 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                                     <div key={ex.exerciseId} className="bg-zinc-900/50 border border-zinc-800/50 rounded-xl p-3">
                                         <div className="flex items-center justify-between mb-2">
                                             <span className="text-xs font-bold text-white">{ex.displayName}</span>
-                                            <span className="text-[10px] text-orange-400 font-bold">Best: {ex.bestValue ? formatThreshold(ex.bestValue, unit, bw) : '—'}</span>
+                                            <span className="text-[10px] text-orange-400 font-bold">Best: {ex.bestValue ? (isXBW ? `${Math.round(ex.bestValue)} lbs` : formatThreshold(ex.bestValue, unit, bw)) : '—'}</span>
                                         </div>
                                         <div className="grid grid-cols-5 gap-1">
                                             {levels.map((t: number, i: number) => (
