@@ -248,7 +248,7 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
     // Query workouts, catalog, and user profile in parallel
     const [{ data: workouts }, { data: catalog }, { data: profile }] = await Promise.all([
         supabase.from('workouts').select('exercise_id, level, xp').eq('user_id', userId),
-        supabase.from('catalog').select('id, standards').not('standards', 'is', null),
+        supabase.from('catalog').select('id, name, standards').not('standards', 'is', null),
         supabase.from('users').select('selected_path, age, sex, bodyweight').eq('id', userId).single(),
     ]);
 
