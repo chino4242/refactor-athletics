@@ -11,11 +11,32 @@ export function calculatePhysiquePoints(
     const metrics = mode === 'scale' ? SCALE_METRICS : TAPE_METRICS;
     let score = 0;
 
-    // Track lean mass and fat % deltas for scale mode
+    // Track lean mass and fat % deltas (works for both modes when data exists)
     let leanMassDelta: number | undefined;
     let fatPctDelta: number | undefined;
 
+    // Check lean_body_mass
+    {
+        let lbmBase: number | null = null, lbmCurr: number | null = null;
+        for (const row of bodyCompHistory) {
+            const v = row.lean_body_mass;
+            if (v !== undefined && v !== null) { if (lbmBase === null) lbmBase = Number(v); lbmCurr = Number(v); }
+        }
+        if (lbmBase !== null && lbmCurr !== null && lbmBase !== lbmCurr) leanMassDelta = Math.round((lbmCurr - lbmBase) * 10) / 10;
+    }
+
+    // Check body_fat_percentage
+    {
+        let fatBase: number | null = null, fatCurr: number | null = null;
+        for (const row of bodyCompHistory) {
+            const v = row.body_fat_percentage;
+            if (v !== undefined && v !== null) { if (fatBase === null) fatBase = Number(v); fatCurr = Number(v); }
+        }
+        if (fatBase !== null && fatCurr !== null) fatPctDelta = Math.round((fatCurr - fatBase) * 10) / 10;
+    }
+
     if (mode === 'scale') {
+        // Override leanMassDelta with per-region data if available
         const muscleMetrics = ['left_arm_muscle', 'right_arm_muscle', 'trunk_muscle', 'left_leg_muscle', 'right_leg_muscle'] as const;
         let totalMuscleBase = 0, totalMuscleCurr = 0, hasMuscle = false;
         for (const m of muscleMetrics) {
@@ -27,13 +48,6 @@ export function calculatePhysiquePoints(
             if (base !== null && curr !== null) { totalMuscleBase += base; totalMuscleCurr += curr; hasMuscle = true; }
         }
         if (hasMuscle) leanMassDelta = Math.round((totalMuscleCurr - totalMuscleBase) * 10) / 10;
-
-        let fatBase: number | null = null, fatCurr: number | null = null;
-        for (const row of bodyCompHistory) {
-            const v = row.body_fat_percentage;
-            if (v !== undefined && v !== null) { if (fatBase === null) fatBase = Number(v); fatCurr = Number(v); }
-        }
-        if (fatBase !== null && fatCurr !== null) fatPctDelta = Math.round((fatCurr - fatBase) * 10) / 10;
     }
 
     metrics.forEach(metric => {
