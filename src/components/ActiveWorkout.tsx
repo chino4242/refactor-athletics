@@ -227,7 +227,7 @@ function ExerciseView({ block, blockIndex, onComplete, fullHistory, catalog, exe
         {(() => {
           const equip = catalogItem?.required_equipment || [];
           const id = catalogItem?.id || '';
-          if (!equip.includes('barbell') && !equip.includes('smith_machine') && !id.startsWith('smith_')) return null;
+          if (!equip.includes('barbell') && !equip.includes('smith_machine') && !id.startsWith('smith_') && !id.includes('barbell')) return null;
           return (
             <div className="mt-2">
               <WeightCalculator onUse={(w) => { setWeights(prev => prev.map(() => String(w))); }} />
@@ -1135,7 +1135,7 @@ function SupersetView({ block, blockIndex, onComplete, fullHistory, catalog, exe
                     {setIdx === 0 && (() => {
                       const equip = catalogItem?.required_equipment || [];
                       const id = catalogItem?.id || '';
-                      if (!equip.includes('barbell') && !equip.includes('smith_machine') && !id.startsWith('smith_')) return null;
+                      if (!equip.includes('barbell') && !equip.includes('smith_machine') && !id.startsWith('smith_') && !id.includes('barbell')) return null;
                       return (
                         <div className="px-3 pb-2">
                           <WeightCalculator onUse={(w) => { setWeights(prev => { const next = { ...prev }; for (let s = 0; s < totalSets; s++) next[`${exIdx}-${s}`] = String(w); return next; }); }} />

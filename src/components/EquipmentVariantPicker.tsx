@@ -21,8 +21,13 @@ export function getEquipmentVariants(exerciseName: string, catalog: CatalogItem[
     || catalog.find(c => name.includes(c.name.toLowerCase()) || c.name.toLowerCase().includes(name));
   if (!match) return [];
   const baseId = match.normalizes_to || match.id;
-  const variants = catalog.filter(c => c.id === baseId || c.normalizes_to === baseId);
-  return variants.length > 1 ? variants : [];
+  // Also check if stripping 'barbell_' gives a valid base that others normalize to
+  const altBaseId = match.id.replace(/^barbell_/, '');
+  const variants = catalog.filter(c => c.id === baseId || c.normalizes_to === baseId || c.id === altBaseId || c.normalizes_to === altBaseId);
+  // Deduplicate and include self
+  const seen = new Set<string>();
+  const unique = variants.filter(c => { if (seen.has(c.id)) return false; seen.add(c.id); return true; });
+  return unique.length > 1 ? unique : [];
 }
 
 export default function EquipmentVariantPicker({ variants, selectedId, onSelect }: Props) {
