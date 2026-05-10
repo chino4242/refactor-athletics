@@ -34,10 +34,14 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
 
     // Favorites
     const [favorites, setFavorites] = useState<FoodResult[]>([]);
+    const [recents, setRecents] = useState<FoodResult[]>([]);
     useEffect(() => {
         if (isOpen && userId) {
             const saved = localStorage.getItem('favorite_foods');
             if (saved) try { setFavorites(JSON.parse(saved)); } catch {}
+            // Load recent foods from localStorage
+            const recentSaved = localStorage.getItem('recent_foods');
+            if (recentSaved) try { setRecents(JSON.parse(recentSaved)); } catch {}
         }
     }, [isOpen, userId]);
 
@@ -98,6 +102,13 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
         if (c > 0) promises.push(onLog('carbs', (totals['macro_carbs'] || 0) + c));
         if (f > 0) promises.push(onLog('fat', (totals['macro_fat'] || 0) + f));
         if (promises.length > 0) await Promise.all(promises);
+        // Save to recents
+        setRecents(prev => {
+            const filtered = prev.filter(r => r.name !== selectedFood.name);
+            const next = [selectedFood, ...filtered].slice(0, 10);
+            localStorage.setItem('recent_foods', JSON.stringify(next));
+            return next;
+        });
         setSelectedFood(null);
         setFoodQuery('');
         setFoodResults([]);
@@ -280,6 +291,21 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                                                     className="w-full text-left p-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg hover:border-yellow-500/30 transition">
                                                     <div className="text-xs font-medium text-white truncate">{food.name}</div>
                                                     <div className="text-[10px] text-zinc-500">P:{food.per100g.protein} C:{food.per100g.carbs} F:{food.per100g.fat} per 100g</div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                                {/* Recents — show when not searching */}
+                                {!foodQuery && recents.length > 0 && (
+                                    <div className="mb-3">
+                                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">🕐 Recent</span>
+                                        <div className="mt-1 space-y-1">
+                                            {recents.filter(r => !favorites.some(f => f.name === r.name)).slice(0, 5).map(food => (
+                                                <button key={food.name} onClick={() => { setSelectedFood(food); setServingGrams(parseServingGrams(food.servingSize)); }}
+                                                    className="w-full text-left p-2 bg-zinc-800/30 border border-zinc-800/50 rounded-lg hover:border-zinc-600 transition">
+                                                    <div className="text-xs font-medium text-zinc-300 truncate">{food.name}</div>
+                                                    <div className="text-[10px] text-zinc-600">P:{food.per100g.protein} C:{food.per100g.carbs} F:{food.per100g.fat}</div>
                                                 </button>
                                             ))}
                                         </div>
