@@ -13,7 +13,6 @@ export async function POST(request: NextRequest) {
 
     const hasWhoop = !!user.whoop_connected_at;
     const body = await request.json();
-    console.log('HC Webhook keys:', Object.keys(body).join(', '));
     const tz = user.timezone || 'America/New_York';
     const today = new Date().toLocaleDateString('en-CA', { timeZone: tz });
     const ts = Math.floor(Date.now() / 1000);
@@ -183,11 +182,19 @@ export async function POST(request: NextRequest) {
     }
 
     if ((body.body_fat?.length) || (body.bodyFat?.length) || (body.body_fat_percentage?.length)) {
-      console.log('Body fat data found:', JSON.stringify(body.body_fat || body.bodyFat || body.body_fat_percentage).slice(0, 300));
       const fatArray = body.body_fat || body.bodyFat || body.body_fat_percentage;
       const latest = fatArray[fatArray.length - 1];
       const pct = latest.percentage || latest.body_fat_percentage || latest.value;
-      if (pct) { bodyMeasurements.body_fat_percentage = pct; synced.push(`body fat: ${pct}%`); }
+      if (pct) {
+        bodyMeasurements.body_fat_percentage = pct;
+        synced.push(`body fat: ${Math.round(pct * 10) / 10}%`);
+        // Derive lean body mass if we have weight
+        const weightLbs = bodyMeasurements.weight || user.bodyweight;
+        if (weightLbs && !bodyMeasurements.lean_body_mass) {
+          bodyMeasurements.lean_body_mass = Math.round(weightLbs * (1 - pct / 100) * 10) / 10;
+          synced.push(`lean mass: ${bodyMeasurements.lean_body_mass} lbs (derived)`);
+        }
+      }
     }
 
     if ((body.lean_body_mass?.length) || (body.leanBodyMass?.length)) {
