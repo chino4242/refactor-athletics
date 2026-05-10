@@ -18,6 +18,11 @@ const config: CapacitorConfig = {
       launchAutoHide: true,
       backgroundColor: '#09090b', // zinc-950
       showSpinner: false,
+      launchFadeOutDuration: 300,
+    },
+    StatusBar: {
+      style: 'DARK',
+      backgroundColor: '#09090b',
     },
   },
 };
