@@ -37,6 +37,19 @@ function formatExerciseName(id: string): string {
     return id.replace(/^(five_rm_|one_rm_|est_1rm_)/, '').replace(/_/g, ' ');
 }
 
+function formatThreshold(value: number, unit: string, bodyweight?: number): string {
+    const lowerUnit = (unit || '').toLowerCase();
+    if (lowerUnit === 'sec' || lowerUnit === 'seconds' || lowerUnit === 'time') {
+        const min = Math.floor(value / 60);
+        const sec = Math.round(value % 60);
+        return `${min}:${String(sec).padStart(2, '0')}`;
+    }
+    if (lowerUnit === 'xbw' && bodyweight) {
+        return `${Math.round(value * bodyweight)} lbs`;
+    }
+    return `${value}${lowerUnit === 'reps' ? '' : ' ' + unit}`;
+}
+
 function getStandardsForExercise(exercise: any, age: number, sex: string): number[] | null {
     if (!exercise?.standards?.brackets) return null;
     const sexKey = sex.toLowerCase() === 'female' ? 'female' : 'male';
@@ -163,6 +176,73 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                     )}
                 </div>
             </div>
+
+            {/* === POWER LEVEL QUESTS === */}
+            {(() => {
+                const catalogMap = new Map(catalog.map((c: any) => [c.id, c]));
+                const testedMap = new Map(exerciseData.map(ex => [ex.exerciseId.replace(/^(five_rm_|one_rm_|est_1rm_)/, ''), ex]));
+                const bw = profile?.bodyweight || 180;
+
+                const quests = pathExerciseIds.map(id => {
+                    const catItem = catalogMap.get(id);
+                    if (!catItem) return null;
+                    const levels = getStandardsForExercise(catItem, age, sex);
+                    if (!levels) return null;
+                    const tested = testedMap.get(id);
+                    const currentLevel = tested?.currentLevel || 0;
+                    if (currentLevel >= 5) return null; // Already maxed
+                    const nextThreshold = levels[currentLevel];
+                    const unit = catItem.standards?.unit || '';
+                    const bestValue = tested?.bestValue || 0;
+                    const isTime = ['sec', 'seconds', 'time'].includes(unit.toLowerCase());
+                    // Calculate gap
+                    const gap = isTime ? (bestValue > 0 ? bestValue - nextThreshold : nextThreshold) : (nextThreshold - bestValue);
+                    return {
+                        id, name: catItem.name, currentLevel, nextLevel: currentLevel + 1,
+                        target: formatThreshold(nextThreshold, unit, bw),
+                        bestFormatted: bestValue > 0 ? formatThreshold(bestValue, unit, bw) : null,
+                        gap, isTime, hasBest: bestValue > 0,
+                    };
+                }).filter(Boolean).sort((a: any, b: any) => {
+                    // Prioritize: tested exercises close to next level first
+                    if (a.hasBest && !b.hasBest) return -1;
+                    if (!a.hasBest && b.hasBest) return 1;
+                    return a.gap - b.gap;
+                });
+
+                if (!quests.length) return null;
+
+                return (
+                    <div>
+                        <div className="flex items-center gap-2 mb-1">
+                            <span className="text-lg">🎯</span>
+                            <h2 className="text-sm font-black text-white uppercase tracking-wider">Power Level Quests</h2>
+                        </div>
+                        <p className="text-[10px] text-zinc-600 mb-3">Hit any of these to level up your Power Level</p>
+                        <div className="space-y-2">
+                            {quests.slice(0, 6).map((q: any) => (
+                                <div key={q.id} className="bg-zinc-900/50 border border-zinc-800/50 rounded-xl p-3 flex items-center justify-between">
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs font-bold text-white">{q.name}</span>
+                                            <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${q.currentLevel > 0 ? 'bg-zinc-700 text-zinc-300' : 'bg-zinc-800 text-zinc-600'}`}>
+                                                Lv.{q.currentLevel}
+                                            </span>
+                                        </div>
+                                        {q.bestFormatted && (
+                                            <span className="text-[10px] text-zinc-500">Current: {q.bestFormatted}</span>
+                                        )}
+                                    </div>
+                                    <div className="text-right shrink-0 ml-3">
+                                        <div className="text-sm font-black text-orange-400">{q.target}</div>
+                                        <div className="text-[9px] text-zinc-600">→ Lv.{q.nextLevel}</div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            })()}
 
             {/* === RANK LADDER === */}
             <div>
@@ -359,14 +439,15 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                                         const unit = catItem?.standards?.unit || '';
                                         const unitLabel = unit === 'xBW' ? 'xBW' : unit === 'Sec' || unit === 'sec' || unit === 'seconds' ? 's' : unit === 'Reps' || unit === 'reps' ? '' : 'lbs';
                                         const isXBW = unit === 'xBW';
+                                        const isTime = ['sec', 'seconds', 'time'].includes(unit.toLowerCase());
                                         const bw = profile?.bodyweight || 180;
                                         return (
                                             <tr key={ex.exerciseId} className="border-b border-zinc-800/50">
                                                 <td className="py-2 text-white font-medium">{ex.displayName}</td>
-                                                <td className="text-center py-2 text-orange-400 font-bold">{ex.bestValue ? `${Math.round(ex.bestValue)}` : '—'}</td>
+                                                <td className="text-center py-2 text-orange-400 font-bold">{ex.bestValue ? formatThreshold(ex.bestValue, unit, bw) : '—'}</td>
                                                 {levels.map((t: number, i: number) => (
                                                     <td key={i} className={`text-center py-2 font-mono ${ex.currentLevel > i ? 'text-emerald-400' : ex.currentLevel === i ? 'text-orange-400 font-bold' : 'text-zinc-600'}`}>
-                                                        {isXBW ? <><div>{Math.round(t * bw)}</div><div className="text-[9px] opacity-50">{t}x</div></> : <>{t}{unitLabel}</>}
+                                                        {isXBW ? <><div>{Math.round(t * bw)}</div><div className="text-[9px] opacity-50">{t}x</div></> : formatThreshold(t, unit, bw)}
                                                     </td>
                                                 ))}
                                             </tr>
@@ -387,19 +468,19 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                                 const levels = getStandardsForExercise(catItem, age, sex);
                                 if (!levels) return null;
                                 const unit = catItem?.standards?.unit || '';
-                                const unitLabel = unit === 'xBW' ? 'xBW' : unit === 'Sec' || unit === 'sec' || unit === 'seconds' ? 's' : unit === 'Reps' || unit === 'reps' ? '' : 'lbs';
                                 const isXBW = unit === 'xBW';
+                                const isTime = ['sec', 'seconds', 'time'].includes(unit.toLowerCase());
                                 const bw = profile?.bodyweight || 180;
                                 return (
                                     <div key={ex.exerciseId} className="bg-zinc-900/50 border border-zinc-800/50 rounded-xl p-3">
                                         <div className="flex items-center justify-between mb-2">
                                             <span className="text-xs font-bold text-white">{ex.displayName}</span>
-                                            <span className="text-[10px] text-orange-400 font-bold">Best: {ex.bestValue ? Math.round(ex.bestValue) : '—'}{isXBW ? ' lbs' : unitLabel}</span>
+                                            <span className="text-[10px] text-orange-400 font-bold">Best: {ex.bestValue ? formatThreshold(ex.bestValue, unit, bw) : '—'}</span>
                                         </div>
                                         <div className="grid grid-cols-5 gap-1">
                                             {levels.map((t: number, i: number) => (
                                                 <div key={i} className={`text-center py-1.5 rounded-lg text-[10px] font-mono ${ex.currentLevel > i ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : ex.currentLevel === i ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : 'bg-zinc-800/50 text-zinc-600 border border-zinc-800'}`}>
-                                                    <div className="font-bold">{isXBW ? Math.round(t * bw) : t}</div>
+                                                    <div className="font-bold">{isTime ? formatThreshold(t, unit) : isXBW ? Math.round(t * bw) : t}</div>
                                                     <div className="text-[8px] opacity-60">{isXBW ? `${t}x` : `Lv.${i + 1}`}</div>
                                                 </div>
                                             ))}
