@@ -208,56 +208,6 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                 </div>
             </div>
 
-            {/* === CORE LIFTS === */}
-            {coreLiftData.length > 0 && (
-                <div>
-                    <div className="flex items-center justify-between mb-3">
-                        <div>
-                            <h2 className="text-sm font-black text-white uppercase tracking-wider">Core Lifts</h2>
-                            <p className="text-[10px] text-zinc-600">Your top exercises driving your Power Level</p>
-                        </div>
-                                        <Link href="/test" className="text-[10px] text-orange-500 hover:text-orange-400 font-bold flex items-center gap-0.5">
-                            Test <ChevronRight size={12} />
-                        </Link>
-                    </div>
-                    <div className="space-y-2">
-                        {coreLiftData.map(ex => {
-                            const levelKey = `level${ex.currentLevel}` as keyof typeof theme.ranks;
-                            const exRank = theme.ranks[levelKey];
-                            const exImage = (sex.toLowerCase() === 'female' && exRank && 'femaleImage' in exRank && exRank.femaleImage) ? exRank.femaleImage : exRank?.image;
-                            const exRankName = exRank?.name?.split(': ')[1] || 'Unranked';
-
-                            return (
-                                <div key={ex.exerciseId} className="flex items-center gap-3 p-3 bg-zinc-900/50 rounded-xl border border-zinc-800/50">
-                                    {exImage && (
-                                        <Image src={exImage} alt={exRankName} width={40} height={40} className="object-contain flex-shrink-0" />
-                                    )}
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-xs font-bold text-white truncate">{ex.displayName}</span>
-                                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${ex.currentLevel >= 4 ? 'bg-orange-500/20 text-orange-400' : ex.currentLevel >= 2 ? 'bg-zinc-700 text-zinc-300' : 'bg-zinc-800 text-zinc-500'}`}>
-                                                Lv.{ex.currentLevel}
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center justify-between mt-0.5">
-                                            <span className="text-[10px] text-zinc-500">{exRankName}</span>
-                                            {ex.nextThreshold && (
-                                                <span className="text-[10px] text-zinc-600">
-                                                    Next: <span className="text-zinc-400 font-bold">{ex.nextThreshold} {ex.unit}</span>
-                                                </span>
-                                            )}
-                                            {!ex.nextThreshold && ex.currentLevel === 5 && (
-                                                <span className="text-[10px] text-emerald-400 font-bold">MAX</span>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-            )}
-
             {/* === FULL BREAKDOWN === */}
             {exerciseData.length > 0 && <div>
                 <h2 className="text-sm font-black text-white uppercase tracking-wider mb-1">Path Exercises</h2>
