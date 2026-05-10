@@ -32,6 +32,26 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
     const [selectedFood, setSelectedFood] = useState<FoodResult | null>(null);
     const [servingGrams, setServingGrams] = useState('100');
 
+    // Favorites
+    const [favorites, setFavorites] = useState<FoodResult[]>([]);
+    useEffect(() => {
+        if (isOpen && userId) {
+            const saved = localStorage.getItem('favorite_foods');
+            if (saved) try { setFavorites(JSON.parse(saved)); } catch {}
+        }
+    }, [isOpen, userId]);
+
+    const toggleFavorite = (food: FoodResult) => {
+        setFavorites(prev => {
+            const exists = prev.some(f => f.name === food.name);
+            const next = exists ? prev.filter(f => f.name !== food.name) : [...prev, food];
+            localStorage.setItem('favorite_foods', JSON.stringify(next));
+            return next;
+        });
+    };
+
+    const isFavorite = (food: FoodResult) => favorites.some(f => f.name === food.name);
+
     const parseServingGrams = (s?: string): string => {
         if (!s) return '100';
         const match = s.match(/([\d.]+)\s*g/i);
@@ -234,16 +254,37 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                                         </div>
                                     );
                                 })()}
-                                <button onClick={handleAddFood}
-                                    className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold py-2.5 rounded-lg text-xs uppercase tracking-wider transition active:scale-95 flex items-center justify-center gap-1.5">
-                                    <Plus size={14} /> Add to Today
-                                </button>
+                                <div className="flex gap-2">
+                                    <button onClick={handleAddFood}
+                                        className="flex-1 bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold py-2.5 rounded-lg text-xs uppercase tracking-wider transition active:scale-95 flex items-center justify-center gap-1.5">
+                                        <Plus size={14} /> Add to Today
+                                    </button>
+                                    <button onClick={() => selectedFood && toggleFavorite(selectedFood)}
+                                        className={`px-3 py-2.5 rounded-lg border transition ${isFavorite(selectedFood!) ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400' : 'bg-zinc-800 border-zinc-700 text-zinc-500 hover:text-yellow-400'}`}>
+                                        ★
+                                    </button>
+                                </div>
                             </div>
                         )}
 
                         {/* Results list */}
                         {!selectedFood && (
                             <div className="max-h-64 overflow-y-auto space-y-1">
+                                {/* Favorites — show when not searching */}
+                                {!foodQuery && favorites.length > 0 && (
+                                    <div className="mb-3">
+                                        <span className="text-[10px] font-bold text-yellow-400 uppercase tracking-wider">★ Favorites</span>
+                                        <div className="mt-1 space-y-1">
+                                            {favorites.map(food => (
+                                                <button key={food.name} onClick={() => { setSelectedFood(food); setServingGrams(parseServingGrams(food.servingSize)); }}
+                                                    className="w-full text-left p-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg hover:border-yellow-500/30 transition">
+                                                    <div className="text-xs font-medium text-white truncate">{food.name}</div>
+                                                    <div className="text-[10px] text-zinc-500">P:{food.per100g.protein} C:{food.per100g.carbs} F:{food.per100g.fat} per 100g</div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                                 {searching && <p className="text-xs text-zinc-500 text-center py-4">Searching...</p>}
                                 {!searching && foodQuery.length >= 2 && foodResults.length === 0 && (
                                     <p className="text-xs text-zinc-500 text-center py-4">No results found</p>
