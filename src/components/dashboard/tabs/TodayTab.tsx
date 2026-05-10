@@ -14,9 +14,10 @@ import { useToast } from '@/context/ToastContext';
 interface TodayTabProps {
     userId: string;
     programs: Workout[];
+    stats?: any;
 }
 
-export default function TodayTab({ userId, programs }: TodayTabProps) {
+export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
     const { isClassic } = useExperienceMode();
     const { theme: _theme } = useTheme();
     const theme = _theme || THEMES.athlete;

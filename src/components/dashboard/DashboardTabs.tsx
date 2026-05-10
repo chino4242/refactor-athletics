@@ -62,7 +62,7 @@ export default function DashboardTabs({ userId, stats, hasActiveDuels, activeDue
 
             {/* Tab Content */}
             <div className="p-4">
-                {activeTab === 'Today' && <TodayTab userId={userId} programs={programs} />}
+                {activeTab === 'Today' && <TodayTab userId={userId} programs={programs} stats={stats} />}
                 {activeTab === 'Arena' && <ArenaTab userId={userId} activeDuels={activeDuels} />}
                 {activeTab === 'Stats' && <StatsTab userId={userId} stats={stats} />}
             </div>
