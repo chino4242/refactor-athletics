@@ -35,15 +35,52 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
     // Favorites
     const [favorites, setFavorites] = useState<FoodResult[]>([]);
     const [recents, setRecents] = useState<FoodResult[]>([]);
+    const [meals, setMeals] = useState<{ name: string; foods: FoodResult[] }[]>([]);
+    const [showMealBuilder, setShowMealBuilder] = useState(false);
+    const [mealName, setMealName] = useState('');
+    const [mealItems, setMealItems] = useState<FoodResult[]>([]);
     useEffect(() => {
         if (isOpen && userId) {
             const saved = localStorage.getItem('favorite_foods');
             if (saved) try { setFavorites(JSON.parse(saved)); } catch {}
-            // Load recent foods from localStorage
             const recentSaved = localStorage.getItem('recent_foods');
             if (recentSaved) try { setRecents(JSON.parse(recentSaved)); } catch {}
+            const mealsSaved = localStorage.getItem('saved_meals');
+            if (mealsSaved) try { setMeals(JSON.parse(mealsSaved)); } catch {}
         }
     }, [isOpen, userId]);
+
+    const saveMeal = () => {
+        if (!mealName.trim() || mealItems.length === 0) return;
+        const next = [...meals, { name: mealName.trim(), foods: mealItems }];
+        setMeals(next);
+        localStorage.setItem('saved_meals', JSON.stringify(next));
+        setMealName('');
+        setMealItems([]);
+        setShowMealBuilder(false);
+    };
+
+    const logMeal = async (meal: { name: string; foods: FoodResult[] }) => {
+        let totalP = 0, totalC = 0, totalF = 0;
+        for (const food of meal.foods) {
+            const mult = (parseFloat(food.servingSize?.replace(/[^0-9.]/g, '') || '') || 100) / 100;
+            totalP += Math.round(food.per100g.protein * mult);
+            totalC += Math.round(food.per100g.carbs * mult);
+            totalF += Math.round(food.per100g.fat * mult);
+        }
+        const promises = [];
+        if (totalP > 0) promises.push(onLog('protein', (totals['macro_protein'] || 0) + totalP));
+        if (totalC > 0) promises.push(onLog('carbs', (totals['macro_carbs'] || 0) + totalC));
+        if (totalF > 0) promises.push(onLog('fat', (totals['macro_fat'] || 0) + totalF));
+        if (promises.length > 0) await Promise.all(promises);
+        onClose();
+    };
+
+    const deleteMeal = (name: string) => {
+        const next = meals.filter(m => m.name !== name);
+        setMeals(next);
+        localStorage.setItem('saved_meals', JSON.stringify(next));
+    };
 
     const toggleFavorite = (food: FoodResult) => {
         setFavorites(prev => {
@@ -309,6 +346,57 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                                                 </button>
                                             ))}
                                         </div>
+                                    </div>
+                                )}
+                                {/* Saved Meals */}
+                                {!foodQuery && meals.length > 0 && !showMealBuilder && (
+                                    <div className="mb-3">
+                                        <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">🍽️ Meals</span>
+                                        <div className="mt-1 space-y-1">
+                                            {meals.map(meal => (
+                                                <div key={meal.name} className="flex items-center gap-2">
+                                                    <button onClick={() => logMeal(meal)}
+                                                        className="flex-1 text-left p-2 bg-emerald-500/5 border border-emerald-500/20 rounded-lg hover:border-emerald-500/40 transition">
+                                                        <div className="text-xs font-medium text-white">{meal.name}</div>
+                                                        <div className="text-[10px] text-zinc-500">{meal.foods.length} items · tap to log all</div>
+                                                    </button>
+                                                    <button onClick={() => deleteMeal(meal.name)} className="text-zinc-700 hover:text-red-400 text-xs p-1">✕</button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                                {/* Meal Builder */}
+                                {!foodQuery && !showMealBuilder && (favorites.length > 0 || recents.length > 0) && (
+                                    <button onClick={() => setShowMealBuilder(true)} className="w-full text-center text-[10px] text-zinc-600 hover:text-emerald-400 font-bold uppercase tracking-wider py-2 transition">
+                                        + Create Meal Template
+                                    </button>
+                                )}
+                                {showMealBuilder && (
+                                    <div className="mb-3 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs font-bold text-white">New Meal</span>
+                                            <button onClick={() => setShowMealBuilder(false)} className="text-zinc-500 text-xs">Cancel</button>
+                                        </div>
+                                        <input type="text" value={mealName} onChange={e => setMealName(e.target.value)} placeholder="Meal name (e.g. Breakfast)"
+                                            className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-xs text-white focus:border-emerald-500 outline-none" />
+                                        <div className="text-[10px] text-zinc-500">Tap items below to add:</div>
+                                        <div className="flex flex-wrap gap-1">
+                                            {[...favorites, ...recents.filter(r => !favorites.some(f => f.name === r.name))].map(food => {
+                                                const added = mealItems.some(m => m.name === food.name);
+                                                return (
+                                                    <button key={food.name} onClick={() => setMealItems(prev => added ? prev.filter(m => m.name !== food.name) : [...prev, food])}
+                                                        className={`px-2 py-1 rounded text-[10px] font-medium transition ${added ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-zinc-800 text-zinc-400 border border-zinc-700'}`}>
+                                                        {added ? '✓ ' : ''}{food.name.split(' ').slice(0, 3).join(' ')}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                        {mealItems.length > 0 && (
+                                            <button onClick={saveMeal} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2 rounded-lg uppercase tracking-wider transition">
+                                                Save Meal ({mealItems.length} items)
+                                            </button>
+                                        )}
                                     </div>
                                 )}
                                 {searching && <p className="text-xs text-zinc-500 text-center py-4">Searching...</p>}
