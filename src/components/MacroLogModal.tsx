@@ -25,11 +25,13 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
     const [carbs, setCarbs] = useState('');
     const [fat, setFat] = useState('');
     const [water, setWater] = useState('');
-    const [tab, setTab] = useState<'search' | 'manual'>('search');
+    const [tab, setTab] = useState<'search' | 'manual' | 'ai'>('search');
     const [foodQuery, setFoodQuery] = useState('');
     const [foodResults, setFoodResults] = useState<FoodResult[]>([]);
     const [searching, setSearching] = useState(false);
     const [selectedFood, setSelectedFood] = useState<FoodResult | null>(null);
+    const [aiInput, setAiInput] = useState('');
+    const [aiLoading, setAiLoading] = useState(false);
     const [servingGrams, setServingGrams] = useState('100');
 
     // Favorites
@@ -92,6 +94,21 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
     };
 
     const isFavorite = (food: FoodResult) => favorites.some(f => f.name === food.name);
+
+    const handleAiParse = async () => {
+        if (!aiInput.trim()) return;
+        setAiLoading(true);
+        try {
+            const res = await fetch('/api/food-parse', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: aiInput }) });
+            const data = await res.json();
+            if (data.foods?.length) {
+                setFoodResults(data.foods);
+                setTab('search');
+                setAiInput('');
+            }
+        } catch {}
+        finally { setAiLoading(false); }
+    };
 
     const parseServingGrams = (s?: string): string => {
         if (!s) return '100';
@@ -234,6 +251,9 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                     </button>
                     <button onClick={() => setTab('manual')} className={`flex-1 text-xs font-bold uppercase py-2.5 transition border-b-2 ${tab === 'manual' ? 'border-orange-500 text-white' : 'border-transparent text-zinc-500'}`}>
                         Set Totals
+                    </button>
+                    <button onClick={() => setTab('ai')} className={`flex-1 text-xs font-bold uppercase py-2.5 transition border-b-2 ${tab === 'ai' ? 'border-orange-500 text-white' : 'border-transparent text-zinc-500'}`}>
+                        🤖 AI
                     </button>
                 </div>
 
@@ -429,6 +449,21 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                                 ))}
                             </div>
                         )}
+                    </div>
+                ) : tab === 'ai' ? (
+                    <div className="p-4 space-y-3">
+                        <p className="text-xs text-zinc-400">Describe what you ate and AI will estimate the macros.</p>
+                        <textarea
+                            value={aiInput}
+                            onChange={e => setAiInput(e.target.value)}
+                            placeholder="e.g. chicken sandwich with fries and a coke"
+                            className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-3 text-sm text-white focus:border-orange-500 outline-none resize-none h-20"
+                        />
+                        <button onClick={handleAiParse} disabled={aiLoading || !aiInput.trim()}
+                            className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold py-3 rounded-xl text-xs uppercase tracking-wider transition disabled:opacity-50">
+                            {aiLoading ? 'Analyzing...' : 'Estimate Macros'}
+                        </button>
+                        <p className="text-[9px] text-zinc-600 text-center">Results are estimates. Verify before logging.</p>
                     </div>
                 ) : (
                 <>
