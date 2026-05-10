@@ -47,5 +47,9 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Refactor Athletics reads your health data to track steps, sleep, calories, weight, heart rate, and exercise — powering your fitness dashboard and rank calculations.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Refactor Athletics writes your completed workouts to Apple Health so they appear alongside your other fitness data.</string>
 </dict>
 </plist>

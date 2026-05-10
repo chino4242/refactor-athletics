@@ -59,6 +59,12 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             .then(r => r.json())
             .then(d => { if (d.synced?.length) { loadData(); localStorage.setItem('last_health_sync', new Date().toISOString()); } })
             .catch(() => {});
+        // Native health sync (Capacitor — HealthKit/Health Connect)
+        import('@/services/nativeHealth').then(({ syncNativeHealth, isHealthAvailable }) => {
+            isHealthAvailable().then(available => {
+                if (available) syncNativeHealth(userId).then(results => { if (results.length) loadData(); });
+            });
+        }).catch(() => {});
     }, [userId]);
 
     // Pull to refresh handlers
