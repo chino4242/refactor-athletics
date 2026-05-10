@@ -122,7 +122,18 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
             try {
                 const res = await fetch(`/api/food-search?q=${encodeURIComponent(q)}`, { signal: controller.signal });
                 const data = await res.json();
-                if (!controller.signal.aborted) setFoodResults(data.results || []);
+                if (!controller.signal.aborted) {
+                    const results: FoodResult[] = data.results || [];
+                    // Boost previously logged foods to the top
+                    const recentNames = new Set(recents.map(r => r.name.toLowerCase()));
+                    const favNames = new Set(favorites.map(f => f.name.toLowerCase()));
+                    results.sort((a, b) => {
+                        const aBoost = (favNames.has(a.name.toLowerCase()) ? 2 : 0) + (recentNames.has(a.name.toLowerCase()) ? 1 : 0);
+                        const bBoost = (favNames.has(b.name.toLowerCase()) ? 2 : 0) + (recentNames.has(b.name.toLowerCase()) ? 1 : 0);
+                        return bBoost - aBoost;
+                    });
+                    setFoodResults(results);
+                }
             } catch (e: any) { if (e?.name !== 'AbortError') setFoodResults([]); }
             finally { if (!controller.signal.aborted) setSearching(false); }
         }, 400);
