@@ -212,6 +212,29 @@ export default function TodayTab({ userId, programs }: TodayTabProps) {
                 return null;
             })()}
 
+            {/* Next Level Up — power level nudge */}
+            {profile && (() => {
+                // Show top 2 exercises closest to next rank (from stats if available)
+                const quests = (stats as any)?.nextLevelQuests;
+                if (!quests?.length) return null;
+                return (
+                    <Link href="/power-level" className="block bg-zinc-900 border border-zinc-800 rounded-xl p-3 hover:border-zinc-700 transition">
+                        <div className="flex items-center gap-2 mb-2">
+                            <span className="text-sm">⚡</span>
+                            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Next Level Up</span>
+                        </div>
+                        <div className="space-y-1.5">
+                            {quests.slice(0, 3).map((q: any, i: number) => (
+                                <div key={i} className="flex items-center justify-between">
+                                    <span className="text-xs text-zinc-300">{q.name}</span>
+                                    <span className="text-xs font-bold text-orange-400">{q.target}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </Link>
+                );
+            })()}
+
             {/* Daily Quest Summary */}
             {profile && (
                 <div>

@@ -249,7 +249,7 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
     const [{ data: workouts }, { data: catalog }, { data: profile }] = await Promise.all([
         supabase.from('workouts').select('exercise_id, level, xp').eq('user_id', userId),
         supabase.from('catalog').select('id, standards').not('standards', 'is', null),
-        supabase.from('users').select('selected_path').eq('id', userId).single(),
+        supabase.from('users').select('selected_path, age, sex, bodyweight').eq('id', userId).single(),
     ]);
 
     // Get user's path key exercises
@@ -362,6 +362,44 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
         streakFor('habit_no_vice', 'habit_bad_habit'),
     ]);
 
+    // Compute next-level quests (closest exercises to leveling up)
+    const nextLevelQuests: { name: string; target: string }[] = [];
+    const userAge = profile?.age || 25;
+    const userSex = (profile?.sex || 'male').toLowerCase();
+    const userBw = profile?.bodyweight || 180;
+    for (const id of keyExerciseIds) {
+        const catItem = (catalog || []).find((c: any) => c.id === id);
+        if (!catItem?.standards?.brackets) continue;
+        const sexKey = userSex === 'female' ? 'female' : 'male';
+        const brackets = catItem.standards.brackets[sexKey];
+        if (!brackets?.length) continue;
+        const bracket = brackets.find((b: any) => userAge >= b.min && userAge <= b.max) || brackets[0];
+        if (!bracket?.levels) continue;
+        const currentLevel = maxLevelPerExercise[id] || 0;
+        if (currentLevel >= 5) continue;
+        const nextThreshold = bracket.levels[currentLevel];
+        const unit = (catItem.standards.unit || '').toLowerCase();
+        let target: string;
+        if (unit === 'sec' || unit === 'seconds' || unit === 'time') {
+            const min = Math.floor(nextThreshold / 60);
+            const sec = Math.round(nextThreshold % 60);
+            target = `${min}:${String(sec).padStart(2, '0')}`;
+        } else if (unit === 'xbw') {
+            target = `${Math.round(nextThreshold * userBw)} lbs`;
+        } else {
+            target = `${nextThreshold} ${unit === 'reps' ? 'reps' : unit}`;
+        }
+        nextLevelQuests.push({ name: catItem.name, target });
+    }
+    // Sort: tested exercises first (have a level), then by threshold
+    nextLevelQuests.sort((a, b) => {
+        const aHas = Object.keys(maxLevelPerExercise).some(k => (catalog || []).find((c: any) => c.id === k)?.name === a.name);
+        const bHas = Object.keys(maxLevelPerExercise).some(k => (catalog || []).find((c: any) => c.id === k)?.name === b.name);
+        if (aHas && !bHas) return -1;
+        if (!aHas && bHas) return 1;
+        return 0;
+    });
+
     return {
         power_level: finalExpertise,
         max_expertise: keyExerciseIds.size * 5,
@@ -373,6 +411,7 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
         xp_to_next_level: xpNeeded - xpIntoLevel,
         no_alcohol_streak: alcoholStreak,
         no_vice_streak: viceStreak,
+        nextLevelQuests,
     };
 };
 
