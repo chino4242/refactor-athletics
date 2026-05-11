@@ -5,9 +5,11 @@ import { processWorkoutText } from '@/utils/workoutParser';
 import { createClient } from '@/utils/supabase/server';
 
 function dateToDayName(dateStr: string): string {
+    if (!dateStr) return new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
     if (/^[a-zA-Z]+$/.test(dateStr)) return dateStr.toLowerCase();
     try {
         const dt = new Date(`${dateStr}T12:00:00Z`);
+        if (isNaN(dt.getTime())) return new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
         return dt.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
     } catch {
         return new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
