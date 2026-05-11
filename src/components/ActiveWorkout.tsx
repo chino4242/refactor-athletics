@@ -1255,7 +1255,6 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
 
   // NEW: History State
   const [showLibrary, setShowLibrary] = useState(false);
-  const [expandedSection, setExpandedSection] = useState<number | null>(null);
   const [workoutDates, setWorkoutDates] = useState<string[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(initialDate || null);
 
@@ -1283,6 +1282,7 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
   // Block completion results & continue/stop prompt
   const [blockResults, setBlockResults] = useState<any[] | null>(null);
   const [showBlockComplete, setShowBlockComplete] = useState(false);
+  const [sectionCompleteIdx, setSectionCompleteIdx] = useState<number | null>(null);
   const [showEndConfirm, setShowEndConfirm] = useState(false);
   const [engineChoice, setEngineChoice] = useState<Record<number, 'hiit' | 'zone2' | null>>({});
 
@@ -1707,9 +1707,28 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
       if (currentSection === nextSection) {
         setBlockIndex(nextBlockIndex);
       } else {
+        // Section complete — check if all blocks in this section are done
+        const sectionIndices = workoutData
+          .map((b, i) => ({ section: b.section || 'General', i }))
+          .filter(b => b.section === currentSection)
+          .map(b => b.i);
+        const allDone = sectionIndices.every(i => completedIndices.includes(i) || skippedIndices.includes(i));
+        if (allDone) {
+          setSectionCompleteIdx(sections.findIndex(s => s.indices.includes(blockIndex)));
+        }
         setViewMode('HUB');
       }
     } else {
+      // Last block — check section completion
+      const currentSection = currentBlock.section || 'General';
+      const sectionIndices = workoutData
+        .map((b, i) => ({ section: b.section || 'General', i }))
+        .filter(b => b.section === currentSection)
+        .map(b => b.i);
+      const allDone = sectionIndices.every(i => completedIndices.includes(i) || skippedIndices.includes(i));
+      if (allDone) {
+        setSectionCompleteIdx(sections.findIndex(s => s.indices.includes(blockIndex)));
+      }
       setViewMode('HUB');
     }
   };
@@ -1884,6 +1903,37 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
 
     return (
       <div className="w-full max-w-md mx-auto">
+        {/* Section Complete Overlay */}
+        {sectionCompleteIdx !== null && sections[sectionCompleteIdx] && (() => {
+          const section = sections[sectionCompleteIdx];
+          const sectionXp = section.indices.reduce((sum: number, i: number) => sum + (workoutData[i]?.xp_value || 0), 0);
+          const allSectionsDone = sections.every((s: any) => s.indices.every((i: number) => completedIndices.includes(i) || skippedIndices.includes(i)));
+          return (
+            <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+              <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 max-w-sm w-full text-center">
+                <div className="text-3xl mb-2">✅</div>
+                <h2 className="text-lg font-black text-white mb-1">{section.name} Complete</h2>
+                <p className="text-sm text-zinc-400 mb-4">+{sectionXp} XP earned</p>
+                {allSectionsDone ? (
+                  <button
+                    onClick={() => { setSectionCompleteIdx(null); setIsComplete(true); localStorage.removeItem(progressKey); }}
+                    className="w-full py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold uppercase tracking-wider text-sm rounded-xl active:scale-[0.98] transition"
+                  >
+                    View Workout Summary
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setSectionCompleteIdx(null)}
+                    className="w-full py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold uppercase tracking-wider text-sm rounded-xl active:scale-[0.98] transition"
+                  >
+                    Continue →
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Header */}
         <div className="mb-5 px-1">
           <div className="flex items-center justify-between mb-3">
@@ -1922,129 +1972,81 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
         {/* Sections */}
         <div className="space-y-2">
           {sections.map((section: any, idx: number) => {
-            const isExpanded = expandedSection === idx;
             const sectionDoneCount = section.indices.filter((i: number) => completedIndices.includes(i)).length;
+            const sectionSkippedCount = section.indices.filter((i: number) => skippedIndices.includes(i)).length;
+            const allDone = sectionDoneCount + sectionSkippedCount === section.count;
+
+            // Section XP earned
+            const sectionXp = allDone ? section.indices.reduce((sum: number, i: number) => {
+              return sum + (workoutData[i]?.xp_value || 0);
+            }, 0) : 0;
 
             return (
               <div key={idx} className={`rounded-xl border transition-all overflow-hidden ${
-                section.isDone ? 'bg-zinc-900/30 border-zinc-800/50' :
-                isExpanded ? 'bg-zinc-900 border-zinc-700 shadow-lg shadow-black/20' :
-                'bg-zinc-900/60 border-zinc-800/50 hover:border-zinc-700'
+                allDone ? 'bg-emerald-500/5 border-emerald-500/20' :
+                'bg-zinc-900/60 border-zinc-800/50'
               }`}>
-                <button
-                  className="w-full p-4 text-left flex items-center gap-3"
-                  onClick={() => setExpandedSection(isExpanded ? null : idx)}
-                >
+                <div className="p-4 flex items-center gap-3">
                   {/* Status indicator */}
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                    section.isDone ? 'bg-emerald-500/15' : 'bg-zinc-800'
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+                    allDone ? 'bg-emerald-500/15' : 'bg-zinc-800'
                   }`}>
-                    {section.isDone
-                      ? <CheckCircle size={16} className="text-emerald-400" />
-                      : <span className="text-xs font-bold text-zinc-400">{idx + 1}</span>
+                    {allDone
+                      ? <CheckCircle size={18} className="text-emerald-400" />
+                      : <span className="text-sm font-bold text-zinc-400">{idx + 1}</span>
                     }
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <h3 className={`text-sm font-bold ${section.isDone ? 'text-emerald-400' : 'text-white'}`}>
+                    <h3 className={`text-sm font-bold ${allDone ? 'text-emerald-400' : 'text-white'}`}>
                       {section.name}
                     </h3>
                     <p className="text-[10px] text-zinc-500 mt-0.5">
-                      {sectionDoneCount}/{section.count} blocks {section.isDone ? '✓' : ''}
-                      {!section.isDone && (() => {
-                        const sectionBlocks = section.indices.map((i: number) => workoutData[i]);
-                        const estMins = sectionBlocks.reduce((s: number, b: any) => {
-                          if (b.type === 'timer' && b.intervals) return s + b.intervals.reduce((t: number, i: any) => t + (i.seconds || 0), 0) / 60;
-                          if (b.type === 'checklist_exercise') return s + (b.sets || 3) * ((b.rest_seconds || 60) + 30) / 60;
-                          if (b.type === 'superset') return s + (b.sets || 3) * ((b.rest_seconds || 60) + 45) / 60;
-                          return s;
-                        }, 0);
-                        const totalXp = sectionBlocks.reduce((s: number, b: any) => s + (b.xp_value || 0), 0);
-                        return <span> · ~{Math.round(estMins)} min · {totalXp} XP</span>;
-                      })()}
+                      {allDone ? (
+                        <span className="text-emerald-400">Complete · +{sectionXp} XP</span>
+                      ) : (
+                        <>
+                          {sectionDoneCount}/{section.count} blocks
+                          {(() => {
+                            const sectionBlocks = section.indices.map((i: number) => workoutData[i]);
+                            const estMins = sectionBlocks.reduce((s: number, b: any) => {
+                              if (b.type === 'timer' && b.intervals) return s + b.intervals.reduce((t: number, i: any) => t + (i.seconds || 0), 0) / 60;
+                              if (b.type === 'checklist_exercise') return s + (b.sets || 3) * ((b.rest_seconds || 60) + 30) / 60;
+                              if (b.type === 'superset') return s + (b.sets || 3) * ((b.rest_seconds || 60) + 45) / 60;
+                              return s;
+                            }, 0);
+                            const totalXp = sectionBlocks.reduce((s: number, b: any) => s + (b.xp_value || 0), 0);
+                            return <span> · ~{Math.round(estMins)} min · {totalXp} XP</span>;
+                          })()}
+                        </>
+                      )}
                     </p>
+                    {/* Preview exercises */}
+                    {!allDone && section.preview.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1.5">
+                        {section.preview.map((name: string, i: number) => (
+                          <span key={i} className="text-[9px] text-zinc-600 bg-zinc-800/50 px-1.5 py-0.5 rounded">{name}</span>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
-                  <ChevronRight size={16} className={`text-zinc-600 transition-transform shrink-0 ${isExpanded ? 'rotate-90' : ''}`} />
-                </button>
-
-                {isExpanded && (
-                  <div className="px-4 pb-4 border-t border-zinc-800/50">
-                    <div className="py-3 space-y-2">
-                      {section.indices.map((bIdx: number) => {
-                        const block = workoutData[bIdx];
-                        const isDone = completedIndices.includes(bIdx);
-                        const isSkipped = skippedIndices.includes(bIdx);
-
-                        // Last session weight lookup
-                        const lastWeights = !isDone && !isSkipped && fullHistory ? (() => {
-                          const exercises = block.type === 'superset' ? (block.exercises || []) : [block];
-                          return exercises.map((ex: any) => {
-                            const name = (ex.name || '').toLowerCase().replace(/^\d+\.\s*/, '').trim();
-                            const exId = ex.exercise_id || catalog?.find((c: any) => c.name.toLowerCase() === name)?.id;
-                            if (!exId) return null;
-                            const log = fullHistory.find((h: any) => h.exercise_id === exId && (h.details?.length || h.data?.length));
-                            if (!log) return null;
-                            const sets = log.details || log.data || [];
-                            const w = sets[0]?.weight;
-                            return w ? { name: ex.name || block.name, weight: w } : null;
-                          }).filter(Boolean);
-                        })() : [];
-
-                        return (
-                          <button
-                            key={bIdx}
-                            onClick={() => { if (!isDone && !isSkipped) { setBlockIndex(bIdx); setViewMode('WORKOUT'); } }}
-                            disabled={isDone || isSkipped}
-                            className={`w-full flex items-center gap-2.5 text-sm text-left ${!isDone && !isSkipped ? 'hover:bg-zinc-800/50 active:scale-[0.98]' : ''} rounded-lg px-2 py-1.5 -mx-2 transition`}
-                          >
-                            <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${isSkipped ? 'bg-zinc-700' : isDone ? 'bg-emerald-400' : 'bg-zinc-600'}`} />
-                            <div className="flex-1 min-w-0">
-                              <span className={`${isDone ? 'text-zinc-500 line-through' : isSkipped ? 'text-zinc-600 italic' : 'text-zinc-300'}`}>
-                                {block.name || block.type}
-                              </span>
-                              {!isDone && !isSkipped && (
-                                <div className="text-[9px] text-zinc-600 mt-0.5">
-                                  {block.type === 'checklist_exercise' && block.sets && (
-                                    <span>{block.sets}×{block.target_duration_seconds ? `${block.target_duration_seconds}s` : (block.reps_per_set || '?')} {block.rest_seconds ? `· ${block.rest_seconds}s rest` : ''}</span>
-                                  )}
-                                  {block.type === 'superset' && block.exercises && (
-                                    <span>{block.sets || 3} rounds · {block.exercises.length} exercises</span>
-                                  )}
-                                  {block.type === 'timer' && block.intervals && (
-                                    <span>{Math.round(block.intervals.reduce((s: number, i: any) => s + (i.seconds || 0), 0) / 60)} min</span>
-                                  )}
-                                  {block.tips?.[0] && <span className="ml-1 italic">— {block.tips[0].substring(0, 40)}{block.tips[0].length > 40 ? '...' : ''}</span>}
-                                </div>
-                              )}
-                              {lastWeights && lastWeights.length > 0 && (
-                                <div className="text-[9px] text-zinc-500 mt-0.5 font-mono">
-                                  Last: {lastWeights.map((lw: any) => `${lw.weight} lbs`).join(' / ')}
-                                </div>
-                              )}
-                            </div>
-                            {!isDone && !isSkipped && block.xp_value > 0 && (
-                              <span className="text-[9px] text-zinc-700 font-mono shrink-0">{block.xp_value}xp</span>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-
+                  {/* Start / Resume button */}
+                  {!allDone && (
                     <button
                       onClick={() => {
-                        const firstUnfinished = section.indices.find((i: number) => !completedIndices.includes(i));
-                        const targetIndex = firstUnfinished !== undefined ? firstUnfinished : section.firstIndex;
-                        setBlockIndex(targetIndex);
-                        setViewMode('WORKOUT');
+                        const firstIncomplete = section.indices.find((i: number) => !completedIndices.includes(i) && !skippedIndices.includes(i));
+                        if (firstIncomplete !== undefined) {
+                          setBlockIndex(firstIncomplete);
+                          setViewMode('WORKOUT');
+                        }
                       }}
-                      className="w-full py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold uppercase tracking-wider text-xs rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-orange-600/20 mt-1"
+                      className="shrink-0 px-4 py-2 bg-gradient-to-r from-orange-600 to-red-600 text-white text-xs font-bold uppercase tracking-wider rounded-lg active:scale-95 transition shadow-lg shadow-orange-900/20"
                     >
-                      <Play size={14} fill="currentColor" />
-                      {section.isDone ? 'Revisit' : 'Begin'}
+                      {sectionDoneCount > 0 ? 'Resume' : 'Start'}
                     </button>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             );
           })}
