@@ -7,6 +7,7 @@ import ExerciseHistoryModal from './ExerciseHistoryModal'; // 🟢 NEW
 import { playCountdownBeep } from '../utils/audio';
 import { Play, Pause, SkipForward, RotateCcw, Calendar, CheckCircle, Info, Timer, ChevronRight, ArrowLeftRight } from 'lucide-react';
 import ChecklistView from './ChecklistView';
+import { EXERCISE_CUES } from '@/data/exerciseCues';
 
 // Shared rest timer bar — fixed at top of viewport
 function RestTimerBar({ restTime, totalRest, onSkip }: { restTime: number; totalRest: number; onSkip: () => void }) {
@@ -222,6 +223,26 @@ function ExerciseView({ block, blockIndex, onComplete, fullHistory, catalog, exe
             : <>{block.sets} Sets × {block.reps_per_set} Reps • {smartRest}s Rest</>
           }
         </p>
+
+        {/* Form cue */}
+        {(() => {
+          const exId = catalogItem?.id || block.exercise_id || '';
+          const cueData = EXERCISE_CUES[exId];
+          if (!cueData) return null;
+          return (
+            <div className="mt-2 flex items-start gap-2 bg-zinc-800/50 rounded-lg px-3 py-2">
+              <Info size={12} className="text-zinc-500 shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] text-zinc-400 leading-relaxed">{cueData.cue}</p>
+                {cueData.video_url ? (
+                  <a href={cueData.video_url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-orange-400 font-bold mt-1 inline-block">📹 Watch form video</a>
+                ) : (
+                  <a href={`https://www.youtube.com/results?search_query=how+to+${encodeURIComponent(catalogItem?.name || displayName)}+form`} target="_blank" rel="noopener noreferrer" className="text-[10px] text-zinc-600 hover:text-orange-400 mt-1 inline-block">🔍 Search form video</a>
+                )}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Plate Calculator — barbell/smith only */}
         {(() => {
@@ -959,6 +980,21 @@ function SupersetView({ block, blockIndex, onComplete, fullHistory, catalog, exe
             </span>
           ))}
         </div>
+        {/* Form cues */}
+        {exercises.some((ex: any) => EXERCISE_CUES[ex.exercise_id]) && (
+          <div className="mt-3 space-y-1.5">
+            {exercises.map((ex: any, i: number) => {
+              const cueData = EXERCISE_CUES[ex.exercise_id];
+              if (!cueData) return null;
+              return (
+                <div key={i} className="flex items-start gap-2 bg-zinc-800/50 rounded-lg px-2.5 py-1.5">
+                  <span className="text-[10px] text-purple-400 font-bold shrink-0">{ex.name}:</span>
+                  <p className="text-[10px] text-zinc-500 leading-relaxed">{cueData.cue}</p>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* SCROLLABLE CONTENT */}
