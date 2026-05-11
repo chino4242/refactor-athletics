@@ -76,6 +76,8 @@ export async function logHabitAction(
             xp = Math.round(value * 2); // 8 hours = 16 XP
         } else if (habitId === 'habit_meal_prep') {
             xp = 100;
+        } else if (habitId === 'habit_exercise_minutes') {
+            xp = 0; // XP comes from in-app workouts or steps, not exercise minutes
         } else {
             xp = 25; // creatine, no_alcohol, no_vice, etc.
         }

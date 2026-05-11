@@ -300,7 +300,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
               habits: [
                 { type: 'card', id: 'habit_steps', label: 'Steps', icon: <Footprints size={14} className="text-orange-500" />, unit: 'steps', color: 'bg-orange-500', heatColor: 'bg-orange-500 shadow-orange-500/50 shadow-[0_0_5px]', goalKey: 'habit_steps', defaultGoal: 10000, xp: 150, setOnly: true, enableTotalSync: true },
                 { type: 'card', id: 'habit_sleep', label: 'Sleep', icon: '💤', unit: 'hrs', color: 'bg-purple-500', heatColor: 'bg-purple-500 shadow-purple-500/50 shadow-[0_0_5px]', goalKey: 'habit_sleep', defaultGoal: 8, xp: 16 },
-                { type: 'card', id: 'habit_exercise_minutes', label: 'Exercise', icon: '💪', unit: 'mins', color: 'bg-green-500', heatColor: 'bg-green-500 shadow-green-500/50 shadow-[0_0_5px]', goalKey: 'habit_exercise_minutes', defaultGoal: 30, xp: 3 },
+                { type: 'card', id: 'habit_exercise_minutes', label: 'Exercise', icon: '💪', unit: 'mins', color: 'bg-green-500', heatColor: 'bg-green-500 shadow-green-500/50 shadow-[0_0_5px]', goalKey: 'habit_exercise_minutes', defaultGoal: 30, xp: 0 },
                 { type: 'card', id: 'habit_stand_hours', label: 'Stand', icon: '🚶', unit: 'hrs', color: 'bg-blue-400', heatColor: 'bg-blue-400 shadow-blue-400/50 shadow-[0_0_5px]', goalKey: 'habit_stand_hours', defaultGoal: 12, xp: 2 },
                 { type: 'tap', id: 'habit_creatine', label: 'Supplements', icon: '🧪', doneIcon: '✅', xp: 25, color: 'bg-blue-500' },
               ],
