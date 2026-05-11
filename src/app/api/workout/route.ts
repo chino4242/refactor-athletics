@@ -170,10 +170,15 @@ function dbBlocksToWorkoutBlocks(blocks: any[], catalog: any[]): any[] {
         } else if (block.block_type === 'superset' && block.exercises) {
             const exercises = (block.exercises as any[]).map(ex => {
                 const cat = catalogMap.get(ex.exercise_id);
+                const repsStr = ex.reps || '10';
+                const reps_list = repsStr.includes(',')
+                    ? repsStr.split(',').map((r: string) => parseInt(r.trim(), 10) || 10)
+                    : null;
                 return {
                     name: cat?.name || ex.name || 'Exercise',
                     exercise_id: ex.exercise_id || null,
-                    reps: ex.reps || '10',
+                    reps: repsStr,
+                    reps_list,
                     sets: block.target_sets || 3,
                 };
             });

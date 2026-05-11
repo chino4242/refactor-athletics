@@ -193,7 +193,7 @@ export async function logTrainingAction(
         if (is5RM) {
             bestValue = Math.max(...sets.map(s => s.weight || 0));
         } else {
-            bestValue = Math.max(...sets.map(s => (s.weight || 0) * (1 + (s.reps || 1) / 30)));
+            bestValue = Math.max(...sets.map(s => (s.weight || 0) * (1 + Math.min(s.reps || 1, 100) / 30)));
         }
     } else if (exerciseType.includes('reps') || exerciseType === 'bodyweight') {
         bestValue = Math.max(...sets.map(s => s.reps || 0));
@@ -205,7 +205,7 @@ export async function logTrainingAction(
         // Fallback: if sets have weight, use Epley; if reps only, use reps
         const hasWeight = sets.some(s => s.weight > 0);
         if (hasWeight) {
-            bestValue = Math.max(...sets.map(s => (s.weight || 0) * (1 + (s.reps || 1) / 30)));
+            bestValue = Math.max(...sets.map(s => (s.weight || 0) * (1 + Math.min(s.reps || 1, 100) / 30)));
         } else {
             bestValue = Math.max(...sets.map(s => s.reps || s.duration || s.distance || 0));
         }
