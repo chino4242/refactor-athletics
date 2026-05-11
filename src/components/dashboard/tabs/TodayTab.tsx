@@ -442,7 +442,7 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
                 </Link>
 
                 {/* Last Completed Workout */}
-                <Link href="/track" className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-700 transition-colors block">
+                <Link href="/history" className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-700 transition-colors block">
                     <div className="flex items-center gap-2 mb-1">
                         <span className="text-lg">💪</span>
                         <h3 className="text-xs font-bold text-white uppercase tracking-wider">Last Workout</h3>
