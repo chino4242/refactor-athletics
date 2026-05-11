@@ -1820,7 +1820,14 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
                   {r.name}
                   {r.isPR && <span className="ml-1.5 text-yellow-400 text-[10px]">🏆 PR</span>}
                 </p>
-                <p className="text-[11px] text-zinc-500">{r.value}</p>
+                {r.best_set ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] text-white font-medium">{r.best_set}</span>
+                    {r.e1rm && <span className="text-[10px] text-zinc-500">e1RM: {r.e1rm} lbs</span>}
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-zinc-500">{r.value}</p>
+                )}
                 {r.next_threshold_lbs && r.next_rank_name && (
                   <p className="text-[10px] text-orange-400 font-semibold mt-0.5">🔥 {r.next_threshold_lbs} lbs to {getThemedRankName((r.level || 0) + 1)}</p>
                 )}

@@ -294,6 +294,18 @@ export async function logTrainingAction(
     // For 5RM exercises, show lbs instead of xBW
     const displayUnit = is5RM ? 'lbs' : (standards.unit || '');
     
+    // Best actual set (heaviest weight lifted)
+    const actualBest = (exerciseType.includes('weight') || exerciseType === 'strength')
+        ? Math.max(...sets.map(s => s.weight || 0))
+        : null;
+    // Best set description (e.g. "165 × 8")
+    const bestSet = (exerciseType.includes('weight') || exerciseType === 'strength')
+        ? sets.reduce((best, s) => {
+            const e1rm = (s.weight || 0) * (1 + Math.min(s.reps || 1, 100) / 30);
+            return e1rm > (best.e1rm || 0) ? { weight: s.weight, reps: s.reps, e1rm } : best;
+          }, { weight: 0, reps: 0, e1rm: 0 })
+        : null;
+
     const workoutData = {
         user_id: userId,
         exercise_id: exerciseId,
@@ -326,6 +338,8 @@ export async function logTrainingAction(
         rank_name: rankName,
         raw_value: bestValue,
         value: workoutData.value,
+        best_set: bestSet ? `${bestSet.weight} × ${bestSet.reps}` : null,
+        e1rm: (exerciseType.includes('weight') || exerciseType === 'strength') && !is5RM ? Math.round(bestValue) : null,
         next_threshold_lbs: nextThresholdLbs,
         next_rank_name: nextRankName,
     };
