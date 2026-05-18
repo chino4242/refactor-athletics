@@ -1,22 +1,16 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from 'react';
-// Verified
-
-import { THEMES } from '../data/themes';
-import EquipmentVariantPicker, { getEquipmentVariants } from './EquipmentVariantPicker';
-import { type WorkoutSet, type HistoryItem, type CatalogItem } from '../services/api';
-import { logTrainingAction, deleteHistoryItemAction } from '@/app/actions';
-import ActiveWorkout from './ActiveWorkout'; // 👈 Imported
-import Calculator from './Calculator';
-import InfoTooltip from './common/InfoTooltip';
-import ConfirmModal from './ConfirmModal';
-import { useToast } from '../context/ToastContext';
-import { useTheme } from '../context/ThemeContext';
-import TestingTimer from './TestingTimer';
-import WeeklySchedule from './WeeklySchedule';
-import ExerciseHistoryModal from './ExerciseHistoryModal'; // 👈 Imported
-import ScreenshotUploader from './ScreenshotUploader';
+import { startOfWeek, addDays, format } from 'date-fns';
+import { getWeeklySchedule, getProfile } from '@/services/api';
+import { useTheme } from '@/context/ThemeContext';
+import { THEMES } from '@/data/themes';
+import ActiveWorkout from './ActiveWorkout';
+import ProgramOverview from './ProgramOverview';
+import { ChevronDown, Settings, Zap } from 'lucide-react';
+import Link from 'next/link';
+import QuickLogModal from './QuickLogModal';
+import type { HistoryItem, CatalogItem } from '@/types';
 
 interface TrainingProps {
   userId: string;
@@ -26,834 +20,235 @@ interface TrainingProps {
   initialHistory?: HistoryItem[];
   initialCatalog?: CatalogItem[];
   onLogComplete?: () => void;
+  highestLevel?: number;
 }
 
-
-
-interface QueuedExercise {
-  id: string;
-  exerciseId: string;
-  name: string;
-  sets: WorkoutSet[];
+interface DayPlan {
+  date: Date;
+  dateStr: string;
+  plan: { title: string; type: string; xp: number; exercises?: string[]; treadmillBlocks?: number };
 }
 
-export default function Training({ userId, bodyweight, sex, age, initialHistory, initialCatalog, onLogComplete }: TrainingProps) {
-  // --- STATE ---
-  const [catalog, setCatalog] = useState<CatalogItem[]>(initialCatalog || []);
-  const { currentTheme } = useTheme();
-  const [isMounted, setIsMounted] = useState(false);
+const TYPE_STYLES: Record<string, { bg: string; text: string; dot: string }> = {
+  Strength: { bg: 'bg-blue-500/10', text: 'text-blue-400', dot: 'bg-blue-400' },
+  Cardio: { bg: 'bg-red-500/10', text: 'text-red-400', dot: 'bg-red-400' },
+  Hybrid: { bg: 'bg-purple-500/10', text: 'text-purple-400', dot: 'bg-purple-400' },
+  Recovery: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', dot: 'bg-emerald-400' },
+};
 
-  // Wait for client-side hydration to complete
+export default function Training({ userId, bodyweight, sex, age, initialHistory, initialCatalog, onLogComplete, highestLevel = 0 }: TrainingProps) {
+  const { theme: _theme } = useTheme();
+  const theme = _theme || THEMES.athlete;
+  const [weekDays, setWeekDays] = useState<DayPlan[]>([]);
+  const [selectedDayStr, setSelectedDayStr] = useState('');
+  const [showActiveWorkout, setShowActiveWorkout] = useState(false);
+
+  // Check for active workout after hydration
   useEffect(() => {
-    setIsMounted(true);
+    if (localStorage.getItem('active_workout')) {
+      setShowActiveWorkout(true);
+      setSelectedDayStr(new Date().toLocaleDateString('en-CA'));
+    }
   }, []);
+  const [showWeekView, setShowWeekView] = useState(false);
+  const [showQuickLog, setShowQuickLog] = useState(false);
 
-  // 🟢 NEW: Active Session Toggle State
-  const [showActiveSession, setShowActiveSession] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<string | null>(null); // Track selected day
-  const [history, setHistory] = useState<HistoryItem[]>(initialHistory || []);
-  const [showHistoryModal, setShowHistoryModal] = useState(false); // 🟢 NEW
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+  const [userPath, setUserPath] = useState('hybrid');
 
-  // Current Form State
-  const [selectedExerciseId, setSelectedExerciseId] = useState<string>('');
-  const [sets, setSets] = useState<WorkoutSet[]>([{ weight: 0, reps: 0, distance: 0, duration: 0 }]);
-  const [useMiles, setUseMiles] = useState(true); // Toggle for Distance Input
+  // Load user path
+  useEffect(() => {
+    getProfile(userId).then(p => { if (p?.selected_path) setUserPath(p.selected_path); });
+  }, [userId]);
 
-  // The Session "Shopping Cart"
-  const [sessionQueue, setSessionQueue] = useState<QueuedExercise[]>([]);
+  // Load schedule
+  useEffect(() => {
+    (async () => {
+      const apiData = await getWeeklySchedule();
+      const start = startOfWeek(new Date(), { weekStartsOn: 1 });
+      const scheduleMap = new Map<number, any>();
+      (apiData || []).forEach((d: any) => scheduleMap.set(d.order, d));
 
-  // Search / Dropdown
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [successData, setSuccessData] = useState<{ xp: number, count: number } | null>(null);
-  const [achievements, setAchievements] = useState<Array<{type: 'rankup' | 'pr', exerciseName: string, level?: number, value?: string}>>([]);
-  const [showAchievement, setShowAchievement] = useState(false);
-  const [currentAchievementIndex, setCurrentAchievementIndex] = useState(0);
-  const toast = useToast();
-
-  const handleWorkoutData = (data: any) => {
-    // Auto-match exercises and add to queue
-    data.exercises?.forEach((ex: any, index: number) => {
-      const catalogExercise = catalog.find(e => 
-        e.name.toLowerCase().includes(ex.name.toLowerCase()) ||
-        ex.name.toLowerCase().includes(e.name.toLowerCase())
-      );
-      
-      if (catalogExercise && ex.sets?.length > 0) {
-        // Expand sets with comma-separated reps into individual sets
-        const expandedSets: { weight: number; reps: number; distance: number; duration: number }[] = [];
-        for (const s of ex.sets) {
-          const repsStr = String(s.reps || 0);
-          if (repsStr.includes(',')) {
-            repsStr.split(',').map((r: string) => r.trim()).filter(Boolean).forEach((r: string) => {
-              expandedSets.push({ weight: s.weight || 0, reps: parseInt(r) || 0, distance: 0, duration: 0 });
-            });
-          } else {
-            expandedSets.push({ weight: s.weight || 0, reps: parseInt(repsStr) || 0, distance: 0, duration: 0 });
-          }
-        }
-
-        const queuedEx: QueuedExercise = {
-          id: `${Date.now()}-${index}-${Math.random()}`,
-          exerciseId: catalogExercise.id,
-          name: catalogExercise.name,
-          sets: expandedSets
+      const days: DayPlan[] = Array.from({ length: 7 }, (_, i) => {
+        const date = addDays(start, i);
+        const api = scheduleMap.get(i);
+        return {
+          date,
+          dateStr: format(date, 'yyyy-MM-dd'),
+          plan: api
+            ? { title: api.title, type: api.type || 'Training', xp: api.xp || 0, exercises: api.exercises, treadmillBlocks: api.treadmillBlocks }
+            : { title: 'Rest Day', type: 'Recovery', xp: 0 },
         };
-        setSessionQueue(prev => [...prev, queuedEx]);
-      }
-    });
-    toast.success(`Added ${data.exercises?.length || 0} exercises from screenshot`);
-  };
-
-
-
-  // 🟢 NEW: Sync Server Props to State
-  useEffect(() => {
-    if (initialHistory) setHistory(initialHistory);
-    if (initialCatalog) {
-      setCatalog(initialCatalog);
-      if (initialCatalog.length > 0 && !selectedExerciseId) {
-        setSelectedExerciseId(initialCatalog[0].id);
-        setSearchTerm(initialCatalog[0].name);
-      }
-    }
-  }, [initialHistory, initialCatalog]);
-
-
-  // --- 2. DROPDOWN LOGIC ---
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+      });
+      setWeekDays(days);
+      setSelectedDayStr(format(new Date(), 'yyyy-MM-dd'));
+    })();
   }, []);
 
-  const filteredGroups = useMemo(() => {
-    const groups: Record<string, CatalogItem[]> = {};
-    const filteredItems = catalog.filter(ex => ex.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  const today = weekDays.find(d => d.dateStr === todayStr);
+  const selectedDay = weekDays.find(d => d.dateStr === selectedDayStr) || today;
+  const todayStyle = TYPE_STYLES[today?.plan.type || 'Recovery'] || TYPE_STYLES.Recovery;
 
-    filteredItems.forEach(ex => {
-      const cat = ex.category || 'Other';
-      if (!groups[cat]) groups[cat] = [];
-      groups[cat].push(ex);
-    });
-
-    const orderedKeys = ["Strength", "Bodyweight", "Cardio", "Conditioning", "Olympic", "Strongman", "Accessory", "Core", "Mobility"];
-    const sortedGroups: Record<string, CatalogItem[]> = {};
-
-    orderedKeys.forEach(key => { if (groups[key]) sortedGroups[key] = groups[key]; });
-    Object.keys(groups).forEach(key => { if (!sortedGroups[key]) sortedGroups[key] = groups[key]; });
-
-    return sortedGroups;
-  }, [catalog, searchTerm]);
-
-  // --- 3. INPUT HELPERS ---
-  const currentExercise = catalog.find(e => e.id === selectedExerciseId);
-
-  // Equipment variant lookup
-  const equipmentVariants = useMemo(() => getEquipmentVariants(currentExercise?.name || '', catalog, currentExercise?.id), [currentExercise, catalog]);
-
-  const type = currentExercise?.type || 'weight_reps';
-  // 🟢 NEW: Check for Calories Unit
-  const unit = currentExercise?.standards?.unit || currentExercise?.unit;
-  const isCalories = unit === 'calories';
-  const isWatts = unit === 'watts';
-
-  const showWeight = type === 'weight_reps';
-  const showReps = (type === 'weight_reps' || type === 'reps_only') && !isCalories && !isWatts;
-  const showDist = type === 'distance_time';
-  const showTime = type === 'distance_time' || type === 'duration';
-
-  // --- HANDLERS ---
-  const handleSelectExercise = (exercise: CatalogItem) => {
-    setSelectedExerciseId(exercise.id);
-    setSearchTerm(exercise.name);
-    setIsDropdownOpen(false);
-    setSets([{ weight: 0, reps: 0, distance: 0, duration: 0 }]); // Reset form
-  };
-
-  const addSet = () => {
-    const lastSet = sets[sets.length - 1];
-    setSets([...sets, { ...lastSet }]);
-  };
-
-  const removeSet = (index: number) => {
-    if (sets.length === 1) return;
-    setSets(sets.filter((_, i) => i !== index));
-  };
-
-  const updateSet = (index: number, field: keyof WorkoutSet, value: number) => {
-    const newSets = [...sets];
-    newSets[index] = { ...newSets[index], [field]: value };
-    setSets(newSets);
-  };
-
-  // --- SESSION LOGIC ---
-  const handleAddExercise = () => {
-    if (!currentExercise) return;
-
-    const newEntry: QueuedExercise = {
-      id: crypto.randomUUID(),
-      exerciseId: currentExercise.id,
-      name: currentExercise.name,
-      sets: [...sets]
-    };
-
-    setSessionQueue([...sessionQueue, newEntry]);
-    setSets([{ weight: 0, reps: 0, distance: 0, duration: 0 }]);
-  };
-
-  const removeQueuedItem = (queueId: string) => {
-    setSessionQueue(sessionQueue.filter(q => q.id !== queueId));
-  };
-
-  const handleFinishWorkout = async () => {
-    if (!userId || sessionQueue.length === 0) return;
-    setIsSubmitting(true);
-    let totalXp = 0;
-    const newAchievements: Array<{type: 'rankup' | 'pr', exerciseName: string, level?: number, value?: string, rankName?: string}> = [];
-    
-    try {
-      // Get previous bests for all exercises in session
-      const exerciseIds = sessionQueue.map(item => item.exerciseId);
-      const previousBests: Record<string, {level: number, raw_value: number}> = {};
-      
-      
-      for (const exId of exerciseIds) {
-        const prevLogs = history.filter(h => h.exercise_id === exId);
-        if (prevLogs.length > 0) {
-          const bestLevel = Math.max(...prevLogs.map(h => h.level || 0));
-          const bestValue = Math.max(...prevLogs.map(h => parseFloat(h.value) || 0));
-          previousBests[exId] = { level: bestLevel, raw_value: bestValue };
-        } else {
-        }
-      }
-      
-      for (const item of sessionQueue) {
-        const result = await logTrainingAction(userId, item.exerciseId, bodyweight, sex, item.sets);
-        totalXp += result.xp_earned;
-        
-        // Check for rank up
-        const prevBest = previousBests[item.exerciseId];
-        
-        if (result.level !== undefined && prevBest && result.level > prevBest.level) {
-          newAchievements.push({
-            type: 'rankup',
-            exerciseName: item.name,
-            level: result.level,
-            rankName: result.rank_name
-          });
-        }
-        
-        // Check for PR (new best raw value)
-        if (result.raw_value !== undefined && prevBest && result.raw_value > prevBest.raw_value) {
-          newAchievements.push({
-            type: 'pr',
-            exerciseName: item.name,
-            value: result.value
-          });
-        }
-      }
-      
-      const exerciseCount = sessionQueue.length;
-      setSessionQueue([]);
-      
-      // Show achievements if any, then show success card
-      if (newAchievements.length > 0) {
-        setAchievements(newAchievements);
-        setCurrentAchievementIndex(0);
-        setShowAchievement(true);
-        // Show success card after achievements finish
-        setTimeout(() => {
-          setSuccessData({ xp: totalXp, count: exerciseCount });
-        }, newAchievements.length * 3000);
-      } else {
-        // No achievements, show success card immediately
-        setSuccessData({ xp: totalXp, count: exerciseCount });
-      }
-
-      // Next.js Server Action automatically pushes standard revalidation on History
-      if (onLogComplete) onLogComplete();
-    } catch (e) {
-      console.error("Error saving workout:", e);
-      toast.error("Failed to save some exercises. Please check your internet.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const resetAfterSuccess = () => {
-    setSuccessData(null);
-    setSets([{ weight: 0, reps: 0, distance: 0, duration: 0 }]);
-  };
-
-  // Cycle through achievements
-  useEffect(() => {
-    if (showAchievement && achievements.length > 0) {
-      const timer = setTimeout(() => {
-        if (currentAchievementIndex < achievements.length - 1) {
-          setCurrentAchievementIndex(currentAchievementIndex + 1);
-        } else {
-          setShowAchievement(false);
-          setAchievements([]);
-          setCurrentAchievementIndex(0);
-        }
-      }, 3000); // Show each achievement for 3 seconds
-      
-      return () => clearTimeout(timer);
-    }
-  }, [showAchievement, currentAchievementIndex, achievements.length]);
-
-  // --- RENDER ---
-  return (
-    <div className="max-w-3xl mx-auto animate-fade-in-up flex flex-col gap-8 relative">
-
-      {/* 🟢 THEME BANNER */}
-      <div className="w-full relative bg-zinc-900 rounded-2xl overflow-hidden shadow-2xl border border-zinc-800">
-        {isMounted ? (
-          <img
-            src={`/themes/${currentTheme}/banner.png`}
-            alt="Theme Banner"
-            className="w-full h-auto block object-cover max-h-48 md:max-h-96"
-            onError={(e) => { e.currentTarget.style.display = 'none'; }}
-          />
-        ) : (
-          <div className="w-full h-48 md:h-96 bg-zinc-900 animate-pulse" />
-        )}
-        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-zinc-950 to-transparent"></div>
-
-        {/* 🟢 TESTING TIMER OVERLAY */}
-        <TestingTimer variant="overlay" />
+  // Active workout view
+  if (showActiveWorkout && selectedDayStr) {
+    return (
+      <div className="max-w-3xl mx-auto pb-32">
+        <button
+          onClick={() => setShowActiveWorkout(false)}
+          className="flex items-center gap-2 text-zinc-400 hover:text-white text-sm font-medium px-2 py-3 transition"
+        >
+          <span>‹</span> Back to schedule
+        </button>
+        <ActiveWorkout userId={userId} initialDate={selectedDayStr} onLogComplete={() => onLogComplete?.()} />
       </div>
+    );
+  }
 
+  return (
+    <div className="max-w-3xl mx-auto flex flex-col gap-4 pb-32" style={{ backgroundImage: theme.bgTexture }}>
 
+      {/* Program Overview */}
+      <ProgramOverview userId={userId} path={userPath} />
 
+      {/* Today's Workout — Hero Card */}
+      {today && (
+        <div className="mx-2 mt-2">
+          <div className={`relative p-5 rounded-2xl border overflow-hidden ${
+            today.plan.type === 'Recovery'
+              ? 'bg-zinc-900 border-zinc-800'
+              : 'bg-gradient-to-br from-zinc-800/90 to-zinc-900 border-zinc-700/50'
+          }`}>
+            {/* Faded background text */}
+            <div className="absolute -right-2 -bottom-4 text-7xl font-black text-white/[0.03] pointer-events-none select-none uppercase">
+              {format(new Date(), 'EEEE')}
+            </div>
 
-
-
-
-      {successData && (
-        <div className="max-w-md mx-auto mt-8 animate-fade-in-up">
-          <div className="bg-zinc-900 border border-green-500/30 rounded-2xl p-8 text-center shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-full bg-green-500/5 blur-xl"></div>
             <div className="relative z-10">
-              <div className="text-6xl mb-4">🔥</div>
-              <h2 className="text-2xl font-black italic text-white mb-2">SESSION COMPLETE</h2>
-              <p className="text-zinc-400 mb-6">You logged {successData.count} exercises.</p>
-              <div className="bg-black/40 rounded-xl p-4 mb-6 border border-zinc-800">
-                <div className="text-sm text-zinc-400 uppercase tracking-widest font-bold">Total Earned</div>
-                <div className="text-4xl font-black text-green-400">+{successData.xp} XP</div>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: theme.accentHex }}>{theme.labels.todaysWorkout}</span>
+                <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${todayStyle.bg} ${todayStyle.text}`}>
+                  {today.plan.type}
+                </span>
               </div>
-              <button onClick={resetAfterSuccess} className="bg-zinc-100 hover:bg-white text-black font-black uppercase tracking-wider py-3 px-8 rounded-lg w-full transition transform hover:scale-105">
-                Continue Training
-              </button>
+
+              <h2 className="text-2xl font-black text-white tracking-tight mb-3">
+                {today.plan.title}
+              </h2>
+
+              {/* Exercise preview */}
+              {today.plan.exercises && today.plan.exercises.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mb-4">
+                  {today.plan.exercises.slice(0, 5).map((ex, i) => (
+                    <span key={i} className="text-[10px] px-2 py-1 rounded-md bg-zinc-800/80 text-zinc-400 border border-zinc-700/50">
+                      {ex}
+                    </span>
+                  ))}
+                  {today.plan.exercises.length > 5 && (
+                    <span className="text-[10px] px-2 py-1 text-zinc-500">+{today.plan.exercises.length - 5} more</span>
+                  )}
+                </div>
+              )}
+
+              <div className="flex items-center gap-3">
+                {today.plan.xp > 0 && (
+                  <span className="text-xs text-zinc-500 font-medium">⚡ {today.plan.xp} XP</span>
+                )}
+                {(today.plan.treadmillBlocks || 0) > 0 && (
+                  <span className="text-xs text-zinc-500 font-medium">🏃 Treadmill</span>
+                )}
+                <button
+                  onClick={() => { setSelectedDayStr(todayStr); setShowActiveWorkout(true); }}
+                  className={`ml-auto bg-gradient-to-r ${theme.accentGradient} text-white px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all active:scale-95 shadow-lg`}
+                  style={{ boxShadow: `0 10px 15px -3px ${theme.accentHex}20` }}
+                >
+                  {theme.labels.startWorkout}
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Main Training Form and Session Queue */}
-      {!successData && (
-        <>
-          {/* 1. WEEKLY SCHEDULE / ACTIVE SESSION */}
-          <div className="mb-8">
-            {!showActiveSession ? (
-              <WeeklySchedule
-                onSelectDay={(date) => {
-                  setSelectedDate(date);
-                  setShowActiveSession(true);
-                }}
-                completedDates={[]}
-              />
-            ) : (
-              <div className="relative animate-fade-in-up bg-zinc-900 rounded-3xl border border-zinc-700 shadow-2xl overflow-hidden">
+      {/* Quick Log */}
+      <div className="mx-2 mt-2">
+        <button
+          onClick={() => setShowQuickLog(true)}
+          className="w-full flex items-center gap-3 bg-zinc-900 border border-zinc-800 rounded-xl p-3.5 hover:border-zinc-700 transition-colors active:scale-[0.98]"
+        >
+          <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center">
+            <Zap size={16} className="text-orange-500" />
+          </div>
+          <div className="text-left">
+            <span className="text-sm font-bold text-white">Quick Log</span>
+            <p className="text-[10px] text-zinc-500">Log a run, lift, or any exercise outside your program</p>
+          </div>
+        </button>
+      </div>
+
+      {/* Week Schedule — Collapsible */}
+      <div className="mx-2">
+        <div className="flex items-center justify-between py-3 px-1">
+          <button
+            onClick={() => setShowWeekView(!showWeekView)}
+            className="flex items-center gap-2"
+          >
+            <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">This Week</span>
+            <ChevronDown size={16} className={`text-zinc-500 transition-transform ${showWeekView ? 'rotate-180' : ''}`} />
+          </button>
+          <Link href="/workouts" className="p-1.5 text-zinc-500 hover:text-orange-400 rounded hover:bg-zinc-800/50 transition">
+            <Settings size={14} />
+          </Link>
+        </div>
+
+        {showWeekView && (
+          <div className="flex flex-col gap-1.5 animate-fade-in-up pb-2">
+            {weekDays.map(day => {
+              const isToday = day.dateStr === todayStr;
+              const style = TYPE_STYLES[day.plan.type] || TYPE_STYLES.Recovery;
+
+              return (
                 <button
-                  onClick={() => {
-                    setShowActiveSession(false);
-                    setSelectedDate(null);
-                  }}
-                  className="absolute top-4 right-4 z-50 bg-black/50 hover:bg-black/80 text-white p-2 rounded-full backdrop-blur-md transition hover:rotate-90"
-                  title="Close Session"
+                  key={day.dateStr}
+                  onClick={() => { setSelectedDayStr(day.dateStr); setShowActiveWorkout(true); }}
+                  className={`flex items-center gap-3 p-3 rounded-xl transition-all active:scale-[0.98] ${
+                    isToday
+                      ? 'bg-zinc-800/80 border border-zinc-700/50'
+                      : 'bg-zinc-900/40 border border-transparent hover:bg-zinc-800/50 hover:border-zinc-700/30'
+                  }`}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                  {/* Day */}
+                  <div className="w-10 text-center shrink-0">
+                    <div className="text-[10px] font-bold uppercase text-zinc-500">{format(day.date, 'EEE')}</div>
+                    <div className={`text-sm font-black ${isToday ? '' : 'text-zinc-300'}`} style={isToday ? { color: theme.accentHex } : {}}>{format(day.date, 'd')}</div>
+                  </div>
+
+                  {/* Type dot + Title */}
+                  <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${style.dot}`} />
+                  <div className="flex-1 min-w-0 text-left">
+                    <div className="text-sm font-semibold text-white truncate">{day.plan.title}</div>
+                  </div>
+
+                  {/* Type badge */}
+                  <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-md shrink-0 ${style.bg} ${style.text}`}>
+                    {day.plan.type}
+                  </span>
                 </button>
-                <ActiveWorkout
-                  userId={userId}
-                  initialDate={selectedDate}
-                  onLogComplete={() => {
-                    if (onLogComplete) onLogComplete();
-                  }}
-                />
-              </div>
-            )}
+              );
+            })}
           </div>
+        )}
+      </div>
 
-          {/* 3. EXERCISE BUILDER CARD (Training Log) */}
-          <div className="bg-zinc-800/50 border border-zinc-700 p-6 rounded-2xl shadow-xl backdrop-blur-sm relative" style={{ minHeight: '450px' }}>
-
-            {/* HEADER */}
-            <div className="mb-6 flex flex-col md:flex-row md:items-start justify-between gap-4">
-              <div>
-                <h2 className="text-2xl font-black italic text-white tracking-tighter">TRAINING LOG</h2>
-                <p className="text-xs text-zinc-500 uppercase font-bold tracking-widest">Build Your Session</p>
-              </div>
-
-              {/* Screenshot Upload */}
-              <div className="w-full md:w-auto">
-                <ScreenshotUploader type="workout" userId={userId} onDataExtracted={handleWorkoutData} />
-              </div>
-
-              {/* SEARCHABLE DROPDOWN */}
-              <div className="relative w-full md:w-72" ref={dropdownRef}>
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <input
-                      type="text"
-                      value={searchTerm}
-                      onClick={() => { setSearchTerm(''); setIsDropdownOpen(true); }}
-                      onChange={(e) => { setSearchTerm(e.target.value); setIsDropdownOpen(true); }}
-                      placeholder="Search exercises..."
-                      className="w-full bg-zinc-900 border border-zinc-600 text-white text-sm font-bold rounded-lg p-3 outline-none focus:border-orange-500 transition placeholder-zinc-600"
-                    />
-                    <div className="absolute right-3 top-3.5 pointer-events-none text-zinc-500">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z" /></svg>
-                    </div>
-                  </div>
-
-                  {/* HISTORY BUTTON */}
-                  {currentExercise && (
-                    <button
-                      onClick={() => setShowHistoryModal(true)}
-                      className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white p-3.5 rounded-lg border border-zinc-600 transition text-lg"
-                      title="View History"
-                    >
-                      📊
-                    </button>
-                  )}
-                </div>
-
-                {/* Dropdown Menu */}
-                {isDropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl max-h-80 overflow-y-auto z-50 divide-y divide-zinc-800">
-                    {Object.entries(filteredGroups).map(([category, items]) => (
-                      <div key={category}>
-                        <div className="sticky top-0 bg-zinc-950/90 backdrop-blur px-3 py-2 text-xs uppercase font-bold text-orange-500 tracking-wider border-b border-zinc-800">
-                          {category}
-                        </div>
-                        {items.map((ex) => (
-                          <div key={ex.id} onClick={() => handleSelectExercise(ex)} className="px-4 py-3.5 text-sm font-medium text-zinc-300 hover:bg-zinc-800 hover:text-white cursor-pointer transition-colors">
-                            {ex.name}
-                          </div>
-                        ))}
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <div className="mt-2 text-xs text-zinc-500 flex items-center gap-1">
-                  <InfoTooltip text="Custom exercises award 'Grind XP' based on volume, but do not contribute to your Rank Levels." size={12} />
-                  <span>Pro Tip: Only "Ranked" exercises contribute to your Expertise.</span>
-                </div>
-              </div>
-            </div>
-
-            {/* EQUIPMENT VARIANT PICKER */}
-            {equipmentVariants.length > 0 && (
-              <EquipmentVariantPicker
-                variants={equipmentVariants}
-                selectedId={selectedExerciseId}
-                onSelect={(v) => { setSelectedExerciseId(v.id); setSearchTerm(v.name); }}
-              />
-            )}
-
-            {/* INPUTS */}
-            <div className="space-y-3 mb-8">
-              <div className="grid grid-cols-6 gap-2 text-xs text-zinc-500 uppercase font-bold tracking-wider px-2">
-                <div className="col-span-1 text-center">Set</div>
-
-                {/* DYNAMIC HEADER A: WEIGHT OR DISTANCE */}
-                <div className="col-span-2 text-center flex flex-col items-center justify-center">
-                  {showWeight ? 'Weight (lbs)' : showDist ? (
-                    <button
-                      onClick={() => setUseMiles(!useMiles)}
-                      className="text-xs font-bold uppercase tracking-wider bg-zinc-800 px-2 py-1 rounded hover:bg-zinc-700 transition text-zinc-400 hover:text-white"
-                    >
-                      Distance ({useMiles ? 'Miles' : 'Meters'}) ⇄
-                    </button>
-                  ) : ''}
-                </div>
-
-                <div className="col-span-2 text-center">{isCalories ? 'Calories' : isWatts ? 'Watts' : showReps ? 'Reps' : showTime ? 'Time (mins)' : ''}</div>
-                <div className="col-span-1 flex justify-end">
-                  {sets.length > 1 && (
-                    <button
-                      onClick={() => {
-                        const lastSet = sets[sets.length - 1];
-                        setSets([...sets, { ...lastSet }]);
-                      }}
-                      className="text-xs text-zinc-500 hover:text-orange-500 font-bold uppercase tracking-wider transition-colors"
-                      title="Copy last set"
-                    >
-                      Copy ↓
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {sets.map((set, i) => (
-                <div key={i} className="grid grid-cols-6 gap-2 items-center bg-zinc-900/50 p-2 rounded-lg border border-zinc-800">
-                  <div className="col-span-1 text-center font-mono font-bold text-zinc-600">#{i + 1}</div>
-
-                  {/* INPUT 1: WEIGHT / DISTANCE */}
-                  <div className="col-span-2">
-                    {(showWeight || showDist) ? (
-                      <input
-                        type="number"
-                        // Logic: If Distance & Miles, convert Meters->Miles for display. Else show raw.
-                        value={
-                          showDist
-                            ? (set.distance ? (useMiles ? parseFloat((set.distance / 1609.34).toFixed(2)) : set.distance) : '')
-                            : (set.weight || '')
-                        }
-                        placeholder={showDist ? (useMiles ? "Miles" : "Meters") : "e.g. 225"}
-                        onChange={(e) => {
-                          const val = parseFloat(e.target.value);
-                          if (showDist) {
-                            // Logic: If Miles, convert Miles->Meters for storage.
-                            if (isNaN(val)) {
-                              updateSet(i, 'distance', 0);
-                            } else {
-                              const meters = useMiles ? val * 1609.34 : val;
-                              updateSet(i, 'distance', meters);
-                            }
-                          } else {
-                            updateSet(i, 'weight', isNaN(val) ? 0 : val);
-                          }
-                        }}
-                        className="w-full bg-black border border-zinc-700 rounded p-2 text-center text-white font-bold focus:border-orange-500 outline-none"
-                      />
-                    ) : <div className="w-full h-full bg-zinc-900/30 rounded border border-transparent"></div>}
-                  </div>
-
-                  {/* INPUT 2: REPS / TIME / CALS / WATTS */}
-                  <div className="col-span-2">
-                    {showTime ? (
-                      <div className="flex gap-2">
-                        <div className="relative flex-1">
-                          <input
-                            type="number"
-                            value={set.duration ? Math.floor(set.duration) : ''}
-                            placeholder="Min"
-                            onChange={(e) => {
-                              const newMins = parseFloat(e.target.value) || 0;
-                              const currentSecs = Math.round(((set.duration || 0) - Math.floor(set.duration || 0)) * 60);
-                              updateSet(i, 'duration', newMins + (currentSecs / 60));
-                            }}
-                            className="w-full bg-black border border-zinc-700 rounded p-2 text-center text-white font-bold focus:border-orange-500 outline-none"
-                          />
-                          <span className="absolute -bottom-3 left-0 right-0 text-[8px] text-zinc-600 font-bold uppercase text-center">Mins</span>
-                        </div>
-                        <div className="relative flex-1">
-                          <input
-                            type="number"
-                            value={set.duration ? Math.round(((set.duration - Math.floor(set.duration)) * 60)) || '' : ''}
-                            placeholder="Sec"
-                            onChange={(e) => {
-                              const newSecs = parseFloat(e.target.value) || 0;
-                              const currentMins = Math.floor(set.duration || 0);
-                              updateSet(i, 'duration', currentMins + (newSecs / 60));
-                            }}
-                            className="w-full bg-black border border-zinc-700 rounded p-2 text-center text-white font-bold focus:border-orange-500 outline-none"
-                          />
-                          <span className="absolute -bottom-3 left-0 right-0 text-[8px] text-zinc-600 font-bold uppercase text-center">Secs</span>
-                        </div>
-                      </div>
-                    ) : (showReps || isCalories || isWatts) ? (
-                      <input
-                        type="number"
-                        value={showTime ? (set.duration || '') : (set.reps || '')}
-                        placeholder={isCalories ? "Cals" : isWatts ? "Watts" : "e.g. 8"}
-                        onChange={(e) => updateSet(i, showTime ? 'duration' : 'reps', parseFloat(e.target.value))}
-                        className="w-full bg-black border border-zinc-700 rounded p-2 text-center text-white font-bold focus:border-orange-500 outline-none"
-                      />
-                    ) : <div className="w-full h-full bg-zinc-900/30 rounded border border-transparent"></div>}
-                  </div>
-                  <div className="col-span-1 flex justify-center">
-                    {sets.length > 1 && (
-                      <button onClick={() => removeSet(i)} className="text-zinc-600 hover:text-red-500 transition p-2">✕</button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* ACTION: ADD TO QUEUE */}
-            <div className="flex gap-4">
-              <button onClick={addSet} className="flex-1 bg-zinc-700 hover:bg-zinc-600 text-white font-bold py-3 rounded-lg text-sm uppercase tracking-wide transition border border-zinc-600">
-                + Set
-              </button>
-              <button onClick={handleAddExercise} className="flex-[2] bg-zinc-100 hover:bg-white text-black font-black py-3 rounded-lg text-sm uppercase tracking-wide transition shadow-lg hover:scale-105">
-                Add to Session ⬇
-              </button>
-            </div>
-          </div>
-
-          {/* 4. SESSION SUMMARY (THE CART) */}
-          {sessionQueue.length > 0 && (
-            <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-xl animate-fade-in-up">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-black italic text-zinc-400 uppercase tracking-tighter">Current Session</h3>
-                <span className="text-xs bg-orange-600 text-white px-2 py-1 rounded font-bold">{sessionQueue.length} Exercises</span>
-              </div>
-
-              <div className="space-y-4 mb-8">
-                {sessionQueue.map((item) => (
-                  <div key={item.id} className="bg-zinc-950 border border-zinc-800 p-4 rounded-xl flex justify-between items-center">
-                    <div>
-                      <div className="font-bold text-white">{item.name}</div>
-                      <div className="text-xs text-zinc-500 font-mono mt-1">
-                        {item.sets.length} Sets • {item.sets.reduce((acc, s) => acc + (s.reps || 0), 0)} Total Reps
-                      </div>
-                    </div>
-                    <button onClick={() => removeQueuedItem(item.id)} className="text-zinc-600 hover:text-red-500 transition p-2">
-                      ✕
-                    </button>
-                  </div>
-                ))}
-              </div>
-
-              <button
-                onClick={handleFinishWorkout}
-                disabled={isSubmitting}
-                className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white font-black py-4 rounded-xl text-lg uppercase tracking-widest shadow-lg shadow-orange-900/20 disabled:opacity-50 disabled:cursor-not-allowed transition transform hover:scale-[1.01]"
-              >
-                {isSubmitting ? 'Saving Workout...' : 'Finish & Save Workout'}
-              </button>
-            </div>
-          )}
-        </>
-      )}
-
-      {/* 5. RANK CALCULATOR (Always Visible, No Banner) */}
-      <div className="animate-fade-in-up pt-8 border-t border-zinc-800">
-        <h2 className="text-2xl font-black italic text-zinc-500 uppercase tracking-tighter mb-6 text-center">Expertise Calculator</h2>
-        <Calculator
+      {showQuickLog && (
+        <QuickLogModal
           userId={userId}
           bodyweight={bodyweight}
           sex={sex}
-          age={age}
-          exercises={catalog}
-          onCalculate={() => onLogComplete && onLogComplete()}
-          hideBanner={true}
-        />
-      </div>
-
-      {/* 6. HISTORY FEED - ALWAYS VISIBLE (or pushed down by success card) */}
-      <HistoryFeed
-        history={history}
-        catalog={catalog}
-        userId={userId}
-        onRefresh={() => { }} // Server Action revalidates automatically
-      />
-
-      {/* 🟢 EXERCISE HISTORY MODAL */}
-      {showHistoryModal && currentExercise && (
-        <ExerciseHistoryModal
-          exercise={currentExercise}
-          history={history}
-          onClose={() => setShowHistoryModal(false)}
+          catalog={initialCatalog || []}
+          onClose={() => setShowQuickLog(false)}
+          onLogged={() => onLogComplete?.()}
         />
       )}
-
-      {/* Achievement Overlay */}
-      {isMounted && showAchievement && achievements[currentAchievementIndex] && (() => {
-        const achievement = achievements[currentAchievementIndex];
-        const level = achievement.level || 0;
-        const rankKey = `level${level}`;
-        const theme = THEMES[currentTheme] || THEMES['athlete'];
-        const rankDetails = theme.ranks[rankKey as keyof typeof theme.ranks];
-        const themeRankName = rankDetails?.name || 'Unknown';
-        const rankImage = rankDetails?.image;
-        
-        return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fade-in">
-            <div className="bg-gradient-to-br from-zinc-900 to-black border-2 border-orange-500 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl shadow-orange-500/20 animate-scale-in">
-              {achievement.type === 'rankup' ? (
-                <>
-                  <div className="text-center mb-6">
-                    <div className="text-6xl mb-4 animate-bounce">⚡</div>
-                    <h2 className="text-3xl font-black text-orange-500 uppercase tracking-wider mb-2">RANK UP!</h2>
-                    <p className="text-xl font-bold text-white">{achievement.exerciseName}</p>
-                  </div>
-                  <div className="bg-black/50 rounded-xl p-6 border border-orange-500/30">
-                    <div className="flex items-center justify-center gap-6">
-                      {rankImage && (
-                        <img src={rankImage} alt={themeRankName} className="w-20 h-20 object-contain" />
-                      )}
-                      <div className="text-center">
-                        <div className="text-lg text-orange-400 font-bold uppercase tracking-wide">
-                          {themeRankName}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-6 text-center text-sm text-zinc-400">
-                    +{level} Expertise
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="text-center mb-6">
-                    <div className="text-6xl mb-4 animate-bounce">🏆</div>
-                    <h2 className="text-3xl font-black text-emerald-500 uppercase tracking-wider mb-2">NEW PR!</h2>
-                    <p className="text-xl font-bold text-white">{achievement.exerciseName}</p>
-                  </div>
-                  <div className="bg-black/50 rounded-xl p-6 border border-emerald-500/30">
-                    <div className="text-center">
-                      <div className="text-4xl font-black text-white">
-                        {achievement.value}
-                      </div>
-                      <div className="text-sm text-emerald-400 font-bold uppercase tracking-wide mt-2">
-                        Personal Best
-                      </div>
-                    </div>
-                  </div>
-                </>
-              )}
-              <div className="mt-6 flex justify-center gap-2">
-                {achievements.map((_, idx) => (
-                  <div
-                    key={idx}
-                    className={`h-2 rounded-full transition-all ${
-                      idx === currentAchievementIndex ? 'w-8 bg-orange-500' : 'w-2 bg-zinc-700'
-                    }`}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        );
-      })()}
     </div>
-  );
-}
-
-// 🟢 NEW: History Helper Component (Inline)
-function HistoryFeed({ history, catalog, userId, onRefresh }: {
-  history: HistoryItem[],
-  catalog: CatalogItem[],
-  userId: string,
-  onRefresh: () => void
-}) {
-  const toast = useToast();
-  // Changed from deletingId to itemToDelete to support Custom Modal
-  const [itemToDelete, setItemToDelete] = useState<HistoryItem | null>(null);
-
-  // Group by Date (Local Time)
-  const grouped = useMemo(() => {
-    const groups: Record<string, HistoryItem[]> = {};
-    history.forEach(item => {
-      // 🟢 FIX: Derive date locally to match user timezone, ignoring server UTC date
-      const localDate = new Date(item.timestamp * 1000).toLocaleDateString('en-CA'); // YYYY-MM-DD
-
-      if (!groups[localDate]) groups[localDate] = [];
-      groups[localDate].push(item);
-    });
-    return groups;
-  }, [history]);
-
-  const requestDelete = (item: HistoryItem) => {
-    setItemToDelete(item);
-  };
-
-  const confirmDelete = async () => {
-    if (!itemToDelete || !itemToDelete.timestamp) return;
-
-    try {
-      await deleteHistoryItemAction(userId, itemToDelete.timestamp);
-      toast.success("Activity deleted.");
-      onRefresh();
-    } catch (e) {
-      console.error("Delete failed", e);
-      toast.error("Failed to delete activity.");
-    } finally {
-      setItemToDelete(null);
-    }
-  };
-
-  if (history.length === 0) return null;
-
-  return (
-    <>
-      <div className="bg-zinc-900/30 border border-zinc-800 p-6 rounded-2xl animate-fade-in-up mt-8">
-        <h3 className="text-xl font-black italic text-zinc-500 uppercase tracking-tighter mb-4">Recent Activity</h3>
-
-        <div className="max-h-[500px] overflow-y-auto space-y-4 pr-2 custom-scrollbar">
-          {Object.entries(grouped)
-            .sort((a, b) => b[0].localeCompare(a[0])) // 🟢 FIX: Sort by Date Descending
-            .slice(0, 7)
-            .map(([date, items]) => (
-              <div key={date} className="bg-zinc-950/80 border border-zinc-800 p-4 rounded-xl shadow-sm">
-                <div className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
-                  {date}
-                </div>
-
-                <div className="space-y-2">
-                  {items.map((item) => {
-                    const exName = catalog.find(c => c.id === item.exercise_id)?.name || item.rank_name || item.exercise_id.replace(/_/g, ' ');
-                    const isHabit = item.exercise_id.startsWith('habit_');
-                    const isDeleting = itemToDelete?.timestamp === item.timestamp;
-
-                    return (
-                      <div key={item.timestamp} className={`flex justify-between items-center text-sm p-2 hover:bg-zinc-900 rounded-lg transition-colors group ${isDeleting ? 'opacity-50' : ''}`}>
-                        <div className="flex items-center gap-3">
-                          <span className="text-base group-hover:scale-110 transition-transform">{isHabit ? '🔹' : '🏋️‍♂️'}</span>
-                          <div>
-                            <div className="font-bold text-zinc-300 capitalize text-xs md:text-sm leading-tight">{exName}</div>
-                            <div className="text-xs md:text-xs text-zinc-500 font-mono">
-                              {item.value}
-                              {item.description && <span className="text-zinc-600"> • {item.description}</span>}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                          {item.xp !== undefined && item.xp > 0 && (
-                            <div className="text-xs font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded">+{item.xp} XP</div>
-                          )}
-
-                          {/* Delete Button */}
-                          <button
-                            onClick={() => requestDelete(item)}
-                            disabled={!!itemToDelete}
-                            className="text-zinc-600 hover:text-red-500 transition px-3 py-2"
-                            title="Delete Activity"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-        </div>
-      </div>
-
-      <ConfirmModal
-        isOpen={!!itemToDelete}
-        title="Delete Activity?"
-        message="Are you sure you want to delete this activity? This will remove the XP earned and cannot be undone."
-        onConfirm={confirmDelete}
-        onCancel={() => setItemToDelete(null)}
-      />
-    </>
   );
 }

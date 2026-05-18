@@ -1,4 +1,4 @@
-import TrainingV2 from '@/components/TrainingV2';
+import Training from '@/components/Training';
 import { createClient } from '@/utils/supabase/server';
 import { getProfile, getHistory, getTrainingCatalog, getUserStats } from '@/services/api';
 import { redirect } from 'next/navigation';
@@ -21,7 +21,7 @@ export default async function TrainPage() {
     return (
         <div className="min-h-screen bg-black text-white w-full">
             <main className="w-full h-full">
-                <TrainingV2
+                <Training
                     userId={user.id}
                     bodyweight={profile?.bodyweight || 180}
                     age={profile?.age || 30}

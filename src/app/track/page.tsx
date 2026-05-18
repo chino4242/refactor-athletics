@@ -1,4 +1,4 @@
-import TrackPage from '@/components/TrackPageV2';
+import TrackPage from '@/components/TrackPage';
 import { createClient } from '@/utils/supabase/server';
 import { getProfile, getUserStats } from '@/services/api';
 import { redirect } from 'next/navigation';
