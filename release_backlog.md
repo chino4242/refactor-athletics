@@ -50,8 +50,11 @@ Next.js 16 (static export) → Capacitor 8 → Xcode 26 → App Store
 
 ---
 
-## Phase 3: Payments / Subscriptions
+## Phase 3: Payments / Subscriptions (Native IAP via RevenueCat)
 **Effort**: 2-3 days
+
+> See `MONETIZATION_DESIGN.md` for the full unified strategy (RevenueCat for native + Stripe for web).
+> This phase covers the native (iOS/Android) side only.
 
 | # | Story | Details | Priority |
 |---|---|---|---|
@@ -59,16 +62,19 @@ Next.js 16 (static export) → Capacitor 8 → Xcode 26 → App Store
 | 3.2 | Configure products in App Store Connect | Monthly ($7.99) + Annual ($59.99) | P0 |
 | 3.3 | Install `@revenuecat/purchases-capacitor` | | P0 |
 | 3.4 | Build paywall component | `src/components/Paywall.tsx` — show plans, handle purchase | P0 |
-| 3.5 | Define free vs pro features | Gate premium content behind entitlement check | P0 |
+| 3.5 | Define free vs pro features | Gate premium content behind `useSubscription()` hook | P0 |
 | 3.6 | Restore purchases flow | Required by App Store guidelines | P0 |
-| 3.7 | RevenueCat webhook → Supabase | Update `users.subscription_tier` on purchase/cancel | P1 |
-| 3.8 | Trial period | 7-day free trial for annual plan | P2 |
+| 3.7 | RevenueCat webhook → Supabase | `/api/rc/webhook` — update `users.subscription_status` on purchase/cancel | P0 |
+| 3.8 | Trial period | 14-day free trial for annual plan | P2 |
+| 3.9 | Database migration | Add `subscription_status`, `subscription_source`, `subscription_ends_at`, `rc_customer_id` | P0 |
 
 **Subscription tiers**:
-- **Free**: Core tracking, basic habits, 1 ranked exercise, manual logging
-- **Pro ($7.99/mo or $59.99/yr)**: Unlimited ranks, health sync, group challenges, all themes, workout programs, AI features
+- **Free ("Recruit")**: Core tracking, macros, habits, rank calculator, Power Level, 1 workout program
+- **Premium ("Elite") ($7.99/mo or $59.99/yr)**: RPG mode, unlimited programs, AI features, Arena, Groups, heatmaps
 
 **Android reuse**: RevenueCat abstracts both App Store and Google Play billing. Same component, same entitlement checks.
+
+**Web/PWA payments**: Handled separately via Stripe (see `MONETIZATION_DESIGN.md`). Both providers write to the same `subscription_status` field.
 
 ---
 

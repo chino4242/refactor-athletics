@@ -201,66 +201,8 @@ Sum of max_level for each ranked exercise
 ## Deployment
 This project is optimized for deployment on [Vercel](https://vercel.com/new). Ensure all environment variables are securely mapped before triggering a production build.
 
-## Recent Changes (Feb-May 2026)
-- Migrated from monolithic `history` table to domain-specific tables
-- Fixed macro logging to use Server Actions
-- Added habit visibility toggles
-- Fixed nutrition bar rendering issues
-- Prevented theme banner flash on page load
-- Added workout program builder with exercise selection and category filtering
-- Fixed profile save to use correct database schema (removed non-existent goal_weight column)
-- Implemented target weight storage in body_composition_goals JSON field
-- Added automatic calorie calculation from macros (protein × 4 + carbs × 4 + fat × 9)
-- Implemented router.refresh() for proper UI updates after profile changes
-- **Implemented PWA functionality** (service worker, manifest, offline support, install prompt)
-- **Added comprehensive test coverage** (168 tests covering critical business logic)
-- **Dashboard as home screen** with pull-to-refresh, skeleton loaders, and improved UX
-- **Onboarding wizard** for new user setup with waiver, theme, and path selection
-- **Weight tracking** in dashboard header (current weight, target weight, progress)
-- **Improved empty states** with motivational messages and CTAs throughout dashboard
-- **Physique Points fix**: Body measurements now upsert per date (no duplicate rows), calculation uses per-metric non-null scanning via shared `calculatePhysiquePoints()` utility
-- **Calorie deficit tracking**: Calories burned input, net calorie summary (daily/weekly), weekly bar chart with deficit target line
-- **XP scaling**: Changed from flat 1000 XP/level to `1000 * 1.08^level` exponential curve
-- **Fitness screenshot**: New screenshot type extracts calories burned, steps, and day strain via Claude
-- **Profile page rebuild**: Three tabs (Settings, Trophies, Milestones) — removed redundant stats sections, added theme picker
-- **Dashboard improvements**: Expertise/Physique Points/Weight cards are clickable links with CTAs, Last Workout shows per-exercise volume summary, Today's Workout shows exercise preview bullets
-- **Consistency heatmaps**: Week/month/year toggle (persisted in localStorage), daily streak counter per habit
-- **Day strain**: New habit for WHOOP-style intensity tracking
-- **Body composition modes**: Tape Measure (inches) and Scale (muscle lbs + fat % per region) with toggle in modal
-- **Scale mode batch logging**: Single "Log All" button for weight, body fat %, and per-region muscle/fat
-- **Delete/reset measurements**: Delete individual body measurements or reset all composition data
-- **Steps set-only mode**: Steps input uses "Set" mode only — type total, replaces previous value (no add/diff)
-- **Workout session IDs**: Group sets logged in the same session
-- **Public challenges**: Community-wide challenges with shareable join pages
-- **Group challenge modal**: Create and manage group challenges with improved UI
-- **Workout report**: Post-workout summary with exercise details
-- **Active workout improvements**: Enhanced active workout tracking UI
-- **Join pages**: `/join/[code]` for groups and `/challenges/[id]` for public challenges
-- **Screenshot examples API**: Few-shot examples for Claude screenshot parsing
-- **Workout text parser**: Parse workout descriptions into structured exercise data
-- **Equipment variant picker**: Select equipment variant (barbell/dumbbell/smith) per exercise
-- **Character system**: RPG character avatars with gear shop (in progress)
-- **Cardio XP scaling**: Duration/distance exercises earn 8 XP per minute instead of flat reps-based XP
-- **WHOOP OAuth integration**: Full OAuth flow syncing strain, recovery, HRV, sleep, calories burned, weight with auto-sync on dashboard load and daily Vercel cron job
-- **Health Connect webhook**: `/api/sync/health-connect` accepts 12 data types from HC Webhook app with token-in-URL auth
-- **Google Health Connect**: OAuth integration for health data sync
-- **Data source priority**: WHOOP for sleep/calories/HRV/resting HR; Health Connect for steps/weight/body composition
-- **Manual sync token**: `/api/sync/token` endpoint for Apple Shortcuts / HTTP webhook integration
-- **Sync setup page**: `/sync/setup` with iOS and Android instructions
-- **Health Sync onboarding**: Added as step 10 in onboarding wizard
-- **Settings integrations**: WHOOP connect/disconnect, Google Health connect, Health Connect webhook URL with copy button
-- **ActiveWorkout UX overhaul**: Prescribed rep targets in superset headers, 'Block X of Y' progress, 'End Workout' from any block, reps-only mode for bodyweight exercises
-- **Plate Calculator**: Only shows for barbell/smith exercises, fills all sets
-- **RestTimerBar redesign**: Solid blue background with white text
-- **Live rank nudge**: Shows gap to next rank after each set, celebration on threshold cross
-- **Rank-up celebration**: Before → after rank display with themed names on block complete
-- **Workout-in-progress banner**: Auto-clears on completion, dismiss (X) button
-- **Wearable habits**: New habits for strain, recovery, HRV, resting HR with Wearable Sync category in Quest Settings
-- **Recovery/HRV cards**: Shown on Track page and Dashboard summary
-- **Timezone-aware sync**: Per-user timezone stored in DB, prevents duplicate entries from UTC date mismatch
-- **Bug fixes**: Dashboard weight showing oldest instead of latest, HabitCard steps doubling, theme not syncing to power-level page, calories burned using add instead of set mode
-- **UX improvements**: Inline reset (X) on nutrition fields, Today's Log defaults expanded with one-tap delete, Sunday shows as Recovery for hybrid path, default nutrition view changed to weekly
-- **Database cleanup**: Merged 7 duplicate catalog entries, added health metrics columns to body_measurements
+## Changelog
+See [CHANGELOG.md](./CHANGELOG.md) for detailed release history.
 
 ## Testing
 The project uses **Vitest** and **React Testing Library** for testing.
