@@ -1,0 +1,21 @@
+installation:
+  version: 6.7.1
+  installDate: 2026-05-18T17:31:33.174Z
+  lastUpdated: 2026-05-18T17:31:33.174Z
+modules:
+  - name: core
+    version: 6.7.1
+    installDate: 2026-05-18T17:31:33.158Z
+    lastUpdated: 2026-05-18T17:31:33.173Z
+    source: built-in
+    npmPackage: null
+    repoUrl: null
+  - name: bmm
+    version: 6.7.1
+    installDate: 2026-05-18T17:31:33.147Z
+    lastUpdated: 2026-05-18T17:31:33.174Z
+    source: built-in
+    npmPackage: null
+    repoUrl: null
+ides:
+  - kiro
