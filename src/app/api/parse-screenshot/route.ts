@@ -51,6 +51,13 @@ export async function POST(request: NextRequest) {
   "fat": 65,
   "water": 100
 }`,
+      meal_photo: `Look at this photo of food/meal. Identify each food item visible and estimate its macros based on typical portion sizes shown. Return ONLY valid JSON with this exact structure:
+{
+  "foods": [
+    {"name": "food item name", "protein": 30, "carbs": 0, "fat": 5, "calories": 165}
+  ]
+}
+Be specific about portions based on what you see (e.g. "grilled chicken breast ~6oz", "white rice ~1 cup"). Estimate conservatively.`,
       habits: `Extract habit/activity data from this screenshot. Return ONLY valid JSON with this exact structure:
 {
   "steps": 10000,

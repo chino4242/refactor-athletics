@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Droplets, Wheat, Egg, Ban, Search, Plus, ScanBarcode } from 'lucide-react';
+import { X, Droplets, Wheat, Egg, Ban, Search, Plus, ScanBarcode, Camera } from 'lucide-react';
 import ScreenshotUploader from './ScreenshotUploader';
 import type { FoodResult } from '@/app/api/food-search/route';
 import dynamic from 'next/dynamic';
@@ -32,6 +32,35 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
     const [selectedFood, setSelectedFood] = useState<FoodResult | null>(null);
     const [aiInput, setAiInput] = useState('');
     const [aiLoading, setAiLoading] = useState(false);
+    const [photoLoading, setPhotoLoading] = useState(false);
+
+    const handleMealPhoto = async (file: File) => {
+        setPhotoLoading(true);
+        try {
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('type', 'meal_photo');
+            const res = await fetch('/api/parse-screenshot', { method: 'POST', body: formData });
+            const { data } = await res.json();
+            if (data?.foods?.length) {
+                const foods: FoodResult[] = data.foods.map((item: any) => ({
+                    id: `photo_${item.name?.replace(/\s+/g, '_').toLowerCase()}`,
+                    name: item.name,
+                    source: 'usda' as const,
+                    servingSize: '1 serving',
+                    per100g: { calories: item.calories || 0, protein: item.protein || 0, carbs: item.carbs || 0, fat: item.fat || 0 },
+                }));
+                setFoodResults(foods);
+                setFoodQuery('');
+                setTab('search');
+                if (foods.length === 1) {
+                    setSelectedFood(foods[0]);
+                    setServingGrams('100');
+                }
+            }
+        } catch {}
+        finally { setPhotoLoading(false); }
+    };
     const [servingGrams, setServingGrams] = useState('100');
 
     // Favorites
@@ -103,8 +132,14 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
             const data = await res.json();
             if (data.foods?.length) {
                 setFoodResults(data.foods);
+                setFoodQuery('');
                 setTab('search');
                 setAiInput('');
+                // Auto-select if single item
+                if (data.foods.length === 1) {
+                    setSelectedFood(data.foods[0]);
+                    setServingGrams(parseServingGrams(data.foods[0].servingSize) || '100');
+                }
             }
         } catch {}
         finally { setAiLoading(false); }
@@ -230,10 +265,10 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                 <div className="flex justify-between items-center p-4 border-b border-zinc-800 bg-zinc-900/50">
                     <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-2 text-white font-black italic tracking-tighter uppercase">
-                            <span>🥗 Set Nutrition Totals</span>
+                            <span>🥗 Log Nutrition</span>
                         </div>
                         <div className="text-[10px] text-zinc-500 font-medium">
-                            Enter exact totals for the day
+                            {Math.round(totals['macro_protein'] || 0)}g P · {Math.round(totals['macro_carbs'] || 0)}g C · {Math.round(totals['macro_fat'] || 0)}g F · {Math.round((totals['macro_protein'] || 0) * 4 + (totals['macro_carbs'] || 0) * 4 + (totals['macro_fat'] || 0) * 9)} cal today
                         </div>
                     </div>
                     <button
@@ -244,16 +279,50 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                     </button>
                 </div>
 
-                {/* Tabs */}
+                {/* AI-First Input */}
+                <div className="p-4 border-b border-zinc-800">
+                    <div className="flex gap-2">
+                        <input
+                            type="text"
+                            value={aiInput}
+                            onChange={e => setAiInput(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter' && aiInput.trim()) handleAiParse(); }}
+                            placeholder="What did you eat? e.g. chicken breast and rice"
+                            className="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:border-orange-500 outline-none placeholder:text-zinc-600"
+                            autoFocus
+                        />
+                        <label className="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-400 hover:text-white px-3 rounded-xl transition cursor-pointer flex items-center shrink-0">
+                            <Camera size={18} />
+                            <input
+                                type="file"
+                                accept="image/*"
+                                capture="environment"
+                                className="hidden"
+                                onChange={e => { const f = e.target.files?.[0]; if (f) handleMealPhoto(f); e.target.value = ''; }}
+                            />
+                        </label>
+                        <button
+                            onClick={handleAiParse}
+                            disabled={aiLoading || !aiInput.trim()}
+                            className="bg-orange-600 hover:bg-orange-500 disabled:bg-zinc-800 disabled:text-zinc-600 text-white font-bold px-4 rounded-xl text-xs uppercase tracking-wider transition shrink-0"
+                        >
+                            {aiLoading ? '...' : 'Go'}
+                        </button>
+                    </div>
+                    {(aiLoading || photoLoading) && (
+                        <div className="mt-2 text-center">
+                            <span className="text-xs text-orange-400 animate-pulse">{photoLoading ? 'Analyzing your photo...' : 'Analyzing your meal...'}</span>
+                        </div>
+                    )}
+                </div>
+
+                {/* Tabs (secondary) */}
                 <div className="flex border-b border-zinc-800">
                     <button onClick={() => setTab('search')} className={`flex-1 text-xs font-bold uppercase py-2.5 transition border-b-2 ${tab === 'search' ? 'border-orange-500 text-white' : 'border-transparent text-zinc-500'}`}>
-                        <Search size={12} className="inline mr-1" />Food Search
+                        <Search size={12} className="inline mr-1" />Search
                     </button>
                     <button onClick={() => setTab('manual')} className={`flex-1 text-xs font-bold uppercase py-2.5 transition border-b-2 ${tab === 'manual' ? 'border-orange-500 text-white' : 'border-transparent text-zinc-500'}`}>
                         Set Totals
-                    </button>
-                    <button onClick={() => setTab('ai')} className={`flex-1 text-xs font-bold uppercase py-2.5 transition border-b-2 ${tab === 'ai' ? 'border-orange-500 text-white' : 'border-transparent text-zinc-500'}`}>
-                        🤖 AI
                     </button>
                 </div>
 
@@ -450,21 +519,6 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                                 ))}
                             </div>
                         )}
-                    </div>
-                ) : tab === 'ai' ? (
-                    <div className="p-4 space-y-3">
-                        <p className="text-xs text-zinc-400">Describe what you ate and AI will estimate the macros.</p>
-                        <textarea
-                            value={aiInput}
-                            onChange={e => setAiInput(e.target.value)}
-                            placeholder="e.g. chicken sandwich with fries and a coke"
-                            className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-3 text-sm text-white focus:border-orange-500 outline-none resize-none h-20"
-                        />
-                        <button onClick={handleAiParse} disabled={aiLoading || !aiInput.trim()}
-                            className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold py-3 rounded-xl text-xs uppercase tracking-wider transition disabled:opacity-50">
-                            {aiLoading ? 'Analyzing...' : 'Estimate Macros'}
-                        </button>
-                        <p className="text-[9px] text-zinc-600 text-center">Results are estimates. Verify before logging.</p>
                     </div>
                 ) : (
                 <>
