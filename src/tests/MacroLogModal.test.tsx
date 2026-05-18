@@ -33,12 +33,12 @@ describe('MacroLogModal Component', () => {
         await act(async () => {
             render(<MacroLogModal {...defaultProps} />);
         });
-        expect(screen.getByText(/Set Nutrition Totals/)).toBeInTheDocument();
+        expect(screen.getByText(/Log Nutrition/)).toBeInTheDocument();
     });
 
     it('does not render when isOpen is false', () => {
         render(<MacroLogModal {...defaultProps} isOpen={false} />);
-        expect(screen.queryByText(/Set Nutrition Totals/)).not.toBeInTheDocument();
+        expect(screen.queryByText(/Log Nutrition/)).not.toBeInTheDocument();
     });
 
     it('renders all macro input fields', async () => {

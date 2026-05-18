@@ -1,12 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { logTrainingAction } from '@/app/actions';
 
-// Mock Supabase client
-const mockInsert = vi.fn().mockReturnThis();
-const mockEq = vi.fn().mockReturnThis();
-const mockSingle = vi.fn();
-const mockSelect = vi.fn().mockReturnThis();
+// Chainable Supabase mock
+const mockInsert = vi.fn();
 const mockFrom = vi.fn();
+
+function createChain(resolveValue: any = { data: null, error: null }) {
+    const chain: any = {};
+    const methods = ['select', 'insert', 'delete', 'eq', 'match', 'order', 'limit', 'single', 'gte', 'lte', 'neq', 'in', 'is', 'like'];
+    methods.forEach(m => {
+        chain[m] = vi.fn(() => chain);
+    });
+    chain.then = (resolve: any) => resolve(resolveValue);
+    return chain;
+}
 
 vi.mock('@/utils/supabase/server', () => ({
     createClient: vi.fn(() =>
@@ -21,17 +28,36 @@ vi.mock('next/cache', () => ({
     revalidatePath: vi.fn(),
 }));
 
+// Mock cookies
+vi.mock('next/headers', () => ({
+    cookies: vi.fn(() => ({ get: () => ({ value: 'America/New_York' }) })),
+}));
+
 describe('logTrainingAction', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-
-        // Default mock setup
-        mockInsert.mockResolvedValue({ error: null });
-        mockFrom.mockReturnValue({
-            select: mockSelect,
-            insert: mockInsert,
+        mockInsert.mockImplementation(() => {
+            const chain: any = {};
+            chain.then = (resolve: any) => resolve({ error: null });
+            return chain;
         });
     });
+
+    function setupMocks(catalogItem: any, age: number = 30) {
+        mockFrom.mockImplementation((table: string) => {
+            if (table === 'catalog') {
+                return createChain({ data: catalogItem, error: null });
+            } else if (table === 'users') {
+                return createChain({ data: { age }, error: null });
+            } else if (table === 'workouts') {
+                // Could be select (prev best) or insert
+                const chain = createChain({ data: null, error: null });
+                chain.insert = mockInsert;
+                return chain;
+            }
+            return createChain();
+        });
+    }
 
     const mockCatalogItem = {
         id: 'back_squat',
@@ -61,29 +87,7 @@ describe('logTrainingAction', () => {
     };
 
     it('calculates rank and XP for weight exercise', async () => {
-        mockSelect.mockImplementation((fields) => {
-            if (fields === '*') {
-                // catalog query
-                return {
-                    eq: vi.fn().mockReturnValue({
-                        single: vi.fn().mockResolvedValue({
-                            data: mockCatalogItem,
-                            error: null,
-                        }),
-                    }),
-                };
-            } else {
-                // user profile query
-                return {
-                    eq: vi.fn().mockReturnValue({
-                        single: vi.fn().mockResolvedValue({
-                            data: { age: 30 },
-                            error: null,
-                        }),
-                    }),
-                };
-            }
-        });
+        setupMocks(mockCatalogItem, 30);
 
         const result = await logTrainingAction(
             'user-123',
@@ -108,27 +112,7 @@ describe('logTrainingAction', () => {
     });
 
     it('handles female standards', async () => {
-        mockSelect.mockImplementation((fields) => {
-            if (fields === '*') {
-                return {
-                    eq: vi.fn().mockReturnValue({
-                        single: vi.fn().mockResolvedValue({
-                            data: mockCatalogItem,
-                            error: null,
-                        }),
-                    }),
-                };
-            } else {
-                return {
-                    eq: vi.fn().mockReturnValue({
-                        single: vi.fn().mockResolvedValue({
-                            data: { age: 25 },
-                            error: null,
-                        }),
-                    }),
-                };
-            }
-        });
+        setupMocks(mockCatalogItem, 25);
 
         const result = await logTrainingAction(
             'user-123',
@@ -144,27 +128,7 @@ describe('logTrainingAction', () => {
     });
 
     it('calculates level 0 when no thresholds passed', async () => {
-        mockSelect.mockImplementation((fields) => {
-            if (fields === '*') {
-                return {
-                    eq: vi.fn().mockReturnValue({
-                        single: vi.fn().mockResolvedValue({
-                            data: mockCatalogItem,
-                            error: null,
-                        }),
-                    }),
-                };
-            } else {
-                return {
-                    eq: vi.fn().mockReturnValue({
-                        single: vi.fn().mockResolvedValue({
-                            data: { age: 30 },
-                            error: null,
-                        }),
-                    }),
-                };
-            }
-        });
+        setupMocks(mockCatalogItem, 30);
 
         const result = await logTrainingAction(
             'user-123',
@@ -180,27 +144,7 @@ describe('logTrainingAction', () => {
     });
 
     it('calculates level 5 for champion performance', async () => {
-        mockSelect.mockImplementation((fields) => {
-            if (fields === '*') {
-                return {
-                    eq: vi.fn().mockReturnValue({
-                        single: vi.fn().mockResolvedValue({
-                            data: mockCatalogItem,
-                            error: null,
-                        }),
-                    }),
-                };
-            } else {
-                return {
-                    eq: vi.fn().mockReturnValue({
-                        single: vi.fn().mockResolvedValue({
-                            data: { age: 30 },
-                            error: null,
-                        }),
-                    }),
-                };
-            }
-        });
+        setupMocks(mockCatalogItem, 30);
 
         const result = await logTrainingAction(
             'user-123',
@@ -236,27 +180,7 @@ describe('logTrainingAction', () => {
             },
         };
 
-        mockSelect.mockImplementation((fields) => {
-            if (fields === '*') {
-                return {
-                    eq: vi.fn().mockReturnValue({
-                        single: vi.fn().mockResolvedValue({
-                            data: pullupCatalog,
-                            error: null,
-                        }),
-                    }),
-                };
-            } else {
-                return {
-                    eq: vi.fn().mockReturnValue({
-                        single: vi.fn().mockResolvedValue({
-                            data: { age: 30 },
-                            error: null,
-                        }),
-                    }),
-                };
-            }
-        });
+        setupMocks(pullupCatalog, 30);
 
         const result = await logTrainingAction(
             'user-123',
@@ -297,27 +221,7 @@ describe('logTrainingAction', () => {
             },
         };
 
-        mockSelect.mockImplementation((fields) => {
-            if (fields === '*') {
-                return {
-                    eq: vi.fn().mockReturnValue({
-                        single: vi.fn().mockResolvedValue({
-                            data: runCatalog,
-                            error: null,
-                        }),
-                    }),
-                };
-            } else {
-                return {
-                    eq: vi.fn().mockReturnValue({
-                        single: vi.fn().mockResolvedValue({
-                            data: { age: 30 },
-                            error: null,
-                        }),
-                    }),
-                };
-            }
-        });
+        setupMocks(runCatalog, 30);
 
         const result = await logTrainingAction(
             'user-123',
@@ -352,27 +256,7 @@ describe('logTrainingAction', () => {
             },
         };
 
-        mockSelect.mockImplementation((fields) => {
-            if (fields === '*') {
-                return {
-                    eq: vi.fn().mockReturnValue({
-                        single: vi.fn().mockResolvedValue({
-                            data: weightedPullupCatalog,
-                            error: null,
-                        }),
-                    }),
-                };
-            } else {
-                return {
-                    eq: vi.fn().mockReturnValue({
-                        single: vi.fn().mockResolvedValue({
-                            data: { age: 30 },
-                            error: null,
-                        }),
-                    }),
-                };
-            }
-        });
+        setupMocks(weightedPullupCatalog, 30);
 
         const result = await logTrainingAction(
             'user-123',
@@ -408,27 +292,7 @@ describe('logTrainingAction', () => {
             },
         };
 
-        mockSelect.mockImplementation((fields) => {
-            if (fields === '*') {
-                return {
-                    eq: vi.fn().mockReturnValue({
-                        single: vi.fn().mockResolvedValue({
-                            data: fiveRMCatalog,
-                            error: null,
-                        }),
-                    }),
-                };
-            } else {
-                return {
-                    eq: vi.fn().mockReturnValue({
-                        single: vi.fn().mockResolvedValue({
-                            data: { age: 30 },
-                            error: null,
-                        }),
-                    }),
-                };
-            }
-        });
+        setupMocks(fiveRMCatalog, 30);
 
         const result = await logTrainingAction(
             'user-123',
@@ -446,27 +310,7 @@ describe('logTrainingAction', () => {
     });
 
     it('saves workout to database with correct structure', async () => {
-        mockSelect.mockImplementation((fields) => {
-            if (fields === '*') {
-                return {
-                    eq: vi.fn().mockReturnValue({
-                        single: vi.fn().mockResolvedValue({
-                            data: mockCatalogItem,
-                            error: null,
-                        }),
-                    }),
-                };
-            } else {
-                return {
-                    eq: vi.fn().mockReturnValue({
-                        single: vi.fn().mockResolvedValue({
-                            data: { age: 30 },
-                            error: null,
-                        }),
-                    }),
-                };
-            }
-        });
+        setupMocks(mockCatalogItem, 30);
 
         await logTrainingAction('user-123', 'back_squat', 200, 'male', [
             { weight: 300, reps: 5 },
@@ -489,29 +333,12 @@ describe('logTrainingAction', () => {
     });
 
     it('throws error when database insert fails', async () => {
-        mockSelect.mockImplementation((fields) => {
-            if (fields === '*') {
-                return {
-                    eq: vi.fn().mockReturnValue({
-                        single: vi.fn().mockResolvedValue({
-                            data: mockCatalogItem,
-                            error: null,
-                        }),
-                    }),
-                };
-            } else {
-                return {
-                    eq: vi.fn().mockReturnValue({
-                        single: vi.fn().mockResolvedValue({
-                            data: { age: 30 },
-                            error: null,
-                        }),
-                    }),
-                };
-            }
+        setupMocks(mockCatalogItem, 30);
+        mockInsert.mockImplementation(() => {
+            const chain: any = {};
+            chain.then = (resolve: any) => resolve({ error: { message: 'Database error' } });
+            return chain;
         });
-
-        mockInsert.mockResolvedValue({ error: { message: 'Database error' } });
 
         await expect(
             logTrainingAction('user-123', 'back_squat', 200, 'male', [
@@ -521,26 +348,12 @@ describe('logTrainingAction', () => {
     });
 
     it('defaults to age 25 when user profile not found', async () => {
-        mockSelect.mockImplementation((fields) => {
-            if (fields === '*') {
-                return {
-                    eq: vi.fn().mockReturnValue({
-                        single: vi.fn().mockResolvedValue({
-                            data: mockCatalogItem,
-                            error: null,
-                        }),
-                    }),
-                };
-            } else {
-                return {
-                    eq: vi.fn().mockReturnValue({
-                        single: vi.fn().mockResolvedValue({
-                            data: null,
-                            error: null,
-                        }),
-                    }),
-                };
-            }
+        mockFrom.mockImplementation((table: string) => {
+            if (table === 'catalog') return createChain({ data: mockCatalogItem, error: null });
+            if (table === 'users') return createChain({ data: null, error: null });
+            const chain = createChain({ data: null, error: null });
+            chain.insert = mockInsert;
+            return chain;
         });
 
         const result = await logTrainingAction('user-123', 'back_squat', 200, 'male', [
@@ -553,27 +366,7 @@ describe('logTrainingAction', () => {
     });
 
     it('defaults to xp_factor 1 when catalog item missing', async () => {
-        mockSelect.mockImplementation((fields) => {
-            if (fields === '*') {
-                return {
-                    eq: vi.fn().mockReturnValue({
-                        single: vi.fn().mockResolvedValue({
-                            data: { ...mockCatalogItem, xp_factor: undefined },
-                            error: null,
-                        }),
-                    }),
-                };
-            } else {
-                return {
-                    eq: vi.fn().mockReturnValue({
-                        single: vi.fn().mockResolvedValue({
-                            data: { age: 30 },
-                            error: null,
-                        }),
-                    }),
-                };
-            }
-        });
+        setupMocks({ ...mockCatalogItem, xp_factor: undefined }, 30);
 
         const result = await logTrainingAction('user-123', 'back_squat', 200, 'male', [
             { weight: 300, reps: 5 },

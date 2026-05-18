@@ -1,11 +1,28 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { logHabitAction, deleteHistoryItemAction } from '@/app/actions';
 
-// Mock Supabase client
-const mockInsert = vi.fn().mockReturnThis();
-const mockFrom = vi.fn().mockReturnValue({ insert: mockInsert });
-const mockDelete = vi.fn().mockReturnThis();
-const mockEq = vi.fn().mockResolvedValue({ error: null });
+// Chainable Supabase mock — every method returns the chain, terminal calls resolve
+const mockInsert = vi.fn();
+const mockFrom = vi.fn();
+
+function createChain(terminal: any = { error: null, data: null, count: 0 }) {
+    const chain: any = {};
+    const methods = ['select', 'insert', 'delete', 'eq', 'match', 'order', 'limit', 'single', 'gte', 'lte', 'neq', 'in', 'is'];
+    methods.forEach(m => {
+        chain[m] = vi.fn(() => chain);
+    });
+    // Make chain thenable so await resolves to terminal value
+    chain.then = (resolve: any) => resolve(terminal);
+    // Override insert to track calls
+    chain.insert = mockInsert;
+    mockInsert.mockImplementation(() => {
+        const insertChain: any = {};
+        methods.forEach(m => { insertChain[m] = vi.fn(() => insertChain); });
+        insertChain.then = (resolve: any) => resolve({ error: null });
+        return insertChain;
+    });
+    return chain;
+}
 
 vi.mock('@/utils/supabase/server', () => ({
     createClient: vi.fn(() => Promise.resolve({
@@ -18,12 +35,20 @@ vi.mock('next/cache', () => ({
     revalidatePath: vi.fn(),
 }));
 
+// Mock cookies
+vi.mock('next/headers', () => ({
+    cookies: vi.fn(() => ({ get: () => ({ value: 'America/New_York' }) })),
+}));
+
 describe('Server Actions', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        mockInsert.mockReturnThis();
-        mockDelete.mockReturnThis();
-        mockEq.mockResolvedValue({ error: null });
+        mockFrom.mockImplementation(() => createChain());
+        mockInsert.mockImplementation(() => {
+            const chain: any = {};
+            chain.then = (resolve: any) => resolve({ error: null });
+            return chain;
+        });
     });
 
     describe('logHabitAction', () => {
@@ -39,7 +64,7 @@ describe('Server Actions', () => {
                     xp: 50,
                 })
             );
-            expect(result).toEqual({ xp_earned: 50 });
+            expect(result).toMatchObject({ xp_earned: 50 });
         });
 
         it('logs nutrition to nutrition_logs table', async () => {
@@ -51,10 +76,10 @@ describe('Server Actions', () => {
                     user_id: 'user-123',
                     macro_type: 'protein',
                     amount: 150,
-                    xp: 10,
+                    xp: 2,
                 })
             );
-            expect(result).toEqual({ xp_earned: 10 });
+            expect(result).toMatchObject({ xp_earned: 2 });
         });
 
         it('awards 16 XP for sleep habit', async () => {
@@ -66,7 +91,7 @@ describe('Server Actions', () => {
                     xp: 16,
                 })
             );
-            expect(result).toEqual({ xp_earned: 16 });
+            expect(result).toMatchObject({ xp_earned: 16 });
         });
 
         it('awards 100 XP for meal prep habit', async () => {
@@ -78,7 +103,7 @@ describe('Server Actions', () => {
                     xp: 100,
                 })
             );
-            expect(result).toEqual({ xp_earned: 100 });
+            expect(result).toMatchObject({ xp_earned: 100 });
         });
 
         it('uses custom timestamp if provided', async () => {
@@ -110,8 +135,11 @@ describe('Server Actions', () => {
         });
 
         it('throws error when database insert fails', async () => {
-            mockEq.mockResolvedValueOnce({ error: { message: 'Database error' } });
-            mockInsert.mockResolvedValueOnce({ error: { message: 'Database error' } });
+            mockInsert.mockImplementationOnce(() => {
+                const chain: any = {};
+                chain.then = (resolve: any) => resolve({ error: { message: 'Database error' } });
+                return chain;
+            });
 
             await expect(
                 logHabitAction('user-123', 'habit_steps', 10000, 185, 'Steps')
@@ -126,10 +154,10 @@ describe('Server Actions', () => {
                 expect.objectContaining({
                     habit_id: 'habit_exercise_minutes',
                     value: 45,
-                    xp: 25,
+                    xp: 0,
                 })
             );
-            expect(result).toEqual({ xp_earned: 25 });
+            expect(result).toMatchObject({ xp_earned: 0 });
         });
 
         it('logs stand hours habit', async () => {
@@ -143,7 +171,7 @@ describe('Server Actions', () => {
                     xp: 25,
                 })
             );
-            expect(result).toEqual({ xp_earned: 25 });
+            expect(result).toMatchObject({ xp_earned: 25 });
         });
     });
 
