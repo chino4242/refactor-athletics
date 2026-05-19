@@ -91,11 +91,11 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
         <div className="relative">
             {/* Theme Banner Image */}
             {mounted && !isClassic && (
-                <div className="relative overflow-hidden">
+                <div className="relative overflow-hidden h-24 md:h-auto">
                     <img 
                         src={`/themes/${currentTheme}/banner.png`}
                         alt={`${theme.displayName} banner`}
-                        className="w-full h-auto block"
+                        className="w-full h-full md:h-auto object-cover block"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
                 </div>
