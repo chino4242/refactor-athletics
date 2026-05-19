@@ -40,6 +40,7 @@ vi.mock('@/utils/supabase/server', () => ({
 }));
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
+vi.mock('next/headers', () => ({ cookies: vi.fn(() => ({ get: () => ({ value: 'America/New_York' }) })) }));
 
 describe('logBodyMeasurementAction', () => {
     beforeEach(() => {
@@ -111,6 +112,6 @@ describe('logBodyMeasurementAction', () => {
         const insertedData = insertSpy.mock.calls[0][0];
         expect(insertedData.timestamp).toBeGreaterThanOrEqual(before);
         expect(insertedData.timestamp).toBeLessThanOrEqual(after);
-        expect(insertedData.date).toBe(new Date(insertedData.timestamp * 1000).toISOString().split('T')[0]);
+        expect(insertedData.date).toBe(new Date(insertedData.timestamp * 1000).toLocaleDateString('en-CA', { timeZone: 'America/New_York' }));
     });
 });
