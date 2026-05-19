@@ -245,6 +245,7 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
             );
         } else {
             // --- WEEKLY VIEW (Budget Bar with Per-Day Segments) ---
+            const weeklyTarget = dailyTarget * 7;
             const dayIndices = [1, 2, 3, 4, 5, 6, 0]; // Mon=1 ... Sun=0
             const today = new Date().getDay(); // 0-6
             const todayPos = dayIndices.indexOf(today);
@@ -254,11 +255,9 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
                 return dayData[macroKey] || 0;
             });
             const actualTotal = dayAmounts.reduce((sum, v) => sum + v, 0);
-            const todayAmount = dayAmounts[todayPos] || 0;
             const daysTracked = dayAmounts.slice(0, todayPos + 1).filter(v => v > 0).length;
-            const adjustedTarget = dailyTarget * Math.max(daysTracked, 1);
             const dailyAvg = daysTracked > 0 ? Math.round(actualTotal / daysTracked) : 0;
-            const isOver = actualTotal > adjustedTarget && macroKey !== 'habit_water';
+            const isOver = actualTotal > weeklyTarget && macroKey !== 'habit_water';
 
             // Color hex values for segments
             const colorMap: Record<string, [string, string]> = {
@@ -274,16 +273,16 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
             return (
                 <div className="mb-3">
                     <div className="flex justify-between text-[10px] font-bold text-zinc-400 uppercase mb-1">
-                        <span>{label} {daysTracked > 0 && <span className="text-zinc-500 normal-case font-normal">· Avg: {dailyAvg}{unit}/day ({daysTracked}d)</span>}</span>
+                        <span>{label} {daysTracked > 0 && <span className="text-zinc-500 normal-case font-normal">· {dailyAvg}{unit}/day avg</span>}</span>
                         <span className={isOver ? 'text-red-500' : 'text-zinc-500'}>
-                            {Math.round(actualTotal)} / {adjustedTarget} {unit}
+                            {Math.round(actualTotal)} / {weeklyTarget} {unit}
                         </span>
                     </div>
 
                     <div className="h-5 w-full bg-zinc-800 rounded-sm overflow-hidden relative flex">
                         {dayAmounts.map((amount, i) => {
                             if (i > todayPos || amount <= 0) return null;
-                            const widthPct = adjustedTarget > 0 ? (amount / adjustedTarget) * 100 : 0;
+                            const widthPct = weeklyTarget > 0 ? (amount / weeklyTarget) * 100 : 0;
                             const isToday = i === todayPos;
                             return (
                                 <div
