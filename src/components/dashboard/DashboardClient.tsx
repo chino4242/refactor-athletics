@@ -182,19 +182,19 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                         className="fixed inset-0 bg-black/50 z-40"
                         onClick={() => setShowQuickActions(false)}
                     />
-                    <div className="fixed bottom-24 right-6 bg-zinc-900 border border-zinc-700 rounded-xl shadow-xl z-50 overflow-hidden">
+                    <div className="fixed bottom-24 right-6 bg-zinc-900 border border-zinc-700 rounded-xl shadow-xl z-50 overflow-hidden min-w-[180px]">
                         <QuickActionButton 
-                            label="Log Macros"
+                            label="🏋️ Start Workout"
+                            href="/train"
+                            onClick={() => setShowQuickActions(false)}
+                        />
+                        <QuickActionButton 
+                            label="🥗 Log Meal"
                             href="/track"
                             onClick={() => setShowQuickActions(false)}
                         />
                         <QuickActionButton 
-                            label="Log Habits"
-                            href="/track"
-                            onClick={() => setShowQuickActions(false)}
-                        />
-                        <QuickActionButton 
-                            label="Log Workout"
+                            label="💧 Log Water (+8oz)"
                             href="/track"
                             onClick={() => setShowQuickActions(false)}
                         />
