@@ -147,11 +147,20 @@ export default function SupersetView({ block, blockIndex, onComplete, fullHistor
           {block.sets} Rounds × {exercises.length} Exercises • {block.rest_seconds || 90}s Rest
         </p>
         <div className="flex flex-wrap gap-2 mt-2">
-          {exercises.map((ex: any, i: number) => (
-            <span key={i} className="text-xs bg-purple-500/10 text-purple-300 border border-purple-500/20 rounded-full px-2 py-0.5">
-              {ex.name}: <span className="font-bold">{ex.reps || '?'} reps</span>
-            </span>
-          ))}
+          {exercises.map((ex: any, i: number) => {
+            const done = (completedSets[i] || []).length >= (block.sets || 3);
+            const currentRound = Math.min(...exercises.map((_: any, ei: number) => (completedSets[ei] || []).length));
+            const isNext = !done && (completedSets[i] || []).length === currentRound;
+            return (
+              <span key={i} className={`text-xs rounded-full px-2 py-0.5 border transition-all ${
+                done ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                isNext ? 'bg-orange-500/15 text-orange-300 border-orange-500/30 ring-1 ring-orange-500/20' :
+                'bg-purple-500/10 text-purple-300 border-purple-500/20'
+              }`}>
+                {isNext && '→ '}{ex.name}: <span className="font-bold">{ex.reps || '?'} reps</span>
+              </span>
+            );
+          })}
         </div>
         {/* Form cues */}
         {exercises.some((ex: any) => EXERCISE_CUES[ex.exercise_id]) && (
