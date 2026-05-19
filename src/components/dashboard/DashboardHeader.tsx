@@ -21,6 +21,7 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
     const [bodyCompHistory, setBodyCompHistory] = useState<any[]>([]);
     const [userProfile, setUserProfile] = useState<any>(null);
     const [streak, setStreak] = useState(0);
+    const [streakAtRisk, setStreakAtRisk] = useState(false);
     const { currentTheme } = useTheme();
     const { isClassic } = useExperienceMode();
     const theme = THEMES[currentTheme] || THEMES['athlete'];
@@ -51,12 +52,14 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                 d.setHours(0, 0, 0, 0);
                 // Check today first, if not active yet check from yesterday
                 const todayStr = d.toISOString().split('T')[0];
-                if (!dates.has(todayStr)) d.setDate(d.getDate() - 1);
+                const todayActive = dates.has(todayStr);
+                if (!todayActive) d.setDate(d.getDate() - 1);
                 while (dates.has(d.toISOString().split('T')[0])) {
                     count++;
                     d.setDate(d.getDate() - 1);
                 }
                 setStreak(count);
+                setStreakAtRisk(count > 0 && !todayActive && new Date().getHours() >= 17);
             });
         }
     }, [userId]);
@@ -206,10 +209,15 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
 
                     {/* Streak */}
                     {streak > 0 && (
-                        <div className="flex items-center justify-center gap-2 mb-4 py-2">
-                            <span className="text-lg">🔥</span>
-                            <span className="text-sm font-black text-white">{streak} Day Streak</span>
-                            {streak >= 7 && <span className="text-[10px] bg-orange-500/15 text-orange-400 px-2 py-0.5 rounded-full font-bold border border-orange-500/20">{streak >= 30 ? 'Legendary' : streak >= 14 ? 'On Fire' : 'Rolling'}</span>}
+                        <div className="flex flex-col items-center mb-4 py-2">
+                            <div className="flex items-center gap-2">
+                                <span className="text-lg">🔥</span>
+                                <span className="text-sm font-black text-white">{streak} Day Streak</span>
+                                {streak >= 7 && <span className="text-[10px] bg-orange-500/15 text-orange-400 px-2 py-0.5 rounded-full font-bold border border-orange-500/20">{streak >= 30 ? 'Legendary' : streak >= 14 ? 'On Fire' : 'Rolling'}</span>}
+                            </div>
+                            {streakAtRisk && (
+                                <span className="text-[10px] text-amber-400 mt-1 animate-pulse">⚠️ Log something today to keep your streak alive!</span>
+                            )}
                         </div>
                     )}
 
