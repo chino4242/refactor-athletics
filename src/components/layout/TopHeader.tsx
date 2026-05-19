@@ -3,9 +3,11 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signout } from '@/app/login/actions';
+import { useExperienceMode } from '@/context/ExperienceModeContext';
 
 export default function TopHeader() {
     const pathname = usePathname();
+    const { isClassic } = useExperienceMode();
     const isTrainingPage = pathname === '/train';
 
     return (
@@ -29,10 +31,9 @@ export default function TopHeader() {
                             Train
                         </button>
                     </Link>
-                    {/* Workouts link hidden until v2 */}
                     <Link href="/arena">
                         <button className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-300 ${pathname === '/arena' ? 'bg-orange-600 text-white shadow-lg shadow-orange-900/20' : 'text-zinc-500 hover:text-white hover:bg-zinc-800'}`}>
-                            Arena
+                            {isClassic ? 'Social' : 'Arena'}
                         </button>
                     </Link>
                     <Link href="/profile">

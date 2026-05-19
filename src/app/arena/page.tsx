@@ -1,4 +1,5 @@
 import Arena from '@/components/Arena';
+import PremiumGate from '@/components/PremiumGate';
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 
@@ -13,7 +14,9 @@ export default async function ArenaPage() {
     return (
         <div className="min-h-screen bg-black text-white w-full">
             <main className="w-full h-full">
-                <Arena userId={user.id} />
+                <PremiumGate feature="Arena">
+                    <Arena userId={user.id} />
+                </PremiumGate>
             </main>
         </div>
     );

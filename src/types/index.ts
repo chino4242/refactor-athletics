@@ -20,6 +20,9 @@ export interface UserProfileData {
     sync_token?: string;
     whoop_connected_at?: string;
     google_health_connected_at?: string;
+    subscription_status?: 'free' | 'active' | 'trialing' | 'canceled' | 'past_due';
+    subscription_source?: 'stripe' | 'apple' | 'google';
+    subscription_ends_at?: string;
 }
 
 export interface NutritionTargets {

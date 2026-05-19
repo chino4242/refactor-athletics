@@ -41,7 +41,9 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
             formData.append('image', file);
             formData.append('type', 'meal_photo');
             const res = await fetch('/api/parse-screenshot', { method: 'POST', body: formData });
-            const { data } = await res.json();
+            if (!res.ok) { setPhotoLoading(false); return; }
+            const json = await res.json();
+            const data = json.data;
             if (data?.foods?.length) {
                 const foods: FoodResult[] = data.foods.map((item: any) => ({
                     id: `photo_${item.name?.replace(/\s+/g, '_').toLowerCase()}`,
@@ -58,7 +60,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                     setServingGrams('100');
                 }
             }
-        } catch {}
+        } catch (e) { console.error('Meal photo parse failed:', e); }
         finally { setPhotoLoading(false); }
     };
     const [servingGrams, setServingGrams] = useState('100');
@@ -291,13 +293,13 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                             className="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:border-orange-500 outline-none placeholder:text-zinc-600"
                             autoFocus
                         />
-                        <label className="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-400 hover:text-white px-3 rounded-xl transition cursor-pointer flex items-center shrink-0">
-                            <Camera size={18} />
+                        <label className={`border text-zinc-400 hover:text-white px-3 rounded-xl transition cursor-pointer flex items-center shrink-0 ${photoLoading ? 'bg-orange-500/10 border-orange-500/30 animate-pulse' : 'bg-zinc-800 hover:bg-zinc-700 border-zinc-700'}`}>
+                            {photoLoading ? <span className="text-xs text-orange-400">📸</span> : <Camera size={18} />}
                             <input
                                 type="file"
                                 accept="image/*"
-                                capture="environment"
                                 className="hidden"
+                                disabled={photoLoading}
                                 onChange={e => { const f = e.target.files?.[0]; if (f) handleMealPhoto(f); e.target.value = ''; }}
                             />
                         </label>
