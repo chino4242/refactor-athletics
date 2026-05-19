@@ -110,19 +110,9 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
     }
 
     // Show focused first-session view for brand new users
+    // Note: disabled conditional return to prevent hook ordering issues
+    // FirstSessionView renders as a section within the dashboard instead
     const isFirstSession = stats && stats.exercises_tracked === 0 && !firstSessionDismissed;
-    if (isFirstSession) {
-        const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-        const todayProgram = programs.find((p: any) => p.day_of_week === today);
-        return (
-            <div className="min-h-screen bg-black pb-24">
-                <FirstSessionView
-                    todayWorkoutName={todayProgram?.name}
-                    todayWorkoutPreview={todayProgram?.blocks?.slice(0, 5).map((b: any) => b.exercise_name || b.name).filter(Boolean)}
-                />
-            </div>
-        );
-    }
 
     return (
         <div 
