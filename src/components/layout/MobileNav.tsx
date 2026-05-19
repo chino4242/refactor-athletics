@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useExperienceMode } from '@/context/ExperienceModeContext';
@@ -7,6 +8,12 @@ import { useExperienceMode } from '@/context/ExperienceModeContext';
 export default function MobileNav() {
     const pathname = usePathname();
     const { isClassic } = useExperienceMode();
+    const [arenaUnlocked, setArenaUnlocked] = useState(true); // default true to avoid flash
+
+    useEffect(() => {
+        const unlocked = localStorage.getItem('arena_unlocked') === 'true';
+        setArenaUnlocked(unlocked);
+    }, []);
 
     const isActive = (path: string) => {
         if (path === '/dashboard' && (pathname === '/' || pathname === '/dashboard')) return 'text-orange-500 bg-orange-500/10';
@@ -15,7 +22,7 @@ export default function MobileNav() {
 
     return (
         <nav className="md:hidden fixed bottom-0 left-0 w-full bg-zinc-950/90 backdrop-blur-xl border-t border-zinc-800 z-50 pb-safe">
-            <div className="grid grid-cols-5 h-16">
+            <div className={`grid ${arenaUnlocked ? 'grid-cols-5' : 'grid-cols-4'} h-16`}>
                 <Link href="/dashboard" className={`flex flex-col items-center justify-center gap-1 transition-colors ${isActive('/dashboard')}`}>
                     <span className="text-xl">🏠</span>
                     <span className="text-xs font-bold uppercase tracking-wider">Home</span>
@@ -28,10 +35,12 @@ export default function MobileNav() {
                     <span className="text-xl">🏋️</span>
                     <span className="text-xs font-bold uppercase tracking-wider">Workout</span>
                 </Link>
-                <Link href="/arena" className={`flex flex-col items-center justify-center gap-1 transition-colors ${isActive('/arena')}`}>
-                    <span className="text-xl">{isClassic ? '👥' : '⚔️'}</span>
-                    <span className="text-xs font-bold uppercase tracking-wider">{isClassic ? 'Social' : 'Arena'}</span>
-                </Link>
+                {arenaUnlocked && (
+                    <Link href="/arena" className={`flex flex-col items-center justify-center gap-1 transition-colors ${isActive('/arena')}`}>
+                        <span className="text-xl">{isClassic ? '👥' : '⚔️'}</span>
+                        <span className="text-xs font-bold uppercase tracking-wider">{isClassic ? 'Social' : 'Arena'}</span>
+                    </Link>
+                )}
                 <Link href="/profile" className={`flex flex-col items-center justify-center gap-1 transition-colors ${isActive('/profile')}`}>
                     <span className="text-xl">🏆</span>
                     <span className="text-xs font-bold uppercase tracking-wider">Profile</span>

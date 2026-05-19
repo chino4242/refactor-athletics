@@ -45,6 +45,14 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             setStats(statsData);
             setActiveDuels(duelsData || []);
             setPrograms(programsData || []);
+
+            // Unlock arena after 3 workouts or if user is in a group
+            if (statsData && statsData.exercises_tracked >= 3) {
+                localStorage.setItem('arena_unlocked', 'true');
+            } else {
+                const { count } = await supabase.from('group_members').select('*', { count: 'exact', head: true }).eq('user_id', userId);
+                if (count && count > 0) localStorage.setItem('arena_unlocked', 'true');
+            }
         } catch (error) {
             console.error('Failed to load dashboard data:', error);
         } finally {
