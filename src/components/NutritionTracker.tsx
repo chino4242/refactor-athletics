@@ -244,44 +244,66 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
                 </div>
             );
         } else {
-            // --- WEEKLY VIEW (Budget Bar with Hashmarks) ---
+            // --- WEEKLY VIEW (Budget Bar with Per-Day Segments) ---
             const weeklyTarget = dailyTarget * 7;
-            const actualTotal = Object.values(weeklyData).reduce((sum, dayData) => sum + (dayData[macroKey] || 0), 0);
+            const dayIndices = [1, 2, 3, 4, 5, 6, 0]; // Mon=1 ... Sun=0
+            const today = new Date().getDay(); // 0-6
+            const todayPos = dayIndices.indexOf(today);
 
-            // Cap at 100% for the main bar width (unless we want it to overflow, better to stick to 100 and change color)
-            const percent = weeklyTarget > 0 ? Math.min((actualTotal / weeklyTarget) * 100, 100) : 0;
-            const isOver = actualTotal > weeklyTarget;
+            const dayAmounts = dayIndices.map(dayIdx => {
+                const dayData = weeklyData[dayIdx] || {};
+                return dayData[macroKey] || 0;
+            });
+            const actualTotal = dayAmounts.reduce((sum, v) => sum + v, 0);
+            const todayAmount = dayAmounts[todayPos] || 0;
+            const isOver = actualTotal > weeklyTarget && macroKey !== 'habit_water';
 
-            // Base color for the bar
-            let barColor = baseColor.replace('text-', 'bg-');
-            if (isOver && macroKey !== 'habit_water') barColor = 'bg-red-500';
-
-            // Markers for daily amounts (1/7, 2/7, 3/7, etc)
-            const markers = [1, 2, 3, 4, 5, 6].map(i => (i / 7) * 100);
+            // Color hex values for segments
+            const colorMap: Record<string, [string, string]> = {
+                'text-green-500': ['#22c55e', '#16a34a'],
+                'text-orange-500': ['#f97316', '#c2410c'],
+                'text-yellow-500': ['#eab308', '#a16207'],
+                'text-blue-500': ['#3b82f6', '#1d4ed8'],
+                'text-cyan-500': ['#06b6d4', '#0e7490'],
+                'text-red-500': ['#ef4444', '#b91c1c'],
+            };
+            const [todayColor, pastColor] = isOver ? ['#ef4444', '#b91c1c'] : (colorMap[baseColor] || ['#71717a', '#52525b']);
 
             return (
                 <div className="mb-3">
                     <div className="flex justify-between text-[10px] font-bold text-zinc-400 uppercase mb-1">
-                        <span>{label}</span>
-                        <span className={isOver && macroKey !== 'habit_water' ? 'text-red-500' : 'text-zinc-500'}>
+                        <span>{label} {todayAmount > 0 && <span className="text-zinc-500 normal-case font-normal">· Today: {Math.round(todayAmount)}{unit}</span>}</span>
+                        <span className={isOver ? 'text-red-500' : 'text-zinc-500'}>
                             {Math.round(actualTotal)} / {weeklyTarget} {unit}
                         </span>
                     </div>
 
-                    <div className="h-4 w-full bg-zinc-800 rounded-sm overflow-hidden relative">
-                        {/* Main Progress Bar */}
-                        <div className={`h-full ${barColor} transition-all duration-500`} style={{ width: `${percent}%` }} />
-
-                        {/* Daily Markers (Hashmarks) */}
-                        {markers.map((leftPct, i) => (
+                    <div className="h-5 w-full bg-zinc-800 rounded-sm overflow-hidden relative flex">
+                        {dayAmounts.map((amount, i) => {
+                            if (i > todayPos || amount <= 0) return null;
+                            const widthPct = weeklyTarget > 0 ? (amount / weeklyTarget) * 100 : 0;
+                            const isToday = i === todayPos;
+                            return (
+                                <div
+                                    key={i}
+                                    className="h-full transition-all duration-500"
+                                    style={{
+                                        width: `${widthPct}%`,
+                                        backgroundColor: isToday ? todayColor : pastColor,
+                                        borderRight: i < todayPos && amount > 0 ? '1px solid rgba(0,0,0,0.3)' : undefined,
+                                    }}
+                                />
+                            );
+                        })}
+                        {/* Daily Hashmarks */}
+                        {[1, 2, 3, 4, 5, 6].map(i => (
                             <div
-                                key={i}
-                                className="absolute top-0 bottom-0 w-[2px] bg-zinc-950/50 mix-blend-overlay z-10 pointer-events-none"
-                                style={{ left: `${leftPct}%` }}
+                                key={`h${i}`}
+                                className="absolute top-0 bottom-0 w-[1px] bg-zinc-600/60 pointer-events-none"
+                                style={{ left: `${(i / 7) * 100}%` }}
                             />
                         ))}
                     </div>
-                    {/* Optional: Label underneath for "Day 1", "Day 2" etc if needed, sticking to minimal for now */}
                 </div>
             )
         }
@@ -403,11 +425,12 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
 
             {/* PROGRESS BARS */}
             <div key={JSON.stringify(totals)}>
-                {renderBar(viewMode === 'daily' ? 'Calories' : 'Weekly Cals', 'macro_calories', targets.calories, 'text-green-500', 'kcal')}
+                {renderBar('Calories', 'macro_calories', targets.calories, 'text-green-500', 'kcal')}
                 {renderBar('Carbs', 'macro_carbs', targets.carbs, 'text-orange-500', 'g')}
                 {renderBar('Fat', 'macro_fat', targets.fat, 'text-yellow-500', 'g')}
                 {renderBar('Protein', 'macro_protein', targets.protein, 'text-blue-500', 'g')}
                 {renderBar('Water', 'habit_water', targets.water || 100, 'text-cyan-500', 'oz')}
+                {viewMode === 'weekly' && renderBar('Burned', 'macro_calories_burned', targets.calories_burned || 2500, 'text-red-500', 'kcal')}
             </div>
 
             {/* CALORIES BURNED INPUT */}
@@ -486,13 +509,16 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
                     // Weekly chart
                     const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
                     const dayIndices = [1, 2, 3, 4, 5, 6, 0]; // Mon=1 ... Sun=0
+                    const today = new Date().getDay();
+                    const todayPos = dayIndices.indexOf(today);
                     const chartData = dayIndices.map((dayIdx, i) => {
                         const dayData = weeklyData[dayIdx] || {};
                         const dayIn = dayData['macro_calories'] || 0;
                         const dayBurn = dayData['macro_calories_burned'] || 0;
-                        return { name: dayLabels[i], net: Math.round(dayIn - dayBurn) };
+                        const isFuture = i > todayPos;
+                        return { name: dayLabels[i], net: isFuture ? null : Math.round(dayIn - dayBurn), isFuture };
                     });
-                    const weeklyNet = chartData.reduce((sum, d) => sum + d.net, 0);
+                    const weeklyNet = chartData.reduce((sum, d) => sum + (d.net || 0), 0);
 
                     return (
                         <div className="mt-3 p-3 bg-zinc-950/50 border border-zinc-800 rounded-lg">
@@ -517,7 +543,7 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
                                         <ReferenceLine y={0} stroke="#3f3f46" />
                                         <Bar dataKey="net" radius={[4, 4, 0, 0]}>
                                             {chartData.map((entry, index) => (
-                                                <Cell key={index} fill={entry.net <= netTarget ? '#10b981' : entry.net <= 0 ? '#22d3ee' : '#ef4444'} />
+                                                <Cell key={index} fill={entry.isFuture ? '#27272a' : entry.net! <= netTarget ? '#10b981' : entry.net! <= 0 ? '#22d3ee' : '#ef4444'} />
                                             ))}
                                         </Bar>
                                     </BarChart>
