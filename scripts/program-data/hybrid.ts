@@ -105,7 +105,7 @@ export const HYBRID_PROGRAM: DefaultProgram = {
         { block_order: 4, block_type: 'exercise', section: 'main', exercise_id: 'dip', target_sets: 3, target_reps: 10, rest_seconds: 60, alt_exercise_id: 'push_up', alt_equipment: ['bodyweight_only'] },
         { block_order: 5, block_type: 'exercise', section: 'main', exercise_id: 'chin_up', target_sets: 3, target_reps: 8, rest_seconds: 60, alt_exercise_id: 'lat_pulldown', alt_equipment: ['pull_up_bar'] },
         { block_order: 6, block_type: 'exercise', section: 'main', exercise_id: 'dumbbell_hammer_bicep_curl', target_sets: 2, target_reps: 12, rest_seconds: 60 },
-        { block_order: 7, block_type: 'exercise', section: 'core', exercise_id: 'ab_roller', target_sets: 3, target_reps: 10, rest_seconds: 30, alt_exercise_id: 'plank', alt_equipment: ['bodyweight_only'] },
+        { block_order: 7, block_type: 'exercise', section: 'core', exercise_id: 'ab_roller', target_sets: 3, target_reps: 10, rest_seconds: 30, alt_exercise_id: 'ab_crunch', alt_equipment: ['ab_roller'] },
         { block_order: 8, block_type: 'exercise', section: 'cooldown', exercise_id: 'stretching', target_duration_seconds: 300, notes: '5 min full body stretch' },
       ],
     },
