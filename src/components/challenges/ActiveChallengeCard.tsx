@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { getToday } from '@/utils/date';
 import { type Challenge, checkChallengeStatus, cancelChallenge } from '../../services/api';
 import { Flame, Snowflake, CheckCircle2, XCircle, RotateCcw } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
@@ -31,7 +32,7 @@ export default function ActiveChallengeCard({ challenge, userId, onUpdate }: Act
     const currentDay = diffDays + 1;
 
     // 2. Auto-Verification Logic
-    const todayStr = new Date().toLocaleDateString('en-CA');
+    const todayStr = getToday();
     const needsCheck = challenge.last_checked !== todayStr && challenge.status === 'alive';
 
     useEffect(() => {

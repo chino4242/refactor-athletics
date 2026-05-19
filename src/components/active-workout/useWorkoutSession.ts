@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { getToday } from '@/utils/date';
 import { getActiveWorkout, getWorkoutHistory, getWeeklySchedule, getHistory, getTrainingCatalog, getProfile } from '@/services/api';
 import { logWorkoutBlockAction, logTrainingAction } from '@/app/actions';
 import { createClient } from '@/utils/supabase/client';
@@ -48,7 +49,7 @@ export function useWorkoutSession({ userId, onLogComplete, initialDate }: UseWor
 
   const [didHiitYesterday, setDidHiitYesterday] = useState(false);
 
-  const progressKey = `workout_progress_${selectedDate || new Date().toLocaleDateString('en-CA')}`;
+  const progressKey = `workout_progress_${selectedDate || getToday()}`;
   const currentBlock = workoutData[blockIndex];
 
   // --- Effects ---
@@ -58,7 +59,7 @@ export function useWorkoutSession({ userId, onLogComplete, initialDate }: UseWor
     if (isComplete) {
       localStorage.removeItem('active_workout');
     } else if (workoutData.length > 0) {
-      localStorage.setItem('active_workout', JSON.stringify({ path: window.location.pathname, date: selectedDate || new Date().toLocaleDateString('en-CA') }));
+      localStorage.setItem('active_workout', JSON.stringify({ path: window.location.pathname, date: selectedDate || getToday() }));
     }
   }, [workoutData, isComplete, selectedDate]);
 
@@ -97,7 +98,7 @@ export function useWorkoutSession({ userId, onLogComplete, initialDate }: UseWor
     if (!userId) return;
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    const yStr = yesterday.toLocaleDateString('en-CA');
+    const yStr = yesterday.toLocaleDateString('en-CA', { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone });
     const sb = createClient();
     sb.from('workouts').select('id').eq('user_id', userId).eq('date', yStr)
       .like('exercise_id', 'block_%Tread%').limit(1)
@@ -114,7 +115,7 @@ export function useWorkoutSession({ userId, onLogComplete, initialDate }: UseWor
   // Restore completion state from today's logged workouts
   useEffect(() => {
     if (!workoutData.length || !fullHistory.length) return;
-    const today = new Date().toLocaleDateString('en-CA');
+    const today = getToday();
     const todayLogs = fullHistory.filter(h => h.date === today && h.exercise_id);
     if (!todayLogs.length) return;
 
@@ -208,7 +209,7 @@ export function useWorkoutSession({ userId, onLogComplete, initialDate }: UseWor
       try {
         if (data?.length && userId) {
           const supabase = createClient();
-          const todayStr = (date || new Date().toLocaleDateString('en-CA'));
+          const todayStr = (date || getToday());
           const { data: todayWorkouts } = await supabase.from('workouts').select('exercise_id').eq('user_id', userId).eq('date', todayStr);
           if (todayWorkouts?.length) {
             const loggedIds = new Set(todayWorkouts.map((w: any) => w.exercise_id));

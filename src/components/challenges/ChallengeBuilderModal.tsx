@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { getToday } from '@/utils/date';
 import { createCustomChallenge, type ChallengeGoal } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { X, Plus, Trash2 } from 'lucide-react';
@@ -81,13 +82,13 @@ export default function ChallengeBuilderModal({ isOpen, onClose, userId, onChall
 
         try {
             const today = new Date();
-            const todayStr = today.toLocaleDateString('en-CA'); // YYYY-MM-DD
+            const todayStr = getToday(); // YYYY-MM-DD
 
             // Calculate Backdated Start if startDay > 1
             const daysOffset = startDay - 1;
             const startDate = new Date(today);
             startDate.setDate(today.getDate() - daysOffset);
-            const startDateStr = startDate.toLocaleDateString('en-CA');
+            const startDateStr = startDate.toLocaleDateString('en-CA', { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone });
 
             await createCustomChallenge({
                 user_id: userId,

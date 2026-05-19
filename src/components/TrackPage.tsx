@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { getToday } from '@/utils/date';
 import { getHabitProgress, getHistory, getProfile, saveProfile } from '@/services/api';
 import { useTheme } from '@/context/ThemeContext';
 import { THEMES } from '@/data/themes';
@@ -78,11 +79,11 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
   const loadTodayLog = useCallback(async () => {
     const { createClient } = await import('@/utils/supabase/client');
     const supabase = createClient();
-    const todayDate = new Date().toLocaleDateString('en-CA');
+    const todayDate = getToday();
     // Also check tomorrow's date to catch entries saved with UTC before timezone fix
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowDate = tomorrow.toLocaleDateString('en-CA');
+    const tomorrowDate = tomorrow.toLocaleDateString('en-CA', { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone });
     const dates = [todayDate, tomorrowDate];
     const [w, n, h] = await Promise.all([
       supabase.from('workouts').select('id, exercise_id, value, xp, timestamp, date').eq('user_id', userId).in('date', dates),

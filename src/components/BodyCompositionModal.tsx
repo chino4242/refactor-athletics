@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { getToday } from '@/utils/date';
 import { createPortal } from 'react-dom';
 import { X, Scale, TrendingUp, Trash2 } from 'lucide-react';
 import MeasurementRow from './MeasurementRow';
@@ -67,7 +68,7 @@ export default function BodyCompositionModal({
         setLoading(metricId);
         try {
             // 1. Log to DB separate table
-            const today = new Date().toLocaleDateString('en-CA');
+            const today = getToday();
             await BodyCompositionService.logMeasurements(localProfile.user_id, today, {
                 [metricId]: value,
                 measurement_mode: mode,
@@ -195,7 +196,7 @@ export default function BodyCompositionModal({
                                 if (!Object.keys(measurements).length) return;
                                 try {
                                     setLoading('screenshot');
-                                    const today = new Date().toLocaleDateString('en-CA');
+                                    const today = getToday();
                                     await BodyCompositionService.logMeasurements(localProfile.user_id, today, { ...measurements, measurement_mode: mode });
                                     if (measurements.weight) {
                                         const updated = { ...localProfile, bodyweight: measurements.weight };
@@ -330,7 +331,7 @@ export default function BodyCompositionModal({
                                                     if (Object.keys(measurements).length === 0) return;
                                                     setLoading('scale_all');
                                                     try {
-                                                        const today = new Date().toLocaleDateString('en-CA');
+                                                        const today = getToday();
                                                         await BodyCompositionService.logMeasurements(localProfile.user_id, today, { ...measurements, measurement_mode: mode });
                                                         if (measurements.weight) {
                                                             const updated = { ...localProfile, bodyweight: measurements.weight };

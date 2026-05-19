@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import { getToday } from '@/utils/date';
 import { X, Link as LinkIcon, Copy, Check } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { CHALLENGE_PRESETS, type ChallengeMetric } from '@/types';
@@ -24,8 +25,8 @@ export default function CreatePublicChallengeModal({ userId, displayName, onCrea
         if (!name.trim()) return;
         setCreating(true);
         const preset = CHALLENGE_PRESETS[metric];
-        const start = new Date().toLocaleDateString('en-CA');
-        const end = new Date(Date.now() + duration * 86400000).toLocaleDateString('en-CA');
+        const start = getToday();
+        const end = new Date(Date.now() + duration * 86400000).toLocaleDateString('en-CA', { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone });
 
         const res = await fetch('/api/public-challenges', {
             method: 'POST',

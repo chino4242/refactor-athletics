@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { getToday } from '@/utils/date';
 import Link from 'next/link';
 import { Calendar, Dumbbell, ChevronRight, Share2 } from 'lucide-react';
 import type { Workout } from '@/types';
@@ -81,7 +82,7 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
                 });
                 
                 // Get today's XP from all tables
-                const todayDate = new Date().toLocaleDateString('en-CA');
+                const todayDate = getToday();
                 const [{ data: wXp }, { data: nXp }, { data: hXp }] = await Promise.all([
                     supabase.from('workouts').select('xp').eq('user_id', userId).eq('date', todayDate),
                     supabase.from('nutrition_logs').select('xp').eq('user_id', userId).gte('timestamp', startOfDay),
@@ -92,7 +93,7 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
                 // Get max daily XP (best day in last 30 days — good enough for the progress bar)
                 const thirtyDaysAgo = new Date();
                 thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-                const cutoffDate = thirtyDaysAgo.toLocaleDateString('en-CA');
+                const cutoffDate = thirtyDaysAgo.toLocaleDateString('en-CA', { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone });
                 const [{ data: allW }, { data: allN }, { data: allH }] = await Promise.all([
                     supabase.from('workouts').select('date, xp').eq('user_id', userId).gte('date', cutoffDate),
                     supabase.from('nutrition_logs').select('date, xp').eq('user_id', userId).gte('date', cutoffDate),
@@ -334,7 +335,7 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
             {/* Smart CTA */}
             {profile && (() => {
                 const hour = new Date().getHours();
-                const hasWorkout = lastWorkout?.date === new Date().toLocaleDateString('en-CA');
+                const hasWorkout = lastWorkout?.date === getToday();
                 const hasFood = todayProgress.calories > 0;
                 const hasScheduled = !!todayScheduled;
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from 'react';
+import { getToday } from '@/utils/date';
 import {
     calculateRank,
     getHistory,
@@ -296,7 +297,7 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
             const rankName = getThemeDetails(data.rank_level).name;
             const optimisticLog: HistoryItem = {
                 exercise_id: exerciseId,
-                date: new Date().toLocaleDateString('en-CA'),
+                date: getToday(),
                 value: formattedValue,
                 level: newLevel,
                 timestamp: Date.now(),

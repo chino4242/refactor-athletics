@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from 'react';
+import { getToday } from '@/utils/date';
 import { startOfWeek, addDays, format } from 'date-fns';
 import { getWeeklySchedule, getProfile } from '@/services/api';
 import { useTheme } from '@/context/ThemeContext';
@@ -47,7 +48,7 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
   useEffect(() => {
     if (localStorage.getItem('active_workout')) {
       setShowActiveWorkout(true);
-      setSelectedDayStr(new Date().toLocaleDateString('en-CA'));
+      setSelectedDayStr(getToday());
     }
   }, []);
   const [showWeekView, setShowWeekView] = useState(false);
