@@ -105,7 +105,11 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
     }
 
     // Show focused first-session view for brand new users
-    const isFirstSession = stats && stats.exercises_tracked === 0 && !localStorage.getItem('first_session_dismissed');
+    const [firstSessionDismissed, setFirstSessionDismissed] = useState(false);
+    useEffect(() => {
+        setFirstSessionDismissed(localStorage.getItem('first_session_dismissed') === 'true');
+    }, []);
+    const isFirstSession = stats && stats.exercises_tracked === 0 && !firstSessionDismissed;
     if (isFirstSession) {
         const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
         const todayProgram = programs.find((p: any) => p.day_of_week === today);

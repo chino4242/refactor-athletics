@@ -8,9 +8,11 @@ import { useExperienceMode } from '@/context/ExperienceModeContext';
 export default function MobileNav() {
     const pathname = usePathname();
     const { isClassic } = useExperienceMode();
-    const [arenaUnlocked, setArenaUnlocked] = useState(true); // default true to avoid flash
+    const [arenaUnlocked, setArenaUnlocked] = useState(true); // default true to match server render
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
+        setMounted(true);
         const unlocked = localStorage.getItem('arena_unlocked') === 'true';
         setArenaUnlocked(unlocked);
     }, []);
