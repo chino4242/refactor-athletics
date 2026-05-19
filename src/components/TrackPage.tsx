@@ -64,7 +64,16 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
 
   // --- Tab state ---
   const [activeTab, setActiveTab] = useState<TabId>(() => {
-    if (typeof window !== 'undefined') return (localStorage.getItem('track_tab') as TabId) || 'health';
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('track_tab') as TabId;
+      if (saved) return saved;
+      // First visit: suggest tab based on time of day
+      const hour = new Date().getHours();
+      if (hour < 10) return 'health';       // Morning: check sleep, steps
+      if (hour < 15) return 'nutrition';     // Midday: log lunch
+      if (hour < 20) return 'health';        // Afternoon: check habits
+      return 'recovery';                     // Evening: wind down
+    }
     return 'health';
   });
   const handleTabChange = (tab: TabId) => { setActiveTab(tab); localStorage.setItem('track_tab', tab); };
