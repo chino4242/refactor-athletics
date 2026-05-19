@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Play, Pause, SkipForward, RotateCcw } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Play, Pause, SkipForward, RotateCcw, Volume2, VolumeX } from 'lucide-react';
 import { playCountdownBeep } from '../../utils/audio';
+import { useAudioWorkout } from './useAudioWorkout';
 
 export default function TimerView({ block, blockIndex, onComplete, engineChoice }: any) {
   const [intervalIndex, setIntervalIndex] = useState(0);
@@ -13,13 +14,29 @@ export default function TimerView({ block, blockIndex, onComplete, engineChoice 
   const [showDistancePrompt, setShowDistancePrompt] = useState(false);
   const [distanceInput, setDistanceInput] = useState('');
   const [finalXp, setFinalXp] = useState(0);
+  const [audioMode, setAudioMode] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('audio_workout_mode') === 'true';
+  });
+
+  // Wall-clock based timer: store when interval started
+  const intervalStartRef = useRef<number>(0);
+  const intervalDurationRef = useRef<number>(0);
+  const halfwayAnnouncedRef = useRef(false);
+
+  const audio = useAudioWorkout({ enabled: audioMode });
+
+  const toggleAudioMode = () => {
+    const next = !audioMode;
+    setAudioMode(next);
+    localStorage.setItem('audio_workout_mode', next ? 'true' : 'false');
+  };
 
   // Persist timer state for background resume
   const timerKey = `active_timer_${blockIndex}`;
   useEffect(() => {
-    if (isActive && timeLeft > 0) {
-      const intervalStartedAt = Date.now() - ((block.intervals[intervalIndex]?.seconds || 0) - timeLeft) * 1000;
-      localStorage.setItem(timerKey, JSON.stringify({ intervalIndex, intervalStartedAt, earnedXp, blockIndex }));
+    if (isActive && intervalStartRef.current > 0) {
+      localStorage.setItem(timerKey, JSON.stringify({ intervalIndex, intervalStartedAt: intervalStartRef.current, earnedXp, blockIndex }));
     }
   }, [intervalIndex, isActive, timerKey]);
 
@@ -34,7 +51,6 @@ export default function TimerView({ block, blockIndex, onComplete, engineChoice 
       let idx = state.intervalIndex;
       let remaining = (block.intervals[idx]?.seconds || 0) - elapsed;
       let xp = state.earnedXp || 0;
-      // Auto-advance through completed intervals
       while (remaining <= 0 && idx < block.intervals.length - 1) {
         idx++;
         remaining += block.intervals[idx]?.seconds || 0;
@@ -43,6 +59,8 @@ export default function TimerView({ block, blockIndex, onComplete, engineChoice 
         setIntervalIndex(idx);
         setTimeLeft(remaining);
         setEarnedXp(xp);
+        intervalStartRef.current = Date.now() - ((block.intervals[idx]?.seconds || 0) - remaining) * 1000;
+        intervalDurationRef.current = block.intervals[idx]?.seconds || 0;
         setIsActive(true);
         setGetReady(0);
       } else {
@@ -51,34 +69,23 @@ export default function TimerView({ block, blockIndex, onComplete, engineChoice 
     } catch { localStorage.removeItem(timerKey); }
   }, []);
 
-  // Keep screen awake during tread block
+  // Keep screen awake
   useEffect(() => {
     let wakeLock: any = null;
     const acquire = async () => {
       try { if ('wakeLock' in navigator) wakeLock = await (navigator as any).wakeLock.request('screen'); } catch {}
     };
-    acquire();
-    const onVisChange = () => { if (document.visibilityState === 'visible') acquire(); };
+    if (!audioMode) acquire(); // Only request wake lock if NOT in audio mode (user wants screen off)
+    const onVisChange = () => { if (document.visibilityState === 'visible' && !audioMode) acquire(); };
     document.addEventListener('visibilitychange', onVisChange);
     return () => { wakeLock?.release(); document.removeEventListener('visibilitychange', onVisChange); };
-  }, []);
-
-  const speak = (text: string) => {
-    try {
-      if (!('speechSynthesis' in window)) return;
-      speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      u.rate = 1.1;
-      u.volume = 1;
-      speechSynthesis.speak(u);
-    } catch {}
-  };
+  }, [audioMode]);
 
   const currentInterval = block.intervals[intervalIndex];
   const nextInterval = block.intervals[intervalIndex + 1];
   const [getReady, setGetReady] = useState(5);
 
-  // "GET READY" countdown before first interval
+  // "GET READY" countdown
   useEffect(() => {
     if (getReady <= 0) return;
     if (getReady <= 3) playCountdownBeep();
@@ -86,47 +93,94 @@ export default function TimerView({ block, blockIndex, onComplete, engineChoice 
     return () => clearTimeout(t);
   }, [getReady]);
 
+  // Start interval when getReady finishes or intervalIndex changes
   useEffect(() => {
     if (getReady > 0) return;
     if (currentInterval) {
-      setTimeLeft(currentInterval.seconds);
+      const secs = currentInterval.seconds;
+      setTimeLeft(secs);
+      intervalStartRef.current = Date.now();
+      intervalDurationRef.current = secs;
+      halfwayAnnouncedRef.current = false;
       setIsActive(true);
-      const zone = outdoor && currentInterval.outdoor_alternative ? currentInterval.outdoor_alternative : (currentInterval.zone || currentInterval.text || '');
-      if (zone) speak(zone);
+
+      // Announce interval
+      const zone = outdoor && currentInterval.outdoor_alternative
+        ? currentInterval.outdoor_alternative
+        : (currentInterval.zone || currentInterval.text || '');
+      const incline = currentInterval.note?.match(/(\d+)%/)?.[1];
+
+      if (audioMode) {
+        audio.announceInterval(zone, secs, incline ? parseInt(incline) : null);
+      } else if (zone) {
+        try {
+          if ('speechSynthesis' in window) {
+            speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(zone);
+            u.rate = 1.1; u.volume = 1;
+            speechSynthesis.speak(u);
+          }
+        } catch {}
+      }
     }
   }, [intervalIndex, currentInterval, getReady]);
 
+  // Wall-clock timer tick — calculates timeLeft from elapsed time
   useEffect(() => {
-    let interval: any = null;
-    if (isActive && timeLeft > 0) {
-      if (timeLeft <= 5) playCountdownBeep();
-      if (timeLeft === 5 && nextInterval) {
-        const next = nextInterval.zone || nextInterval.text || '';
-        if (next) speak(`${next} in 5 seconds`);
+    if (!isActive || intervalStartRef.current === 0) return;
+
+    const tick = () => {
+      const elapsed = Math.floor((Date.now() - intervalStartRef.current) / 1000);
+      const remaining = Math.max(0, intervalDurationRef.current - elapsed);
+      setTimeLeft(remaining);
+
+      // Halfway announcement
+      if (!halfwayAnnouncedRef.current && remaining <= Math.floor(intervalDurationRef.current / 2) && remaining > 0) {
+        halfwayAnnouncedRef.current = true;
+        if (audioMode) audio.announceHalfway();
       }
-      interval = setInterval(() => { setTimeLeft((p) => p - 1); }, 1000);
-    } else if (timeLeft === 0 && isActive) {
-      handleNext();
-    }
+
+      // Countdown beeps + audio countdown
+      if (remaining <= 5 && remaining > 0) {
+        playCountdownBeep();
+        if (audioMode) audio.announceCountdown(remaining);
+      }
+
+      // Next interval preview at 5 seconds
+      if (remaining === 5 && nextInterval) {
+        const next = nextInterval.zone || nextInterval.text || '';
+        if (!audioMode && next) {
+          try {
+            speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(`${next} in 5 seconds`);
+            u.rate = 1.1; u.volume = 1;
+            speechSynthesis.speak(u);
+          } catch {}
+        }
+      }
+
+      if (remaining === 0) {
+        handleNext();
+        return;
+      }
+    };
+
+    // Tick immediately, then every 250ms (more responsive than 1s for screen-off recovery)
+    tick();
+    const interval = setInterval(tick, 250);
     return () => clearInterval(interval);
-  }, [isActive, timeLeft]);
+  }, [isActive, intervalIndex]);
 
   const handleNext = () => {
-    // 🟢 NEW: Log the completed interval immediately
     let earned = 0;
     if (currentInterval) {
-      // Calculate dynamic XP based on Intensity * Duration
-      let rate = 5; // Default (Base/Recovery) - 5 XP/min
+      let rate = 5;
       const z = (currentInterval.zone || currentInterval.text || "").toLowerCase();
-
       if (z.includes("push") || z.includes("tempo") || z.includes("threshold")) rate = 12;
       else if (z.includes("all out") || z.includes("sprint") || z.includes("max")) rate = 20;
       else if (z.includes("long run") || z.includes("moderate")) rate = 8;
-
-      // Minimum 1 XP if it's very short
       const durationMin = currentInterval.seconds / 60;
       earned = Math.ceil(Math.max(1, durationMin * rate));
-
       setEarnedXp(prev => prev + earned);
     }
 
@@ -136,6 +190,7 @@ export default function TimerView({ block, blockIndex, onComplete, engineChoice 
       setIsActive(false);
       localStorage.removeItem(timerKey);
       setFinalXp(earnedXp + earned);
+      if (audioMode) audio.announceComplete();
       setShowDistancePrompt(true);
     }
   };
@@ -185,10 +240,13 @@ export default function TimerView({ block, blockIndex, onComplete, engineChoice 
           <h2 className="text-white/80 font-bold uppercase tracking-widest text-xs">
             {block.name}
           </h2>
-          <div className="flex items-center gap-3">
-            {earnedXp > 0 && <span className="text-xs font-bold text-yellow-400/90">XP Earned: {earnedXp}</span>}
+          <div className="flex items-center gap-2">
+            {earnedXp > 0 && <span className="text-xs font-bold text-yellow-400/90">XP: {earnedXp}</span>}
+            <button onClick={toggleAudioMode} className={`p-1.5 rounded-lg transition ${audioMode ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-zinc-800/50 text-white/40 border border-white/10'}`} title={audioMode ? 'Audio cues on' : 'Audio cues off'}>
+              {audioMode ? <Volume2 size={14} /> : <VolumeX size={14} />}
+            </button>
             <button onClick={() => setOutdoor(o => !o)} className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg transition ${outdoor ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-zinc-800/50 text-white/50 border border-white/10'}`}>
-              {outdoor ? '🌳 Outdoor' : '🏃 Indoor'}
+              {outdoor ? '🌳 Out' : '🏃 In'}
             </button>
           </div>
         </div>
