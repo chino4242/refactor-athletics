@@ -8,6 +8,7 @@ import DashboardHeader from './DashboardHeader';
 import DashboardTabs from './DashboardTabs';
 import DashboardSkeleton from './DashboardSkeleton';
 import QuickActionButton from './QuickActionButton';
+import FirstSessionView from './FirstSessionView';
 import { Plus } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { useExperienceMode } from '@/context/ExperienceModeContext';
@@ -92,6 +93,21 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
 
     if (loading) {
         return <DashboardSkeleton />;
+    }
+
+    // Show focused first-session view for brand new users
+    const isFirstSession = stats && stats.exercises_tracked === 0 && !localStorage.getItem('first_session_dismissed');
+    if (isFirstSession) {
+        const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+        const todayProgram = programs.find((p: any) => p.day_of_week === today);
+        return (
+            <div className="min-h-screen bg-black pb-24">
+                <FirstSessionView
+                    todayWorkoutName={todayProgram?.name}
+                    todayWorkoutPreview={todayProgram?.blocks?.slice(0, 5).map((b: any) => b.exercise_name || b.name).filter(Boolean)}
+                />
+            </div>
+        );
     }
 
     return (
