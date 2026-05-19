@@ -129,12 +129,17 @@ function parseTreadmillSection(text: string, sectionName = "Engine"): any[] {
 
     if (currentBlock) blocks.push(currentBlock);
 
-    // Inject 5-min Zone 2 warmup and cooldown, then calculate XP
+    // Inject 5-min Zone 2 warmup and cooldown only if not already present
     const warmup = { type: 'interval', seconds: 300, zone: 'Comfortable', color: 'bg-green-500', note: 'Easy pace — warm up', raw_text: '5 min Comfortable (Warm-Up)' };
     const cooldown = { type: 'interval', seconds: 300, zone: 'Comfortable', color: 'bg-green-500', note: 'Easy pace — cool down', raw_text: '5 min Comfortable (Cool Down)' };
 
     for (const block of blocks) {
-        block.intervals = [warmup, ...block.intervals, cooldown];
+        const first = block.intervals[0];
+        const last = block.intervals[block.intervals.length - 1];
+        const hasWarmup = first?.type === 'interval' && /(warm|easy|base)/i.test(first.raw_text || '');
+        const hasCooldown = last?.type === 'interval' && /(cool|walk|easy)/i.test(last.raw_text || '');
+        if (!hasWarmup) block.intervals = [warmup, ...block.intervals];
+        if (!hasCooldown) block.intervals = [...block.intervals, cooldown];
 
         let xp = 0;
         for (const interval of block.intervals) {

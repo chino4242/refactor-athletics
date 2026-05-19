@@ -48,7 +48,7 @@ function dbBlocksToWorkoutBlocks(blocks: any[], catalog: any[]): any[] {
                 zone,
                 color,
                 note: incline > 0 ? `${incline}% incline` : null,
-                raw_text: `${Math.round(secs / 60)} min ${zone}${incline > 0 ? ` @ ${incline}%` : ''}`,
+                raw_text: secs % 60 === 0 ? `${secs / 60} min ${zone}${incline > 0 ? ` @ ${incline}%` : ''}` : `${secs}s ${zone}${incline > 0 ? ` @ ${incline}%` : ''}`,
                 outdoor_alternative: b.outdoor_alternative || null,
             };
         });
@@ -59,17 +59,25 @@ function dbBlocksToWorkoutBlocks(blocks: any[], catalog: any[]): any[] {
             const factor = b.intensity === 'all_out' ? 0.4 : b.intensity === 'push' ? 0.2 : 0.1;
             xp += Math.floor(secs * factor);
         }
-        // Add XP for warmup + cooldown (10 min base @ 0.1/sec)
-        xp += Math.floor(600 * 0.1);
 
-        // Inject 5-min Zone 2 warmup and cooldown
+        // Inject 5-min Zone 2 warmup and cooldown if not already present
         const warmup = { type: 'interval' as const, seconds: 300, zone: 'Comfortable', color: 'bg-green-500', note: 'Easy pace — warm up', raw_text: '5 min Comfortable (Warm-Up)' };
         const cooldown = { type: 'interval' as const, seconds: 300, zone: 'Comfortable', color: 'bg-green-500', note: 'Easy pace — cool down', raw_text: '5 min Comfortable (Cool Down)' };
 
+        const firstInterval = intervals[0];
+        const lastInterval = intervals[intervals.length - 1];
+        const hasWarmup = firstInterval && /(comfortable|base)/i.test(firstInterval.zone || '');
+        const hasCooldown = lastInterval && /(comfortable|base|recovery)/i.test(lastInterval.zone || '');
+        const finalIntervals = [
+            ...(hasWarmup ? [] : [warmup]),
+            ...intervals,
+            ...(hasCooldown ? [] : [cooldown]),
+        ];
+
         result.push({
-            name: `Tread Block - ${totalMins + 10} min`,
+            name: `Tread Block - ${Math.round(finalIntervals.reduce((s, i) => s + (i.seconds || 0), 0) / 60)} min`,
             type: 'timer',
-            intervals: [warmup, ...intervals, cooldown],
+            intervals: finalIntervals,
             section: treadmillSection,
             xp_value: xp,
         });
