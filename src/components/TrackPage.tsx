@@ -29,7 +29,7 @@ interface TrackPageProps {
   onLogComplete?: () => void;
 }
 
-const TABS = [
+const ALL_TABS = [
   { id: 'health', label: 'Health', icon: '💪' },
   { id: 'nutrition', label: 'Nutrition', icon: '🥗' },
   { id: 'recovery', label: 'Recovery', icon: '🧘' },
@@ -37,7 +37,7 @@ const TABS = [
   { id: 'body', label: 'Body', icon: '📐' },
 ] as const;
 
-type TabId = typeof TABS[number]['id'];
+type TabId = typeof ALL_TABS[number]['id'];
 
 export default function TrackPage({ userId, bodyweight, initialProfile, initialStats, onLogComplete }: TrackPageProps) {
   const toast = useToast();
@@ -82,6 +82,18 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
   const [loading, setLoading] = useState<string | null>(null);
   const [totals, setTotals] = useState<Record<string, number>>({});
   const [pageReady, setPageReady] = useState(false);
+
+  // Progressive disclosure: show Recovery/Discipline tabs only if user has relevant data or habits visible
+  const TABS = useMemo(() => {
+    const hasRecoveryData = totals['habit_cold_plunge'] > 0 || totals['habit_sauna'] > 0 || totals['habit_mobility'] > 0 || totals['habit_meditation'] > 0;
+    const hasDisciplineData = totals['habit_no_alcohol'] > 0 || totals['habit_no_vice'] > 0;
+    const hasUsedBefore = localStorage.getItem('track_tab') === 'recovery' || localStorage.getItem('track_tab') === 'discipline';
+    return ALL_TABS.filter(tab => {
+      if (tab.id === 'recovery') return hasRecoveryData || hasUsedBefore;
+      if (tab.id === 'discipline') return hasDisciplineData || hasUsedBefore;
+      return true;
+    });
+  }, [totals]);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [showTodayLog, setShowTodayLog] = useState(true);
   const [todayLog, setTodayLog] = useState<any[]>([]);
