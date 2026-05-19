@@ -287,7 +287,20 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
         </div>
       </div>
 
-      {/* Today's Log — quick view + delete */}
+      {/* Nutrition Running Total — always visible */}
+      {(totals['macro_protein'] > 0 || totals['macro_carbs'] > 0 || totals['macro_fat'] > 0) && (
+        <div className="mx-2 px-4 py-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800/40 flex items-center justify-between">
+          <div className="flex gap-3 text-[11px] font-bold">
+            <span className="text-red-400">{Math.round(totals['macro_protein'] || 0)}g P</span>
+            <span className="text-orange-400">{Math.round(totals['macro_carbs'] || 0)}g C</span>
+            <span className="text-yellow-400">{Math.round(totals['macro_fat'] || 0)}g F</span>
+          </div>
+          <span className="text-[11px] text-zinc-500 font-mono">
+            {Math.round((totals['macro_protein'] || 0) * 4 + (totals['macro_carbs'] || 0) * 4 + (totals['macro_fat'] || 0) * 9)} cal
+          </span>
+        </div>
+      )}
+
       {/* Tabs */}
       <div className="flex gap-1.5 px-2 overflow-x-auto no-scrollbar">
         {TABS.map(tab => (
