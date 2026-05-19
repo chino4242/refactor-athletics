@@ -316,6 +316,38 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                     )}
                 </div>
 
+                {/* Quick-Log Tiles (recent meals, one-tap) */}
+                {recents.length > 0 && !foodResults.length && (
+                    <div className="px-4 py-2 border-b border-zinc-800/50">
+                        <span className="text-[9px] text-zinc-600 uppercase font-bold tracking-wider">Quick Log</span>
+                        <div className="flex gap-2 mt-1.5 overflow-x-auto no-scrollbar pb-1">
+                            {recents.slice(0, 5).map((food, i) => {
+                                const mult = (parseFloat(food.servingSize?.replace(/[^0-9.]/g, '') || '') || 100) / 100;
+                                const p = Math.round(food.per100g.protein * mult);
+                                return (
+                                    <button
+                                        key={i}
+                                        onClick={async () => {
+                                            const c = Math.round(food.per100g.carbs * mult);
+                                            const f = Math.round(food.per100g.fat * mult);
+                                            const promises = [];
+                                            if (p > 0) promises.push(onLog('protein', (totals['macro_protein'] || 0) + p));
+                                            if (c > 0) promises.push(onLog('carbs', (totals['macro_carbs'] || 0) + c));
+                                            if (f > 0) promises.push(onLog('fat', (totals['macro_fat'] || 0) + f));
+                                            if (promises.length > 0) await Promise.all(promises);
+                                            onClose();
+                                        }}
+                                        className="shrink-0 bg-zinc-800/60 border border-zinc-700/40 rounded-xl px-3 py-2 hover:border-orange-500/40 transition text-left"
+                                    >
+                                        <div className="text-[11px] font-semibold text-white truncate max-w-[100px]">{food.name}</div>
+                                        <div className="text-[9px] text-orange-400 font-bold mt-0.5">{p}g P</div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
                 {/* Tabs (secondary) */}
                 <div className="flex border-b border-zinc-800">
                     <button onClick={() => setTab('search')} className={`flex-1 text-xs font-bold uppercase py-2.5 transition border-b-2 ${tab === 'search' ? 'border-orange-500 text-white' : 'border-transparent text-zinc-500'}`}>
