@@ -331,7 +331,12 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
                       <input
                         type="text"
                         inputMode="decimal"
-                        placeholder="lbs"
+                        placeholder={weights[i] ? 'lbs' : ((() => {
+                          const exId = catalogItem?.id || block.exercise_id || '';
+                          const log = fullHistory?.find((h: any) => h.exercise_id === exId);
+                          const lastW = (log?.details || log?.data || [])[0]?.weight;
+                          return lastW ? `${lastW}` : 'lbs';
+                        })())}
                         value={weights[i]}
                         onChange={(e) => updateWeight(i, e.target.value)}
                         className="bg-zinc-900 text-white border border-zinc-600 rounded p-1.5 w-16 text-center font-mono text-sm focus:border-orange-500 focus:outline-none"
