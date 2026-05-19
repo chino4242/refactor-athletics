@@ -122,6 +122,11 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                                     <span className="text-lg text-zinc-500 not-italic font-bold">Complete a workout to earn your first rank</span>
                                 )}
                             </div>
+                            {powerLevel > 0 && stats?.exercises_tracked > 0 && (
+                                <div className="text-[10px] text-zinc-500 mt-1">
+                                    {stats.exercises_tracked} exercise{stats.exercises_tracked > 1 ? 's' : ''} ranked · avg Lv{(powerLevel / stats.exercises_tracked).toFixed(1)}
+                                </div>
+                            )}
                             {!isClassic && rankImage && (
                                 <div className="flex flex-col items-center mt-2">
                                     <img src={rankImage} alt={rankName} className="w-14 h-14 object-contain" />
