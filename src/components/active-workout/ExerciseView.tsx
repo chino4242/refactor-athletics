@@ -45,8 +45,13 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
     }
     return Array(totalSets).fill('');
   });
+  const isDurationExercise = (typeof block.reps_per_set === 'string' && block.reps_per_set.includes('s')) || !!block.target_duration_seconds;
   const [repsInputs, setRepsInputs] = useState<string[]>(() => {
     if (block.reps_list) return block.reps_list.map((r: number | null) => r != null ? String(r) : '');
+    if (isDurationExercise) {
+      const secs = block.target_duration_seconds || parseInt(String(block.reps_per_set), 10) || 30;
+      return Array(totalSets).fill(String(secs));
+    }
     const parsed = parseInt(String(block.reps_per_set), 10);
     return Array(totalSets).fill(parsed > 0 ? String(parsed) : '');
   });
@@ -179,6 +184,8 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
         <p className="text-zinc-400 text-sm mt-1 font-mono">
           {isRepsOnly
             ? <>{block.sets} Sets × Max Reps • {smartRest}s Rest</>
+            : isDurationExercise
+            ? <>{block.sets} Sets × {block.target_duration_seconds || parseInt(String(block.reps_per_set), 10)}s Hold • {smartRest}s Rest</>
             : <>{block.sets} Sets × {block.reps_per_set} Reps • {smartRest}s Rest</>
           }
         </p>
@@ -354,7 +361,7 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
                   </div>
                   )}
                   <div>
-                    <span className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Reps</span>
+                    <span className="text-[10px] text-zinc-500 uppercase font-bold mb-1">{isDurationExercise ? 'Sec' : 'Reps'}</span>
                     <input
                       type="text"
                       inputMode="numeric"
@@ -465,8 +472,10 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
               name: catalogItem?.name || displayName,
               catalogId: catalogItem?.id,
               sets: completedSets.map(i => ({
-                weight: parseFloat(weights[i] || '0'),
-                reps: parseInt(repsInputs[i], 10) || 10
+                weight: isDurationExercise ? 0 : parseFloat(weights[i] || '0'),
+                ...(isDurationExercise
+                  ? { duration: parseInt(repsInputs[i], 10) || 0 }
+                  : { reps: parseInt(repsInputs[i], 10) || 10 })
               }))
             }];
             onComplete(false, exercisesPayload);
