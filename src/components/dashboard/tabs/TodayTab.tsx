@@ -35,6 +35,13 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
         maxDailyXp: 0,
     });
     const [loading, setLoading] = useState(true);
+    const [showWeeklySummary, setShowWeeklySummary] = useState(() => {
+        if (typeof window === 'undefined') return false;
+        const today = new Date();
+        const weekKey = `weekly_summary_${today.getFullYear()}_${Math.ceil((today.getTime() - new Date(today.getFullYear(), 0, 1).getTime()) / 604800000)}`;
+        if (localStorage.getItem(weekKey)) return false;
+        return today.getDay() <= 1;
+    });
 
     useEffect(() => {
         const loadTodayData = async () => {
@@ -170,14 +177,6 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
     }
 
     // Show weekly summary on Monday or first open of the week
-    const [showWeeklySummary, setShowWeeklySummary] = useState(() => {
-        if (typeof window === 'undefined') return false;
-        const today = new Date();
-        const weekKey = `weekly_summary_${today.getFullYear()}_${Math.ceil((today.getTime() - new Date(today.getFullYear(), 0, 1).getTime()) / 604800000)}`;
-        if (localStorage.getItem(weekKey)) return false;
-        return today.getDay() <= 1; // Sunday or Monday
-    });
-
     const dismissWeeklySummary = () => {
         const today = new Date();
         const weekKey = `weekly_summary_${today.getFullYear()}_${Math.ceil((today.getTime() - new Date(today.getFullYear(), 0, 1).getTime()) / 604800000)}`;
