@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { getToday } from '@/utils/date';
 import Link from 'next/link';
-import { Calendar, Dumbbell, ChevronRight, Share2 } from 'lucide-react';
+import { Calendar, Dumbbell, ChevronRight, Share2, X } from 'lucide-react';
 import type { Workout } from '@/types';
 import { getHabitProgress } from '@/services/api';
 import { createClient } from '@/utils/supabase/client';
@@ -169,8 +169,51 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
         );
     }
 
+    // Show weekly summary on Monday or first open of the week
+    const [showWeeklySummary, setShowWeeklySummary] = useState(() => {
+        if (typeof window === 'undefined') return false;
+        const today = new Date();
+        const weekKey = `weekly_summary_${today.getFullYear()}_${Math.ceil((today.getTime() - new Date(today.getFullYear(), 0, 1).getTime()) / 604800000)}`;
+        if (localStorage.getItem(weekKey)) return false;
+        return today.getDay() <= 1; // Sunday or Monday
+    });
+
+    const dismissWeeklySummary = () => {
+        const today = new Date();
+        const weekKey = `weekly_summary_${today.getFullYear()}_${Math.ceil((today.getTime() - new Date(today.getFullYear(), 0, 1).getTime()) / 604800000)}`;
+        localStorage.setItem(weekKey, 'true');
+        setShowWeeklySummary(false);
+    };
+
     return (
         <div className="space-y-4">
+            {/* Weekly Summary Card */}
+            {showWeeklySummary && stats && (
+                <div className="bg-gradient-to-br from-zinc-800/80 to-zinc-900/80 border border-zinc-700/40 rounded-2xl p-4 relative">
+                    <button onClick={dismissWeeklySummary} className="absolute top-3 right-3 text-zinc-600 hover:text-white transition"><X size={16} /></button>
+                    <div className="flex items-center gap-2 mb-3">
+                        <span className="text-lg">📊</span>
+                        <h3 className="text-sm font-bold text-white uppercase tracking-wider">Last Week</h3>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3 text-center">
+                        <div>
+                            <div className="text-xl font-black text-orange-400">{stats.exercises_tracked || 0}</div>
+                            <div className="text-[9px] text-zinc-500 uppercase">Exercises</div>
+                        </div>
+                        <div>
+                            <div className="text-xl font-black text-emerald-400">{stats.total_career_xp ? Math.min(stats.total_career_xp, 999) : 0}</div>
+                            <div className="text-[9px] text-zinc-500 uppercase">XP Earned</div>
+                        </div>
+                        <div>
+                            <div className="text-xl font-black text-blue-400">{stats.power_level || 0}</div>
+                            <div className="text-[9px] text-zinc-500 uppercase">Power Level</div>
+                        </div>
+                    </div>
+                    {stats.power_level > 0 && (
+                        <p className="text-xs text-zinc-400 text-center mt-3">Keep it up — consistency builds champions. 💪</p>
+                    )}
+                </div>
+            )}
             {/* Daily Quest Summary */}
             {profile && (
                 <div>
