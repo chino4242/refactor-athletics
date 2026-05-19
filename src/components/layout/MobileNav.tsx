@@ -22,11 +22,11 @@ export default function MobileNav() {
                 </Link>
                 <Link href="/track" className={`flex flex-col items-center justify-center gap-1 transition-colors ${isActive('/track')}`}>
                     <span className="text-xl">📝</span>
-                    <span className="text-xs font-bold uppercase tracking-wider">Track</span>
+                    <span className="text-xs font-bold uppercase tracking-wider">Log</span>
                 </Link>
                 <Link href="/train" className={`flex flex-col items-center justify-center gap-1 transition-colors ${isActive('/train')}`}>
                     <span className="text-xl">🏋️</span>
-                    <span className="text-xs font-bold uppercase tracking-wider">Train</span>
+                    <span className="text-xs font-bold uppercase tracking-wider">Workout</span>
                 </Link>
                 <Link href="/arena" className={`flex flex-col items-center justify-center gap-1 transition-colors ${isActive('/arena')}`}>
                     <span className="text-xl">{isClassic ? '👥' : '⚔️'}</span>
