@@ -78,7 +78,7 @@ function dbBlocksToWorkoutBlocks(blocks: any[], catalog: any[]): any[] {
 
     for (const block of blocks) {
         if (block.block_type === 'treadmill') {
-            treadmillSection = block.section === 'warmup' ? 'Engine' : (block.section || 'Engine');
+            treadmillSection = (block.section === 'warmup' || block.section === 'cardio') ? 'Engine' : (block.section || 'Engine');
             treadmillGroup.push(block);
             continue;
         }

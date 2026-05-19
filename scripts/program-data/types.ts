@@ -4,7 +4,7 @@
 export interface ProgramBlock {
   block_order: number;
   block_type: 'exercise' | 'treadmill';
-  section: 'warmup' | 'main' | 'core' | 'cooldown';
+  section: 'warmup' | 'main' | 'core' | 'cooldown' | 'cardio';
   // Exercise fields
   exercise_id?: string;
   target_sets?: number;
