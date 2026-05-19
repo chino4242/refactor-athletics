@@ -148,18 +148,24 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             )}
 
             {/* Header with Expertise & Stats */}
-            <DashboardHeader stats={stats} userId={userId} />
+            {!isFirstSession && <DashboardHeader stats={stats} userId={userId} />}
 
-            <FirstVisitTooltip id="dashboard" message="This is your home base. Your Power Level grows as you train and hit new ranks." />
+            {!isFirstSession && <FirstVisitTooltip id="dashboard" message="This is your home base. Your Power Level grows as you train and hit new ranks." />}
 
-            {/* Tabbed Content */}
-            <DashboardTabs 
-                userId={userId}
-                stats={stats}
-                hasActiveDuels={hasActiveDuels}
-                activeDuels={activeDuels}
-                programs={programs}
-            />
+            {/* Content: First Session or Tabbed Dashboard */}
+            {isFirstSession ? (
+                <FirstSessionView
+                    todayWorkoutName={programs.find((p: any) => p.day_of_week === new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase())?.name}
+                />
+            ) : (
+                <DashboardTabs 
+                    userId={userId}
+                    stats={stats}
+                    hasActiveDuels={hasActiveDuels}
+                    activeDuels={activeDuels}
+                    programs={programs}
+                />
+            )}
 
             {/* Floating Action Button */}
             <button
