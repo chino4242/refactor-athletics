@@ -113,7 +113,11 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                                 </div>
                             </div>
                             <div className={`text-4xl font-black italic text-transparent bg-clip-text bg-gradient-to-r ${progressGradient}`}>
-                                {powerLevel}<span className="text-lg text-zinc-500">/{stats?.max_expertise || 0}</span>
+                                {powerLevel > 0 ? (
+                                    <>{powerLevel}<span className="text-lg text-zinc-500">/{stats?.max_expertise || 0}</span></>
+                                ) : (
+                                    <span className="text-lg text-zinc-500 not-italic font-bold">Complete a workout to earn your first rank</span>
+                                )}
                             </div>
                             {!isClassic && rankImage && (
                                 <div className="flex flex-col items-center mt-2">
