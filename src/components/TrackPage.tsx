@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { getToday } from '@/utils/date';
+import FirstVisitTooltip from './common/FirstVisitTooltip';
 import { getHabitProgress, getHistory, getProfile, saveProfile } from '@/services/api';
 import { useTheme } from '@/context/ThemeContext';
 import { THEMES } from '@/data/themes';
@@ -219,6 +220,7 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
 
   return (
     <div className="max-w-3xl mx-auto flex flex-col gap-4 relative pb-32" style={{ backgroundImage: theme.bgTexture }}>
+      <FirstVisitTooltip id="track" message="Log meals, habits, and body measurements here. Everything earns XP." />
       {showLevelUp && <LevelUpOverlay level={showLevelUp} onClose={() => setShowLevelUp(null)} />}
 
       {/* Date Navigation */}

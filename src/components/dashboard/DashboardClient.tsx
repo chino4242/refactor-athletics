@@ -9,6 +9,7 @@ import DashboardTabs from './DashboardTabs';
 import DashboardSkeleton from './DashboardSkeleton';
 import QuickActionButton from './QuickActionButton';
 import FirstSessionView from './FirstSessionView';
+import FirstVisitTooltip from '../common/FirstVisitTooltip';
 import { Plus } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { useExperienceMode } from '@/context/ExperienceModeContext';
@@ -153,6 +154,8 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
 
             {/* Header with Expertise & Stats */}
             <DashboardHeader stats={stats} userId={userId} />
+
+            <FirstVisitTooltip id="dashboard" message="This is your home base. Your Power Level grows as you train and hit new ranks." />
 
             {/* Tabbed Content */}
             <DashboardTabs 
