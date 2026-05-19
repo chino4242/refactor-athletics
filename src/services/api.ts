@@ -247,7 +247,7 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
     
     // Query workouts, catalog, and user profile in parallel
     const [{ data: workouts }, { data: catalog }, { data: profile }] = await Promise.all([
-        supabase.from('workouts').select('exercise_id, level, xp').eq('user_id', userId),
+        supabase.from('workouts').select('exercise_id, level, xp, raw_value, timestamp').eq('user_id', userId),
         supabase.from('catalog').select('id, name, standards').not('standards', 'is', null),
         supabase.from('users').select('selected_path, age, sex, bodyweight').eq('id', userId).single(),
     ]);
@@ -363,10 +363,19 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
     ]);
 
     // Compute next-level quests (closest exercises to leveling up)
-    const nextLevelQuests: { name: string; target: string }[] = [];
+    const nextLevelQuests: { name: string; target: string; current: string; level: number; nextLevel: number; pct: number }[] = [];
     const userAge = profile?.age || 25;
     const userSex = (profile?.sex || 'male').toLowerCase();
     const userBw = profile?.bodyweight || 180;
+
+    // Build best raw_value per exercise from workouts
+    const bestValuePerExercise: Record<string, number> = {};
+    for (const w of (workouts || [])) {
+        const id = w.exercise_id;
+        const val = w.raw_value || 0;
+        if (val > (bestValuePerExercise[id] || 0)) bestValuePerExercise[id] = val;
+    }
+
     for (const id of keyExerciseIds) {
         const catItem = (catalog || []).find((c: any) => c.id === id);
         if (!catItem?.standards?.brackets) continue;
@@ -380,24 +389,47 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
         const nextThreshold = bracket.levels[currentLevel];
         const unit = (catItem.standards.unit || '').toLowerCase();
         let target: string;
+        let currentDisplay: string;
+        let rawBest = bestValuePerExercise[id] || 0;
+        let pct = 0;
+
         if (unit === 'sec' || unit === 'seconds' || unit === 'time') {
             const min = Math.floor(nextThreshold / 60);
             const sec = Math.round(nextThreshold % 60);
             target = `${min}:${String(sec).padStart(2, '0')}`;
+            currentDisplay = rawBest > 0 ? `${Math.floor(rawBest / 60)}:${String(Math.round(rawBest % 60)).padStart(2, '0')}` : '—';
+            if (nextThreshold > 0) pct = Math.min(100, (rawBest / nextThreshold) * 100);
         } else if (unit === 'xbw') {
-            target = `${Math.round(nextThreshold * userBw)} lbs`;
+            const targetLbs = Math.round(nextThreshold * userBw);
+            target = `${targetLbs} lbs`;
+            currentDisplay = rawBest > 0 ? `${Math.round(rawBest)} lbs` : '—';
+            if (targetLbs > 0) pct = Math.min(100, (rawBest / targetLbs) * 100);
         } else {
             target = `${nextThreshold} ${unit === 'reps' ? 'reps' : unit}`;
+            currentDisplay = rawBest > 0 ? `${Math.round(rawBest)} ${unit === 'reps' ? 'reps' : unit}` : '—';
+            if (nextThreshold > 0) pct = Math.min(100, (rawBest / nextThreshold) * 100);
         }
-        nextLevelQuests.push({ name: catItem.name, target });
+
+        // Fallback: if no raw_value but we have a level, estimate progress from previous threshold
+        if (pct === 0 && currentLevel > 0) {
+            const prevThreshold = currentLevel >= 2 ? bracket.levels[currentLevel - 2] : 0;
+            // User passed currentLevel-1 threshold, working toward currentLevel threshold
+            // Estimate ~halfway between previous and next
+            pct = Math.round(((bracket.levels[currentLevel - 1] || 0) / nextThreshold) * 100);
+            if (unit === 'xbw') {
+                currentDisplay = `≥${Math.round((bracket.levels[currentLevel - 1] || 0) * userBw)} lbs`;
+            } else {
+                currentDisplay = `≥${bracket.levels[currentLevel - 1] || 0} ${unit === 'reps' ? 'reps' : unit}`;
+            }
+        }
+
+        nextLevelQuests.push({ name: catItem.name, target, current: currentDisplay, level: currentLevel, nextLevel: currentLevel + 1, pct });
     }
-    // Sort: tested exercises first (have a level), then by threshold
+    // Sort by proximity: highest percentage first (closest to leveling up), tested before untested
     nextLevelQuests.sort((a, b) => {
-        const aHas = Object.keys(maxLevelPerExercise).some(k => (catalog || []).find((c: any) => c.id === k)?.name === a.name);
-        const bHas = Object.keys(maxLevelPerExercise).some(k => (catalog || []).find((c: any) => c.id === k)?.name === b.name);
-        if (aHas && !bHas) return -1;
-        if (!aHas && bHas) return 1;
-        return 0;
+        if (a.pct > 0 && b.pct === 0) return -1;
+        if (a.pct === 0 && b.pct > 0) return 1;
+        return b.pct - a.pct;
     });
 
     return {
@@ -412,6 +444,22 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
         no_alcohol_streak: alcoholStreak,
         no_vice_streak: viceStreak,
         nextLevelQuests,
+        power_level_week_delta: (() => {
+            const weekAgo = Math.floor(Date.now() / 1000) - 7 * 86400;
+            const oldMax: Record<string, number> = {};
+            for (const item of workouts || []) {
+                if ((item.timestamp || 0) >= weekAgo) continue;
+                const normalizedId = item.exercise_id?.replace(/^(five_rm_|one_rm_|est_1rm_)/, '');
+                const matchesKey = keyExerciseIds.has(item.exercise_id) || keyExerciseIds.has(normalizedId);
+                if (item.exercise_id && item.level > 0 && matchesKey) {
+                    if (!oldMax[item.exercise_id] || item.level > oldMax[item.exercise_id]) {
+                        oldMax[item.exercise_id] = item.level;
+                    }
+                }
+            }
+            const oldPL = Object.values(oldMax).reduce((s, v) => s + v, 0);
+            return finalExpertise - oldPL;
+        })(),
     };
 };
 

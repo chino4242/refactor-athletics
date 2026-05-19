@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+
 interface BlockCompleteOverlayProps {
   blockResults: any[];
   completedCount: number;
@@ -20,40 +22,61 @@ export default function BlockCompleteOverlay({
   const totalXp = blockResults.reduce((sum: number, r: any) => sum + (r.xp_earned || 0), 0);
   const progressPct = Math.round((completedCount / totalBlocks) * 100);
   const levelUps = blockResults.filter((r: any) => r.level > 0 && r.level > (r.previous_level || 0));
+  const [celebrationDismissed, setCelebrationDismissed] = useState(false);
+
+  // Full-screen rank-up celebration (shows first, user taps to dismiss)
+  if (levelUps.length > 0 && !celebrationDismissed) {
+    const rankUp = levelUps[0];
+    try { navigator.vibrate?.([100, 50, 200, 50, 300]); } catch {}
+    return (
+      <div className="w-full max-w-md mx-auto flex flex-col items-center justify-center text-center px-4 min-h-[70vh] relative overflow-hidden" onClick={() => setCelebrationDismissed(true)}>
+        {/* Confetti */}
+        <div className="absolute inset-0 pointer-events-none">
+          {Array.from({ length: 40 }).map((_, i) => (
+            <div key={i} className="absolute w-2 h-2 rounded-full animate-confetti" style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 30}%`,
+              backgroundColor: ['#f97316', '#ef4444', '#eab308', '#22c55e', '#3b82f6', '#a855f7'][i % 6],
+              animationDelay: `${Math.random() * 1}s`,
+              animationDuration: `${1.5 + Math.random() * 1.5}s`,
+            }} />
+          ))}
+        </div>
+
+        {/* Glow */}
+        <div className="absolute inset-0 bg-gradient-radial from-orange-500/10 via-transparent to-transparent pointer-events-none" />
+
+        {/* Content */}
+        <div className="text-6xl mb-4 animate-bounce">⚡</div>
+        <div className="text-xs font-bold text-orange-400 uppercase tracking-[0.3em] mb-2">Rank Up</div>
+        <div className="text-2xl font-black text-white mb-6">{rankUp.name}</div>
+
+        <div className="flex items-center gap-4 mb-8">
+          <div className="text-center">
+            <div className="text-xs text-zinc-500 uppercase mb-1">Was</div>
+            <div className="text-lg font-bold text-zinc-400">{getThemedRankName(rankUp.previous_level || 0)}</div>
+          </div>
+          <div className="text-3xl text-orange-500 animate-pulse">→</div>
+          <div className="text-center">
+            <div className="text-xs text-orange-400 uppercase mb-1">Now</div>
+            <div className="text-2xl font-black text-orange-400">{getThemedRankName(rankUp.level)}</div>
+          </div>
+        </div>
+
+        {rankUp.best_set && (
+          <div className="text-sm text-zinc-400 mb-2">{rankUp.best_set}</div>
+        )}
+        {rankUp.e1rm && (
+          <div className="text-xs text-zinc-500">e1RM: {rankUp.e1rm} lbs</div>
+        )}
+
+        <div className="mt-8 text-[10px] text-zinc-600 uppercase tracking-wider animate-pulse">Tap to continue</div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-md mx-auto flex flex-col items-center justify-center text-center px-4">
-      {/* Level Up Celebration */}
-      {levelUps.length > 0 && (
-        <div className="mb-4 w-full relative overflow-hidden">
-          <div className="absolute inset-0 pointer-events-none">
-            {Array.from({ length: 20 }).map((_, i) => (
-              <div key={i} className="absolute w-2 h-2 rounded-full animate-confetti" style={{
-                left: `${Math.random() * 100}%`,
-                backgroundColor: ['#f97316', '#ef4444', '#eab308', '#22c55e', '#3b82f6', '#a855f7'][i % 6],
-                animationDelay: `${Math.random() * 0.5}s`,
-                animationDuration: `${1 + Math.random()}s`,
-              }} />
-            ))}
-          </div>
-          {levelUps.map((r: any, i: number) => {
-            if (i === 0) try { navigator.vibrate?.([100, 50, 200]); } catch {}
-            return (
-              <div key={i} className="bg-gradient-to-r from-orange-600/20 to-red-600/20 border border-orange-500/30 rounded-2xl p-4 mb-2 animate-in zoom-in-95">
-                <div className="text-2xl mb-1">⚡</div>
-                <div className="text-xs font-bold text-orange-400 uppercase tracking-widest">Rank Up!</div>
-                <div className="text-lg font-black text-white mt-1">{r.name}</div>
-                <div className="flex items-center justify-center gap-2 mt-2">
-                  <span className="text-xs text-zinc-500">{getThemedRankName(r.previous_level || 0)}</span>
-                  <span className="text-orange-400">→</span>
-                  <span className="text-sm font-black text-orange-400">{getThemedRankName(r.level)}</span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
       {/* Progress ring */}
       <div className="relative w-20 h-20 mb-4">
         <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">

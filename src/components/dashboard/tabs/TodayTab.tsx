@@ -419,20 +419,30 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
 
             {/* Next Level Up — power level nudge */}
             {profile && (() => {
-                // Show top 2 exercises closest to next rank (from stats if available)
+                // Show top 3 exercises closest to next rank
                 const quests = (stats as any)?.nextLevelQuests;
                 if (!quests?.length) return null;
+                const tested = quests.filter((q: any) => q.pct > 0).slice(0, 3);
+                const shown = tested.length > 0 ? tested : quests.slice(0, 3);
                 return (
                     <Link href="/power-level" className="block bg-zinc-900 border border-zinc-800 rounded-xl p-3 hover:border-zinc-700 transition">
-                        <div className="flex items-center gap-2 mb-2">
+                        <div className="flex items-center gap-2 mb-2.5">
                             <span className="text-sm">⚡</span>
-                            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Next Level Up</span>
+                            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Closest to Rank Up</span>
                         </div>
-                        <div className="space-y-1.5">
-                            {quests.slice(0, 3).map((q: any, i: number) => (
-                                <div key={i} className="flex items-center justify-between">
-                                    <span className="text-xs text-zinc-300">{q.name}</span>
-                                    <span className="text-xs font-bold text-orange-400">{q.target}</span>
+                        <div className="space-y-2.5">
+                            {shown.map((q: any, i: number) => (
+                                <div key={i}>
+                                    <div className="flex items-center justify-between mb-0.5">
+                                        <span className="text-xs text-zinc-300 truncate flex-1">{q.name}</span>
+                                        <span className="text-[10px] font-bold text-orange-400 ml-2">Lv{q.nextLevel}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex-1 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                                            <div className={`h-full rounded-full transition-all duration-500 ${q.pct >= 90 ? 'bg-orange-500 animate-pulse' : q.pct >= 70 ? 'bg-orange-600' : 'bg-zinc-600'}`} style={{ width: `${q.pct}%` }} />
+                                        </div>
+                                        <span className="text-[9px] text-zinc-500 font-mono shrink-0">{q.current} → {q.target}</span>
+                                    </div>
                                 </div>
                             ))}
                         </div>

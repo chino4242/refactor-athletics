@@ -458,13 +458,24 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
             </div>
           );
 
-          if (gap <= 30) return (
-            <div className="mx-4 mb-2 px-3 py-2 bg-zinc-800/80 border border-zinc-700/50 rounded-xl text-center">
-              <span className="text-[11px] text-zinc-400">🎯 <span className="font-bold text-orange-400">{gap} lbs</span> more to next rank</span>
+          if (gap <= 15) return (
+            <div className="mx-4 mb-2 px-3 py-2 bg-orange-500/10 border border-orange-500/20 rounded-xl text-center animate-pulse">
+              <span className="text-[11px] font-bold text-orange-400">🔥 {gap} lbs to next rank</span>
             </div>
           );
 
-          return null;
+          if (gap <= 30) return (
+            <div className="mx-4 mb-2 px-3 py-2 bg-orange-500/10 border border-orange-500/20 rounded-xl text-center">
+              <span className="text-[11px] text-orange-400">🎯 <span className="font-bold">{gap} lbs</span> to next rank</span>
+            </div>
+          );
+
+          // Always show target — subtle when far away
+          return (
+            <div className="mx-4 mb-2 px-3 py-2 bg-zinc-800/50 border border-zinc-700/30 rounded-xl text-center">
+              <span className="text-[10px] text-zinc-500">Next rank at <span className="font-bold text-zinc-400">{weightNeeded} lbs</span> e1RM <span className="text-zinc-600">({gap} lbs away)</span></span>
+            </div>
+          );
         })()}
       </div>
       <RestTimerBar restTime={restTime} totalRest={smartRest} onSkip={() => setIsResting(false)} />

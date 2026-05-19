@@ -125,12 +125,29 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                             {powerLevel > 0 && stats?.exercises_tracked > 0 && (
                                 <div className="text-[10px] text-zinc-500 mt-1">
                                     {stats.exercises_tracked} exercise{stats.exercises_tracked > 1 ? 's' : ''} ranked · avg Lv{(powerLevel / stats.exercises_tracked).toFixed(1)}
+                                    {(stats as any).power_level_week_delta > 0 && (
+                                        <span className="ml-1.5 text-emerald-400 font-bold">+{(stats as any).power_level_week_delta} this week 🔥</span>
+                                    )}
                                 </div>
                             )}
                             {!isClassic && rankImage && (
                                 <div className="flex flex-col items-center mt-2">
                                     <img src={rankImage} alt={rankName} className="w-14 h-14 object-contain" />
                                     <span className="text-[10px] font-bold mt-1" style={{ color: theme.accentHex }}>{rankName}</span>
+                                    {tier < TIER_THRESHOLDS.length - 1 && (() => {
+                                        const nextTierPL = TIER_THRESHOLDS[tier + 1];
+                                        const currentTierPL = TIER_THRESHOLDS[tier];
+                                        const progress = Math.round(((powerLevel - currentTierPL) / (nextTierPL - currentTierPL)) * 100);
+                                        const nextRankName = theme.ranks?.[`level${tier + 1}`]?.name?.split(': ')[1] || `Tier ${tier + 1}`;
+                                        return (
+                                            <div className="w-full mt-1.5 max-w-[120px]">
+                                                <div className="h-1 bg-zinc-800 rounded-full overflow-hidden">
+                                                    <div className="h-full bg-orange-500/70 rounded-full transition-all" style={{ width: `${progress}%` }} />
+                                                </div>
+                                                <div className="text-[8px] text-zinc-600 mt-0.5 text-center">{nextTierPL - powerLevel} to {nextRankName}</div>
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
                             )}
                             <div className="text-[10px] text-orange-500/70 group-hover:text-orange-400 mt-1 transition">View Power Level →</div>
