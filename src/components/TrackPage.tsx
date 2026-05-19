@@ -288,18 +288,36 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
       </div>
 
       {/* Nutrition Running Total — always visible */}
-      {(totals['macro_protein'] > 0 || totals['macro_carbs'] > 0 || totals['macro_fat'] > 0) && (
-        <div className="mx-2 px-4 py-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800/40 flex items-center justify-between">
-          <div className="flex gap-3 text-[11px] font-bold">
-            <span className="text-red-400">{Math.round(totals['macro_protein'] || 0)}g P</span>
-            <span className="text-orange-400">{Math.round(totals['macro_carbs'] || 0)}g C</span>
-            <span className="text-yellow-400">{Math.round(totals['macro_fat'] || 0)}g F</span>
+      {(totals['macro_protein'] > 0 || totals['macro_carbs'] > 0 || totals['macro_fat'] > 0) && (() => {
+        const p = Math.round(totals['macro_protein'] || 0);
+        const c = Math.round(totals['macro_carbs'] || 0);
+        const f = Math.round(totals['macro_fat'] || 0);
+        const cal = Math.round(p * 4 + c * 4 + f * 9);
+        const targets = profile?.nutrition_targets;
+        // Calculate grade: A (within 10%), B (within 20%), C (>20% off) based on protein target
+        let grade = '';
+        let gradeColor = '';
+        if (targets?.protein && p > 0) {
+          const pctOff = Math.abs(p - targets.protein) / targets.protein;
+          if (p >= targets.protein) { grade = 'A'; gradeColor = 'text-emerald-400'; }
+          else if (pctOff <= 0.1) { grade = 'A'; gradeColor = 'text-emerald-400'; }
+          else if (pctOff <= 0.2) { grade = 'B'; gradeColor = 'text-yellow-400'; }
+          else { grade = 'C'; gradeColor = 'text-zinc-500'; }
+        }
+        return (
+          <div className="mx-2 px-4 py-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800/40 flex items-center justify-between">
+            <div className="flex gap-3 text-[11px] font-bold">
+              <span className="text-red-400">{p}g P</span>
+              <span className="text-orange-400">{c}g C</span>
+              <span className="text-yellow-400">{f}g F</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-zinc-500 font-mono">{cal} cal</span>
+              {grade && <span className={`text-xs font-black ${gradeColor}`}>{grade}</span>}
+            </div>
           </div>
-          <span className="text-[11px] text-zinc-500 font-mono">
-            {Math.round((totals['macro_protein'] || 0) * 4 + (totals['macro_carbs'] || 0) * 4 + (totals['macro_fat'] || 0) * 9)} cal
-          </span>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Tabs */}
       <div className="flex gap-1.5 px-2 overflow-x-auto no-scrollbar">
