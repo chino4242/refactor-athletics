@@ -25,6 +25,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
     const [loading, setLoading] = useState(true);
     const [showQuickActions, setShowQuickActions] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
+    const [firstSessionDismissed, setFirstSessionDismissed] = useState(false);
     const { setMode } = useExperienceMode();
     
     // Pull to refresh state
@@ -71,6 +72,10 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             .catch(() => {});
     }, [userId]);
 
+    useEffect(() => {
+        setFirstSessionDismissed(localStorage.getItem('first_session_dismissed') === 'true');
+    }, []);
+
     // Pull to refresh handlers
     const handleTouchStart = (e: React.TouchEvent) => {
         if (scrollContainerRef.current && scrollContainerRef.current.scrollTop === 0) {
@@ -105,10 +110,6 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
     }
 
     // Show focused first-session view for brand new users
-    const [firstSessionDismissed, setFirstSessionDismissed] = useState(false);
-    useEffect(() => {
-        setFirstSessionDismissed(localStorage.getItem('first_session_dismissed') === 'true');
-    }, []);
     const isFirstSession = stats && stats.exercises_tracked === 0 && !firstSessionDismissed;
     if (isFirstSession) {
         const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
