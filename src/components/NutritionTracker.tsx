@@ -249,14 +249,15 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
             const dayIndices = [1, 2, 3, 4, 5, 6, 0]; // Mon=1 ... Sun=0
             const today = new Date().getDay(); // 0-6
             const todayPos = dayIndices.indexOf(today);
+            const daysLeft = 6 - todayPos;
 
             const dayAmounts = dayIndices.map(dayIdx => {
                 const dayData = weeklyData[dayIdx] || {};
                 return dayData[macroKey] || 0;
             });
             const actualTotal = dayAmounts.reduce((sum, v) => sum + v, 0);
-            const daysTracked = dayAmounts.slice(0, todayPos + 1).filter(v => v > 0).length;
-            const dailyAvg = daysTracked > 0 ? Math.round(actualTotal / daysTracked) : 0;
+            const remaining = Math.max(0, weeklyTarget - actualTotal);
+            const missedDays = dayAmounts.slice(0, todayPos).filter(v => v === 0).length;
             const isOver = actualTotal > weeklyTarget && macroKey !== 'habit_water';
 
             // Color hex values for segments
@@ -273,15 +274,23 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
             return (
                 <div className="mb-3">
                     <div className="flex justify-between text-[10px] font-bold text-zinc-400 uppercase mb-1">
-                        <span>{label} {daysTracked > 0 && <span className="text-zinc-500 normal-case font-normal">· {dailyAvg}{unit}/day avg</span>}</span>
+                        <span>{label}</span>
                         <span className={isOver ? 'text-red-500' : 'text-zinc-500'}>
-                            {Math.round(actualTotal)} / {weeklyTarget} {unit}
+                            {isOver ? `${Math.round(actualTotal - weeklyTarget)} over` : `${Math.round(remaining)}${unit} left · ${daysLeft + 1}d to go`}
                         </span>
                     </div>
 
                     <div className="h-5 w-full bg-zinc-800 rounded-sm overflow-hidden relative flex">
                         {dayAmounts.map((amount, i) => {
-                            if (i > todayPos || amount <= 0) return null;
+                            if (i > todayPos) return null;
+                            // Missed day: show red X marker
+                            if (amount <= 0 && i < todayPos) {
+                                const slotWidth = 100 / 7;
+                                return (
+                                    <div key={i} className="h-full flex items-center justify-center text-[8px] text-red-500/60 font-bold" style={{ width: `${slotWidth}%` }}>✕</div>
+                                );
+                            }
+                            if (amount <= 0) return null;
                             const widthPct = weeklyTarget > 0 ? (amount / weeklyTarget) * 100 : 0;
                             const isToday = i === todayPos;
                             return (
