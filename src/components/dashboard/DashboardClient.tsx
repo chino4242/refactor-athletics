@@ -143,8 +143,22 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                 </div>
             )}
 
-            {/* Yesterday's Wrap-Up (shows on first open, dismissible) */}
-            {!yesterdayDismissed && <div className="px-4 mb-4 animate-fade-in-up stagger-1"><DailyWrapUp userId={userId} mode="yesterday" onDismiss={() => setYesterdayDismissed(true)} /></div>}
+            {/* Yesterday's Wrap-Up (collapsible card, not blocking) */}
+            {!yesterdayDismissed && (
+                <div className="px-4 mb-4 animate-fade-in-up stagger-1">
+                    <details open>
+                        <summary className="list-none cursor-pointer">
+                            <div className="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 hover:border-zinc-700 transition">
+                                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">📋 Yesterday&apos;s Recap</span>
+                                <span className="text-[9px] text-zinc-600">tap to expand</span>
+                            </div>
+                        </summary>
+                        <div className="mt-2">
+                            <DailyWrapUp userId={userId} mode="yesterday" onDismiss={() => setYesterdayDismissed(true)} />
+                        </div>
+                    </details>
+                </div>
+            )}
             {!isFirstSession && <div className="animate-fade-in-up stagger-2"><DashboardHeader stats={stats} userId={userId} /></div>}
 
             {!isFirstSession && <FirstVisitTooltip id="dashboard" message="This is your home base. Your Power Level grows as you train and hit new ranks." />}
