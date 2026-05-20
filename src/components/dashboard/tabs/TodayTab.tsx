@@ -425,6 +425,20 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
                 return null;
             })()}
 
+            {/* Today's XP — tappable to see breakdown */}
+            <button onClick={() => setShowTodayWrapUp(!showTodayWrapUp)} className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 hover:border-zinc-700 transition text-left">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm">⚡</span>
+                        <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Today&apos;s XP</span>
+                    </div>
+                    <span className="text-sm font-black text-orange-400">+{todayProgress.xp || 0}</span>
+                </div>
+            </button>
+            {showTodayWrapUp && (
+                <DailyWrapUp userId={userId} mode="today" onDismiss={() => setShowTodayWrapUp(false)} />
+            )}
+
             {/* Next Level Up — power level nudge */}
             {profile && (() => {
                 // Show top 3 exercises closest to next rank
