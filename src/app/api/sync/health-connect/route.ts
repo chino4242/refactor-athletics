@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
         return s;
       }, 0));
       if (totalMin > 0) {
-        await upsertHabit(supabase, user.id, 'habit_exercise_minutes', today, ts, totalMin, Math.min(totalMin * 2, 100));
+        await upsertHabit(supabase, user.id, 'habit_exercise_minutes', today, ts, totalMin, 0);
         synced.push(`exercise: ${totalMin} min`);
       }
 
@@ -273,12 +273,21 @@ async function upsertHabit(supabase: any, userId: string, habitId: string, date:
   });
 
   // Write to XP ledger for daily wrap-up attribution
-  const labelMap: Record<string, string> = { habit_steps: `${value.toLocaleString()} steps`, habit_sleep: `${value}h sleep`, habit_water: `${value}oz water`, habit_day_strain: `Strain ${value}` };
+  const stableLabel: Record<string, string> = { habit_steps: 'Steps', habit_sleep: 'Sleep', habit_water: 'Water', habit_day_strain: 'Day Strain', habit_exercise_minutes: 'Exercise Minutes' };
+  const label = stableLabel[habitId] || habitId.replace('habit_', '');
   try {
-    await supabase.from('xp_ledger').insert({
-      user_id: userId, amount: xp, source_type: 'habit',
-      source_label: labelMap[habitId] || habitId.replace('habit_', ''),
-      is_background: true,
-    });
+    // Delete previous ledger entry for this habit today (prevents duplicates from re-syncs)
+    await supabase.from('xp_ledger').delete()
+      .eq('user_id', userId)
+      .eq('source_label', label)
+      .eq('source_type', 'habit')
+      .gte('created_at', new Date(new Date().setHours(0,0,0,0)).toISOString());
+    if (xp > 0) {
+      await supabase.from('xp_ledger').insert({
+        user_id: userId, amount: xp, source_type: 'habit',
+        source_label: label,
+        is_background: true,
+      });
+    }
   } catch {}
 }
