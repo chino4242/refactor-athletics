@@ -14,10 +14,8 @@ import NutritionTracker from './NutritionTracker';
 import HabitCard from './HabitCard';
 import ViceToggle from './ViceToggle';
 import HabitSettings from './HabitSettings';
-import BodyCompSummary from './BodyCompSummary';
-import BodyCompositionModal from './BodyCompositionModal';
+import BodyCompHome from './BodyCompHome';
 import { BodyCompositionService } from '@/services/BodyCompositionService';
-import { calculatePhysiquePoints } from '@/utils/physiquePoints';
 import { SlidersHorizontal } from 'lucide-react';
 import type { UserStats, UserProfileData, HistoryItem } from '@/types';
 
@@ -122,7 +120,6 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
   const [profile, setProfile] = useState<UserProfileData | null>(initialProfile || null);
   const [showSettings, setShowSettings] = useState(false);
   const [bodyCompHistory, setBodyCompHistory] = useState<any[]>([]);
-  const [showBodyCompModal, setShowBodyCompModal] = useState(false);
 
   // --- Level up ---
   const [showLevelUp, setShowLevelUp] = useState<number | null>(null);
@@ -146,10 +143,6 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
   useEffect(() => { fetchProgress(); }, [fetchProgress]);
   useEffect(() => { if (initialProfile) setProfile(initialProfile); }, [initialProfile]);
   useEffect(() => { if (userId) BodyCompositionService.getHistory(userId).then(setBodyCompHistory); }, [userId]);
-
-  const physiquePoints = useMemo(() =>
-    calculatePhysiquePoints(bodyCompHistory, initialProfile?.body_composition_goals || {}, initialProfile?.measurement_mode || 'tape'),
-    [bodyCompHistory, initialProfile]);
 
   // --- Handlers ---
   const handleLog = async (habitId: string, value: number, label: string) => {
@@ -477,11 +470,13 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
         {/* BODY TAB */}
         {activeTab === 'body' && (
           <div className="animate-fade-in-up">
-            <BodyCompSummary
-              profile={initialProfile || null}
+            <BodyCompHome
+              userId={userId}
+              bodyweight={bodyweight}
               bodyCompHistory={bodyCompHistory}
-              physiquePoints={physiquePoints}
-              onOpenModal={() => setShowBodyCompModal(true)}
+              goals={initialProfile?.body_composition_goals || {}}
+              measurementMode={initialProfile?.measurement_mode || 'tape'}
+              onRefresh={() => BodyCompositionService.getHistory(userId).then(setBodyCompHistory)}
             />
           </div>
         )}
@@ -498,24 +493,6 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
             setShowSettings(false);
           }}
           onClose={() => setShowSettings(false)}
-        />
-      )}
-
-      {showBodyCompModal && initialProfile && (
-        <BodyCompositionModal
-          isOpen={showBodyCompModal}
-          profile={initialProfile}
-          setProfile={() => {}}
-          saveProfile={async (p) => saveProfile(p)}
-          handleLog={async () => {}}
-          totals={{}}
-          loading={null}
-          setLoading={() => {}}
-          toast={toast}
-          onClose={() => {
-            setShowBodyCompModal(false);
-            BodyCompositionService.getHistory(userId).then(setBodyCompHistory);
-          }}
         />
       )}
 
