@@ -31,6 +31,7 @@ export default function WorkoutReport({ sessionId, userId, onExit }: Props) {
     const [prMap, setPrMap] = useState<Record<string, number>>({});
     const [loading, setLoading] = useState(true);
     const [copied, setCopied] = useState(false);
+    const [showCelebration, setShowCelebration] = useState(true);
     const { currentTheme } = useTheme();
     const theme = THEMES[currentTheme] || THEMES['athlete'];
 
@@ -143,6 +144,47 @@ export default function WorkoutReport({ sessionId, userId, onExit }: Props) {
         return (
             <div className="w-full max-w-md mx-auto h-[600px] bg-zinc-900 rounded-3xl flex items-center justify-center border border-zinc-800">
                 <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-orange-500" />
+            </div>
+        );
+    }
+
+    // Celebration screen — shows first, tap to see full report
+    if (showCelebration) {
+        return (
+            <div className="w-full max-w-md mx-auto h-[600px] bg-zinc-900 rounded-3xl overflow-hidden border border-orange-500/30 flex flex-col items-center justify-center text-center px-8 relative" onClick={() => setShowCelebration(false)}>
+                {/* Confetti */}
+                <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                    {Array.from({ length: 30 }).map((_, i) => (
+                        <div key={i} className="absolute w-2 h-2 rounded-full animate-confetti" style={{
+                            left: `${Math.random() * 100}%`,
+                            top: `${Math.random() * 20}%`,
+                            backgroundColor: ['#f97316', '#ef4444', '#eab308', '#22c55e', '#3b82f6'][i % 5],
+                            animationDelay: `${Math.random() * 1}s`,
+                            animationDuration: `${1.5 + Math.random() * 1.5}s`,
+                        }} />
+                    ))}
+                </div>
+                <div className="text-6xl mb-4">🏆</div>
+                <h1 className="text-3xl font-black italic text-white uppercase tracking-tight mb-2">Workout Complete</h1>
+                <div className="flex items-center gap-4 mt-4">
+                    <div className="text-center">
+                        <div className="text-2xl font-black text-orange-400">+{totalXp}</div>
+                        <div className="text-[9px] text-zinc-500 uppercase">XP Earned</div>
+                    </div>
+                    {liftExercises.filter(e => !e.isBlock).length > 0 && (
+                        <div className="text-center">
+                            <div className="text-2xl font-black text-white">{liftExercises.filter(e => !e.isBlock).length}</div>
+                            <div className="text-[9px] text-zinc-500 uppercase">Exercises</div>
+                        </div>
+                    )}
+                    {prCount > 0 && (
+                        <div className="text-center">
+                            <div className="text-2xl font-black text-yellow-400">{prCount}</div>
+                            <div className="text-[9px] text-zinc-500 uppercase">PRs</div>
+                        </div>
+                    )}
+                </div>
+                <div className="mt-8 text-[10px] text-zinc-600 uppercase tracking-wider animate-pulse">Tap for details</div>
             </div>
         );
     }
