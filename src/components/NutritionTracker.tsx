@@ -433,6 +433,38 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
                 </div>
             </div>
 
+            {/* QUICK ADD — recent meals, one tap */}
+            {viewMode === 'daily' && (() => {
+                try {
+                    const saved = localStorage.getItem('recent_foods');
+                    if (!saved) return null;
+                    const recents = JSON.parse(saved).slice(0, 3);
+                    if (!recents.length) return null;
+                    return (
+                        <div className="mb-3 flex gap-2 overflow-x-auto no-scrollbar">
+                            {recents.map((food: any, i: number) => {
+                                const mult = (parseFloat(food.servingSize?.replace(/[^0-9.]/g, '') || '') || 100) / 100;
+                                const p = Math.round(food.per100g.protein * mult);
+                                const c = Math.round(food.per100g.carbs * mult);
+                                const f = Math.round(food.per100g.fat * mult);
+                                return (
+                                    <button key={i} onClick={async () => {
+                                        const promises = [];
+                                        if (p > 0) promises.push(handleLogMacro('protein', (totals['macro_protein'] || 0) + p));
+                                        if (c > 0) promises.push(handleLogMacro('carbs', (totals['macro_carbs'] || 0) + c));
+                                        if (f > 0) promises.push(handleLogMacro('fat', (totals['macro_fat'] || 0) + f));
+                                        if (promises.length) await Promise.all(promises);
+                                    }} className="shrink-0 bg-zinc-800/60 border border-zinc-700/40 rounded-lg px-3 py-1.5 hover:border-orange-500/40 transition text-left">
+                                        <div className="text-[10px] font-semibold text-white truncate max-w-[90px]">{food.name}</div>
+                                        <div className="text-[9px] text-zinc-500">P:{p} C:{c} F:{f}</div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    );
+                } catch { return null; }
+            })()}
+
             {/* PROGRESS BARS */}
             <div key={JSON.stringify(totals)}>
                 {renderBar('Calories', 'macro_calories', targets.calories, 'text-green-500', 'kcal')}
