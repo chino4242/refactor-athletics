@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
+import { getRewardForLevel } from '@/data/level-rewards';
 
 interface LevelUpCelebrationProps {
   userId: string;
@@ -16,7 +17,6 @@ export default function LevelUpCelebration({ userId }: LevelUpCelebrationProps) 
       const { data } = await supabase.from('users').select('pending_level_up').eq('id', userId).single();
       if (data?.pending_level_up) {
         setLevelUp(data.pending_level_up);
-        // Clear the flag
         await supabase.from('users').update({ pending_level_up: null }).eq('id', userId);
       }
     };
@@ -24,6 +24,8 @@ export default function LevelUpCelebration({ userId }: LevelUpCelebrationProps) 
   }, [userId]);
 
   if (!levelUp) return null;
+
+  const reward = getRewardForLevel(levelUp.level);
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md animate-fade-in" onClick={() => setLevelUp(null)}>
@@ -41,16 +43,33 @@ export default function LevelUpCelebration({ userId }: LevelUpCelebrationProps) 
       </div>
 
       {/* Content */}
-      <div className="relative text-center px-8">
-        <div className="text-6xl mb-6 animate-bounce">🎉</div>
-        <div className="text-xs font-bold text-orange-400 uppercase tracking-[0.4em] mb-3">Level Up</div>
+      <div className="relative text-center px-8 max-w-sm">
+        <div className="text-6xl mb-4 animate-bounce">⚡</div>
+        <div className="text-xs font-bold text-orange-400 uppercase tracking-[0.4em] mb-2">Level Up</div>
         <div className="text-7xl font-black italic text-white mb-2">{levelUp.level}</div>
-        <div className="text-sm text-zinc-400 mb-8">
-          {levelUp.source === 'workout' && 'Your training paid off!'}
-          {levelUp.source === 'habit' && 'Consistency wins!'}
-          {levelUp.source === 'nutrition' && 'Fueling the machine!'}
-          {!['workout', 'habit', 'nutrition'].includes(levelUp.source) && 'Keep pushing!'}
-        </div>
+
+        {reward?.title && (
+          <div className="text-lg font-black text-orange-400 uppercase tracking-wider mb-3">"{reward.title}"</div>
+        )}
+
+        {reward?.lore_text && (
+          <p className="text-sm text-zinc-400 italic mb-6">"{reward.lore_text}"</p>
+        )}
+
+        {reward?.unlock_label && !reward.version_gate && (
+          <div className="bg-orange-500/10 border border-orange-500/30 rounded-xl px-4 py-3 mb-6">
+            <div className="text-[10px] text-orange-400 uppercase tracking-wider font-bold mb-1">New Unlock</div>
+            <div className="text-sm font-bold text-white">{reward.unlock_label}</div>
+          </div>
+        )}
+
+        {reward?.unlock_label && reward.version_gate && (
+          <div className="bg-zinc-800/50 border border-zinc-700 rounded-xl px-4 py-3 mb-6">
+            <div className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold mb-1">Coming in {reward.version_gate.toUpperCase()}</div>
+            <div className="text-sm font-medium text-zinc-400">🔒 {reward.unlock_label}</div>
+          </div>
+        )}
+
         <div className="text-[10px] text-zinc-600 uppercase tracking-wider animate-pulse">Tap to continue</div>
       </div>
     </div>

@@ -264,7 +264,6 @@ export async function POST(request: NextRequest) {
 }
 
 async function upsertHabit(supabase: any, userId: string, habitId: string, date: string, ts: number, value: number, xp: number) {
-  // Only overwrite if sync value is higher than what's already there (preserves manual entries)
   const { data: existing } = await supabase.from('habit_logs').select('value').eq('user_id', userId).eq('habit_id', habitId).eq('date', date).order('timestamp', { ascending: false }).limit(1).single();
   if (existing && existing.value >= value) return;
 
@@ -272,4 +271,14 @@ async function upsertHabit(supabase: any, userId: string, habitId: string, date:
   await supabase.from('habit_logs').insert({
     user_id: userId, habit_id: habitId, date, timestamp: ts, value, xp,
   });
+
+  // Write to XP ledger for daily wrap-up attribution
+  const labelMap: Record<string, string> = { habit_steps: `${value.toLocaleString()} steps`, habit_sleep: `${value}h sleep`, habit_water: `${value}oz water`, habit_day_strain: `Strain ${value}` };
+  try {
+    await supabase.from('xp_ledger').insert({
+      user_id: userId, amount: xp, source_type: 'habit',
+      source_label: labelMap[habitId] || habitId.replace('habit_', ''),
+      is_background: true,
+    });
+  } catch {}
 }

@@ -85,6 +85,16 @@ export async function logHabitAction(
         }
 
         await maybeSetLevelUp(supabase, userId, xp, 'nutrition');
+
+        // Write to XP ledger for attribution
+        try {
+            await supabase.from('xp_ledger').insert({
+                user_id: userId, amount: xp, source_type: 'nutrition',
+                source_label: label || macroType,
+                is_background: false,
+            });
+        } catch {}
+
         revalidatePath('/');
         return { xp_earned: xp, timestamp: ts };
     } else if (habitId.startsWith('habit_')) {
@@ -131,6 +141,16 @@ export async function logHabitAction(
         }
 
         await maybeSetLevelUp(supabase, userId, xp, 'habit');
+
+        // Write to XP ledger for attribution
+        try {
+            await supabase.from('xp_ledger').insert({
+                user_id: userId, amount: xp, source_type: 'habit',
+                source_label: label || habitId.replace('habit_', ''),
+                is_background: label?.includes('(Sync)') || false,
+            });
+        } catch {}
+
         revalidatePath('/');
         return { xp_earned: xp, timestamp: ts };
     } else {
