@@ -147,14 +147,22 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
   // --- Handlers ---
   const handleLog = async (habitId: string, value: number, label: string) => {
     setLoading(habitId);
+    // Optimistic: update totals immediately
+    setTotals(prev => ({ ...prev, [habitId]: (prev[habitId] || 0) + value }));
     try {
-      const result = await logHabitAction(userId, habitId, value, bodyweight, label, selectedDateTs || undefined);
+      const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000));
+      const action = logHabitAction(userId, habitId, value, bodyweight, label, selectedDateTs || undefined);
+      const result = await Promise.race([action, timeout]) as any;
       toast.xp(`+${result.xp_earned} XP · ${label}`, () => {
         deleteHistoryItemAction(userId, result.timestamp).then(() => fetchProgress());
       });
       onLogComplete?.();
       fetchProgress();
-    } catch { toast.error("Failed to log."); }
+    } catch (e: any) {
+      // Revert optimistic update
+      setTotals(prev => ({ ...prev, [habitId]: Math.max(0, (prev[habitId] || 0) - value) }));
+      toast.error(e?.message === 'timeout' ? 'Slow connection — try again' : 'Failed to log.');
+    }
     finally { setLoading(null); }
   };
 
