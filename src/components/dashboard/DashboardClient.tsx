@@ -178,7 +178,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                         programs={programs}
                     />
                 </div>
-            )}}
+            )}
 
             {/* Floating Action Button */}
             <button
