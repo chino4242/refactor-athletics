@@ -224,10 +224,35 @@ export async function POST(request: NextRequest) {
 
     // Write body measurements if any collected
     if (Object.keys(bodyMeasurements).length > 0) {
-      await supabase.from('body_measurements').delete().eq('user_id', user.id).eq('date', today);
-      await supabase.from('body_measurements').insert({
-        user_id: user.id, date: today, timestamp: ts, ...bodyMeasurements,
-      });
+      // Build source map for synced fields
+      const sourceMap: Record<string, string> = {};
+      for (const key of Object.keys(bodyMeasurements)) {
+        sourceMap[key] = 'health_connect';
+      }
+
+      // Check for existing row to merge (preserve manual entries)
+      const { data: existing } = await supabase.from('body_measurements')
+        .select('id, source').eq('user_id', user.id).eq('date', today).limit(1).single();
+
+      if (existing) {
+        // Only overwrite fields that aren't manually entered
+        const existingSource = existing.source || {};
+        const fieldsToWrite: Record<string, any> = {};
+        const mergedSource = { ...existingSource };
+        for (const [key, val] of Object.entries(bodyMeasurements)) {
+          if (existingSource[key] !== 'manual') {
+            fieldsToWrite[key] = val;
+            mergedSource[key] = 'health_connect';
+          }
+        }
+        if (Object.keys(fieldsToWrite).length > 0) {
+          await supabase.from('body_measurements').update({ ...fieldsToWrite, source: mergedSource, timestamp: ts }).eq('id', existing.id);
+        }
+      } else {
+        await supabase.from('body_measurements').insert({
+          user_id: user.id, date: today, timestamp: ts, ...bodyMeasurements, source: sourceMap, xp: 5,
+        });
+      }
     }
 
     return NextResponse.json({ synced });

@@ -392,12 +392,22 @@ export async function logBodyMeasurementAction(
         legs?: number;
         shoulders?: number;
         body_fat_percentage?: number;
+        lean_body_mass?: number;
+        left_arm_muscle?: number;
+        right_arm_muscle?: number;
+        trunk_muscle?: number;
+        left_leg_muscle?: number;
+        right_leg_muscle?: number;
         left_arm_fat?: number;
         right_arm_fat?: number;
         trunk_fat?: number;
         left_leg_fat?: number;
         right_leg_fat?: number;
+        vo2_max?: number;
+        bmr?: number;
+        height?: number;
     },
+    source?: string,
     timestamp?: number
 ) {
     const supabase = await createClient();
@@ -405,20 +415,34 @@ export async function logBodyMeasurementAction(
     const dateStr = getLocalDate(ts);
     const xp = 5;
 
+    // Build source metadata for each provided field
+    const sourceLabel = source || 'manual';
+    const sourceMap: Record<string, string> = {};
+    for (const key of Object.keys(measurements)) {
+        if ((measurements as any)[key] != null) sourceMap[key] = sourceLabel;
+    }
+
     // Check for existing row on this date to merge measurements
     const { data: existing } = await supabase
         .from('body_measurements')
-        .select('id')
+        .select('id, source')
         .eq('user_id', userId)
         .eq('date', dateStr)
         .limit(1)
         .single();
 
+    // Filter out null/undefined values
+    const cleanMeasurements: Record<string, any> = {};
+    for (const [k, v] of Object.entries(measurements)) {
+        if (v != null) cleanMeasurements[k] = v;
+    }
+
     let error;
     if (existing) {
+        const mergedSource = { ...(existing.source || {}), ...sourceMap };
         ({ error } = await supabase
             .from('body_measurements')
-            .update({ ...measurements, timestamp: ts })
+            .update({ ...cleanMeasurements, source: mergedSource, timestamp: ts })
             .eq('id', existing.id));
     } else {
         ({ error } = await supabase
@@ -427,7 +451,8 @@ export async function logBodyMeasurementAction(
                 user_id: userId,
                 date: dateStr,
                 timestamp: ts,
-                ...measurements,
+                ...cleanMeasurements,
+                source: sourceMap,
                 xp: xp
             }));
     }

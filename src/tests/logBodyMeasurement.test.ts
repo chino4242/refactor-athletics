@@ -51,7 +51,7 @@ describe('logBodyMeasurementAction', () => {
     });
 
     it('inserts a new row when no entry exists for that date', async () => {
-        const result = await logBodyMeasurementAction('user-1', { waist: 38 }, 1774342426);
+        const result = await logBodyMeasurementAction('user-1', { waist: 38 }, undefined, 1774342426);
 
         expect(insertSpy).toHaveBeenCalledWith(expect.objectContaining({
             user_id: 'user-1',
@@ -64,9 +64,9 @@ describe('logBodyMeasurementAction', () => {
     });
 
     it('updates existing row when entry exists for same date', async () => {
-        mockExistingRow = { id: 'existing-row-id' };
+        mockExistingRow = { id: 'existing-row-id', source: {} };
 
-        const result = await logBodyMeasurementAction('user-1', { arms: 14 }, 1774342446);
+        const result = await logBodyMeasurementAction('user-1', { arms: 14 }, undefined, 1774342446);
 
         expect(updateSpy).toHaveBeenCalledWith(expect.objectContaining({
             arms: 14,
@@ -77,9 +77,9 @@ describe('logBodyMeasurementAction', () => {
     });
 
     it('merges multiple metrics into existing row', async () => {
-        mockExistingRow = { id: 'existing-row-id' };
+        mockExistingRow = { id: 'existing-row-id', source: {} };
 
-        await logBodyMeasurementAction('user-1', { chest: 40, shoulders: 48 }, 1774342500);
+        await logBodyMeasurementAction('user-1', { chest: 40, shoulders: 48 }, undefined, 1774342500);
 
         expect(updateSpy).toHaveBeenCalledWith(expect.objectContaining({
             chest: 40,
@@ -91,16 +91,16 @@ describe('logBodyMeasurementAction', () => {
         mockInsertError = { message: 'insert failed' };
 
         await expect(
-            logBodyMeasurementAction('user-1', { weight: 185 }, 1774342426)
+            logBodyMeasurementAction('user-1', { weight: 185 }, undefined, 1774342426)
         ).rejects.toEqual({ message: 'insert failed' });
     });
 
     it('throws error when update fails', async () => {
-        mockExistingRow = { id: 'existing-row-id' };
+        mockExistingRow = { id: 'existing-row-id', source: {} };
         mockUpdateError = { message: 'update failed' };
 
         await expect(
-            logBodyMeasurementAction('user-1', { weight: 185 }, 1774342426)
+            logBodyMeasurementAction('user-1', { weight: 185 }, undefined, 1774342426)
         ).rejects.toEqual({ message: 'update failed' });
     });
 
