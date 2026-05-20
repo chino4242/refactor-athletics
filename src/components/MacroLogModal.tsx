@@ -33,6 +33,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
     const [aiInput, setAiInput] = useState('');
     const [aiLoading, setAiLoading] = useState(false);
     const [photoLoading, setPhotoLoading] = useState(false);
+    const [waterFlash, setWaterFlash] = useState(false);
 
     const handleMealPhoto = async (file: File) => {
         setPhotoLoading(true);
@@ -341,11 +342,11 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                 {/* Water Quick-Log */}
                 <div className="px-4 py-2 border-b border-zinc-800/50 flex items-center gap-2">
                     <span className="text-sm">💧</span>
-                    <span className="text-[10px] text-zinc-500 font-bold uppercase shrink-0">{Math.round(totals['habit_water'] || 0)}oz</span>
+                    <span className={`text-[10px] font-bold uppercase shrink-0 transition-colors ${waterFlash ? 'text-cyan-400' : 'text-zinc-500'}`}>{Math.round(totals['habit_water'] || 0)}oz</span>
                     <div className="flex gap-1.5 flex-1">
                         {[8, 16, 32].map(oz => (
-                            <button key={oz} onClick={async () => { await onLog('water', (totals['habit_water'] || 0) + oz); }}
-                                className="flex-1 bg-zinc-800 hover:bg-cyan-900 border border-zinc-700 hover:border-cyan-500 text-[10px] font-bold text-zinc-400 hover:text-cyan-400 rounded-lg py-1.5 transition">
+                            <button key={oz} onClick={async () => { setWaterFlash(true); await onLog('water', (totals['habit_water'] || 0) + oz); setTimeout(() => setWaterFlash(false), 1000); }}
+                                className="flex-1 bg-zinc-800 hover:bg-cyan-900 border border-zinc-700 hover:border-cyan-500 text-[10px] font-bold text-zinc-400 hover:text-cyan-400 rounded-lg py-1.5 transition active:scale-95 active:bg-cyan-800">
                                 +{oz}oz
                             </button>
                         ))}
