@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { getRewardForLevel } from '@/data/level-rewards';
+import { haptic } from '@/utils/haptics';
 
 interface LevelUpCelebrationProps {
   userId: string;
@@ -17,6 +18,7 @@ export default function LevelUpCelebration({ userId }: LevelUpCelebrationProps) 
       const { data } = await supabase.from('users').select('pending_level_up').eq('id', userId).single();
       if (data?.pending_level_up) {
         setLevelUp(data.pending_level_up);
+        haptic('success');
         await supabase.from('users').update({ pending_level_up: null }).eq('id', userId);
       }
     };

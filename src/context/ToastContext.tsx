@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { haptic } from '@/utils/haptics';
 
 export type ToastType = 'success' | 'error' | 'info' | 'xp';
 
@@ -43,7 +44,7 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
     const success = (message: string) => addToast(message, 'success');
     const error = (message: string) => addToast(message, 'error');
     const info = (message: string) => addToast(message, 'info');
-    const xp = (message: string) => addToast(message, 'xp');
+    const xp = (message: string) => { haptic('light'); addToast(message, 'xp'); };
 
     return (
         <ToastContext.Provider value={{ toasts, addToast, removeToast, success, error, info, xp }}>
