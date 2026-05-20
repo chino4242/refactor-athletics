@@ -26,7 +26,16 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
     const [programs, setPrograms] = useState<Workout[]>([]);
     const [loading, setLoading] = useState(true);
     const [showQuickActions, setShowQuickActions] = useState(false);
-    const [yesterdayDismissed, setYesterdayDismissed] = useState(false);
+    const [yesterdayDismissed, setYesterdayDismissed] = useState(() => {
+        if (typeof window === 'undefined') return true;
+        const seen = localStorage.getItem('wrapup_seen_date');
+        return seen === new Date().toLocaleDateString('en-CA');
+    });
+
+    const dismissYesterday = () => {
+        localStorage.setItem('wrapup_seen_date', new Date().toLocaleDateString('en-CA'));
+        setYesterdayDismissed(true);
+    };
     const [refreshing, setRefreshing] = useState(false);
     const [firstSessionDismissed, setFirstSessionDismissed] = useState(false);
     const { setMode } = useExperienceMode();
@@ -154,7 +163,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                             </div>
                         </summary>
                         <div className="mt-2">
-                            <DailyWrapUp userId={userId} mode="yesterday" onDismiss={() => setYesterdayDismissed(true)} />
+                            <DailyWrapUp userId={userId} mode="yesterday" onDismiss={dismissYesterday} />
                         </div>
                     </details>
                 </div>
