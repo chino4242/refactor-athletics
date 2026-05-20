@@ -12,6 +12,7 @@ import { useTheme } from '@/context/ThemeContext';
 import { THEMES } from '@/data/themes';
 import { useToast } from '@/context/ToastContext';
 import DailyWrapUp from '../../DailyWrapUp';
+import TomorrowPreview from '../../TomorrowPreview';
 
 interface TodayTabProps {
     userId: string;
@@ -537,6 +538,9 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
                     )}
                 </Link>
             </div>
+
+            {/* Tomorrow Preview (after 8 PM) */}
+            <TomorrowPreview userId={userId} />
         </div>
     );
 }
