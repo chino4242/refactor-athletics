@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/utils/supabase/service';
+import { stepsToXp } from '@/utils/xp';
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
       const todaySteps = body.steps.filter(isToday);
       const total = todaySteps.reduce((s: number, r: any) => s + (r.count || 0), 0);
       if (total > 0) {
-        await upsertHabit(supabase, user.id, 'habit_steps', today, ts, total, Math.min(Math.round(total * 0.005), 75));
+        await upsertHabit(supabase, user.id, 'habit_steps', today, ts, total, stepsToXp(total));
         synced.push(`steps: ${total}`);
       }
     }

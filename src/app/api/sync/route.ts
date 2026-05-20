@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/utils/supabase/service';
+import { stepsToXp } from '@/utils/xp';
 
 const VALID_TYPES = ['steps', 'sleep', 'calories_burned', 'weight', 'day_strain', 'water'] as const;
 type SyncType = typeof VALID_TYPES[number];
@@ -101,7 +102,7 @@ export async function POST(request: NextRequest) {
           .eq('date', dateStr);
 
         let xp = 10;
-        if (item.type === 'steps') xp = Math.min(Math.round(item.value * 0.005), 75);
+        if (item.type === 'steps') xp = stepsToXp(item.value);
         else if (item.type === 'sleep') xp = Math.round(item.value * 2);
         else if (item.type === 'water') xp = Math.round(item.value * 0.25);
         else if (item.type === 'day_strain') xp = Math.round(item.value * 3);

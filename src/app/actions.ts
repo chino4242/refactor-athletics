@@ -3,6 +3,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
+import { stepsToXp } from "@/utils/xp";
 
 function getLocalDate(ts?: number): string {
     const d = ts ? new Date(ts * 1000) : new Date();
@@ -69,7 +70,7 @@ export async function logHabitAction(
         // Habit logging - scaled XP
         let xp = 10;
         if (habitId === 'habit_steps') {
-            xp = Math.min(Math.round(value * 0.005), 75); // 10,000 steps = 50 XP, cap at 75
+            xp = stepsToXp(value);
         } else if (habitId === 'habit_water') {
             xp = Math.round(value * 0.25); // 64 oz = 16 XP
         } else if (habitId === 'habit_sleep') {

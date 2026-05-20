@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { createServiceClient } from '@/utils/supabase/service';
 import { getValidToken, getTodaySteps, getTodayCalories, getLatestSleep, getLatestWeight } from '@/lib/google-health';
+import { stepsToXp } from '@/utils/xp';
 
 export async function POST(request: NextRequest) {
   let userId: string;
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
     // Steps
     const steps = await getTodaySteps(token, today).catch(() => null);
     if (steps !== null) {
-      await upsertHabit(supabase, userId, 'habit_steps', dateStr, ts, steps, Math.min(Math.round(steps * 0.005), 75));
+      await upsertHabit(supabase, userId, 'habit_steps', dateStr, ts, steps, stepsToXp(steps));
       synced.push(`steps: ${steps}`);
     }
 

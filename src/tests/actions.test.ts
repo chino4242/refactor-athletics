@@ -61,10 +61,10 @@ describe('Server Actions', () => {
                     user_id: 'user-123',
                     habit_id: 'habit_steps',
                     value: 10000,
-                    xp: 50,
+                    xp: 40,
                 })
             );
-            expect(result).toMatchObject({ xp_earned: 50 });
+            expect(result).toMatchObject({ xp_earned: 40 });
         });
 
         it('logs nutrition to nutrition_logs table', async () => {
