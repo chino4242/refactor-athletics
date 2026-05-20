@@ -149,7 +149,7 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
     setLoading(habitId);
     try {
       const result = await logHabitAction(userId, habitId, value, bodyweight, label, selectedDateTs || undefined);
-      toast.xp(`${label} Logged! +${result.xp_earned} XP`);
+      toast.xp(`+${result.xp_earned} XP · ${label}`);
       onLogComplete?.();
       fetchProgress();
     } catch { toast.error("Failed to log."); }

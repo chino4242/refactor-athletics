@@ -10,6 +10,8 @@ import DashboardSkeleton from './DashboardSkeleton';
 import QuickActionButton from './QuickActionButton';
 import FirstSessionView from './FirstSessionView';
 import FirstVisitTooltip from '../common/FirstVisitTooltip';
+import LevelUpCelebration from '../LevelUpCelebration';
+import WhileYouWereAway from '../WhileYouWereAway';
 import { Plus } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { useExperienceMode } from '@/context/ExperienceModeContext';
@@ -114,6 +116,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
         >
+            <LevelUpCelebration userId={userId} />
             {/* Pull to refresh indicator */}
             {pullDistance > 0 && (
                 <div 
@@ -140,6 +143,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             )}
 
             {/* Header with Expertise & Stats */}
+            <WhileYouWereAway userId={userId} />
             {!isFirstSession && <DashboardHeader stats={stats} userId={userId} />}
 
             {!isFirstSession && <FirstVisitTooltip id="dashboard" message="This is your home base. Your Power Level grows as you train and hit new ranks." />}

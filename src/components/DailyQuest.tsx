@@ -83,7 +83,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
       const timestamp = targetDateTs || undefined;
       const result = await logHabitAction(userId, habitId, value, bodyweight, label, timestamp);
       setLastLoggedTs(result.timestamp);
-      toast.xp(`${label} Logged! +${result.xp_earned} XP`);
+      toast.xp(`+${result.xp_earned} XP · ${label}`);
       onXpEarned();
       fetchProgress(); // Re-fetch totals locally while we wait for full Server Component migration
     } catch (error) {

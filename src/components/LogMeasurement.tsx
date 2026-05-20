@@ -66,7 +66,7 @@ export default function LogMeasurement({ isOpen, onClose, userId, bodyweight, sy
     setSaving(true);
     try {
       await logBodyMeasurementAction(userId, measurements, 'manual');
-      toast.success('+5 Recon XP');
+      toast.success('+5 XP · Body Composition');
       onSaved();
       onClose();
     } catch (e) {

@@ -3,7 +3,27 @@
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
-import { stepsToXp } from "@/utils/xp";
+import { stepsToXp, checkLevelUp } from "@/utils/xp";
+
+/** After granting XP, check if user leveled up and set pending flag */
+async function maybeSetLevelUp(supabase: any, userId: string, xpEarned: number, sourceType: string) {
+    try {
+        const [{ data: w }, { data: n }, { data: h }, { data: m }] = await Promise.all([
+            supabase.from('workouts').select('xp').eq('user_id', userId),
+            supabase.from('nutrition_logs').select('xp').eq('user_id', userId),
+            supabase.from('habit_logs').select('xp').eq('user_id', userId),
+            supabase.from('body_measurements').select('xp').eq('user_id', userId),
+        ]);
+        const totalXp = [...(w || []), ...(n || []), ...(h || []), ...(m || [])].reduce((s, r) => s + (r.xp || 0), 0);
+        const result = checkLevelUp(totalXp - xpEarned, xpEarned);
+        if (result) {
+            await supabase.from('users').update({
+                pending_level_up: { level: result.newLevel, timestamp: Math.floor(Date.now() / 1000), source: sourceType },
+                unseen_xp: 0,
+            }).eq('id', userId);
+        }
+    } catch {}
+}
 
 function getLocalDate(ts?: number): string {
     const d = ts ? new Date(ts * 1000) : new Date();
@@ -64,6 +84,7 @@ export async function logHabitAction(
             throw error;
         }
 
+        await maybeSetLevelUp(supabase, userId, xp, 'nutrition');
         revalidatePath('/');
         return { xp_earned: xp, timestamp: ts };
     } else if (habitId.startsWith('habit_')) {
@@ -109,6 +130,7 @@ export async function logHabitAction(
             throw error;
         }
 
+        await maybeSetLevelUp(supabase, userId, xp, 'habit');
         revalidatePath('/');
         return { xp_earned: xp, timestamp: ts };
     } else {
