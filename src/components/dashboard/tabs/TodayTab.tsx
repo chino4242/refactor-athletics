@@ -11,6 +11,7 @@ import { useExperienceMode } from '@/context/ExperienceModeContext';
 import { useTheme } from '@/context/ThemeContext';
 import { THEMES } from '@/data/themes';
 import { useToast } from '@/context/ToastContext';
+import DailyWrapUp from '../../DailyWrapUp';
 
 interface TodayTabProps {
     userId: string;
@@ -25,6 +26,7 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
     const toast = useToast();
     const [profile, setProfile] = useState<any>(null);
     const [todayScheduled, setTodayScheduled] = useState<any>(null);
+    const [showTodayWrapUp, setShowTodayWrapUp] = useState(false);
     const [lastWorkout, setLastWorkout] = useState<{ date: string; totalXp: number; lifts: { name: string; volume: number }[]; treadmillSets: number } | null>(null);
     const [todayProgress, setTodayProgress] = useState<any>({
         calories: 0,
@@ -199,9 +201,9 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
                             <div className="text-xl font-black text-orange-400">{stats.exercises_tracked || 0}</div>
                             <div className="text-[9px] text-zinc-500 uppercase">Exercises</div>
                         </div>
-                        <div>
+                        <div onClick={() => setShowTodayWrapUp(true)} className="cursor-pointer hover:bg-zinc-800/50 rounded-lg p-1 transition">
                             <div className="text-xl font-black text-emerald-400">{stats.total_career_xp ? Math.min(stats.total_career_xp, 999) : 0}</div>
-                            <div className="text-[9px] text-zinc-500 uppercase">XP Earned</div>
+                            <div className="text-[9px] text-zinc-500 uppercase">{isClassic ? 'pts' : 'XP'} Earned</div>
                         </div>
                         <div>
                             <div className="text-xl font-black text-blue-400">{stats.power_level || 0}</div>
@@ -210,6 +212,11 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
                     </div>
                     {stats.power_level > 0 && (
                         <p className="text-xs text-zinc-400 text-center mt-3">Keep it up — consistency builds champions. 💪</p>
+                    )}
+                    {showTodayWrapUp && (
+                        <div className="mt-4">
+                            <DailyWrapUp userId={userId} mode="today" onDismiss={() => setShowTodayWrapUp(false)} />
+                        </div>
                     )}
                 </div>
             )}

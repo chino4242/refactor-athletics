@@ -11,7 +11,7 @@ import QuickActionButton from './QuickActionButton';
 import FirstSessionView from './FirstSessionView';
 import FirstVisitTooltip from '../common/FirstVisitTooltip';
 import LevelUpCelebration from '../LevelUpCelebration';
-import WhileYouWereAway from '../WhileYouWereAway';
+import DailyWrapUp from '../DailyWrapUp';
 import { Plus } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { useExperienceMode } from '@/context/ExperienceModeContext';
@@ -26,6 +26,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
     const [programs, setPrograms] = useState<Workout[]>([]);
     const [loading, setLoading] = useState(true);
     const [showQuickActions, setShowQuickActions] = useState(false);
+    const [yesterdayDismissed, setYesterdayDismissed] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [firstSessionDismissed, setFirstSessionDismissed] = useState(false);
     const { setMode } = useExperienceMode();
@@ -142,8 +143,8 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                 </div>
             )}
 
-            {/* Header with Expertise & Stats */}
-            <WhileYouWereAway userId={userId} />
+            {/* Yesterday's Wrap-Up (shows on first open, dismissible) */}
+            {!yesterdayDismissed && <div className="px-4 mb-4"><DailyWrapUp userId={userId} mode="yesterday" onDismiss={() => setYesterdayDismissed(true)} /></div>}
             {!isFirstSession && <DashboardHeader stats={stats} userId={userId} />}
 
             {!isFirstSession && <FirstVisitTooltip id="dashboard" message="This is your home base. Your Power Level grows as you train and hit new ranks." />}
