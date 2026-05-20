@@ -41,7 +41,11 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
             formData.append('image', file);
             formData.append('type', 'meal_photo');
             const res = await fetch('/api/parse-screenshot', { method: 'POST', body: formData });
-            if (!res.ok) { setPhotoLoading(false); return; }
+            if (!res.ok) {
+                setPhotoLoading(false);
+                setAiInput('Photo analysis failed — try describing your meal instead');
+                return;
+            }
             const json = await res.json();
             const data = json.data;
             if (data?.foods?.length) {
@@ -59,8 +63,15 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                     setSelectedFood(foods[0]);
                     setServingGrams('100');
                 }
+            } else {
+                // AI returned but couldn't identify foods
+                setAiInput('breakfast sandwich with sausage, protein shake');
+                setTab('search');
             }
-        } catch (e) { console.error('Meal photo parse failed:', e); }
+        } catch (e) {
+            console.error('Meal photo parse failed:', e);
+            setAiInput('Photo failed — describe your meal here');
+        }
         finally { setPhotoLoading(false); }
     };
     const [servingGrams, setServingGrams] = useState('100');

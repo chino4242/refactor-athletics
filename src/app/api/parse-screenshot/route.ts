@@ -51,13 +51,22 @@ export async function POST(request: NextRequest) {
   "fat": 65,
   "water": 100
 }`,
-      meal_photo: `Look at this photo of food/meal. Identify each food item visible and estimate its macros based on typical portion sizes shown. Return ONLY valid JSON with this exact structure:
+      meal_photo: `You are a nutrition expert analyzing a photo of food. Identify EVERY distinct food item visible. For each item, estimate the portion size based on visual cues and provide macros.
+
+Return ONLY valid JSON with this exact structure:
 {
   "foods": [
-    {"name": "food item name", "protein": 30, "carbs": 0, "fat": 5, "calories": 165}
+    {"name": "sausage breakfast sandwich on english muffin", "protein": 20, "carbs": 28, "fat": 16, "calories": 340},
+    {"name": "chocolate protein shake ~16oz", "protein": 30, "carbs": 8, "fat": 3, "calories": 180}
   ]
 }
-Be specific about portions based on what you see (e.g. "grilled chicken breast ~6oz", "white rice ~1 cup"). Estimate conservatively.`,
+
+Rules:
+- Include ALL visible items (drinks, sides, sauces)
+- Be specific about portion size in the name (e.g. "~6oz", "~1 cup", "large")
+- Estimate conservatively
+- If you cannot identify a food item clearly, make your best guess based on appearance
+- Always return at least one item if food is visible`,
       habits: `Extract habit/activity data from this screenshot. Return ONLY valid JSON with this exact structure:
 {
   "steps": 10000,
@@ -112,7 +121,7 @@ Be specific about portions based on what you see (e.g. "grilled chicken breast ~
     }
 
     const fullPrompt = basePrompt + fewShotBlock +
-      '\n\nAlso include an "image_description" field (1-2 sentences describing the screenshot layout and what app/device it came from) in your JSON response.';
+      (promptKey === 'meal_photo' ? '' : '\n\nAlso include an "image_description" field (1-2 sentences describing the screenshot layout and what app/device it came from) in your JSON response.');
 
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
