@@ -13,7 +13,7 @@ const ToastIcon = ({ type }: { type: ToastType }) => {
     }
 };
 
-const ToastMessage = ({ id, message, type }: { id: string; message: string; type: ToastType }) => {
+const ToastMessage = ({ id, message, type, onUndo }: { id: string; message: string; type: ToastType; onUndo?: () => void }) => {
     const { removeToast } = useToast();
 
     return (
@@ -40,12 +40,21 @@ const ToastMessage = ({ id, message, type }: { id: string; message: string; type
                 <p className="text-sm text-zinc-400 font-medium">{message}</p>
             </div>
 
-            <button
-                onClick={() => removeToast(id)}
-                className="text-zinc-600 hover:text-white transition-colors"
-            >
-                <XCircle className="w-4 h-4" />
-            </button>
+            {onUndo ? (
+                <button
+                    onClick={() => { onUndo(); removeToast(id); }}
+                    className="text-xs font-bold text-orange-400 hover:text-orange-300 uppercase tracking-wider px-2 py-1 bg-orange-500/10 rounded-lg transition"
+                >
+                    Undo
+                </button>
+            ) : (
+                <button
+                    onClick={() => removeToast(id)}
+                    className="text-zinc-600 hover:text-white transition-colors"
+                >
+                    <XCircle className="w-4 h-4" />
+                </button>
+            )}
         </motion.div>
     );
 };
@@ -57,7 +66,7 @@ export default function ToastContainer() {
         <div className="fixed bottom-28 left-0 right-0 md:bottom-8 md:right-8 md:left-auto md:w-auto z-[100] flex flex-col items-center md:items-end gap-2 p-4 pointer-events-none">
             <AnimatePresence mode='popLayout'>
                 {toasts.map((toast) => (
-                    <ToastMessage key={toast.id} {...toast} />
+                    <ToastMessage key={toast.id} id={toast.id} message={toast.message} type={toast.type} onUndo={toast.onUndo} />
                 ))}
             </AnimatePresence>
         </div>

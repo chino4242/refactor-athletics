@@ -10,6 +10,7 @@ export interface Toast {
     id: string;
     message: string;
     type: ToastType;
+    onUndo?: () => void;
 }
 
 interface ToastContextType {
@@ -19,7 +20,7 @@ interface ToastContextType {
     success: (message: string) => void;
     error: (message: string) => void;
     info: (message: string) => void;
-    xp: (message: string) => void;
+    xp: (message: string, onUndo?: () => void) => void;
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
@@ -31,20 +32,19 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
         setToasts((prev) => prev.filter((toast) => toast.id !== id));
     }, []);
 
-    const addToast = useCallback((message: string, type: ToastType) => {
+    const addToast = useCallback((message: string, type: ToastType, onUndo?: () => void) => {
         const id = uuidv4();
-        setToasts((prev) => [...prev, { id, message, type }]);
+        setToasts((prev) => [...prev, { id, message, type, onUndo }]);
 
-        // Auto-remove after 3 seconds
         setTimeout(() => {
             removeToast(id);
-        }, 3000);
+        }, onUndo ? 5000 : 3000);
     }, [removeToast]);
 
     const success = (message: string) => addToast(message, 'success');
     const error = (message: string) => addToast(message, 'error');
     const info = (message: string) => addToast(message, 'info');
-    const xp = (message: string) => { haptic('light'); addToast(message, 'xp'); };
+    const xp = (message: string, onUndo?: () => void) => { haptic('light'); addToast(message, 'xp', onUndo); };
 
     return (
         <ToastContext.Provider value={{ toasts, addToast, removeToast, success, error, info, xp }}>
