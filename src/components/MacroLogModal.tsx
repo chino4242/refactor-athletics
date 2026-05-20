@@ -204,17 +204,16 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
         }, 400);
     };
 
+    const [pendingMacros, setPendingMacros] = useState({ protein: 0, carbs: 0, fat: 0, count: 0 });
+
     const handleAddFood = async () => {
         if (!selectedFood) return;
         const mult = (parseFloat(servingGrams) || 100) / 100;
         const p = Math.round(selectedFood.per100g.protein * mult);
         const c = Math.round(selectedFood.per100g.carbs * mult);
         const f = Math.round(selectedFood.per100g.fat * mult);
-        const promises = [];
-        if (p > 0) promises.push(onLog('protein', (totals['macro_protein'] || 0) + p));
-        if (c > 0) promises.push(onLog('carbs', (totals['macro_carbs'] || 0) + c));
-        if (f > 0) promises.push(onLog('fat', (totals['macro_fat'] || 0) + f));
-        if (promises.length > 0) await Promise.all(promises);
+        // Accumulate instead of saving immediately
+        setPendingMacros(prev => ({ protein: prev.protein + p, carbs: prev.carbs + c, fat: prev.fat + f, count: prev.count + 1 }));
         // Save to recents
         setRecents(prev => {
             const filtered = prev.filter(r => r.name !== selectedFood.name);
@@ -226,6 +225,16 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
         setFoodQuery('');
         setFoodResults([]);
         setServingGrams('100');
+    };
+
+    const handleSavePending = async () => {
+        if (pendingMacros.count === 0) return;
+        const promises = [];
+        if (pendingMacros.protein > 0) promises.push(onLog('protein', (totals['macro_protein'] || 0) + pendingMacros.protein));
+        if (pendingMacros.carbs > 0) promises.push(onLog('carbs', (totals['macro_carbs'] || 0) + pendingMacros.carbs));
+        if (pendingMacros.fat > 0) promises.push(onLog('fat', (totals['macro_fat'] || 0) + pendingMacros.fat));
+        if (promises.length > 0) await Promise.all(promises);
+        setPendingMacros({ protein: 0, carbs: 0, fat: 0, count: 0 });
         onClose();
     };
 
@@ -451,13 +460,19 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                                 <div className="flex gap-2">
                                     <button onClick={handleAddFood}
                                         className="flex-1 bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold py-2.5 rounded-lg text-xs uppercase tracking-wider transition active:scale-95 flex items-center justify-center gap-1.5">
-                                        <Plus size={14} /> Add to Today
+                                        <Plus size={14} /> {pendingMacros.count > 0 ? 'Add Another' : 'Add'}
                                     </button>
                                     <button onClick={() => selectedFood && toggleFavorite(selectedFood)}
                                         className={`px-3 py-2.5 rounded-lg border transition ${isFavorite(selectedFood!) ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400' : 'bg-zinc-800 border-zinc-700 text-zinc-500 hover:text-yellow-400'}`}>
                                         ★
                                     </button>
                                 </div>
+                                {pendingMacros.count > 0 && (
+                                    <button onClick={handleSavePending}
+                                        className="w-full mt-2 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider rounded-lg transition flex items-center justify-center gap-1.5">
+                                        Done ({pendingMacros.count} items · P:{pendingMacros.protein} C:{pendingMacros.carbs} F:{pendingMacros.fat})
+                                    </button>
+                                )}
                             </div>
                         )}
 
