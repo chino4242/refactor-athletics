@@ -144,8 +144,8 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             )}
 
             {/* Yesterday's Wrap-Up (shows on first open, dismissible) */}
-            {!yesterdayDismissed && <div className="px-4 mb-4"><DailyWrapUp userId={userId} mode="yesterday" onDismiss={() => setYesterdayDismissed(true)} /></div>}
-            {!isFirstSession && <DashboardHeader stats={stats} userId={userId} />}
+            {!yesterdayDismissed && <div className="px-4 mb-4 animate-fade-in-up stagger-1"><DailyWrapUp userId={userId} mode="yesterday" onDismiss={() => setYesterdayDismissed(true)} /></div>}
+            {!isFirstSession && <div className="animate-fade-in-up stagger-2"><DashboardHeader stats={stats} userId={userId} /></div>}
 
             {!isFirstSession && <FirstVisitTooltip id="dashboard" message="This is your home base. Your Power Level grows as you train and hit new ranks." />}
 
@@ -155,14 +155,16 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                     todayWorkoutName={programs.find((p: any) => p.day_of_week === new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase())?.name}
                 />
             ) : (
-                <DashboardTabs 
-                    userId={userId}
-                    stats={stats}
-                    hasActiveDuels={hasActiveDuels}
-                    activeDuels={activeDuels}
-                    programs={programs}
-                />
-            )}
+                <div className="animate-fade-in-up stagger-3">
+                    <DashboardTabs 
+                        userId={userId}
+                        stats={stats}
+                        hasActiveDuels={hasActiveDuels}
+                        activeDuels={activeDuels}
+                        programs={programs}
+                    />
+                </div>
+            )}}
 
             {/* Floating Action Button */}
             <button
