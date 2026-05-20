@@ -338,6 +338,20 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                     )}
                 </div>
 
+                {/* Water Quick-Log */}
+                <div className="px-4 py-2 border-b border-zinc-800/50 flex items-center gap-2">
+                    <span className="text-sm">💧</span>
+                    <span className="text-[10px] text-zinc-500 font-bold uppercase shrink-0">{Math.round(totals['habit_water'] || 0)}oz</span>
+                    <div className="flex gap-1.5 flex-1">
+                        {[8, 16, 32].map(oz => (
+                            <button key={oz} onClick={async () => { await onLog('water', (totals['habit_water'] || 0) + oz); }}
+                                className="flex-1 bg-zinc-800 hover:bg-cyan-900 border border-zinc-700 hover:border-cyan-500 text-[10px] font-bold text-zinc-400 hover:text-cyan-400 rounded-lg py-1.5 transition">
+                                +{oz}oz
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
                 {/* Quick-Log Tiles (recent meals, one-tap) */}
                 {recents.length > 0 && !foodResults.length && (
                     <div className="px-4 py-2 border-b border-zinc-800/50">
