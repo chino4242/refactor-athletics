@@ -100,10 +100,10 @@ describe('Server Actions', () => {
             expect(mockInsert).toHaveBeenCalledWith(
                 expect.objectContaining({
                     habit_id: 'habit_meal_prep',
-                    xp: 100,
+                    xp: 20,
                 })
             );
-            expect(result).toMatchObject({ xp_earned: 100 });
+            expect(result).toMatchObject({ xp_earned: 20 });
         });
 
         it('uses custom timestamp if provided', async () => {
@@ -168,10 +168,10 @@ describe('Server Actions', () => {
                 expect.objectContaining({
                     habit_id: 'habit_stand_hours',
                     value: 12,
-                    xp: 25,
+                    xp: 15,
                 })
             );
-            expect(result).toMatchObject({ xp_earned: 25 });
+            expect(result).toMatchObject({ xp_earned: 15 });
         });
     });
 
