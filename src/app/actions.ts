@@ -53,9 +53,10 @@ export async function logHabitAction(
         // Nutrition logging
         const macroType = habitId.replace('macro_', ''); // 'protein', 'carbs', 'fat', 'calories'
 
-        // XP: 2 per entry, capped at 30/day
+        // XP: 2 per user-initiated entry, capped at 30/day. Auto-cal entries get 0.
+        const isAutoCal = label?.startsWith('Auto-Cal');
         const { count: todayCount } = await supabase.from('nutrition_logs').select('id', { count: 'exact', head: true }).eq('user_id', userId).eq('date', dateStr);
-        const xp = (todayCount || 0) * 2 < 30 ? 2 : 0;
+        const xp = isAutoCal ? 0 : ((todayCount || 0) * 2 < 30 ? 2 : 0);
 
         // "Set" mode for calories_burned: replace today's entries instead of adding
         if (macroType === 'calories_burned') {
@@ -103,15 +104,17 @@ export async function logHabitAction(
         if (habitId === 'habit_steps') {
             xp = stepsToXp(value);
         } else if (habitId === 'habit_water') {
-            xp = Math.round(value * 0.25); // 64 oz = 16 XP
+            xp = Math.round(value * 0.25); // 80 oz = 20 XP
         } else if (habitId === 'habit_sleep') {
             xp = Math.round(value * 2); // 8 hours = 16 XP
         } else if (habitId === 'habit_meal_prep') {
-            xp = 100;
+            xp = 20; // lifestyle habit, not training
         } else if (habitId === 'habit_exercise_minutes') {
-            xp = 0; // XP comes from in-app workouts or steps, not exercise minutes
+            xp = 0;
+        } else if (habitId === 'habit_no_alcohol' || habitId === 'habit_no_vice' || habitId === 'habit_creatine') {
+            xp = 10; // binary checkbox habits
         } else {
-            xp = 25; // creatine, no_alcohol, no_vice, etc.
+            xp = 15; // other habits (day_strain, recovery, etc.)
         }
 
         // If this is a "Set" (sync) operation, delete existing entries for this habit today first
@@ -290,7 +293,7 @@ export async function logTrainingAction(
     const userLevel = currentLevelIndex + 1;
     const rankNames = ["Peasant", "Rookie", "Amateur", "Contender", "Pro", "Champion", "Legend"];
     const rankName = rankNames[userLevel] || "Peasant";
-    const xpEarned = userLevel > 0 ? userLevel * 50 : 0;
+    const xpEarned = userLevel > 0 ? Math.min(userLevel, 5) * 30 : 0; // caps at 150 XP
 
     // Calculate distance to next rank threshold
     let nextThresholdLbs: number | null = null;
