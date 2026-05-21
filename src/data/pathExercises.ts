@@ -6,7 +6,7 @@ export const PATH_KEY_EXERCISES: Record<string, string[]> = {
     'barbell_bicep_curl', 'plank',
   ],
   endurance: [
-    'run_1_mile', 'run_400m', 'row_6min', 'dead_hang', 'plank',
+    'run_1_mile', 'run_400m', 'run_5k', 'run_2_mile', 'row_6min', 'dead_hang', 'plank',
     'burpees', 'back_squat', 'deadlift', 'push_ups', 'pull_up',
     'bulgarian_split_squat', 'calf_raises',
   ],
@@ -18,7 +18,7 @@ export const PATH_KEY_EXERCISES: Record<string, string[]> = {
   ],
   hybrid: [
     'bench_press', 'back_squat', 'deadlift', 'pull_up', 'run_1_mile',
-    'plank', 'overhead_press', 'run_400m', 'deep_squat_hold',
+    'plank', 'overhead_press', 'run_400m', 'run_5k', 'deep_squat_hold',
     'barbell_row', 'push_ups', 'dead_hang',
   ],
 };

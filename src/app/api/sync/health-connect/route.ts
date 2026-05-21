@@ -116,6 +116,14 @@ export async function POST(request: NextRequest) {
           // ~400m run — rank by time in seconds
           rankedExerciseId = 'run_400m';
           rankValue = dur;
+        } else if (isRun && distMiles >= 1.9 && distMiles <= 2.1) {
+          // ~2 mile run — rank by time in seconds
+          rankedExerciseId = 'run_2_mile';
+          rankValue = dur;
+        } else if (isRun && distMiles >= 3.0 && distMiles <= 3.7) {
+          // ~5K run (3.1 miles, with GPS tolerance up to 3.7) — rank by time in seconds
+          rankedExerciseId = 'run_5k';
+          rankValue = dur;
         }
 
         if (rankedExerciseId && rankValue) {
