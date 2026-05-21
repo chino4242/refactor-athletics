@@ -31,11 +31,11 @@ export default function ActiveDuelCard({ duel, currentUserId, onRefresh, onShowV
     const showMetric = isStepsChallenge || (duel.included_metrics && !duel.included_metrics.includes('ALL'));
 
     // Max score for bars
-    const maxScore = Math.max(myScore, theirScore, 100) * 1.2;
-    const myPercent = Math.min((myScore / maxScore) * 100, 100);
-    const theirPercent = Math.min((theirScore / maxScore) * 100, 100);
+    const maxScore = Math.max(myScore || 0, theirScore || 0, 100) * 1.2;
+    const myPercent = Math.min(((myScore || 0) / maxScore) * 100, 100);
+    const theirPercent = Math.min(((theirScore || 0) / maxScore) * 100, 100);
 
-    const delta = myScore - theirScore;
+    const delta = (myScore || 0) - (theirScore || 0);
     const timeLeft = Math.max(0, duel.end_at - (Date.now() / 1000));
     const daysLeft = Math.floor(timeLeft / 86400);
     const hoursLeft = Math.floor((timeLeft % 86400) / 3600);
@@ -59,7 +59,7 @@ export default function ActiveDuelCard({ duel, currentUserId, onRefresh, onShowV
 
         setLoading(true);
         try {
-            const success = await finalizeDuel(duel.id, myScore, theirScore, delta > 0 ? duel.challenger_id : delta < 0 ? duel.opponent_id : null);
+            const success = await finalizeDuel(duel.id, myScore || 0, theirScore || 0, delta > 0 ? duel.challenger_id : delta < 0 ? duel.opponent_id : null);
             if (success) {
                 onShowVictory({ ...duel, status: 'COMPLETED' });
             }

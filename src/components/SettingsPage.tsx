@@ -70,7 +70,7 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
 
     const handleThemeSelect = (themeKey: string) => {
         setCurrentTheme(themeKey);
-        saveProfile({ user_id: userId, selected_theme: themeKey }).catch(() => {});
+        saveProfile({ user_id: userId, selected_theme: themeKey } as any).catch(() => {});
     };
 
     const handleSave = async () => {
@@ -87,7 +87,7 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                 nutrition_targets: {
                     ...initialProfile?.nutrition_targets,
                     water: targets.habit_water,
-                },
+                } as any,
                 selected_theme: currentTheme,
             });
             toast.success('Settings saved!');

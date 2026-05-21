@@ -12,6 +12,7 @@ interface Props {
 
 export default function ChallengeLanding({ currentUserId }: Props) {
     const { duelId } = useParams();
+    const id = Array.isArray(duelId) ? duelId[0] : duelId;
     const router = useRouter();
     const toast = useToast();
 
@@ -21,8 +22,8 @@ export default function ChallengeLanding({ currentUserId }: Props) {
     const [error, setError] = useState('');
 
     useEffect(() => {
-        if (duelId) {
-            getDuel(duelId)
+        if (id) {
+            getDuel(id!)
                 .then(setDuel)
                 .catch(e => {
                     console.error(e);

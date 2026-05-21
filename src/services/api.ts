@@ -1,4 +1,5 @@
 import type { UserProfileData, NutritionTargets, HistoryItem, UserStats, Challenge, ChallengeGoal, DuelResponse, MilestoneResponse } from '@/types';
+export type { UserStats, MilestoneResponse };
 export type { HistoryItem, CatalogItem } from '@/types';
 import { createClient } from '@/utils/supabase/client';
 import { getLocalDateStr } from '@/utils/date';
@@ -678,16 +679,19 @@ export const getDuelHistory = async (userId: string): Promise<DuelResponse[]> =>
     return data || [];
 };
 
-export const createChallenge = async (userId: string, durationDays: number): Promise<DuelResponse | null> => {
+export const createChallenge = async (userId: string, opponentId: string | null, durationDays: number, mode?: string | null, startDate?: string | null, endDate?: string | null, includedMetrics?: string[]): Promise<DuelResponse | null> => {
     const supabase = createClient();
-    const startAt = Math.floor(Date.now() / 1000);
-    const endAt = startAt + (durationDays * 86400);
+    const startAt = startDate ? Math.floor(new Date(startDate).getTime() / 1000) : Math.floor(Date.now() / 1000);
+    const endAt = endDate ? Math.floor(new Date(endDate).getTime() / 1000) : startAt + (durationDays * 86400);
 
     const { data, error } = await supabase.from('duels').insert([{
         challenger_id: userId,
+        opponent_id: opponentId,
         status: 'PENDING',
         start_at: startAt,
-        end_at: endAt
+        end_at: endAt,
+        ...(mode ? { mode } : {}),
+        ...(includedMetrics ? { included_metrics: includedMetrics } : {}),
     }]).select().single();
 
     if (error) {

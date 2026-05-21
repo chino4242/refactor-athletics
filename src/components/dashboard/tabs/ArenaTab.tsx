@@ -54,7 +54,7 @@ export default function ArenaTab({ userId, activeDuels }: ArenaTabProps) {
                                             {duel.status === 'PENDING' ? 'Pending' : 'Active'}
                                         </p>
                                         <p className="text-xs text-zinc-500">
-                                            {duel.exercise_id}
+                                            {(duel as any).exercise_id}
                                         </p>
                                     </div>
                                     <div className="text-xs text-zinc-400">

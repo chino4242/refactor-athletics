@@ -114,7 +114,7 @@ export default function TrophyList({
                                         if (!exerciseName || exerciseName === cleanId || exerciseName === trophy.exerciseId) {
                                             exerciseName = cleanId
                                                 .split('_')
-                                                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                                                .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
                                                 .join(' ');
                                         }
                                         

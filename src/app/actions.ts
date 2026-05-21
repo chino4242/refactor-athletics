@@ -379,13 +379,13 @@ export async function logTrainingAction(
 
     // Post to party feed
     const { postPartyEvent } = await import('@/utils/partyEvents');
-    const exerciseName = exerciseId.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
+    const partyExName = exerciseId.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
     const partyXp = Math.round(totalXp * 0.5);
     await postPartyEvent(supabase, userId, {
         event_type: userLevel > (prevBest?.level || 0) ? 'rank_up' : 'workout',
         summary: userLevel > (prevBest?.level || 0)
-            ? `ranked up on ${exerciseName} → ${rankName}`
-            : `logged ${exerciseName} · ${workoutData.value}`,
+            ? `ranked up on ${partyExName} → ${rankName}`
+            : `logged ${partyExName} · ${workoutData.value}`,
         xp_value: partyXp,
         metadata: { exercise: exerciseId, level: userLevel, rank: rankName },
     });

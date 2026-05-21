@@ -42,6 +42,7 @@ export default function YesterdayRetroModal({ userId, bodyweight, yesterdayTs, o
                     <DailyQuest
                         userId={userId}
                         bodyweight={bodyweight}
+                        initialProfile={null as any}
                         onXpEarned={() => { }} // No need to update parent XP for yesterday's changes immediately
                         targetDateTs={yesterdayTs} // 🟢 Back-date mode
                         stats={null}

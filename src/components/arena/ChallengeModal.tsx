@@ -101,6 +101,7 @@ export default function ChallengeModal({ isOpen, challengerId, onClose, onChalle
             );
 
             // Generate Link
+            if (!duel) { console.error('Failed to create challenge'); return; }
             const link = `${window.location.origin}/challenge/${duel.id}`;
             setDuelLink(link);
             onChallengeCreated(); // Refresh background list

@@ -62,6 +62,19 @@ export interface UserStats {
     exercises_tracked: number;
     highest_level_achieved: number;
     total_career_xp: number;
+    total_xp?: number;
+    player_level?: number;
+    level_progress_percent?: number;
+    xp_to_next_level?: number;
+    no_alcohol_streak?: number;
+    no_vice_streak?: number;
+    power_level_week_delta?: number;
+    nextLevelQuests?: any[];
+    highest_daily_xp?: number;
+    highest_weekly_xp?: number;
+    habit_no_alcohol_tracked_today?: boolean;
+    habit_no_vice_tracked_today?: boolean;
+    total_volume_today?: number;
 }
 
 // Workout Types
@@ -105,24 +118,6 @@ export interface WorkoutSchedule {
     completed: boolean;
     completed_at?: string;
     created_at: string;
-}
-
-export interface UserStats {
-    power_level: number;
-    max_expertise: number;
-    exercises_tracked: number;
-    highest_level_achieved: number;
-    total_career_xp: number;
-    player_level: number;
-    level_progress_percent: number;
-    xp_to_next_level: number;
-    highest_daily_xp?: number;
-    highest_weekly_xp?: number;
-    no_alcohol_streak?: number;
-    no_vice_streak?: number;
-    habit_no_alcohol_tracked_today?: boolean;
-    habit_no_vice_tracked_today?: boolean;
-    total_volume_today?: number;
 }
 
 export interface ChallengeGoal {

@@ -46,7 +46,7 @@ export default function ActiveChallengeCard({ challenge, userId, onUpdate }: Act
         setChecking(true);
         try {
             const res = await checkChallengeStatus(userId);
-            if (!silent) {
+            if (!silent && res) {
                 toast.success(res.status === 'alive' ? "Streak Updated!" : "Streak Reset!");
             }
             onUpdate();

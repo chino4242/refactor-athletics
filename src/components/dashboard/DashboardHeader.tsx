@@ -122,10 +122,10 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                                     <span className="text-lg text-zinc-500 not-italic font-bold">Complete a workout to earn your first rank</span>
                                 )}
                             </div>
-                            {powerLevel > 0 && stats?.exercises_tracked > 0 && (
+                            {powerLevel > 0 && stats && stats.exercises_tracked && stats.exercises_tracked > 0 && (
                                 <div className="text-[10px] text-zinc-500 mt-1">
                                     {stats.exercises_tracked} exercise{stats.exercises_tracked > 1 ? 's' : ''} ranked · avg Lv{(powerLevel / stats.exercises_tracked).toFixed(1)}
-                                    {(stats as any).power_level_week_delta > 0 && (
+                                    {stats.power_level_week_delta && stats.power_level_week_delta > 0 && (
                                         <span className="ml-1.5 text-emerald-400 font-bold">+{(stats as any).power_level_week_delta} this week 🔥</span>
                                     )}
                                 </div>
