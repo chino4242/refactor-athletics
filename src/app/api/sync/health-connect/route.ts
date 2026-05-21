@@ -154,6 +154,15 @@ export async function POST(request: NextRequest) {
               value, raw_value: dur, sets: null, level: 0, xp, rank_name: null,
             });
             synced.push(`${exerciseName}: ${value}`);
+
+            // Post to party feed
+            const { postPartyEvent } = await import('@/utils/partyEvents');
+            await postPartyEvent(supabase, user.id, {
+              event_type: 'workout',
+              summary: `${exerciseName.toLowerCase()} · ${value}`,
+              xp_value: Math.round(xp * 0.5),
+              metadata: { exercise: catalogId, distance: distMiles.toFixed(2), duration: durationMin },
+            });
           }
         }
       }
