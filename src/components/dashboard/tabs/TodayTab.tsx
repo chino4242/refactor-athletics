@@ -13,6 +13,7 @@ import { THEMES } from '@/data/themes';
 import { useToast } from '@/context/ToastContext';
 import DailyWrapUp from '../../DailyWrapUp';
 import TomorrowPreview from '../../TomorrowPreview';
+import PartyPulse from '../../PartyPulse';
 
 interface TodayTabProps {
     userId: string;
@@ -221,6 +222,10 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
                     )}
                 </div>
             )}
+
+            {/* Party Pulse */}
+            <PartyPulse userId={userId} />
+
             {/* Daily Quest Summary */}
             {profile && (
                 <div>
