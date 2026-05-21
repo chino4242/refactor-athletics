@@ -46,7 +46,7 @@ export default function FoodLog({ userId, onUpdate }: FoodLogProps) {
     for (const entry of data) {
       if (entry.macro_type === 'calories') continue; // auto-calculated, don't show
       const last = groups[groups.length - 1];
-      if (last && Math.abs(entry.timestamp - last.timestamp) < 5) {
+      if (last && Math.abs(entry.timestamp - last.timestamp) < 30) {
         last.items.push({ macro_type: entry.macro_type, amount: entry.amount, label: entry.label, id: entry.id });
       } else {
         const d = new Date(entry.timestamp * 1000);
@@ -89,7 +89,9 @@ export default function FoodLog({ userId, onUpdate }: FoodLogProps) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-[9px] text-zinc-600">{meal.time}</span>
-                  {displayLabel && <span className="text-xs text-zinc-300 truncate">{displayLabel}</span>}
+                  {displayLabel && !['Protein', 'Carbs', 'Fat', 'Water', 'protein', 'carbs', 'fat', 'water'].includes(displayLabel) && (
+                    <span className="text-xs text-zinc-300 truncate">{displayLabel}</span>
+                  )}
                 </div>
                 <div className="text-[10px] text-zinc-500">
                   {p > 0 && `P:${p} `}{c > 0 && `C:${c} `}{f > 0 && `F:${f}`}
