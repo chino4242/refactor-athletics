@@ -107,15 +107,25 @@ export default function DailyWrapUp({ userId, mode, onDismiss }: DailyWrapUpProp
         xp: workouts.reduce((s, w) => s + (w.xp || 0), 0),
       } : null;
 
-      // Deduplicate: keep highest XP entry per source_label, filter out exercise_minutes and 0-XP
+      // Deduplicate: keep highest XP entry per source_label, filter out noise
       const deduped = new Map<string, number>();
       for (const e of (xpEntries || [])) {
         if (e.amount <= 0) continue;
         if (e.source_label === 'exercise_minutes' || e.source_label === 'Exercise Minutes') continue;
+        if (e.source_label.startsWith('Auto-Cal')) continue; // implementation detail, not user action
         const existing = deduped.get(e.source_label) || 0;
         if (e.amount > existing) deduped.set(e.source_label, e.amount);
       }
+      // Consolidate individual macro entries into one "Nutrition" line
+      let nutritionXp = 0;
+      const macroLabels = ['Protein', 'Carbs', 'Fat', 'Water', 'Calories Burned', 'protein', 'carbs', 'fat'];
+      for (const label of macroLabels) {
+        if (deduped.has(label)) { nutritionXp += deduped.get(label)!; deduped.delete(label); }
+      }
+      if (nutritionXp > 0) deduped.set('Logged nutrition', nutritionXp);
+
       const xpItems = Array.from(deduped.entries()).map(([source_label, amount]) => ({ source_label, amount }));
+      xpItems.sort((a, b) => b.amount - a.amount);
       const totalXp = xpItems.reduce((s, e) => s + e.amount, 0);
 
       setData({ date: dateStr, xpItems, totalXp, steps, sleep, macros, workout });
