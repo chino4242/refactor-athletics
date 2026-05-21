@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from 'react';
-import { getActiveDuels, getDuelHistory, type DuelResponse } from '@/services/api';
+import { getActiveDuels, getDuelHistory, getUserStats, type DuelResponse } from '@/services/api';
 import { useToast } from '@/context/ToastContext';
 import { useExperienceMode } from '@/context/ExperienceModeContext';
 import ChallengeModal from './arena/ChallengeModal';
@@ -9,6 +9,7 @@ import ActiveDuelCard from './arena/ActiveDuelCard';
 import DuelHistoryCard from './arena/DuelHistoryCard';
 import DuelVictoryModal from './arena/DuelVictoryModal';
 import GroupCard from './GroupCard';
+import LevelGate from './LevelGate';
 import { useTheme } from '@/context/ThemeContext';
 import { THEMES } from '@/data/themes';
 import { Swords, Plus } from 'lucide-react';
@@ -37,17 +38,20 @@ export default function Arena({ userId }: ArenaProps) {
   const [historyDuels, setHistoryDuels] = useState<DuelResponse[]>([]);
   const [isChallengeModalOpen, setIsChallengeModalOpen] = useState(false);
   const [victoryDuel, setVictoryDuel] = useState<DuelResponse | null>(null);
+  const [playerLevel, setPlayerLevel] = useState(99); // default high so gates don't flash
 
   const loadDuels = useCallback(async () => {
     if (!userId) return;
     setIsLoading(true);
     try {
-      const [active, history] = await Promise.all([
+      const [active, history, stats] = await Promise.all([
         getActiveDuels(userId),
         getDuelHistory(userId),
+        getUserStats(userId),
       ]);
       setActiveDuels(active);
       setHistoryDuels(history);
+      if (stats?.player_level) setPlayerLevel(stats.player_level);
     } catch (e) {
       console.error('Failed to load duels:', e);
     } finally {
@@ -66,14 +70,16 @@ export default function Arena({ userId }: ArenaProps) {
           <h1 className="text-xl font-black text-white">{isClassic ? 'Social' : theme.labels.arena}</h1>
           <p className="text-xs text-zinc-500">{isClassic ? 'Challenge friends' : 'Prove your strength'}</p>
         </div>
-        <button
-          onClick={() => setIsChallengeModalOpen(true)}
-          className={`flex items-center gap-1.5 bg-gradient-to-r ${theme.accentGradient} text-white px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all active:scale-95 shadow-lg`}
-          style={{ boxShadow: `0 10px 15px -3px ${theme.accentHex}20` }}
-        >
-          <Plus size={14} />
-          Challenge
-        </button>
+        <LevelGate featureId="duels" playerLevel={playerLevel} inline>
+          <button
+            onClick={() => setIsChallengeModalOpen(true)}
+            className={`flex items-center gap-1.5 bg-gradient-to-r ${theme.accentGradient} text-white px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all active:scale-95 shadow-lg`}
+            style={{ boxShadow: `0 10px 15px -3px ${theme.accentHex}20` }}
+          >
+            <Plus size={14} />
+            Challenge
+          </button>
+        </LevelGate>
       </div>
 
       {/* Tabs */}
