@@ -34,6 +34,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
     const [aiLoading, setAiLoading] = useState(false);
     const [photoLoading, setPhotoLoading] = useState(false);
     const [waterFlash, setWaterFlash] = useState(false);
+    const [pendingMacros, setPendingMacros] = useState({ protein: 0, carbs: 0, fat: 0, count: 0 });
 
     const handleMealPhoto = async (file: File) => {
         setPhotoLoading(true);
@@ -205,16 +206,13 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
         }, 400);
     };
 
-    const [pendingMacros, setPendingMacros] = useState({ protein: 0, carbs: 0, fat: 0, count: 0 });
-
     const handleAddFood = async () => {
         if (!selectedFood) return;
         const mult = (parseFloat(servingGrams) || 100) / 100;
         const p = Math.round(selectedFood.per100g.protein * mult);
         const c = Math.round(selectedFood.per100g.carbs * mult);
         const f = Math.round(selectedFood.per100g.fat * mult);
-        // Accumulate instead of saving immediately
-        setPendingMacros(prev => ({ protein: prev.protein + p, carbs: prev.carbs + c, fat: prev.fat + f, count: prev.count + 1 }));
+
         // Save to recents
         setRecents(prev => {
             const filtered = prev.filter(r => r.name !== selectedFood.name);
@@ -222,6 +220,43 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
             localStorage.setItem('recent_foods', JSON.stringify(next));
             return next;
         });
+
+        if (pendingMacros.count === 0) {
+            // First item: save immediately (single-item fast path)
+            const promises = [];
+            if (p > 0) promises.push(onLog('protein', (totals['macro_protein'] || 0) + p));
+            if (c > 0) promises.push(onLog('carbs', (totals['macro_carbs'] || 0) + c));
+            if (f > 0) promises.push(onLog('fat', (totals['macro_fat'] || 0) + f));
+            if (promises.length > 0) await Promise.all(promises);
+            setSelectedFood(null);
+            setFoodQuery('');
+            setFoodResults([]);
+            setServingGrams('100');
+            onClose();
+        } else {
+            // Already have items in tray: accumulate
+            setPendingMacros(prev => ({ protein: prev.protein + p, carbs: prev.carbs + c, fat: prev.fat + f, count: prev.count + 1 }));
+            setSelectedFood(null);
+            setFoodQuery('');
+            setFoodResults([]);
+            setServingGrams('100');
+        }
+    };
+
+    const handleAddAnother = () => {
+        if (!selectedFood) return;
+        const mult = (parseFloat(servingGrams) || 100) / 100;
+        const p = Math.round(selectedFood.per100g.protein * mult);
+        const c = Math.round(selectedFood.per100g.carbs * mult);
+        const f = Math.round(selectedFood.per100g.fat * mult);
+        // Save to recents
+        setRecents(prev => {
+            const filtered = prev.filter(r => r.name !== selectedFood.name);
+            const next = [selectedFood, ...filtered].slice(0, 10);
+            localStorage.setItem('recent_foods', JSON.stringify(next));
+            return next;
+        });
+        setPendingMacros(prev => ({ protein: prev.protein + p, carbs: prev.carbs + c, fat: prev.fat + f, count: prev.count + 1 }));
         setSelectedFood(null);
         setFoodQuery('');
         setFoodResults([]);
@@ -475,7 +510,11 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                                 <div className="flex gap-2">
                                     <button onClick={handleAddFood}
                                         className="flex-1 bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold py-2.5 rounded-lg text-xs uppercase tracking-wider transition active:scale-95 flex items-center justify-center gap-1.5">
-                                        <Plus size={14} /> {pendingMacros.count > 0 ? 'Add Another' : 'Add'}
+                                        <Plus size={14} /> Add
+                                    </button>
+                                    <button onClick={handleAddAnother}
+                                        className="px-3 py-2.5 bg-zinc-800 border border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-600 rounded-lg text-[10px] font-bold uppercase tracking-wider transition">
+                                        + More
                                     </button>
                                     <button onClick={() => selectedFood && toggleFavorite(selectedFood)}
                                         className={`px-3 py-2.5 rounded-lg border transition ${isFavorite(selectedFood!) ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400' : 'bg-zinc-800 border-zinc-700 text-zinc-500 hover:text-yellow-400'}`}>
