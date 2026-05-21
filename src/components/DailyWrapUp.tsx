@@ -107,7 +107,15 @@ export default function DailyWrapUp({ userId, mode, onDismiss }: DailyWrapUpProp
         xp: workouts.reduce((s, w) => s + (w.xp || 0), 0),
       } : null;
 
-      const xpItems = (xpEntries || []).map(e => ({ source_label: e.source_label, amount: e.amount }));
+      // Deduplicate: keep highest XP entry per source_label, filter out exercise_minutes and 0-XP
+      const deduped = new Map<string, number>();
+      for (const e of (xpEntries || [])) {
+        if (e.amount <= 0) continue;
+        if (e.source_label === 'exercise_minutes' || e.source_label === 'Exercise Minutes') continue;
+        const existing = deduped.get(e.source_label) || 0;
+        if (e.amount > existing) deduped.set(e.source_label, e.amount);
+      }
+      const xpItems = Array.from(deduped.entries()).map(([source_label, amount]) => ({ source_label, amount }));
       const totalXp = xpItems.reduce((s, e) => s + e.amount, 0);
 
       setData({ date: dateStr, xpItems, totalXp, steps, sleep, macros, workout });
