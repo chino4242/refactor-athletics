@@ -76,7 +76,7 @@ describe('Workout Completion Flow — Integration', () => {
         // Set 1: floor((315/200)*5*10*1.5) = floor(118.125) = 118
         // Set 2: floor((295/200)*3*10*1.5) = floor(66.375) = 66
         // Total = 100 + 118 + 66 = 284
-        expect(result.xp_earned).toBe(244);
+        expect(result.xp_earned).toBe(254);
 
         // Verify workout was saved to DB
         expect(mockInsert).toHaveBeenCalledWith(

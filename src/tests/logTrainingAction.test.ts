@@ -108,7 +108,7 @@ describe('logTrainingAction', () => {
         // XP = level * 50 + sets XP
         // Sets XP = floor((300/200)*5*10*1.5) + floor((280/200)*3*10*1.5) = 112 + 63 = 175
         // Total = 100 + 174 = 274 (floating point)
-        expect(result.xp_earned).toBe(234);
+        expect(result.xp_earned).toBe(244);
     });
 
     it('handles female standards', async () => {
@@ -156,7 +156,7 @@ describe('logTrainingAction', () => {
 
         expect(result.level).toBe(5);
         expect(result.rank_name).toBe('Champion');
-        expect(result.xp_earned).toBe(195); // 250 rank XP + floor((600/200)*1*10*1.5) = 45
+        expect(result.xp_earned).toBe(175); // 250 rank XP + floor((600/200)*1*10*1.5) = 45
     });
 
     it('handles reps-based exercises', async () => {

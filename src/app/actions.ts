@@ -293,7 +293,7 @@ export async function logTrainingAction(
     const userLevel = currentLevelIndex + 1;
     const rankNames = ["Peasant", "Rookie", "Amateur", "Contender", "Pro", "Champion", "Legend"];
     const rankName = rankNames[userLevel] || "Peasant";
-    const xpEarned = userLevel > 0 ? Math.min(userLevel, 5) * 30 : 0; // caps at 150 XP
+    const xpEarned = userLevel > 0 ? userLevel * 20 + 30 : 0; // L1=50, L3=90, L5=130, scales but doesn't dominate
 
     // Calculate distance to next rank threshold
     let nextThresholdLbs: number | null = null;
