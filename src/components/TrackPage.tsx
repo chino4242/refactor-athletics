@@ -427,7 +427,7 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
               onLogHabit={async (id, val, lbl) => handleLog(id, val, lbl)}
             />
             <div className="mt-3">
-              <FoodLog userId={userId} onUpdate={fetchProgress} />
+              <FoodLog key={JSON.stringify(totals)} userId={userId} onUpdate={fetchProgress} />
             </div>
           </div>
         )}
