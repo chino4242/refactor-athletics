@@ -15,6 +15,7 @@ import HabitCard from './HabitCard';
 import ViceToggle from './ViceToggle';
 import HabitSettings from './HabitSettings';
 import BodyCompHome from './BodyCompHome';
+import FoodLog from './FoodLog';
 import { BodyCompositionService } from '@/services/BodyCompositionService';
 import { SlidersHorizontal } from 'lucide-react';
 import type { UserStats, UserProfileData, HistoryItem } from '@/types';
@@ -425,6 +426,9 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
               onUpdate={fetchProgress}
               onLogHabit={async (id, val, lbl) => handleLog(id, val, lbl)}
             />
+            <div className="mt-3">
+              <FoodLog userId={userId} onUpdate={fetchProgress} />
+            </div>
           </div>
         )}
 
