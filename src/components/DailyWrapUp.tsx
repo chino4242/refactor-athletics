@@ -112,10 +112,23 @@ export default function DailyWrapUp({ userId, mode, onDismiss }: DailyWrapUpProp
       for (const e of (xpEntries || [])) {
         if (e.amount <= 0) continue;
         if (e.source_label === 'exercise_minutes' || e.source_label === 'Exercise Minutes') continue;
-        if (e.source_label.startsWith('Auto-Cal')) continue; // implementation detail, not user action
+        if (e.source_label.startsWith('Auto-Cal')) continue;
         const existing = deduped.get(e.source_label) || 0;
         if (e.amount > existing) deduped.set(e.source_label, e.amount);
       }
+
+      // Fallback: if ledger is sparse, synthesize from actual habit/workout data
+      if (steps > 0 && !deduped.has('Steps')) {
+        const { stepsToXp } = await import('@/utils/xp');
+        deduped.set('Steps', stepsToXp(steps));
+      }
+      if (sleep > 0 && !deduped.has('Sleep')) {
+        deduped.set('Sleep', Math.round(sleep * 2));
+      }
+      if (workout && !deduped.has('Workout')) {
+        deduped.set('Workout', workout.xp);
+      }
+
       // Consolidate individual macro entries into one "Nutrition" line
       let nutritionXp = 0;
       const macroLabels = ['Protein', 'Carbs', 'Fat', 'Water', 'Calories Burned', 'protein', 'carbs', 'fat'];
