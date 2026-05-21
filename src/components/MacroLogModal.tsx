@@ -206,13 +206,14 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
         }, 400);
     };
 
+    const [mealPickerFood, setMealPickerFood] = useState<{ name: string; p: number; c: number; f: number; serving: string } | null>(null);
+
     const handleAddFood = async () => {
         if (!selectedFood) return;
         const mult = (parseFloat(servingGrams) || 100) / 100;
         const p = Math.round(selectedFood.per100g.protein * mult);
         const c = Math.round(selectedFood.per100g.carbs * mult);
         const f = Math.round(selectedFood.per100g.fat * mult);
-
         // Save to recents
         setRecents(prev => {
             const filtered = prev.filter(r => r.name !== selectedFood.name);
@@ -220,27 +221,34 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
             localStorage.setItem('recent_foods', JSON.stringify(next));
             return next;
         });
+        // Show meal picker
+        setMealPickerFood({ name: selectedFood.name, p, c, f, serving: `${servingGrams}g` });
+    };
 
-        if (pendingMacros.count === 0) {
-            // First item: save immediately (single-item fast path)
-            const promises = [];
-            if (p > 0) promises.push(onLog('protein', (totals['macro_protein'] || 0) + p));
-            if (c > 0) promises.push(onLog('carbs', (totals['macro_carbs'] || 0) + c));
-            if (f > 0) promises.push(onLog('fat', (totals['macro_fat'] || 0) + f));
-            if (promises.length > 0) await Promise.all(promises);
-            setSelectedFood(null);
-            setFoodQuery('');
-            setFoodResults([]);
-            setServingGrams('100');
-            onClose();
-        } else {
-            // Already have items in tray: accumulate
-            setPendingMacros(prev => ({ protein: prev.protein + p, carbs: prev.carbs + c, fat: prev.fat + f, count: prev.count + 1 }));
-            setSelectedFood(null);
-            setFoodQuery('');
-            setFoodResults([]);
-            setServingGrams('100');
-        }
+    const handleMealSelect = async (mealType: string) => {
+        if (!mealPickerFood) return;
+        const { name, p, c, f, serving } = mealPickerFood;
+        // Save to meal_entries (food diary)
+        const supabase = (await import('@/utils/supabase/client')).createClient();
+        const date = new Date().toLocaleDateString('en-CA');
+        const ts = Math.floor(Date.now() / 1000);
+        await supabase.from('meal_entries').insert({
+            user_id: userId, date, meal_type: mealType, food_name: name,
+            protein: p, carbs: c, fat: f, calories: p * 4 + c * 4 + f * 9,
+            serving_size: serving, timestamp: ts,
+        });
+        // Also log to nutrition_logs for macro totals
+        const promises = [];
+        if (p > 0) promises.push(onLog('protein', (totals['macro_protein'] || 0) + p));
+        if (c > 0) promises.push(onLog('carbs', (totals['macro_carbs'] || 0) + c));
+        if (f > 0) promises.push(onLog('fat', (totals['macro_fat'] || 0) + f));
+        if (promises.length > 0) await Promise.all(promises);
+        setMealPickerFood(null);
+        setSelectedFood(null);
+        setFoodQuery('');
+        setFoodResults([]);
+        setServingGrams('100');
+        onClose();
     };
 
     const handleAddAnother = () => {
@@ -249,7 +257,6 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
         const p = Math.round(selectedFood.per100g.protein * mult);
         const c = Math.round(selectedFood.per100g.carbs * mult);
         const f = Math.round(selectedFood.per100g.fat * mult);
-        // Save to recents
         setRecents(prev => {
             const filtered = prev.filter(r => r.name !== selectedFood.name);
             const next = [selectedFood, ...filtered].slice(0, 10);
@@ -521,6 +528,26 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                                         ★
                                     </button>
                                 </div>
+                                {/* Meal Picker */}
+                                {mealPickerFood && (
+                                    <div className="mt-2 bg-zinc-800/50 border border-zinc-700 rounded-xl p-3">
+                                        <div className="text-[10px] text-zinc-400 text-center mb-2">Which meal?</div>
+                                        <div className="grid grid-cols-4 gap-2">
+                                            {[
+                                                { id: 'breakfast', emoji: '🌅', label: 'Breakfast' },
+                                                { id: 'lunch', emoji: '🌞', label: 'Lunch' },
+                                                { id: 'dinner', emoji: '🌙', label: 'Dinner' },
+                                                { id: 'snack', emoji: '🍿', label: 'Snack' },
+                                            ].map(m => (
+                                                <button key={m.id} onClick={() => handleMealSelect(m.id)}
+                                                    className="flex flex-col items-center gap-1 py-2 bg-zinc-900 hover:bg-orange-500/10 border border-zinc-700 hover:border-orange-500/30 rounded-lg transition">
+                                                    <span className="text-lg">{m.emoji}</span>
+                                                    <span className="text-[9px] text-zinc-400 font-bold">{m.label}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                                 {pendingMacros.count > 0 && (
                                     <button onClick={handleSavePending}
                                         className="w-full mt-2 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider rounded-lg transition flex items-center justify-center gap-1.5">

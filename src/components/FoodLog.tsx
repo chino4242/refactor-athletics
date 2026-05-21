@@ -9,22 +9,27 @@ interface FoodLogProps {
   onUpdate: () => void;
 }
 
-interface LogEntry {
+interface MealEntry {
   id: string;
-  timestamp: number;
-  macro_type: string;
-  amount: number;
-  label: string;
+  meal_type: string;
+  food_name: string;
+  protein: number;
+  carbs: number;
+  fat: number;
+  calories: number;
+  serving_size: string;
 }
 
-interface MealGroup {
-  time: string;
-  timestamp: number;
-  items: { macro_type: string; amount: number; label: string; id: string }[];
-}
+const MEAL_ORDER = ['breakfast', 'lunch', 'dinner', 'snack'];
+const MEAL_LABELS: Record<string, { emoji: string; label: string }> = {
+  breakfast: { emoji: '🌅', label: 'Breakfast' },
+  lunch: { emoji: '🌞', label: 'Lunch' },
+  dinner: { emoji: '🌙', label: 'Dinner' },
+  snack: { emoji: '🍿', label: 'Snack' },
+};
 
 export default function FoodLog({ userId, onUpdate }: FoodLogProps) {
-  const [meals, setMeals] = useState<MealGroup[]>([]);
+  const [entries, setEntries] = useState<MealEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => { load(); }, [userId]);
@@ -33,74 +38,59 @@ export default function FoodLog({ userId, onUpdate }: FoodLogProps) {
     const supabase = createClient();
     const today = new Date().toLocaleDateString('en-CA');
     const { data } = await supabase
-      .from('nutrition_logs')
-      .select('id, timestamp, macro_type, amount, label')
+      .from('meal_entries')
+      .select('id, meal_type, food_name, protein, carbs, fat, calories, serving_size')
       .eq('user_id', userId)
       .eq('date', today)
       .order('timestamp', { ascending: true });
 
-    if (!data?.length) { setMeals([]); setLoading(false); return; }
-
-    // Group by timestamp (entries within 5 seconds = same meal)
-    const groups: MealGroup[] = [];
-    for (const entry of data) {
-      if (entry.macro_type === 'calories') continue; // auto-calculated, don't show
-      const last = groups[groups.length - 1];
-      if (last && Math.abs(entry.timestamp - last.timestamp) < 30) {
-        last.items.push({ macro_type: entry.macro_type, amount: entry.amount, label: entry.label, id: entry.id });
-      } else {
-        const d = new Date(entry.timestamp * 1000);
-        const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-        groups.push({ time, timestamp: entry.timestamp, items: [{ macro_type: entry.macro_type, amount: entry.amount, label: entry.label, id: entry.id }] });
-      }
-    }
-    setMeals(groups);
+    setEntries(data || []);
     setLoading(false);
   };
 
-  const deleteMeal = async (group: MealGroup) => {
+  const deleteEntry = async (id: string, entry: MealEntry) => {
     const supabase = createClient();
-    const ids = group.items.map(i => i.id);
-    // Also delete the auto-calculated calories for this timestamp
-    await supabase.from('nutrition_logs').delete().eq('user_id', userId).in('id', ids);
-    await supabase.from('nutrition_logs').delete().eq('user_id', userId).eq('macro_type', 'calories')
-      .gte('timestamp', group.timestamp - 5).lte('timestamp', group.timestamp + 5);
+    await supabase.from('meal_entries').delete().eq('id', id);
     await load();
     onUpdate();
   };
 
   if (loading) return null;
-  if (meals.length === 0) return null;
+  if (entries.length === 0) return null;
+
+  // Group by meal type
+  const grouped = MEAL_ORDER
+    .map(type => ({ type, items: entries.filter(e => e.meal_type === type) }))
+    .filter(g => g.items.length > 0);
 
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-3">
-      <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2">Today&apos;s Food Log</div>
-      <div className="space-y-2">
-        {meals.map((meal, i) => {
-          const p = meal.items.find(i => i.macro_type === 'protein')?.amount || 0;
-          const c = meal.items.find(i => i.macro_type === 'carbs')?.amount || 0;
-          const f = meal.items.find(i => i.macro_type === 'fat')?.amount || 0;
-          const label = meal.items[0]?.label;
-          const isAutoLabel = label?.startsWith('Auto-Cal');
-          const displayLabel = isAutoLabel ? null : label;
-
+      <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-3">Today&apos;s Food Log</div>
+      <div className="space-y-3">
+        {grouped.map(group => {
+          const meal = MEAL_LABELS[group.type] || { emoji: '🍽️', label: group.type };
+          const totalP = group.items.reduce((s, i) => s + i.protein, 0);
+          const totalC = group.items.reduce((s, i) => s + i.carbs, 0);
+          const totalF = group.items.reduce((s, i) => s + i.fat, 0);
           return (
-            <div key={i} className="flex items-center justify-between bg-zinc-800/50 rounded-lg px-3 py-2">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-[9px] text-zinc-600">{meal.time}</span>
-                  {displayLabel && !['Protein', 'Carbs', 'Fat', 'Water', 'protein', 'carbs', 'fat', 'water'].includes(displayLabel) && (
-                    <span className="text-xs text-zinc-300 truncate">{displayLabel}</span>
-                  )}
-                </div>
-                <div className="text-[10px] text-zinc-500">
-                  {p > 0 && `P:${p} `}{c > 0 && `C:${c} `}{f > 0 && `F:${f}`}
-                  {!p && !c && !f && meal.items.map(i => `${i.macro_type}: ${i.amount}`).join(' ')}
-                </div>
+            <div key={group.type}>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-xs font-bold text-zinc-300">{meal.emoji} {meal.label}</span>
+                <span className="text-[9px] text-zinc-600">P:{totalP} C:{totalC} F:{totalF}</span>
               </div>
-              <button onClick={() => deleteMeal(meal)} className="text-zinc-700 hover:text-red-400 p-1 transition">
-                <Trash2 size={14} />
-              </button>
+              <div className="space-y-1">
+                {group.items.map(entry => (
+                  <div key={entry.id} className="flex items-center justify-between bg-zinc-800/50 rounded-lg px-3 py-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs text-zinc-300 truncate">{entry.food_name}</div>
+                      <div className="text-[9px] text-zinc-600">{entry.serving_size} · P:{entry.protein} C:{entry.carbs} F:{entry.fat}</div>
+                    </div>
+                    <button onClick={() => deleteEntry(entry.id, entry)} className="text-zinc-700 hover:text-red-400 p-1 transition shrink-0">
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           );
         })}
