@@ -8,6 +8,7 @@ import { useUserProfileData } from '../hooks/useUserProfileData';
 import { useTrophies } from '../hooks/useTrophies';
 import { useToast } from '../context/ToastContext';
 import { useTheme } from '../context/ThemeContext';
+import RewardsTrack from './RewardsTrack';
 import { useExperienceMode } from '../context/ExperienceModeContext';
 import { THEMES } from '../data/themes';
 
@@ -204,8 +205,9 @@ export default function UserProfile({
       )}
 
       {activeTab === 'milestones' && (
-        <div className="animate-fade-in-up">
-          <div className="text-sm text-zinc-400 mb-6">
+        <div className="animate-fade-in-up space-y-4">
+          <RewardsTrack playerLevel={stats?.player_level || 1} />
+          <div className="text-sm text-zinc-400 mb-2">
             Targets to reach the next Rank level based on your current stats.
           </div>
           <MilestoneTable
