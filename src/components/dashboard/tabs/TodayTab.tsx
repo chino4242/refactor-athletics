@@ -93,14 +93,30 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
                     steps: habitProgress?.totals?.habit_steps || 0,
                 });
                 
-                // Get today's XP from all tables
+                // Get today's XP — deduplicate by taking max per source
                 const todayDate = getToday();
                 const [{ data: wXp }, { data: nXp }, { data: hXp }] = await Promise.all([
                     supabase.from('workouts').select('xp').eq('user_id', userId).eq('date', todayDate),
-                    supabase.from('nutrition_logs').select('xp').eq('user_id', userId).gte('timestamp', startOfDay),
-                    supabase.from('habit_logs').select('xp').eq('user_id', userId).gte('timestamp', startOfDay),
+                    supabase.from('nutrition_logs').select('xp, macro_type, label').eq('user_id', userId).eq('date', todayDate),
+                    supabase.from('habit_logs').select('xp, habit_id').eq('user_id', userId).eq('date', todayDate),
                 ]);
-                const totalXp = [...(wXp || []), ...(nXp || []), ...(hXp || [])].reduce((s, r) => s + (r.xp || 0), 0);
+                // Workouts: sum all
+                let totalXp = (wXp || []).reduce((s, r) => s + Math.max(0, r.xp || 0), 0);
+                // Nutrition: only count user-initiated (not Auto-Cal), max per macro_type
+                const nutritionByType = new Map<string, number>();
+                for (const r of (nXp || [])) {
+                    if (r.label?.startsWith('Auto-Cal')) continue;
+                    if ((r.xp || 0) <= 0) continue;
+                    nutritionByType.set(r.macro_type, (nutritionByType.get(r.macro_type) || 0) + (r.xp || 0));
+                }
+                totalXp += [...nutritionByType.values()].reduce((s, v) => s + v, 0);
+                // Habits: take highest XP per habit_id (handles re-syncs)
+                const habitByType = new Map<string, number>();
+                for (const r of (hXp || [])) {
+                    const current = habitByType.get(r.habit_id) || 0;
+                    if ((r.xp || 0) > current) habitByType.set(r.habit_id, r.xp || 0);
+                }
+                totalXp += [...habitByType.values()].reduce((s, v) => s + v, 0);
                 
                 // Get max daily XP (best day in last 30 days — good enough for the progress bar)
                 const thirtyDaysAgo = new Date();
