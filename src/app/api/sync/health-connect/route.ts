@@ -100,92 +100,58 @@ export async function POST(request: NextRequest) {
         synced.push(`exercise: ${totalMin} min`);
       }
 
-      // Log individual exercise sessions to workouts table
-      const HC_TYPE_MAP: Record<number, string> = {
-        46: 'running_generic', 47: 'running_generic', // Running, Running Treadmill
-        8: 'cycling', 9: 'cycling',                   // Biking, Biking Stationary
-        26: 'running_generic',                        // Hiking → running_generic
-        43: 'rowing_general', 44: 'rowing_general',   // Rowing, Rowing Machine
-        57: 'stretching',
-        58: 'swimming', 59: 'swimming',               // Open water, Pool
-        75: 'yoga',
-        // 56 (strength_training) and 69 (walking) excluded — tracked via manual logging and steps
-      };
-
+      // Log individual exercise sessions
       for (const ex of recentExercise) {
         const dur = ex.duration_seconds || ex.durationSeconds || 0;
         const distMeters = ex.distance_meters || ex.distanceMeters || ex.distance || 0;
         const typeCode = parseInt(ex.type || ex.exerciseType || ex.exercise_type) || 0;
-        console.log(`[HC Exercise] type=${typeCode} dur=${dur}s dist=${distMeters}m raw:`, JSON.stringify(ex).slice(0, 300));
-        // Use the exercise's actual date, not today
+        console.log(`[HC Exercise] type=${typeCode} dur=${dur}s dist=${distMeters}m`);
         const exTime = ex.start_time || ex.end_time || ex.session_start_time || ex.startTime || ex.endTime;
         const exDate = exTime ? new Date(exTime).toLocaleDateString('en-CA', { timeZone: tz }) : today;
         const exTs = exTime ? Math.floor(new Date(exTime).getTime() / 1000) : ts;
-        const catalogId = HC_TYPE_MAP[typeCode];
-        if (!catalogId || dur < 60) continue; // Skip very short sessions
 
-        // Check for rankable runs
-        const isRun = typeCode === 46 || typeCode === 47;
-        const distMiles = distMeters / 1609.34;
-        let rankedExerciseId: string | null = null;
-        let rankValue: number | null = null;
+        if (dur < 60) continue;
 
-        if (isRun && distMiles >= 0.9 && distMiles <= 1.1) {
-          // ~1 mile run — rank by time in seconds
-          rankedExerciseId = 'run_1_mile';
-          rankValue = dur;
-        } else if (isRun && distMeters >= 350 && distMeters <= 450) {
-          // ~400m run — rank by time in seconds
-          rankedExerciseId = 'run_400m';
-          rankValue = dur;
-        } else if (isRun && distMiles >= 1.9 && distMiles <= 2.1) {
-          // ~2 mile run — rank by time in seconds
-          rankedExerciseId = 'run_2_mile';
-          rankValue = dur;
-        } else if (isRun && distMiles >= 3.0 && distMiles <= 3.7) {
-          // ~5K run (3.1 miles, with GPS tolerance up to 3.7) — rank by time in seconds
-          rankedExerciseId = 'run_5k';
-          rankValue = dur;
+        // Known running types (46, 47) — process immediately with rank evaluation
+        if (typeCode === 46 || typeCode === 47) {
+          const distMiles = distMeters / 1609.34;
+          let rankedExerciseId: string | null = null;
+          if (distMiles >= 0.9 && distMiles <= 1.1) rankedExerciseId = 'run_1_mile';
+          else if (distMeters >= 350 && distMeters <= 450) rankedExerciseId = 'run_400m';
+          else if (distMiles >= 1.9 && distMiles <= 2.1) rankedExerciseId = 'run_2_mile';
+          else if (distMiles >= 3.0 && distMiles <= 3.7) rankedExerciseId = 'run_5k';
+
+          if (rankedExerciseId) {
+            try {
+              const { logTrainingAction } = await import('@/app/actions');
+              const result = await logTrainingAction(user.id, rankedExerciseId, user.bodyweight || 180, 'male', [{ duration: dur, reps: 1, weight: 0 }]);
+              synced.push(`${rankedExerciseId}: Lv.${result.level}`);
+              continue;
+            } catch (e: any) { console.error('Ranked exercise failed:', e.message); }
+          }
         }
 
-        if (rankedExerciseId && rankValue) {
-          // Log as ranked workout via logTrainingAction
-          const { logTrainingAction } = await import('@/app/actions');
-          try {
-            const result = await logTrainingAction(
-              user.id, rankedExerciseId, user.bodyweight || 180, 'male',
-              [{ duration: rankValue, reps: 1, weight: 0 }]
-            );
-            synced.push(`${rankedExerciseId}: ${Math.floor(rankValue / 60)}:${String(Math.round(rankValue % 60)).padStart(2, '0')} (Lv.${result.level})`);
-          } catch (e: any) {
-            console.error('Failed to log ranked exercise:', e.message);
-          }
-        } else {
-          // Log as generic cardio/activity workout
-          const xp = Math.floor((dur / 60) * 8); // 8 XP per minute
-          const exerciseName = catalogId.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
-          const durationMin = Math.round(dur / 60);
-          const value = distMeters > 100 ? `${distMiles.toFixed(2)} mi` : `${durationMin} min`;
+        // Everything else → save as pending for user confirmation
+        const cadence = ex.avg_cadence_spm || ex.cadence || 0;
+        const distMiles = distMeters / 1609.34;
+        const paceMinPerMile = distMiles > 0 ? (dur / 60) / distMiles : 999;
+        let suggestedType = 'other';
+        if (cadence > 130 && distMeters > 500 && paceMinPerMile < 15) suggestedType = 'run';
+        else if (distMeters > 1000 && paceMinPerMile < 5) suggestedType = 'bike';
+        else if (typeCode === 8 || typeCode === 9) suggestedType = 'bike';
+        else if (distMeters > 500) suggestedType = 'run';
 
-          // Only log if not already logged for this type on that date
-          const { data: existing } = await supabase.from('workouts')
-            .select('id').eq('user_id', user.id).eq('exercise_id', catalogId).eq('date', exDate).limit(1);
-          if (!existing?.length) {
-            await supabase.from('workouts').insert({
-              user_id: user.id, exercise_id: catalogId, timestamp: exTs, date: exDate,
-              value, raw_value: dur, sets: null, level: 0, xp, rank_name: null,
-            });
-            synced.push(`${exerciseName}: ${value}`);
-
-            // Post to party feed
-            const { postPartyEvent } = await import('@/utils/partyEvents');
-            await postPartyEvent(supabase, user.id, {
-              event_type: 'workout',
-              summary: `${exerciseName.toLowerCase()} · ${value}`,
-              xp_value: Math.round(xp * 0.5),
-              metadata: { exercise: catalogId, distance: distMiles.toFixed(2), duration: durationMin },
-            });
-          }
+        const { data: existing } = await supabase.from('pending_exercises')
+          .select('id').eq('user_id', user.id).eq('date', exDate).eq('duration_seconds', dur).limit(1);
+        if (!existing?.length) {
+          await supabase.from('pending_exercises').insert({
+            user_id: user.id, date: exDate, timestamp: exTs,
+            duration_seconds: dur, distance_meters: distMeters,
+            steps: ex.steps || null, avg_cadence: cadence || null,
+            stride_length: ex.stride_length_m || null,
+            suggested_type: suggestedType, raw_data: ex,
+          });
+          synced.push(`pending: ${suggestedType} ${Math.round(dur / 60)}min`);
         }
       }
     }

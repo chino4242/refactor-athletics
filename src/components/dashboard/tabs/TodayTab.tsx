@@ -14,6 +14,7 @@ import { useToast } from '@/context/ToastContext';
 import DailyWrapUp from '../../DailyWrapUp';
 import TomorrowPreview from '../../TomorrowPreview';
 import PartyPulse from '../../PartyPulse';
+import PendingExerciseCard from '../../PendingExerciseCard';
 
 interface TodayTabProps {
     userId: string;
@@ -222,6 +223,9 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
                     )}
                 </div>
             )}
+
+            {/* Pending Exercises */}
+            <PendingExerciseCard userId={userId} />
 
             {/* Party Pulse */}
             <PartyPulse userId={userId} />
