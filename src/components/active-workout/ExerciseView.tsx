@@ -253,7 +253,7 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
               // Reverse the comparison: threshold → actual weight needed
               // For xBW: threshold is in xBW units, multiply by bodyweight
               // Then reverse normalization and Epley
-              let rawThreshold = isXBW ? nextThreshold * 180 : nextThreshold; // approximate bodyweight
+              let rawThreshold = isXBW ? nextThreshold * (userProfile?.bodyweight || 180) : nextThreshold;
               let targetWeight: number;
               if (is5RM) {
                 targetWeight = rawThreshold / normFactor;
