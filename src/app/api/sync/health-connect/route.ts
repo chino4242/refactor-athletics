@@ -89,7 +89,13 @@ export async function POST(request: NextRequest) {
           return diffHours < 36; // last 36 hours
         } catch { return true; }
       });
-      const totalMin = Math.round(recentExercise.reduce((s: number, r: any) => {
+      // Exercise minutes habit — only count today's exercises
+      const todayOnlyExercise = recentExercise.filter((r: any) => {
+        const t = r.start_time || r.end_time || r.session_start_time;
+        if (!t) return true;
+        try { return new Date(t).toLocaleDateString('en-CA', { timeZone: tz }) === today; } catch { return true; }
+      });
+      const totalMin = Math.round(todayOnlyExercise.reduce((s: number, r: any) => {
         const dur = r.duration_seconds || r.durationSeconds || 0;
         if (dur > 0) return s + dur / 60;
         if (r.start_time && r.end_time) return s + (new Date(r.end_time).getTime() - new Date(r.start_time).getTime()) / 60000;
