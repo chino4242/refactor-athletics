@@ -138,6 +138,9 @@ export async function logHabitAction(
         // Write to XP ledger via service
         await awardXp(supabase, userId, event || { type: 'habit_other' }, label || habitId.replace('habit_', ''), label?.includes('(Sync)') || false);
 
+        // Check quest progress (fire-and-forget)
+        import('@/utils/questProgress').then(m => m.checkQuestProgress(supabase, userId)).catch(() => {});
+
         revalidatePath('/');
         return { xp_earned: xp, timestamp: ts };
     } else {

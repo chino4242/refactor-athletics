@@ -15,6 +15,7 @@ import DailyWrapUp from '../../DailyWrapUp';
 import TomorrowPreview from '../../TomorrowPreview';
 import PartyPulse from '../../PartyPulse';
 import PendingExerciseCard from '../../PendingExerciseCard';
+import WeeklyQuestsCard from '../../WeeklyQuestsCard';
 
 interface TodayTabProps {
     userId: string;
@@ -242,6 +243,9 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
 
             {/* Pending Exercises */}
             <PendingExerciseCard userId={userId} />
+
+            {/* Weekly Quests */}
+            <WeeklyQuestsCard userId={userId} />
 
             {/* Party Pulse */}
             <PartyPulse userId={userId} />
