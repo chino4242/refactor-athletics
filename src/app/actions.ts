@@ -4,6 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { stepsToXp, checkLevelUp } from "@/utils/xp";
+import { calculateXp, awardXp } from "@/utils/xp-service";
 
 /** After granting XP, check if user leveled up and set pending flag */
 async function maybeSetLevelUp(supabase: any, userId: string, xpEarned: number, sourceType: string) {
@@ -53,10 +54,9 @@ export async function logHabitAction(
         // Nutrition logging
         const macroType = habitId.replace('macro_', ''); // 'protein', 'carbs', 'fat', 'calories'
 
-        // XP: 2 per user-initiated entry, capped at 30/day. Auto-cal entries get 0.
+        // XP: from centralized service, skip for Auto-Cal
         const isAutoCal = label?.startsWith('Auto-Cal');
-        const { count: todayCount } = await supabase.from('nutrition_logs').select('id', { count: 'exact', head: true }).eq('user_id', userId).eq('date', dateStr);
-        const xp = isAutoCal ? 0 : ((todayCount || 0) * 2 < 30 ? 2 : 0);
+        const xp = isAutoCal ? 0 : calculateXp({ type: 'nutrition', entryCount: 1 });
 
         // "Set" mode for calories_burned: replace today's entries instead of adding
         if (macroType === 'calories_burned') {
@@ -87,35 +87,25 @@ export async function logHabitAction(
 
         await maybeSetLevelUp(supabase, userId, xp, 'nutrition');
 
-        // Write to XP ledger for attribution
-        try {
-            await supabase.from('xp_ledger').insert({
-                user_id: userId, amount: xp, source_type: 'nutrition',
-                source_label: label || macroType,
-                is_background: false,
-            });
-        } catch {}
+        // Write to XP ledger via service
+        if (!isAutoCal && xp > 0) {
+            await awardXp(supabase, userId, { type: 'nutrition', entryCount: 1 }, label || macroType, false);
+        }
 
         revalidatePath('/');
         return { xp_earned: xp, timestamp: ts };
     } else if (habitId.startsWith('habit_')) {
-        // Habit logging - scaled XP
-        let xp = 10;
-        if (habitId === 'habit_steps') {
-            xp = stepsToXp(value);
-        } else if (habitId === 'habit_water') {
-            xp = Math.round(value * 0.25); // 80 oz = 20 XP
-        } else if (habitId === 'habit_sleep') {
-            xp = Math.round(value * 2); // 8 hours = 16 XP
-        } else if (habitId === 'habit_meal_prep') {
-            xp = 20; // lifestyle habit, not training
-        } else if (habitId === 'habit_exercise_minutes') {
-            xp = 0;
-        } else if (habitId === 'habit_no_alcohol' || habitId === 'habit_no_vice' || habitId === 'habit_creatine') {
-            xp = 10; // binary checkbox habits
-        } else {
-            xp = 15; // other habits (day_strain, recovery, etc.)
-        }
+        // Habit logging — XP from centralized service
+        let event: any;
+        if (habitId === 'habit_steps') event = { type: 'steps', value };
+        else if (habitId === 'habit_water') event = { type: 'water', value };
+        else if (habitId === 'habit_sleep') event = { type: 'sleep', value };
+        else if (habitId === 'habit_meal_prep') event = { type: 'meal_prep' };
+        else if (habitId === 'habit_exercise_minutes') event = null;
+        else if (habitId === 'habit_no_alcohol' || habitId === 'habit_no_vice' || habitId === 'habit_creatine') event = { type: 'habit_binary' };
+        else event = { type: 'habit_other' };
+
+        const xp = event ? calculateXp(event) : 0;
 
         // If this is a "Set" (sync) operation, delete existing entries for this habit today first
         if (label?.includes('(Sync)')) {
@@ -145,14 +135,8 @@ export async function logHabitAction(
 
         await maybeSetLevelUp(supabase, userId, xp, 'habit');
 
-        // Write to XP ledger for attribution
-        try {
-            await supabase.from('xp_ledger').insert({
-                user_id: userId, amount: xp, source_type: 'habit',
-                source_label: label || habitId.replace('habit_', ''),
-                is_background: label?.includes('(Sync)') || false,
-            });
-        } catch {}
+        // Write to XP ledger via service
+        await awardXp(supabase, userId, event || { type: 'habit_other' }, label || habitId.replace('habit_', ''), label?.includes('(Sync)') || false);
 
         revalidatePath('/');
         return { xp_earned: xp, timestamp: ts };

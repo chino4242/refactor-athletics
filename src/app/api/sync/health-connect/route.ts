@@ -283,22 +283,11 @@ async function upsertHabit(supabase: any, userId: string, habitId: string, date:
     user_id: userId, habit_id: habitId, date, timestamp: ts, value, xp,
   });
 
-  // Write to XP ledger for daily wrap-up attribution
+  // Write to XP ledger via centralized service
+  const { awardXp } = await import('@/utils/xp-service');
   const stableLabel: Record<string, string> = { habit_steps: 'Steps', habit_sleep: 'Sleep', habit_water: 'Water', habit_day_strain: 'Day Strain', habit_exercise_minutes: 'Exercise Minutes' };
   const label = stableLabel[habitId] || habitId.replace('habit_', '');
-  try {
-    // Delete previous ledger entry for this habit today (prevents duplicates from re-syncs)
-    await supabase.from('xp_ledger').delete()
-      .eq('user_id', userId)
-      .eq('source_label', label)
-      .eq('source_type', 'habit')
-      .gte('created_at', new Date(new Date().setHours(0,0,0,0)).toISOString());
-    if (xp > 0) {
-      await supabase.from('xp_ledger').insert({
-        user_id: userId, amount: xp, source_type: 'habit',
-        source_label: label,
-        is_background: true,
-      });
-    }
-  } catch {}
+  const eventMap: Record<string, any> = { habit_steps: { type: 'steps', value }, habit_sleep: { type: 'sleep', value }, habit_water: { type: 'water', value } };
+  const event = eventMap[habitId] || { type: 'habit_other' };
+  await awardXp(supabase, userId, event, label, true);
 }
