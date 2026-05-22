@@ -224,7 +224,7 @@ describe('API Functions', () => {
 
             const result = await getHabitProgress('user-123', 1234567890);
 
-            expect(result.totals).toEqual({});
+            expect(result.totals).toEqual({ macro_calories: 0 });
             expect(result.status).toBe('success');
         });
     });
