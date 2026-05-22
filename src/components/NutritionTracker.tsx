@@ -17,7 +17,16 @@ interface NutritionTrackerProps {
     onLogHabit?: (habitId: string, value: number, label: string) => Promise<void>;
 }
 
-export default function NutritionTracker({ userId, userProfile, totals, onUpdate, onLogHabit }: NutritionTrackerProps) {
+export default function NutritionTracker({ userId, userProfile, totals: rawTotals, onUpdate, onLogHabit }: NutritionTrackerProps) {
+    // Derive calories from macros (P×4 + C×4 + F×9) — no more Auto-Cal entries
+    const totals = {
+        ...rawTotals,
+        macro_calories: Math.round(
+            ((rawTotals['macro_protein'] || 0) * 4) +
+            ((rawTotals['macro_carbs'] || 0) * 4) +
+            ((rawTotals['macro_fat'] || 0) * 9)
+        ),
+    };
     const [loading, setLoading] = useState(false);
     const [editing, setEditing] = useState(false);
     
@@ -153,19 +162,6 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
         try {
             // 1. Log the Macro itself (can be negative for adjustments)
             await logHabitAction(userId, habitId, finalVal, userProfile.bodyweight, label);
-
-            // 2. Auto-Log Calories (4/4/9 Rule) - Skip for Water
-            if (type !== 'water' && type !== 'calories') {
-                let cals = 0;
-                if (type === 'protein') cals = finalVal * 4;
-                if (type === 'carbs') cals = finalVal * 4;
-                if (type === 'fat') cals = finalVal * 9;
-
-                if (cals !== 0) {
-                    // Log the calculated calories (can be negative)
-                    await logHabitAction(userId, 'macro_calories', cals, userProfile.bodyweight, `Auto-Cal (${type})`);
-                }
-            }
 
             // Wait a moment for database to update before refreshing
             await new Promise(resolve => setTimeout(resolve, 500));
