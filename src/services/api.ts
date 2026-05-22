@@ -842,20 +842,7 @@ export const calculateRank = async (
     const ts = Math.floor(Date.now() / 1000);
     const dateStr = getLocalDateStr(new Date(ts * 1000));
     const userLevelNum = currentLevelIndex + 1;
-    const xpEarned = userLevelNum > 0 ? userLevelNum * 50 : 0;
-
-    await supabase.from('workouts').insert({
-        user_id: userId,
-        exercise_id: exerciseId,
-        timestamp: ts,
-        date: dateStr,
-        value: `${value}`,
-        raw_value: value,
-        level: userLevelNum,
-        xp: xpEarned,
-        rank_name: rankName,
-        sets: null
-    });
+    const xpEarned = userLevelNum > 0 ? userLevelNum * 20 + 30 : 0; // matches logTrainingAction formula
 
     return {
         rank_level: rankLevel,
