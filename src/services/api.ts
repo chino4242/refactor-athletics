@@ -77,37 +77,6 @@ export const saveProfile = async (profile: UserProfileData): Promise<any> => {
     return { status: 'success' };
 };
 
-export const logHabit = async (userId: string, habitId: string, value: number, bodyweight?: number, label?: string, timestamp?: number): Promise<any> => {
-    const supabase = createClient();
-    const ts = timestamp || Math.floor(Date.now() / 1000);
-    const dateStr = getLocalDateStr(new Date(ts * 1000));
-
-    // Assign generic XP
-    const xp = habitId.includes('meal_prep') ? 100 : (habitId.includes('sleep') ? 15 : 10);
-
-    const { data, error } = await supabase
-        .from('history')
-        .insert({
-            user_id: userId,
-            exercise_id: habitId,
-            timestamp: ts,
-            date: dateStr,
-            raw_value: value,
-            value: label || habitId,
-            level: 1,
-            xp: xp,
-            rank_name: 'Novice'
-        })
-        .select()
-        .single();
-
-    if (error) {
-        console.error("Error logging habit:", error);
-        throw error;
-    }
-    return { xp_earned: xp };
-};
-
 export const deleteHistoryItem = async (userId: string, timestamp: number): Promise<any> => {
     const supabase = createClient();
     const { error } = await supabase
