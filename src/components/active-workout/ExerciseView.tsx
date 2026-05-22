@@ -421,25 +421,36 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
           const normFactor = catalogItem.normalization_factor || 1;
           const unit = catalogItem.standards.unit || 'lbs';
           const isXBW = unit === 'xBW';
+          const scoring = catalogItem.standards.scoring || 'higher_is_better';
+          const isLowerBetter = scoring === 'lower_is_better';
+          const isWeightedPullup = catalogItem.id === 'weighted_pullup' || catalogItem.id === 'five_rm_weighted_pull_up';
 
-          // Compute best Epley from completed sets
+          // Compute best value from completed sets
           const completedData = completedSets.map((i: number) => ({
             weight: parseFloat(weights[i] || '0'),
             reps: parseInt(repsInputs[i], 10) || 10,
-          })).filter((s: any) => s.weight > 0);
+            duration: parseFloat(weights[i] || '0'), // for timed exercises, weight field holds seconds
+          })).filter((s: any) => s.weight > 0 || s.duration > 0);
           if (completedData.length === 0) return null;
 
-          const bestEpley = Math.max(...completedData.map((s: any) => s.weight * (1 + s.reps / 30)));
-          let normalized = bestEpley * normFactor;
-          if (isXBW && bw > 0) normalized = normalized / bw;
+          let normalized: number;
+          if (isLowerBetter) {
+            // Timed exercises: use best (lowest) duration
+            normalized = Math.min(...completedData.map((s: any) => s.duration));
+          } else {
+            const bestEpley = Math.max(...completedData.map((s: any) => s.weight * (1 + Math.min(s.reps, 100) / 30)));
+            normalized = bestEpley * normFactor;
+            if (isWeightedPullup) normalized += bw; // add bodyweight for weighted pullups
+            if (isXBW && bw > 0) normalized = normalized / bw;
+          }
 
           // Find current level from this session
           let currentLevel = 0;
           for (let i = 0; i < bracket.levels.length; i++) {
-            if (normalized >= bracket.levels[i]) currentLevel = i + 1;
+            const passes = isLowerBetter ? normalized <= bracket.levels[i] : normalized >= bracket.levels[i];
+            if (passes) currentLevel = i + 1;
           }
 
-          // Next threshold
           if (currentLevel >= 5) return (
             <div className="mx-4 mb-2 px-3 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-center">
               <span className="text-[11px] font-bold text-emerald-400">⚡ Max rank on this exercise!</span>
@@ -447,8 +458,19 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
           );
 
           const nextThreshold = bracket.levels[currentLevel];
-          const rawNeeded = isXBW ? nextThreshold * bw : nextThreshold;
-          const weightNeeded = Math.ceil(rawNeeded / normFactor);
+
+          let gap: number;
+          let gapLabel: string;
+          if (isLowerBetter) {
+            gap = Math.round(normalized - nextThreshold); // how many seconds you need to shave
+            gapLabel = `${gap}s to next rank`;
+          } else {
+            const rawNeeded = isXBW ? nextThreshold * bw : nextThreshold;
+            const weightNeeded = Math.ceil(rawNeeded / normFactor);
+            const currentBest = Math.round(normalized * (isXBW ? bw : 1) / normFactor);
+            gap = weightNeeded - currentBest;
+            gapLabel = `${gap} lbs to next rank`;
+          }
           const currentBest = Math.round(bestEpley);
           const gap = weightNeeded - currentBest;
 
@@ -460,20 +482,20 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
 
           if (gap <= 15) return (
             <div className="mx-4 mb-2 px-3 py-2 bg-orange-500/10 border border-orange-500/20 rounded-xl text-center animate-pulse">
-              <span className="text-[11px] font-bold text-orange-400">🔥 {gap} lbs to next rank</span>
+              <span className="text-[11px] font-bold text-orange-400">🔥 {gapLabel}</span>
             </div>
           );
 
           if (gap <= 30) return (
             <div className="mx-4 mb-2 px-3 py-2 bg-orange-500/10 border border-orange-500/20 rounded-xl text-center">
-              <span className="text-[11px] text-orange-400">🎯 <span className="font-bold">{gap} lbs</span> to next rank</span>
+              <span className="text-[11px] text-orange-400">🎯 <span className="font-bold">{gapLabel}</span></span>
             </div>
           );
 
           // Always show target — subtle when far away
           return (
             <div className="mx-4 mb-2 px-3 py-2 bg-zinc-800/50 border border-zinc-700/30 rounded-xl text-center">
-              <span className="text-[10px] text-zinc-500">Next rank at <span className="font-bold text-zinc-400">{weightNeeded} lbs</span> e1RM <span className="text-zinc-600">({gap} lbs away)</span></span>
+              <span className="text-[10px] text-zinc-500">Next rank: <span className="font-bold text-zinc-400">{gapLabel}</span></span>
             </div>
           );
         })()}
