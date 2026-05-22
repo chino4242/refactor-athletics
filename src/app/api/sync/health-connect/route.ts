@@ -71,8 +71,17 @@ export async function POST(request: NextRequest) {
 
     // Exercise sessions — sum duration to minutes
     if (body.exercise?.length) {
-      const todayExercise = body.exercise.filter(isToday);
-      const totalMin = Math.round(todayExercise.reduce((s: number, r: any) => {
+      // Include exercises from today AND yesterday (HC sends 48hr window, runs may be from previous day)
+      const recentExercise = body.exercise.filter((r: any) => {
+        const t = r.start_time || r.end_time || r.time || r.session_start_time || r.startTime;
+        if (!t) return true;
+        try {
+          const d = new Date(t);
+          const diffHours = (Date.now() - d.getTime()) / (1000 * 60 * 60);
+          return diffHours < 36; // last 36 hours
+        } catch { return true; }
+      });
+      const totalMin = Math.round(recentExercise.reduce((s: number, r: any) => {
         const dur = r.duration_seconds || r.durationSeconds || 0;
         if (dur > 0) return s + dur / 60;
         if (r.start_time && r.end_time) return s + (new Date(r.end_time).getTime() - new Date(r.start_time).getTime()) / 60000;
@@ -95,10 +104,14 @@ export async function POST(request: NextRequest) {
         // 56 (strength_training) and 69 (walking) excluded — tracked via manual logging and steps
       };
 
-      for (const ex of todayExercise) {
+      for (const ex of recentExercise) {
         const dur = ex.duration_seconds || 0;
         const distMeters = ex.distance_meters || 0;
         const typeCode = parseInt(ex.type) || 0;
+        // Use the exercise's actual date, not today
+        const exTime = ex.start_time || ex.end_time || ex.session_start_time;
+        const exDate = exTime ? new Date(exTime).toLocaleDateString('en-CA', { timeZone: tz }) : today;
+        const exTs = exTime ? Math.floor(new Date(exTime).getTime() / 1000) : ts;
         const catalogId = HC_TYPE_MAP[typeCode];
         if (!catalogId || dur < 60) continue; // Skip very short sessions
 
@@ -145,12 +158,12 @@ export async function POST(request: NextRequest) {
           const durationMin = Math.round(dur / 60);
           const value = distMeters > 100 ? `${distMiles.toFixed(2)} mi` : `${durationMin} min`;
 
-          // Only log if not already logged today for this type
+          // Only log if not already logged for this type on that date
           const { data: existing } = await supabase.from('workouts')
-            .select('id').eq('user_id', user.id).eq('exercise_id', catalogId).eq('date', today).limit(1);
+            .select('id').eq('user_id', user.id).eq('exercise_id', catalogId).eq('date', exDate).limit(1);
           if (!existing?.length) {
             await supabase.from('workouts').insert({
-              user_id: user.id, exercise_id: catalogId, timestamp: ts, date: today,
+              user_id: user.id, exercise_id: catalogId, timestamp: exTs, date: exDate,
               value, raw_value: dur, sets: null, level: 0, xp, rank_name: null,
             });
             synced.push(`${exerciseName}: ${value}`);
