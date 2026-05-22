@@ -18,6 +18,10 @@ export async function POST(request: NextRequest) {
     const today = new Date().toLocaleDateString('en-CA', { timeZone: tz });
     const ts = Math.floor(Date.now() / 1000);
     const synced: string[] = [];
+
+    // Diagnostic: log what data types were received
+    const receivedTypes = Object.keys(body).filter(k => Array.isArray(body[k]) && body[k].length > 0);
+    console.log(`[HC Sync] User ${user.id} | Received: ${receivedTypes.join(', ')} | Exercise count: ${body.exercise?.length || 0}`);
     const bodyMeasurements: Record<string, any> = {};
 
     // Filter records to only include those from today (HC Webhook sends 48hr window)
