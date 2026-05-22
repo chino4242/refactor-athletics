@@ -97,9 +97,10 @@ export default function DailyWrapUp({ userId, mode, onDismiss }: DailyWrapUpProp
         if (n.macro_type === 'protein') macros.protein += n.amount;
         if (n.macro_type === 'carbs') macros.carbs += n.amount;
         if (n.macro_type === 'fat') macros.fat += n.amount;
-        if (n.macro_type === 'calories') macros.calories += n.amount;
         if (n.macro_type === 'calories_burned') macros.caloriesBurned += n.amount;
       }
+      // Derive calories from macros
+      macros.calories = Math.round((macros.protein * 4) + (macros.carbs * 4) + (macros.fat * 9));
 
       const workout = workouts?.length ? {
         name: 'Workout',

@@ -213,6 +213,13 @@ export const getHabitProgress = async (userId: string, startTs: number): Promise
         const key = `macro_${item.macro_type}`;
         totals[key] = (totals[key] || 0) + Number(item.amount);
     }
+
+    // Derive calories from macros (P×4 + C×4 + F×9) — single source of truth
+    totals['macro_calories'] = Math.round(
+        ((totals['macro_protein'] || 0) * 4) +
+        ((totals['macro_carbs'] || 0) * 4) +
+        ((totals['macro_fat'] || 0) * 9)
+    );
     
     // Sum habit logs
     for (const item of habits.data || []) {
