@@ -76,7 +76,7 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
     }, [bodyCompHistory, userProfile]);
 
     // Tier-based rank from aggregate power level
-    const TIER_THRESHOLDS = [0, 1, 13, 25, 49, 97];
+import { TIER_THRESHOLDS } from '@/utils/calculations';
     const tier = useMemo(() => {
         for (let i = TIER_THRESHOLDS.length - 1; i >= 0; i--) {
             if (powerLevel >= TIER_THRESHOLDS[i]) return i;

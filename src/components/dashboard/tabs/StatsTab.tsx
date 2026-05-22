@@ -16,7 +16,7 @@ interface StatsTabProps {
 }
 
 // Same tier thresholds as PowerLevelPage
-const TIER_THRESHOLDS = [0, 1, 13, 25, 49, 97];
+import { TIER_THRESHOLDS, getTier } from '@/utils/calculations';
 function getTier(pl: number) {
     for (let i = TIER_THRESHOLDS.length - 1; i >= 0; i--) {
         if (pl >= TIER_THRESHOLDS[i]) return i;

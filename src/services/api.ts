@@ -286,16 +286,13 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
     const finalExpertise = expertiseScore > 0 ? expertiseScore : 0;
 
     // XP scaling: 1000 * 1.08^level (fibonacci-ish curve)
+    const { xpToLevel } = await import('@/utils/xp');
+    const levelData = xpToLevel(totalXp);
+    const playerLevel = levelData.level;
+    const level_progress_percent = levelData.progress * 100;
     const xpForLevel = (lvl: number) => Math.floor(1000 * Math.pow(1.08, lvl));
-    let cumulativeXp = 0;
-    let playerLevel = 1;
-    while (cumulativeXp + xpForLevel(playerLevel) <= totalXp) {
-        cumulativeXp += xpForLevel(playerLevel);
-        playerLevel++;
-    }
-    const xpIntoLevel = totalXp - cumulativeXp;
     const xpNeeded = xpForLevel(playerLevel);
-    const level_progress_percent = (xpIntoLevel / xpNeeded) * 100;
+    const xpIntoLevel = Math.round(levelData.progress * xpNeeded);
 
     // Streak calculation: walk backwards from today counting consecutive days with virtue logged
     const streakFor = async (virtueId: string, viceId: string): Promise<number> => {
