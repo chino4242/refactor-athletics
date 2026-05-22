@@ -73,6 +73,27 @@ export async function POST(request: Request) {
     };
   });
 
+  // Generate 1 party quest if user is in a party
+  const { data: membership } = await service.from('group_members').select('group_id').eq('user_id', user.id).limit(1).single();
+  if (membership) {
+    const { data: members } = await service.from('group_members').select('user_id').eq('group_id', membership.group_id);
+    const partySize = members?.length || 1;
+
+    const { data: partyTemplates } = await service.from('quest_templates').select('*').eq('is_party', true);
+    if (partyTemplates?.length) {
+      const partyQuest = partyTemplates[Math.floor(Math.random() * partyTemplates.length)];
+      // Scale target by party size (base assumes 5 people)
+      const scaledTarget = Math.round((Number(partyQuest.base_target) / 5) * partySize);
+      slate.push({
+        user_id: user.id,
+        quest_template_id: partyQuest.id,
+        week_start: weekStart,
+        target_value: scaledTarget,
+        status: 'offered',
+      });
+    }
+  }
+
   // Insert slate
   await service.from('quest_slate').insert(slate);
 
