@@ -21,7 +21,11 @@ export async function POST(request: NextRequest) {
 
     // Diagnostic: log what data types were received
     const receivedTypes = Object.keys(body).filter(k => Array.isArray(body[k]) && body[k].length > 0);
-    console.log(`[HC Sync] User ${user.id} | Received: ${receivedTypes.join(', ')} | Exercise count: ${body.exercise?.length || 0}`);
+    console.log(`[HC Sync] User ${user.id} | Received: ${receivedTypes.join(', ')} | Exercise count: ${body.exercise?.length || body.exerciseSessions?.length || body.exercise_sessions?.length || 0}`);
+
+    // Normalize exercise field name (HC Webhook app may use different keys)
+    if (!body.exercise && body.exerciseSessions) body.exercise = body.exerciseSessions;
+    if (!body.exercise && body.exercise_sessions) body.exercise = body.exercise_sessions;
     const bodyMeasurements: Record<string, any> = {};
 
     // Filter records to only include those from today (HC Webhook sends 48hr window)
