@@ -113,11 +113,12 @@ export async function POST(request: NextRequest) {
       };
 
       for (const ex of recentExercise) {
-        const dur = ex.duration_seconds || 0;
-        const distMeters = ex.distance_meters || 0;
-        const typeCode = parseInt(ex.type) || 0;
+        const dur = ex.duration_seconds || ex.durationSeconds || 0;
+        const distMeters = ex.distance_meters || ex.distanceMeters || ex.distance || 0;
+        const typeCode = parseInt(ex.type || ex.exerciseType || ex.exercise_type) || 0;
+        console.log(`[HC Exercise] type=${typeCode} dur=${dur}s dist=${distMeters}m raw:`, JSON.stringify(ex).slice(0, 300));
         // Use the exercise's actual date, not today
-        const exTime = ex.start_time || ex.end_time || ex.session_start_time;
+        const exTime = ex.start_time || ex.end_time || ex.session_start_time || ex.startTime || ex.endTime;
         const exDate = exTime ? new Date(exTime).toLocaleDateString('en-CA', { timeZone: tz }) : today;
         const exTs = exTime ? Math.floor(new Date(exTime).getTime() / 1000) : ts;
         const catalogId = HC_TYPE_MAP[typeCode];
