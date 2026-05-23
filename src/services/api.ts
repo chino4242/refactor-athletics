@@ -185,12 +185,16 @@ export const getHabitProgress = async (userId: string, startTs: number): Promise
 
     // Derive calories: prefer meal_entries.calories (label value), fall back to P×4+C×4+F×9
     const todayDate = new Date(startTs * 1000).toLocaleDateString('en-CA');
-    const { data: mealEntries } = await supabase.from('meal_entries')
-        .select('calories, protein, carbs, fat')
-        .eq('user_id', userId).eq('date', todayDate);
+    let mealEntries: any[] | null = null;
+    try {
+        const { data } = await supabase.from('meal_entries')
+            .select('calories, protein, carbs, fat')
+            .eq('user_id', userId).eq('date', todayDate);
+        mealEntries = data;
+    } catch {}
 
     if (mealEntries?.length) {
-        totals['macro_calories'] = Math.round(mealEntries.reduce((s, m) =>
+        totals['macro_calories'] = Math.round(mealEntries.reduce((s: number, m: any) =>
             s + (m.calories || ((m.protein || 0) * 4 + (m.carbs || 0) * 4 + (m.fat || 0) * 9)), 0));
     } else {
         totals['macro_calories'] = Math.round(
