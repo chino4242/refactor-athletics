@@ -5,6 +5,7 @@ import Link from 'next/link';
 import type { UserStats } from '@/types';
 import { Trophy, Zap } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
+import { TIER_THRESHOLDS } from '@/utils/calculations';
 import { useExperienceMode } from '@/context/ExperienceModeContext';
 import { THEMES } from '@/data/themes';
 import { createClient } from '@/utils/supabase/client';
@@ -76,7 +77,6 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
     }, [bodyCompHistory, userProfile]);
 
     // Tier-based rank from aggregate power level
-import { TIER_THRESHOLDS } from '@/utils/calculations';
     const tier = useMemo(() => {
         for (let i = TIER_THRESHOLDS.length - 1; i >= 0; i--) {
             if (powerLevel >= TIER_THRESHOLDS[i]) return i;

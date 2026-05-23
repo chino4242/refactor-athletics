@@ -17,12 +17,6 @@ interface StatsTabProps {
 
 // Same tier thresholds as PowerLevelPage
 import { TIER_THRESHOLDS, getTier } from '@/utils/calculations';
-function getTier(pl: number) {
-    for (let i = TIER_THRESHOLDS.length - 1; i >= 0; i--) {
-        if (pl >= TIER_THRESHOLDS[i]) return i;
-    }
-    return 0;
-}
 
 export default function StatsTab({ userId, stats }: StatsTabProps) {
     const [history, setHistory] = useState<any[]>([]);

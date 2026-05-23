@@ -471,8 +471,6 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
             gap = weightNeeded - currentBest;
             gapLabel = `${gap} lbs to next rank`;
           }
-          const currentBest = Math.round(bestEpley);
-          const gap = weightNeeded - currentBest;
 
           if (gap <= 0) return (
             <div className="mx-4 mb-2 px-3 py-2 bg-orange-500/10 border border-orange-500/20 rounded-xl text-center">

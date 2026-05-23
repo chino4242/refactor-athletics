@@ -8,6 +8,7 @@ interface Quest {
   status: string;
   target_value: number;
   current_value: number;
+  xp_awarded: number;
   quest_templates: { name: string; description: string; icon: string; category: string; metric: string };
 }
 

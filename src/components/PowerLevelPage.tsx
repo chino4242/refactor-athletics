@@ -21,12 +21,6 @@ interface Props {
 // Map power level to a tier (0-5) using thresholds
 // Tier 0: 0, Tier 1: 1-12, Tier 2: 13-24, Tier 3: 25-48, Tier 4: 49-96, Tier 5: 97+
 import { TIER_THRESHOLDS, getTier } from '@/utils/calculations';
-function getTier(powerLevel: number): number {
-    for (let i = TIER_THRESHOLDS.length - 1; i >= 0; i--) {
-        if (powerLevel >= TIER_THRESHOLDS[i]) return i;
-    }
-    return 0;
-}
 function getNextTierThreshold(powerLevel: number): number | null {
     const tier = getTier(powerLevel);
     if (tier >= 5) return null;
