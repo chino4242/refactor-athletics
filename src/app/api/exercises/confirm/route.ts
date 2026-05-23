@@ -38,6 +38,11 @@ export async function POST(request: Request) {
     }
   }
 
+  // Walks earn 0 XP (steps already cover it) — just dismiss
+  if (type === 'walk') {
+    return NextResponse.json({ success: true, ranked: false, xp: 0, type: 'walk' });
+  }
+
   // Log as generic cardio workout
   const xp = Math.floor((dur / 60) * 8);
   const catalogId = type === 'run' ? 'running_generic' : type === 'bike' ? 'cycling' : type === 'row' ? 'rowing_general' : 'cardio_generic';

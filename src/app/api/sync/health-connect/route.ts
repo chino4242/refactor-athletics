@@ -145,7 +145,11 @@ export async function POST(request: NextRequest) {
         if (cadence > 130 && distMeters > 500 && paceMinPerMile < 15) suggestedType = 'run';
         else if (distMeters > 1000 && paceMinPerMile < 5) suggestedType = 'bike';
         else if (typeCode === 8 || typeCode === 9) suggestedType = 'bike';
-        else if (distMeters > 500) suggestedType = 'run';
+        else if (typeCode === 69) suggestedType = 'walk';
+        else if (cadence > 0 && cadence <= 130 && distMeters > 200) suggestedType = 'walk';
+        else if (distMeters > 500 && paceMinPerMile >= 15) suggestedType = 'walk';
+        else if (distMeters > 500 && paceMinPerMile < 15) suggestedType = 'run';
+        else if (distMeters > 200) suggestedType = 'walk';
 
         const { data: existing } = await supabase.from('pending_exercises')
           .select('id').eq('user_id', user.id).eq('date', exDate).eq('duration_seconds', dur).limit(1);
