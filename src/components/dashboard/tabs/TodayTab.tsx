@@ -94,30 +94,39 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
                     steps: habitProgress?.totals?.habit_steps || 0,
                 });
                 
-                // Get today's XP — deduplicate by taking max per source
+                // Get today's XP from xp_ledger (matches DailyWrapUp breakdown)
                 const todayDate = getToday();
-                const [{ data: wXp }, { data: nXp }, { data: hXp }] = await Promise.all([
-                    supabase.from('workouts').select('xp').eq('user_id', userId).eq('date', todayDate),
-                    supabase.from('nutrition_logs').select('xp, macro_type, label').eq('user_id', userId).eq('date', todayDate),
-                    supabase.from('habit_logs').select('xp, habit_id').eq('user_id', userId).eq('date', todayDate),
-                ]);
-                // Workouts: sum all
-                let totalXp = (wXp || []).reduce((s, r) => s + Math.max(0, r.xp || 0), 0);
-                // Nutrition: only count user-initiated (not Auto-Cal), max per macro_type
-                const nutritionByType = new Map<string, number>();
-                for (const r of (nXp || [])) {
-                    if (r.label?.startsWith('Auto-Cal')) continue;
-                    if ((r.xp || 0) <= 0) continue;
-                    nutritionByType.set(r.macro_type, (nutritionByType.get(r.macro_type) || 0) + (r.xp || 0));
+                const todayStart = new Date();
+                todayStart.setHours(0, 0, 0, 0);
+                const { data: ledgerEntries } = await supabase.from('xp_ledger')
+                    .select('amount, source_label, source_type')
+                    .eq('user_id', userId)
+                    .gte('created_at', todayStart.toISOString());
+
+                // Deduplicate: highest per source_label
+                const deduped = new Map<string, number>();
+                for (const e of (ledgerEntries || [])) {
+                    if (e.amount <= 0) continue;
+                    if (e.source_label?.startsWith('Auto-Cal')) continue;
+                    const existing = deduped.get(e.source_label) || 0;
+                    if (e.amount > existing) deduped.set(e.source_label, e.amount);
                 }
-                totalXp += [...nutritionByType.values()].reduce((s, v) => s + v, 0);
-                // Habits: take highest XP per habit_id (handles re-syncs)
-                const habitByType = new Map<string, number>();
-                for (const r of (hXp || [])) {
-                    const current = habitByType.get(r.habit_id) || 0;
-                    if ((r.xp || 0) > current) habitByType.set(r.habit_id, r.xp || 0);
+                let totalXp = [...deduped.values()].reduce((s, v) => s + v, 0);
+
+                // Fallback: if ledger is empty, use habit/workout data directly
+                if (totalXp === 0) {
+                    const [{ data: wXp }, { data: hXp }] = await Promise.all([
+                        supabase.from('workouts').select('xp').eq('user_id', userId).eq('date', todayDate),
+                        supabase.from('habit_logs').select('xp, habit_id').eq('user_id', userId).eq('date', todayDate),
+                    ]);
+                    totalXp = (wXp || []).reduce((s, r) => s + Math.max(0, r.xp || 0), 0);
+                    const habitByType = new Map<string, number>();
+                    for (const r of (hXp || [])) {
+                        const current = habitByType.get(r.habit_id) || 0;
+                        if ((r.xp || 0) > current) habitByType.set(r.habit_id, r.xp || 0);
+                    }
+                    totalXp += [...habitByType.values()].reduce((s, v) => s + v, 0);
                 }
-                totalXp += [...habitByType.values()].reduce((s, v) => s + v, 0);
                 
                 // Get max daily XP (best day in last 30 days — good enough for the progress bar)
                 const thirtyDaysAgo = new Date();

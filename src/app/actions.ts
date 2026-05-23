@@ -367,6 +367,10 @@ export async function logTrainingAction(
 
     revalidatePath('/', 'layout');
 
+    // Write workout XP to ledger for attribution
+    const exerciseLabel = exerciseId.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
+    await awardXp(supabase, userId, { type: 'workout', level: userLevel, volumeXp: totalXp - xpEarned } as any, exerciseLabel, false);
+
     // Post to party feed
     const { postPartyEvent } = await import('@/utils/partyEvents');
     const partyExName = exerciseId.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
