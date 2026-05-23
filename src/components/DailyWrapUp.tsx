@@ -99,8 +99,17 @@ export default function DailyWrapUp({ userId, mode, onDismiss }: DailyWrapUpProp
         if (n.macro_type === 'fat') macros.fat += n.amount;
         if (n.macro_type === 'calories_burned') macros.caloriesBurned += n.amount;
       }
-      // Derive calories from macros
-      macros.calories = Math.round((macros.protein * 4) + (macros.carbs * 4) + (macros.fat * 9));
+
+      // Prefer meal_entries.calories (label value) over formula
+      const { data: mealCals } = await supabase.from('meal_entries')
+        .select('calories, protein, carbs, fat')
+        .eq('user_id', userId).eq('date', dateStr);
+      if (mealCals?.length) {
+        macros.calories = Math.round(mealCals.reduce((s: number, m: any) =>
+          s + (m.calories || ((m.protein || 0) * 4 + (m.carbs || 0) * 4 + (m.fat || 0) * 9)), 0));
+      } else {
+        macros.calories = Math.round((macros.protein * 4) + (macros.carbs * 4) + (macros.fat * 9));
+      }
 
       const workout = workouts?.length ? {
         name: 'Workout',

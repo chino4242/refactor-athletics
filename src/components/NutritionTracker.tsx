@@ -17,16 +17,7 @@ interface NutritionTrackerProps {
     onLogHabit?: (habitId: string, value: number, label: string) => Promise<void>;
 }
 
-export default function NutritionTracker({ userId, userProfile, totals: rawTotals, onUpdate, onLogHabit }: NutritionTrackerProps) {
-    // Derive calories from macros (P×4 + C×4 + F×9) — no more Auto-Cal entries
-    const totals = {
-        ...rawTotals,
-        macro_calories: Math.round(
-            ((rawTotals['macro_protein'] || 0) * 4) +
-            ((rawTotals['macro_carbs'] || 0) * 4) +
-            ((rawTotals['macro_fat'] || 0) * 9)
-        ),
-    };
+export default function NutritionTracker({ userId, userProfile, totals, onUpdate, onLogHabit }: NutritionTrackerProps) {
     const [loading, setLoading] = useState(false);
     const [editing, setEditing] = useState(false);
     

@@ -183,12 +183,22 @@ export const getHabitProgress = async (userId: string, startTs: number): Promise
         totals[key] = (totals[key] || 0) + Number(item.amount);
     }
 
-    // Derive calories from macros (P×4 + C×4 + F×9) — single source of truth
-    totals['macro_calories'] = Math.round(
-        ((totals['macro_protein'] || 0) * 4) +
-        ((totals['macro_carbs'] || 0) * 4) +
-        ((totals['macro_fat'] || 0) * 9)
-    );
+    // Derive calories: prefer meal_entries.calories (label value), fall back to P×4+C×4+F×9
+    const todayDate = new Date(startTs * 1000).toLocaleDateString('en-CA');
+    const { data: mealEntries } = await supabase.from('meal_entries')
+        .select('calories, protein, carbs, fat')
+        .eq('user_id', userId).eq('date', todayDate);
+
+    if (mealEntries?.length) {
+        totals['macro_calories'] = Math.round(mealEntries.reduce((s, m) =>
+            s + (m.calories || ((m.protein || 0) * 4 + (m.carbs || 0) * 4 + (m.fat || 0) * 9)), 0));
+    } else {
+        totals['macro_calories'] = Math.round(
+            ((totals['macro_protein'] || 0) * 4) +
+            ((totals['macro_carbs'] || 0) * 4) +
+            ((totals['macro_fat'] || 0) * 9)
+        );
+    }
     
     // Sum habit logs
     for (const item of habits.data || []) {
