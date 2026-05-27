@@ -375,4 +375,39 @@ describe('logTrainingAction', () => {
         // Should use xp_factor = 1
         expect(result.xp_earned).toBeDefined();
     });
+
+    it('handles duration exercises (e.g. planks) with correct XP formula', async () => {
+        const plankCatalog = {
+            id: 'plank',
+            name: 'Plank',
+            type: 'Duration',
+            xp_factor: 1.0,
+            standards: {
+                unit: 'Sec',
+                scoring: 'higher_is_better',
+                brackets: {
+                    male: [{ min: 18, max: 100, levels: [30, 60, 120, 210, 300] }],
+                },
+            },
+        };
+
+        setupMocks(plankCatalog, 30);
+
+        const result = await logTrainingAction(
+            'user-123',
+            'plank',
+            180,
+            'male',
+            [{ duration: 45 }, { duration: 45 }]
+        );
+
+        // bestValue = 45 seconds
+        expect(result.raw_value).toBe(45);
+        // 45 passes threshold 30 (level 1)
+        expect(result.level).toBe(1);
+        expect(result.rank_name).toBe('Rookie');
+        // XP per set = floor((45/60) * 8 * 1.0) = floor(6) = 6
+        // 2 sets = 12, plus rank XP (level 1 * 50 = 50) = 62
+        expect(result.xp_earned).toBe(62);
+    });
 });

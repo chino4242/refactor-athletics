@@ -2,6 +2,45 @@
 
 All notable changes to Refactor Athletics.
 
+## [Unreleased] - 2026-05-27 — Beta Launch Prep
+
+### Added
+- 75 Day Challenge (solo + group) — create challenges with app metrics + custom checkboxes, 75-day calendar grid, auto-evaluation, group shared failure
+- Beta access code gating — users must enter code (IRONSHARPENS) + email to access app
+- HealthKit sync wired to dashboard load + onboarding permission request
+- Photo-to-macros auto-adds all identified items to meal cart
+- Nutrition modal rewritten with cart-based multi-item flow (search → add to meal → adjust → log)
+- New Activity Detected redesign — smart detection, catalog search, impact feedback (XP, rank, quest progress)
+- Training path selector in Settings (Hybrid only for beta)
+- Offline banner (red bar when connection drops)
+- AuthGuard for session expiry (redirects to login after background kill)
+- Haptic feedback on set completion + rank-up
+- Weekly Quests pill (collapsible, expanded on first daily visit)
+- Subscription infrastructure (useSubscription hook, PremiumGate component, database columns)
+
+### Changed
+- Dashboard header collapsed from 3-column grid to single Power Level hero + greeting + thin XP bar
+- Today tab unified: compact stats row, single rank-up nudge, full-width workout card
+- Removed from Today tab: Weekly Summary, Pending Exercises, Party Pulse, 4-column Daily Quest grid, Last Workout card
+- FAB moved from bottom-6 to bottom-24 (above nav)
+- Font sizes bumped from 9px to 10px minimum in dashboard
+- Bottom padding increased to pb-28 for safe area
+- Nutrition tracker defaults to daily view (was weekly) with CTA to view weekly
+- Onboarding locked to Hybrid path only for beta
+
+### Fixed
+- Planks treated as duration exercises (was reps) — correct XP calculation
+- Weekly quests now update after workouts (checkQuestProgress added to logTrainingAction)
+- Last Workout shows most recent (was showing oldest due to array index bug)
+- Rest timer skip no longer freezes (resets restTime to 0)
+- Macro summary derives from meal_entries (fixes stale data after delete)
+- Food search uses actual serving size instead of defaulting to 100g
+- Meal template save button always visible (disabled state when empty)
+- Nutrition modal no longer overwrites existing logs (fetches fresh totals)
+- cookies() awaited for Next.js 16 async API
+- localStorage SSR guard on TrackPage
+- Quick Log items showing 0g protein (serving calculation fixed)
+
 ## [Unreleased] — May 2026
 
 ### Architecture
