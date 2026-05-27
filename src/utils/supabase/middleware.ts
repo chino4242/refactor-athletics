@@ -36,6 +36,7 @@ export async function updateSession(request: NextRequest) {
 
     // Protect Application Routes
     const isAuthRoute = request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/register') || request.nextUrl.pathname.startsWith('/auth') || request.nextUrl.pathname.startsWith('/reset-password');
+    const isBetaRoute = request.nextUrl.pathname.startsWith('/beta');
 
     if (!user && !isAuthRoute) {
         // no user, redirect to login with original URL preserved
@@ -51,6 +52,21 @@ export async function updateSession(request: NextRequest) {
         const url = request.nextUrl.clone()
         url.pathname = '/'
         return NextResponse.redirect(url)
+    }
+
+    // Beta gate: check if user has beta access
+    if (user && !isAuthRoute && !isBetaRoute) {
+        const { data: profile } = await supabase
+            .from('users')
+            .select('beta_access')
+            .eq('id', user.id)
+            .single()
+
+        if (profile && !profile.beta_access) {
+            const url = request.nextUrl.clone()
+            url.pathname = '/beta'
+            return NextResponse.redirect(url)
+        }
     }
 
     return supabaseResponse

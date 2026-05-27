@@ -49,7 +49,7 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
     const [burnLoading, setBurnLoading] = useState(false);
 
     // Weekly State
-    const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('weekly');
+    const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
     const [weeklyData, setWeeklyData] = useState<Record<number, Record<string, number>>>({}); // Day Index -> Totals
 
 
@@ -531,6 +531,9 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
                                     {onTarget ? '✓ On Target' : `${Math.round(net - netTarget)} over`}
                                 </span>
                             </div>
+                            <button onClick={() => setViewMode('weekly')} className="mt-2 w-full text-center text-[10px] text-zinc-500 hover:text-orange-400 font-bold transition py-1">
+                                📊 View weekly trend — one day doesn&apos;t make or break the plan →
+                            </button>
                         </div>
                     );
                 } else {

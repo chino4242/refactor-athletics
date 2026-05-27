@@ -216,6 +216,38 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                 </div>
                 )}
 
+                {/* Training Path */}
+                <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                        <span className="text-sm">⚔️</span>
+                        <h2 className="text-sm font-black uppercase tracking-widest">Training Path</h2>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                        {[
+                            { key: 'hybrid', emoji: '⚔️', name: 'Hybrid', available: true },
+                            { key: 'strength', emoji: '🛡️', name: 'Strength', available: false },
+                            { key: 'endurance', emoji: '🏹', name: 'Endurance', available: false },
+                            { key: 'mobility', emoji: '🧘', name: 'Mobility', available: false },
+                        ].map(p => (
+                            <button key={p.key} disabled={!p.available}
+                                onClick={async () => {
+                                    if (!p.available) return;
+                                    await saveProfile({ user_id: userId, selected_path: p.key } as any);
+                                    toast.success(`Path changed to ${p.name}`);
+                                }}
+                                className={`p-3 rounded-xl border-2 text-left transition ${
+                                    initialProfile?.selected_path === p.key ? 'border-orange-500 bg-orange-500/10' :
+                                    p.available ? 'border-zinc-700 bg-zinc-800 hover:border-zinc-600' :
+                                    'border-zinc-800 bg-zinc-900 opacity-50 cursor-not-allowed'
+                                }`}>
+                                <div className="text-lg mb-1">{p.emoji}</div>
+                                <div className="text-xs font-bold text-white">{p.name}</div>
+                                {!p.available && <div className="text-[10px] text-zinc-600">Coming Soon</div>}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
                 {/* Profile Section */}
                 <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
                     <div className="flex items-center gap-2 mb-5">

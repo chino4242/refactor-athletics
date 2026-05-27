@@ -7,10 +7,13 @@ const config: CapacitorConfig = {
   server: {
     url: 'https://refactorathletics.com',
     cleartext: false,
+    allowNavigation: ['refactorathletics.com', 'ohxysyzrwccieioWjwpi.supabase.co'],
+    hostname: 'refactorathletics.com',
   },
   ios: {
     scheme: 'Refactor Athletics',
     contentInset: 'automatic',
+    limitsNavigationsToAppBoundDomains: true,
   },
   plugins: {
     SplashScreen: {

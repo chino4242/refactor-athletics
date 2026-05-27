@@ -86,7 +86,7 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
   const TABS = useMemo(() => {
     const hasRecoveryData = totals['habit_cold_plunge'] > 0 || totals['habit_sauna'] > 0 || totals['habit_mobility'] > 0 || totals['habit_meditation'] > 0;
     const hasDisciplineData = totals['habit_no_alcohol'] > 0 || totals['habit_no_vice'] > 0;
-    const hasUsedBefore = localStorage.getItem('track_tab') === 'recovery' || localStorage.getItem('track_tab') === 'discipline';
+    const hasUsedBefore = typeof window !== 'undefined' && (localStorage.getItem('track_tab') === 'recovery' || localStorage.getItem('track_tab') === 'discipline');
     return ALL_TABS.filter(tab => {
       if (tab.id === 'recovery') return hasRecoveryData || hasUsedBefore;
       if (tab.id === 'discipline') return hasDisciplineData || hasUsedBefore;

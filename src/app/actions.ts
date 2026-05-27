@@ -26,13 +26,12 @@ async function maybeSetLevelUp(supabase: any, userId: string, xpEarned: number, 
     } catch {}
 }
 
-function getLocalDate(ts?: number): string {
+async function getLocalDate(ts?: number): Promise<string> {
     const d = ts ? new Date(ts * 1000) : new Date();
-    // Read user's timezone from cookie (set by client), fallback to America/New_York
     let tz = 'America/New_York';
     try {
-        const cookieStore = cookies();
-        tz = (cookieStore as any).get?.('timezone')?.value || 'America/New_York';
+        const cookieStore = await cookies();
+        tz = cookieStore.get('timezone')?.value || 'America/New_York';
     } catch {}
     return d.toLocaleDateString('en-CA', { timeZone: tz });
 }
@@ -47,7 +46,7 @@ export async function logHabitAction(
 ) {
     const supabase = await createClient();
     const ts = timestamp || Math.floor(Date.now() / 1000);
-    const dateStr = getLocalDate(ts);
+    const dateStr = await getLocalDate(ts);
 
     // Route to appropriate table based on habitId
     if (habitId.startsWith('macro_')) {
@@ -223,8 +222,12 @@ export async function logTrainingAction(
     const exerciseType = catalogItem?.type?.toLowerCase() || '';
     const exerciseName = catalogItem?.name?.toLowerCase() || '';
     const is5RM = exerciseName.includes('5rm') || exerciseName.includes('5 rm');
+    const standardsUnit = (standards.unit || '').toLowerCase();
+    const hasDurationSets = sets.some(s => s.duration > 0);
     
-    if (exerciseType.includes('weight') || exerciseType === 'strength') {
+    if (standardsUnit === 'sec' || hasDurationSets) {
+        bestValue = Math.max(...sets.map(s => s.duration || 0));
+    } else if (exerciseType.includes('weight') || exerciseType === 'strength') {
         if (is5RM) {
             bestValue = Math.max(...sets.map(s => s.weight || 0));
         } else {
@@ -301,10 +304,10 @@ export async function logTrainingAction(
     let totalXp = 0;
     for (const set of sets) {
         let setXp = 0;
-        if (exerciseType.includes('time') || exerciseType.includes('duration') || exerciseType.includes('distance') || exerciseType === 'cardio') {
+        if (exerciseType.includes('time') || exerciseType.includes('duration') || exerciseType.includes('distance') || exerciseType === 'cardio' || standardsUnit === 'sec' || hasDurationSets) {
             if (set.duration && set.duration > 0) {
-                // Duration may be in minutes or seconds — normalize to minutes
-                const durationMins = set.duration > 300 ? set.duration / 60 : set.duration;
+                // Duration is always in seconds — convert to minutes for XP
+                const durationMins = set.duration / 60;
                 setXp = Math.floor(durationMins * 8 * xpFactor);
             } else if (set.distance && set.distance > 0) {
                 const estMinutes = (set.distance / 1609.34) * 10;
@@ -324,7 +327,7 @@ export async function logTrainingAction(
     totalXp += xpEarned; // Add rank XP
 
     const ts = Math.floor(Date.now() / 1000);
-    const dateStr = getLocalDate(ts);
+    const dateStr = await getLocalDate(ts);
 
     // For 5RM exercises, show lbs instead of xBW
     const displayUnit = is5RM ? 'lbs' : (standards.unit || '');
@@ -384,6 +387,9 @@ export async function logTrainingAction(
         metadata: { exercise: exerciseId, level: userLevel, rank: rankName },
     });
 
+    // Check quest progress (fire-and-forget)
+    import('@/utils/questProgress').then(m => m.checkQuestProgress(supabase, userId)).catch(() => {});
+
     return { 
         xp_earned: totalXp,
         level: userLevel,
@@ -409,7 +415,7 @@ export async function logWorkoutBlockAction(
 ) {
     const supabase = await createClient();
     const ts = Math.floor(Date.now() / 1000);
-    const dateStr = getLocalDate(ts);
+    const dateStr = await getLocalDate(ts);
 
     const { error } = await supabase
         .from('workouts')
@@ -430,6 +436,10 @@ export async function logWorkoutBlockAction(
     if (error) throw error;
 
     revalidatePath('/', 'layout');
+
+    // Check quest progress (fire-and-forget)
+    import('@/utils/questProgress').then(m => m.checkQuestProgress(supabase, userId)).catch(() => {});
+
     return { status: 'success' };
 }
 
@@ -463,7 +473,7 @@ export async function logBodyMeasurementAction(
 ) {
     const supabase = await createClient();
     const ts = timestamp || Math.floor(Date.now() / 1000);
-    const dateStr = getLocalDate(ts);
+    const dateStr = await getLocalDate(ts);
     const xp = 5;
 
     // Build source metadata for each provided field

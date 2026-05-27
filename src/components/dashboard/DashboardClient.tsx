@@ -74,6 +74,27 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             .then(r => r.json())
             .then(d => { if (d.synced?.length) { loadData(); localStorage.setItem('last_health_sync', new Date().toISOString()); } })
             .catch(() => {});
+
+        // Native HealthKit sync (iOS/Android via Capacitor)
+        (async () => {
+            try {
+                const { isHealthAvailable, syncTodayHealth } = await import('@/services/nativeHealth');
+                if (!(await isHealthAvailable())) return;
+                const data = await syncTodayHealth();
+                const { logHabitAction } = await import('@/app/actions');
+                const promises = [];
+                if (data.steps > 0) promises.push(logHabitAction(userId, 'habit_steps', data.steps, undefined, 'Steps (Sync)'));
+                if (data.caloriesBurned > 0) promises.push(logHabitAction(userId, 'macro_calories_burned', data.caloriesBurned, undefined, 'Calories Burned (Sync)'));
+                if (data.sleep > 0) promises.push(logHabitAction(userId, 'habit_sleep', data.sleep, undefined, 'Sleep (Sync)'));
+                if (data.hrv) promises.push(logHabitAction(userId, 'habit_hrv', data.hrv, undefined, 'HRV (Sync)'));
+                if (data.restingHR) promises.push(logHabitAction(userId, 'habit_resting_hr', data.restingHR, undefined, 'Resting HR (Sync)'));
+                if (promises.length > 0) {
+                    await Promise.all(promises);
+                    localStorage.setItem('last_health_sync', new Date().toISOString());
+                    loadData();
+                }
+            } catch {}
+        })();
     }, [userId]);
 
     useEffect(() => {
@@ -159,7 +180,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                         <summary className="list-none cursor-pointer">
                             <div className="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 hover:border-zinc-700 transition">
                                 <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">📋 Yesterday&apos;s Recap</span>
-                                <span className="text-[9px] text-zinc-600">tap to expand</span>
+                                <span className="text-[10px] text-zinc-600">tap to expand</span>
                             </div>
                         </summary>
                         <div className="mt-2">
@@ -192,7 +213,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             {/* Floating Action Button */}
             <button
                 onClick={() => setShowQuickActions(!showQuickActions)}
-                className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-orange-600 to-red-600 rounded-full shadow-lg flex items-center justify-center z-50 hover:scale-110 transition-transform"
+                className="fixed bottom-24 right-6 w-14 h-14 bg-gradient-to-br from-orange-600 to-red-600 rounded-full shadow-lg flex items-center justify-center z-50 hover:scale-110 transition-transform"
                 aria-label="Quick Actions"
             >
                 <Plus size={24} className="text-white" />

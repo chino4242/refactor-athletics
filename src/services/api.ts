@@ -183,7 +183,7 @@ export const getHabitProgress = async (userId: string, startTs: number): Promise
         totals[key] = (totals[key] || 0) + Number(item.amount);
     }
 
-    // Derive calories: prefer meal_entries.calories (label value), fall back to P×4+C×4+F×9
+    // Derive macros from meal_entries if available (source of truth for food logs)
     const todayDate = new Date(startTs * 1000).toLocaleDateString('en-CA');
     let mealEntries: any[] | null = null;
     try {
@@ -194,6 +194,9 @@ export const getHabitProgress = async (userId: string, startTs: number): Promise
     } catch {}
 
     if (mealEntries?.length) {
+        totals['macro_protein'] = Math.round(mealEntries.reduce((s: number, m: any) => s + (m.protein || 0), 0));
+        totals['macro_carbs'] = Math.round(mealEntries.reduce((s: number, m: any) => s + (m.carbs || 0), 0));
+        totals['macro_fat'] = Math.round(mealEntries.reduce((s: number, m: any) => s + (m.fat || 0), 0));
         totals['macro_calories'] = Math.round(mealEntries.reduce((s: number, m: any) =>
             s + (m.calories || ((m.protein || 0) * 4 + (m.carbs || 0) * 4 + (m.fat || 0) * 9)), 0));
     } else {

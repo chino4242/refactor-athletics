@@ -27,7 +27,7 @@ export default function BlockCompleteOverlay({
   // Full-screen rank-up celebration (shows first, user taps to dismiss)
   if (levelUps.length > 0 && !celebrationDismissed) {
     const rankUp = levelUps[0];
-    try { navigator.vibrate?.([100, 50, 200, 50, 300]); } catch {}
+    import('@/utils/haptics').then(m => m.haptic('success'));
     return (
       <div className="w-full max-w-md mx-auto flex flex-col items-center justify-center text-center px-4 min-h-[70vh] relative overflow-hidden" onClick={() => setCelebrationDismissed(true)}>
         {/* Confetti */}

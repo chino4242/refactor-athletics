@@ -34,7 +34,10 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
     const [aiLoading, setAiLoading] = useState(false);
     const [photoLoading, setPhotoLoading] = useState(false);
     const [waterFlash, setWaterFlash] = useState(false);
-    const [pendingMacros, setPendingMacros] = useState({ protein: 0, carbs: 0, fat: 0, count: 0 });
+    const [mealCart, setMealCart] = useState<{ food: FoodResult; servingGrams: string; p: number; c: number; f: number }[]>([]);
+    const [editingCartIdx, setEditingCartIdx] = useState<number | null>(null);
+    const [showMealTypePicker, setShowMealTypePicker] = useState(false);
+    const [loggedConfirmation, setLoggedConfirmation] = useState(false);
 
     const handleMealPhoto = async (file: File) => {
         setPhotoLoading(true);
@@ -58,13 +61,14 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                     servingSize: '1 serving',
                     per100g: { calories: item.calories || 0, protein: item.protein || 0, carbs: item.carbs || 0, fat: item.fat || 0 },
                 }));
-                setFoodResults(foods);
+                // Auto-add all photo items to cart
+                const cartItems = foods.map(food => ({
+                    food, servingGrams: '100',
+                    p: food.per100g.protein, c: food.per100g.carbs, f: food.per100g.fat,
+                }));
+                setMealCart(prev => [...prev, ...cartItems]);
                 setFoodQuery('');
                 setTab('search');
-                if (foods.length === 1) {
-                    setSelectedFood(foods[0]);
-                    setServingGrams('100');
-                }
             } else {
                 // AI returned but couldn't identify foods
                 setAiInput('breakfast sandwich with sausage, protein shake');
@@ -161,9 +165,17 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
     };
 
     const parseServingGrams = (s?: string): string => {
-        if (!s) return '';
-        const match = s.match(/([\d.]+)\s*g/i);
-        return match ? String(Math.round(parseFloat(match[1]))) : '';
+        if (!s) return '100';
+        // Match "28g", "170 g", "1.5g"
+        const gMatch = s.match(/([\d.]+)\s*g/i);
+        if (gMatch) return String(Math.round(parseFloat(gMatch[1])));
+        // Match "244ml" or "240 ml" (treat ml as g for liquids)
+        const mlMatch = s.match(/([\d.]+)\s*ml/i);
+        if (mlMatch) return String(Math.round(parseFloat(mlMatch[1])));
+        // Match plain number like "28"
+        const numMatch = s.match(/^([\d.]+)$/);
+        if (numMatch) return String(Math.round(parseFloat(numMatch[1])));
+        return '100';
     };
     const [showScanner, setShowScanner] = useState(false);
 
@@ -206,9 +218,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
         }, 400);
     };
 
-    const [mealPickerFood, setMealPickerFood] = useState<{ name: string; p: number; c: number; f: number; serving: string } | null>(null);
-
-    const handleAddFood = async () => {
+    const handleAddToCart = () => {
         if (!selectedFood) return;
         const mult = (parseFloat(servingGrams) || 100) / 100;
         const p = Math.round(selectedFood.per100g.protein * mult);
@@ -221,64 +231,65 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
             localStorage.setItem('recent_foods', JSON.stringify(next));
             return next;
         });
-        // Show meal picker
-        setMealPickerFood({ name: selectedFood.name, p, c, f, serving: `${servingGrams}g` });
+        setMealCart(prev => [...prev, { food: selectedFood, servingGrams, p, c, f }]);
+        setSelectedFood(null);
+        setFoodQuery('');
+        setFoodResults([]);
+        setServingGrams('100');
     };
 
-    const handleMealSelect = async (mealType: string) => {
-        if (!mealPickerFood) return;
-        const { name, p, c, f, serving } = mealPickerFood;
-        // Save to meal_entries (food diary)
+    const handleUpdateCartItem = (idx: number, newServing: string) => {
+        setMealCart(prev => prev.map((item, i) => {
+            if (i !== idx) return item;
+            const mult = (parseFloat(newServing) || 100) / 100;
+            return { ...item, servingGrams: newServing, p: Math.round(item.food.per100g.protein * mult), c: Math.round(item.food.per100g.carbs * mult), f: Math.round(item.food.per100g.fat * mult) };
+        }));
+    };
+
+    const handleRemoveCartItem = (idx: number) => {
+        setMealCart(prev => prev.filter((_, i) => i !== idx));
+        setEditingCartIdx(null);
+    };
+
+    const [mealLogging, setMealLogging] = useState(false);
+
+    const handleLogMeal = async (mealType: string) => {
+        if (mealCart.length === 0 || mealLogging) return;
+        setMealLogging(true);
         const supabase = (await import('@/utils/supabase/client')).createClient();
         const date = new Date().toLocaleDateString('en-CA');
         const ts = Math.floor(Date.now() / 1000);
-        await supabase.from('meal_entries').insert({
-            user_id: userId, date, meal_type: mealType, food_name: name,
-            protein: p, carbs: c, fat: f, calories: p * 4 + c * 4 + f * 9,
-            serving_size: serving, timestamp: ts,
-        });
-        // Also log to nutrition_logs for macro totals
-        const promises = [];
-        if (p > 0) promises.push(onLog('protein', (totals['macro_protein'] || 0) + p));
-        if (c > 0) promises.push(onLog('carbs', (totals['macro_carbs'] || 0) + c));
-        if (f > 0) promises.push(onLog('fat', (totals['macro_fat'] || 0) + f));
-        if (promises.length > 0) await Promise.all(promises);
-        setMealPickerFood(null);
-        setSelectedFood(null);
-        setFoodQuery('');
-        setFoodResults([]);
-        setServingGrams('100');
-        onClose();
-    };
 
-    const handleAddAnother = () => {
-        if (!selectedFood) return;
-        const mult = (parseFloat(servingGrams) || 100) / 100;
-        const p = Math.round(selectedFood.per100g.protein * mult);
-        const c = Math.round(selectedFood.per100g.carbs * mult);
-        const f = Math.round(selectedFood.per100g.fat * mult);
-        setRecents(prev => {
-            const filtered = prev.filter(r => r.name !== selectedFood.name);
-            const next = [selectedFood, ...filtered].slice(0, 10);
-            localStorage.setItem('recent_foods', JSON.stringify(next));
-            return next;
-        });
-        setPendingMacros(prev => ({ protein: prev.protein + p, carbs: prev.carbs + c, fat: prev.fat + f, count: prev.count + 1 }));
-        setSelectedFood(null);
-        setFoodQuery('');
-        setFoodResults([]);
-        setServingGrams('100');
-    };
+        // Save each item to meal_entries
+        for (const item of mealCart) {
+            await supabase.from('meal_entries').insert({
+                user_id: userId, date, meal_type: mealType, food_name: item.food.name,
+                protein: item.p, carbs: item.c, fat: item.f,
+                calories: item.p * 4 + item.c * 4 + item.f * 9,
+                serving_size: `${item.servingGrams}g`, timestamp: ts,
+            });
+        }
 
-    const handleSavePending = async () => {
-        if (pendingMacros.count === 0) return;
+        // Fetch fresh totals from meal_entries to avoid stale state
+        const { data: allMeals } = await supabase.from('meal_entries')
+            .select('protein, carbs, fat')
+            .eq('user_id', userId).eq('date', date);
+        const freshP = (allMeals || []).reduce((s: number, m: any) => s + (m.protein || 0), 0);
+        const freshC = (allMeals || []).reduce((s: number, m: any) => s + (m.carbs || 0), 0);
+        const freshF = (allMeals || []).reduce((s: number, m: any) => s + (m.fat || 0), 0);
+
+        // Set totals to the fresh values from meal_entries
         const promises = [];
-        if (pendingMacros.protein > 0) promises.push(onLog('protein', (totals['macro_protein'] || 0) + pendingMacros.protein));
-        if (pendingMacros.carbs > 0) promises.push(onLog('carbs', (totals['macro_carbs'] || 0) + pendingMacros.carbs));
-        if (pendingMacros.fat > 0) promises.push(onLog('fat', (totals['macro_fat'] || 0) + pendingMacros.fat));
+        if (freshP > 0) promises.push(onLog('protein', freshP));
+        if (freshC > 0) promises.push(onLog('carbs', freshC));
+        if (freshF > 0) promises.push(onLog('fat', freshF));
         if (promises.length > 0) await Promise.all(promises);
-        setPendingMacros({ protein: 0, carbs: 0, fat: 0, count: 0 });
-        onClose();
+
+        setMealCart([]);
+        setShowMealTypePicker(false);
+        setLoggedConfirmation(true);
+        setMealLogging(false);
+        setTimeout(() => setLoggedConfirmation(false), 3000);
     };
 
     const handleLogAll = async () => {
@@ -401,20 +412,16 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                         <span className="text-[9px] text-zinc-600 uppercase font-bold tracking-wider">Quick Log</span>
                         <div className="flex gap-2 mt-1.5 overflow-x-auto no-scrollbar pb-1">
                             {recents.slice(0, 5).map((food, i) => {
-                                const mult = (parseFloat(food.servingSize?.replace(/[^0-9.]/g, '') || '') || 100) / 100;
+                                const servGrams = parseFloat(parseServingGrams(food.servingSize));
+                                const mult = servGrams / 100;
                                 const p = Math.round(food.per100g.protein * mult);
                                 return (
                                     <button
                                         key={i}
-                                        onClick={async () => {
+                                        onClick={() => {
                                             const c = Math.round(food.per100g.carbs * mult);
                                             const f = Math.round(food.per100g.fat * mult);
-                                            const promises = [];
-                                            if (p > 0) promises.push(onLog('protein', (totals['macro_protein'] || 0) + p));
-                                            if (c > 0) promises.push(onLog('carbs', (totals['macro_carbs'] || 0) + c));
-                                            if (f > 0) promises.push(onLog('fat', (totals['macro_fat'] || 0) + f));
-                                            if (promises.length > 0) await Promise.all(promises);
-                                            onClose();
+                                            setMealCart(prev => [...prev, { food, servingGrams: String(Math.round(servGrams)), p, c, f }]);
                                         }}
                                         className="shrink-0 bg-zinc-800/60 border border-zinc-700/40 rounded-xl px-3 py-2 hover:border-orange-500/40 transition text-left"
                                     >
@@ -515,45 +522,84 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                                     );
                                 })()}
                                 <div className="flex gap-2">
-                                    <button onClick={handleAddFood}
+                                    <button onClick={handleAddToCart}
                                         className="flex-1 bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold py-2.5 rounded-lg text-xs uppercase tracking-wider transition active:scale-95 flex items-center justify-center gap-1.5">
-                                        <Plus size={14} /> Add
-                                    </button>
-                                    <button onClick={handleAddAnother}
-                                        className="px-3 py-2.5 bg-zinc-800 border border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-600 rounded-lg text-[10px] font-bold uppercase tracking-wider transition">
-                                        + More
+                                        <Plus size={14} /> Add to Meal
                                     </button>
                                     <button onClick={() => selectedFood && toggleFavorite(selectedFood)}
                                         className={`px-3 py-2.5 rounded-lg border transition ${isFavorite(selectedFood!) ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400' : 'bg-zinc-800 border-zinc-700 text-zinc-500 hover:text-yellow-400'}`}>
                                         ★
                                     </button>
                                 </div>
-                                {/* Meal Picker */}
-                                {mealPickerFood && (
-                                    <div className="mt-2 bg-zinc-800/50 border border-zinc-700 rounded-xl p-3">
-                                        <div className="text-[10px] text-zinc-400 text-center mb-2">Which meal?</div>
-                                        <div className="grid grid-cols-4 gap-2">
-                                            {[
-                                                { id: 'breakfast', emoji: '🌅', label: 'Breakfast' },
-                                                { id: 'lunch', emoji: '🌞', label: 'Lunch' },
-                                                { id: 'dinner', emoji: '🌙', label: 'Dinner' },
-                                                { id: 'snack', emoji: '🍿', label: 'Snack' },
-                                            ].map(m => (
-                                                <button key={m.id} onClick={() => handleMealSelect(m.id)}
-                                                    className="flex flex-col items-center gap-1 py-2 bg-zinc-900 hover:bg-orange-500/10 border border-zinc-700 hover:border-orange-500/30 rounded-lg transition">
-                                                    <span className="text-lg">{m.emoji}</span>
-                                                    <span className="text-[9px] text-zinc-400 font-bold">{m.label}</span>
-                                                </button>
-                                            ))}
+                            </div>
+                        )}
+
+                        {/* Meal Cart */}
+                        {mealCart.length > 0 && !showMealTypePicker && (
+                            <div className="bg-zinc-800/50 border border-emerald-500/20 rounded-xl p-3 space-y-2">
+                                <div className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Meal ({mealCart.length} items)</div>
+                                {mealCart.map((item, idx) => (
+                                    <div key={idx} className="flex items-center justify-between bg-zinc-900/50 rounded-lg px-2.5 py-1.5">
+                                        {editingCartIdx === idx ? (
+                                            <div className="flex items-center gap-2 flex-1">
+                                                <span className="text-xs text-white truncate max-w-[120px]">{item.food.name}</span>
+                                                <input type="number" value={item.servingGrams} onChange={e => handleUpdateCartItem(idx, e.target.value)}
+                                                    className="w-14 bg-zinc-800 border border-zinc-600 rounded px-1.5 py-0.5 text-xs text-white text-center focus:border-orange-500 outline-none" />
+                                                <span className="text-[9px] text-zinc-500">g</span>
+                                                <button onClick={() => setEditingCartIdx(null)} className="text-[9px] text-emerald-400 font-bold">Done</button>
+                                            </div>
+                                        ) : (
+                                            <button onClick={() => setEditingCartIdx(idx)} className="flex-1 text-left">
+                                                <span className="text-xs text-white">{item.food.name}</span>
+                                                <span className="text-[9px] text-zinc-500 ml-1.5">{item.servingGrams}g</span>
+                                            </button>
+                                        )}
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[9px] text-zinc-400">P:{item.p} C:{item.c} F:{item.f}</span>
+                                            <button onClick={() => handleRemoveCartItem(idx)} className="text-zinc-700 hover:text-red-400 transition">✕</button>
                                         </div>
                                     </div>
-                                )}
-                                {pendingMacros.count > 0 && (
-                                    <button onClick={handleSavePending}
-                                        className="w-full mt-2 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider rounded-lg transition flex items-center justify-center gap-1.5">
-                                        Done ({pendingMacros.count} items · P:{pendingMacros.protein} C:{pendingMacros.carbs} F:{pendingMacros.fat})
-                                    </button>
-                                )}
+                                ))}
+                                <div className="flex items-center justify-between pt-1 border-t border-zinc-700/50">
+                                    <span className="text-[10px] text-zinc-400">Total</span>
+                                    <span className="text-xs font-bold text-white">
+                                        P:{mealCart.reduce((s, i) => s + i.p, 0)} C:{mealCart.reduce((s, i) => s + i.c, 0)} F:{mealCart.reduce((s, i) => s + i.f, 0)} · {mealCart.reduce((s, i) => s + i.p * 4 + i.c * 4 + i.f * 9, 0)} cal
+                                    </span>
+                                </div>
+                                <button onClick={() => setShowMealTypePicker(true)}
+                                    className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-lg text-xs uppercase tracking-wider transition">
+                                    Log Meal
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Meal Type Picker */}
+                        {showMealTypePicker && (
+                            <div className="bg-zinc-800/50 border border-emerald-500/20 rounded-xl p-3 space-y-2">
+                                <div className="text-[10px] text-zinc-400 text-center">Which meal is this?</div>
+                                <div className="grid grid-cols-4 gap-2">
+                                    {[
+                                        { id: 'breakfast', emoji: '🌅', label: 'Breakfast' },
+                                        { id: 'lunch', emoji: '🌞', label: 'Lunch' },
+                                        { id: 'dinner', emoji: '🌙', label: 'Dinner' },
+                                        { id: 'snack', emoji: '🍿', label: 'Snack' },
+                                    ].map(m => (
+                                        <button key={m.id} onClick={() => handleLogMeal(m.id)}
+                                            className="flex flex-col items-center gap-1 py-2 bg-zinc-900 hover:bg-emerald-500/10 border border-zinc-700 hover:border-emerald-500/30 rounded-lg transition">
+                                            <span className="text-lg">{m.emoji}</span>
+                                            <span className="text-[9px] text-zinc-400 font-bold">{m.label}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                                <button onClick={() => setShowMealTypePicker(false)} className="w-full text-center text-[10px] text-zinc-600 hover:text-zinc-400 py-1">Back</button>
+                            </div>
+                        )}
+
+                        {/* Logged Confirmation */}
+                        {loggedConfirmation && (
+                            <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3 text-center">
+                                <span className="text-sm">✓</span>
+                                <span className="text-xs font-bold text-emerald-400 ml-2">Meal logged!</span>
                             </div>
                         )}
 
@@ -634,9 +680,13 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                                                 );
                                             })}
                                         </div>
-                                        {mealItems.length > 0 && (
+                                        {mealItems.length > 0 ? (
                                             <button onClick={saveMeal} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2 rounded-lg uppercase tracking-wider transition">
                                                 Save Meal ({mealItems.length} items)
+                                            </button>
+                                        ) : (
+                                            <button disabled className="w-full bg-zinc-800 text-zinc-600 text-xs font-bold py-2 rounded-lg uppercase tracking-wider cursor-not-allowed">
+                                                Select items to save
                                             </button>
                                         )}
                                     </div>

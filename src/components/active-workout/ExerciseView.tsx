@@ -113,6 +113,7 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
       setIsResting(false);
     } else {
       setCompletedSets([...completedSets, setIndex]);
+      import('@/utils/haptics').then(m => m.haptic('medium'));
       // Start rest timer if not the last set
       if (completedSets.length < totalSets - 1) {
         setRestTime(block.rest_seconds || smartRest);
@@ -498,7 +499,7 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
           );
         })()}
       </div>
-      <RestTimerBar restTime={restTime} totalRest={smartRest} onSkip={() => setIsResting(false)} />
+      <RestTimerBar restTime={restTime} totalRest={smartRest} onSkip={() => { setRestTime(0); setIsResting(false); }} />
 
       {/* FOOTER ACTION */}
       <div className="bg-zinc-900 border-t border-zinc-800 p-4 shrink-0">

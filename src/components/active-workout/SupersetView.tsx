@@ -371,7 +371,7 @@ export default function SupersetView({ block, blockIndex, onComplete, fullHistor
       </div>
 
       {/* REST TIMER */}
-      <RestTimerBar restTime={restTime} totalRest={block.rest_seconds || 60} onSkip={() => setIsResting(false)} />
+      <RestTimerBar restTime={restTime} totalRest={block.rest_seconds || 60} onSkip={() => { setRestTime(0); setIsResting(false); }} />
 
       {/* FOOTER ACTION */}
       <div className="bg-zinc-900 border-t border-zinc-800 p-4 shrink-0">

@@ -153,7 +153,7 @@ export default function StatsTab({ userId, stats }: StatsTabProps) {
                                     <span className="text-sm text-white font-medium truncate flex-1">{pr.name}</span>
                                     <div className="text-right shrink-0 ml-2">
                                         <span className="text-sm font-bold text-yellow-400">{pr.value}</span>
-                                        <span className="text-[9px] text-zinc-600 ml-1.5">{new Date(pr.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                                        <span className="text-[10px] text-zinc-600 ml-1.5">{new Date(pr.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                                     </div>
                                 </div>
                             ))}

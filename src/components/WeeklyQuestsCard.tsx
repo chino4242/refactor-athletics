@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Check } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface Quest {
   id: string;
@@ -15,19 +15,27 @@ interface Quest {
 export default function WeeklyQuestsCard({ userId }: { userId: string }) {
   const [quests, setQuests] = useState<Quest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [week, setWeek] = useState('');
+  const [expanded, setExpanded] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const lastSeen = localStorage.getItem('quests_collapsed_date');
+    return lastSeen !== new Date().toLocaleDateString('en-CA');
+  });
+
+  const toggleExpanded = () => {
+    setExpanded(prev => {
+      if (prev) localStorage.setItem('quests_collapsed_date', new Date().toLocaleDateString('en-CA'));
+      return !prev;
+    });
+  };
 
   useEffect(() => { load(); }, [userId]);
 
   const load = async () => {
-    // Generate slate if needed
     await fetch('/api/quests', { method: 'POST' });
-    // Fetch current slate
     const res = await fetch('/api/quests');
     if (res.ok) {
       const data = await res.json();
       setQuests(data.quests || []);
-      setWeek(data.week);
     }
     setLoading(false);
   };
@@ -40,47 +48,61 @@ export default function WeeklyQuestsCard({ userId }: { userId: string }) {
     setQuests(prev => prev.map(q => q.id === questId ? { ...q, status: 'accepted' } : q));
   };
 
-  if (loading) return null;
+  if (loading || quests.length === 0) return null;
 
-  const offered = quests.filter(q => q.status === 'offered');
   const accepted = quests.filter(q => q.status === 'accepted');
   const completed = quests.filter(q => q.status === 'completed');
-
-  if (quests.length === 0) return null;
+  const offered = quests.filter(q => q.status === 'offered');
+  const total = accepted.length + completed.length;
+  const allComplete = total > 0 && completed.length === total;
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-3">
-      <div className="flex items-center justify-between mb-3">
+    <div className="mb-3">
+      {/* Pill */}
+      <button
+        onClick={() => toggleExpanded()}
+        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl border transition ${
+          allComplete
+            ? 'bg-emerald-500/10 border-emerald-500/30'
+            : offered.length > 0
+            ? 'bg-orange-500/10 border-orange-500/30'
+            : 'bg-zinc-900 border-zinc-800'
+        }`}
+      >
         <div className="flex items-center gap-2">
           <span className="text-sm">⚔️</span>
-          <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Weekly Quests</span>
+          <span className="text-xs font-bold text-zinc-300">
+            {offered.length > 0 && total === 0 ? 'New quests available' : `${completed.length}/${total} Quests`}
+          </span>
+          {allComplete && <Check size={12} className="text-emerald-400" />}
         </div>
-        <span className="text-[9px] text-zinc-600">{completed.length}/{accepted.length + completed.length} complete</span>
-      </div>
+        {expanded ? <ChevronUp size={14} className="text-zinc-500" /> : <ChevronDown size={14} className="text-zinc-500" />}
+      </button>
 
-      {/* Offered quests — pick to accept */}
-      {offered.length > 0 && (
-        <div className="mb-3">
-          <div className="text-[9px] text-orange-400 font-bold uppercase mb-1.5">Choose your quests:</div>
-          <div className="space-y-1.5">
-            {offered.map(q => (
-              <button key={q.id} onClick={() => accept(q.id)}
-                className="w-full flex items-center gap-3 bg-zinc-800/50 border border-zinc-700/50 hover:border-orange-500/30 rounded-lg p-2.5 transition text-left">
-                <span className="text-lg">{q.quest_templates.icon}</span>
-                <div className="flex-1 min-w-0">
-                  <div className="text-xs font-bold text-white">{q.quest_templates.name}</div>
-                  <div className="text-[10px] text-zinc-500">{q.quest_templates.description.replace('{target}', String(Math.round(q.target_value)))}</div>
-                </div>
-                <span className="text-[9px] text-orange-400 font-bold uppercase shrink-0">Accept</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Expanded Content */}
+      {expanded && (
+        <div className="mt-2 bg-zinc-900 border border-zinc-800 rounded-xl p-3 space-y-2">
+          {/* Offered quests */}
+          {offered.length > 0 && (
+            <div>
+              <div className="text-[9px] text-orange-400 font-bold uppercase mb-1.5">Choose your quests:</div>
+              <div className="space-y-1.5">
+                {offered.map(q => (
+                  <button key={q.id} onClick={() => accept(q.id)}
+                    className="w-full flex items-center gap-3 bg-zinc-800/50 border border-zinc-700/50 hover:border-orange-500/30 rounded-lg p-2.5 transition text-left">
+                    <span className="text-lg">{q.quest_templates.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-bold text-white">{q.quest_templates.name}</div>
+                      <div className="text-[10px] text-zinc-500">{q.quest_templates.description.replace('{target}', String(Math.round(q.target_value)))}</div>
+                    </div>
+                    <span className="text-[9px] text-orange-400 font-bold uppercase shrink-0">Accept</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
-      {/* Accepted quests — show progress */}
-      {accepted.length > 0 && (
-        <div className="space-y-2">
+          {/* Accepted quests — progress */}
           {accepted.map(q => {
             const pct = Math.min(100, (q.current_value / q.target_value) * 100);
             return (
@@ -96,12 +118,8 @@ export default function WeeklyQuestsCard({ userId }: { userId: string }) {
               </div>
             );
           })}
-        </div>
-      )}
 
-      {/* Completed quests */}
-      {completed.length > 0 && (
-        <div className="space-y-1 mt-2">
+          {/* Completed quests */}
           {completed.map(q => (
             <div key={q.id} className="flex items-center gap-2 text-xs text-emerald-400">
               <Check size={12} /> <span>{q.quest_templates.name}</span>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from 'react';
+import Link from 'next/link';
 import { getActiveDuels, getDuelHistory, getUserStats, type DuelResponse } from '@/services/api';
 import { useToast } from '@/context/ToastContext';
 import { useExperienceMode } from '@/context/ExperienceModeContext';
@@ -81,6 +82,18 @@ export default function Arena({ userId }: ArenaProps) {
           </button>
         </LevelGate>
       </div>
+
+      {/* 75 Day Challenge Banner */}
+      <Link href="/challenge-75" className="mx-2 bg-gradient-to-r from-orange-600/20 to-red-600/20 border border-orange-500/30 rounded-xl p-4 flex items-center justify-between hover:border-orange-500/50 transition">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">🎯</span>
+          <div>
+            <div className="text-sm font-bold text-white">75 Day Challenge</div>
+            <div className="text-[11px] text-zinc-400">Solo or with your group — no excuses for 75 days</div>
+          </div>
+        </div>
+        <span className="text-zinc-500 text-xs">→</span>
+      </Link>
 
       {/* Tabs */}
       <div className="flex gap-1.5 px-2">

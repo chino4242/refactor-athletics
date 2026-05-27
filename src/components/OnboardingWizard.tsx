@@ -305,16 +305,21 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                                     {Object.entries(PATHS).map(([key, path]) => (
                                         <button
                                             key={key}
-                                            onClick={() => setFormData({ ...formData, path: key })}
+                                            onClick={() => { if (key === 'hybrid') setFormData({ ...formData, path: key }); }}
                                             className={`p-4 rounded-lg border-2 transition-all text-left ${
                                                 formData.path === key
                                                     ? 'border-orange-500 bg-orange-500/10'
-                                                    : 'border-zinc-700 bg-zinc-800 hover:border-zinc-600'
+                                                    : key === 'hybrid'
+                                                    ? 'border-zinc-700 bg-zinc-800 hover:border-zinc-600'
+                                                    : 'border-zinc-800 bg-zinc-900 opacity-50 cursor-not-allowed'
                                             }`}
+                                            disabled={key !== 'hybrid'}
                                         >
                                             <div className="text-3xl mb-2">{path.emoji}</div>
                                             <div className="text-sm font-medium text-white">{path.name}</div>
-                                            <div className="text-xs text-zinc-400 mt-1">{path.description}</div>
+                                            <div className="text-xs text-zinc-400 mt-1">
+                                                {key === 'hybrid' ? path.description : 'Coming Soon'}
+                                            </div>
                                         </button>
                                     ))}
                                 </div>
@@ -521,6 +526,27 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                 {step === 10 && (
                     <div className="space-y-4">
                         <p className="text-zinc-400 text-sm">Auto-sync steps, sleep, calories, and more from your wearable. You can always set this up later in Settings.</p>
+
+                        {/* Apple Health (Native) */}
+                        <button
+                            onClick={async () => {
+                                try {
+                                    const { isHealthAvailable, requestPermissions } = await import('@/services/nativeHealth');
+                                    if (await isHealthAvailable()) {
+                                        await requestPermissions();
+                                    }
+                                } catch {}
+                            }}
+                            className="block w-full p-4 rounded-lg border-2 border-zinc-700 bg-zinc-800 hover:border-emerald-500 transition-all text-left"
+                        >
+                            <div className="flex items-center gap-3">
+                                <span className="text-2xl">🍎</span>
+                                <div>
+                                    <div className="text-sm font-bold text-white">Connect Apple Health</div>
+                                    <div className="text-xs text-zinc-400">Steps, sleep, calories, heart rate, weight</div>
+                                </div>
+                            </div>
+                        </button>
 
                         {/* WHOOP */}
                         <a
