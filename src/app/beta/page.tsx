@@ -40,8 +40,8 @@ export default function BetaPage() {
     // Record beta signup
     await supabase.from('beta_signups').insert({ email, user_id: user.id });
 
-    // Grant beta access
-    await supabase.from('users').update({ beta_access: true }).eq('id', user.id);
+    // Grant beta access + premium for beta testers
+    await supabase.from('users').update({ beta_access: true, subscription_status: 'active' }).eq('id', user.id);
 
     router.push('/dashboard');
     router.refresh();
