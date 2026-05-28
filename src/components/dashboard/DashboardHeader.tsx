@@ -115,7 +115,7 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                         alt=""
                         className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#18181b] via-[#18181b]/80 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#18181b] via-transparent to-transparent" />
                 </div>
             )}
             <div className="px-6 pt-3 pb-4" style={{ backgroundImage: theme.bgTexture, backgroundColor: '#18181b' }}>
