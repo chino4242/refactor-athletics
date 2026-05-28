@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTheme } from '@/context/ThemeContext';
 
 interface BlockCompleteOverlayProps {
   blockResults: any[];
@@ -19,10 +20,26 @@ export default function BlockCompleteOverlay({
   onContinue,
   onStop,
 }: BlockCompleteOverlayProps) {
+  const { currentTheme } = useTheme();
   const totalXp = blockResults.reduce((sum: number, r: any) => sum + (r.xp_earned || 0), 0);
   const progressPct = Math.round((completedCount / totalBlocks) * 100);
   const levelUps = blockResults.filter((r: any) => r.level > 0 && r.level > (r.previous_level || 0));
   const [celebrationDismissed, setCelebrationDismissed] = useState(false);
+
+  const rankUpMessages: Record<string, (name: string) => string> = {
+    athlete: (n) => `Promoted to ${n}!`,
+    dragon: (n) => `You've evolved to ${n}!`,
+    samurai: (n) => `You have ascended to ${n}!`,
+    dinosaur: (n) => `You've evolved to ${n}!`,
+    viking: (n) => `Hail! You are now ${n}!`,
+  };
+  const blockCompleteMessages: Record<string, string> = {
+    athlete: 'Another rep in the bank.',
+    dragon: 'The forge grows hotter.',
+    samurai: 'One step closer to mastery.',
+    dinosaur: 'The hunt was successful.',
+    viking: 'Another battle won.',
+  };
 
   // Full-screen rank-up celebration (shows first, user taps to dismiss)
   if (levelUps.length > 0 && !celebrationDismissed) {
@@ -49,7 +66,7 @@ export default function BlockCompleteOverlay({
         {/* Content */}
         <div className="text-6xl mb-4 animate-bounce">⚡</div>
         <div className="text-xs font-bold text-orange-400 uppercase tracking-[0.3em] mb-2">Rank Up</div>
-        <div className="text-2xl font-black text-white mb-6">{rankUp.name}</div>
+        <div className="text-2xl font-black text-white mb-6">{(rankUpMessages[currentTheme] || rankUpMessages.athlete)(getThemedRankName(rankUp.level))}</div>
 
         <div className="flex items-center gap-4 mb-8">
           <div className="text-center">
@@ -97,6 +114,7 @@ export default function BlockCompleteOverlay({
       </div>
 
       <h1 className="text-xl font-black text-white mb-1">Block Complete</h1>
+      <p className="text-[11px] text-zinc-400 italic mb-1">{blockCompleteMessages[currentTheme] || blockCompleteMessages.athlete}</p>
       <p className="text-xs text-zinc-500 mb-5">{completedCount} of {totalBlocks} blocks done</p>
 
       <div className="w-full space-y-1.5 mb-6">

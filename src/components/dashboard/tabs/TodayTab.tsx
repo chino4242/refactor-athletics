@@ -247,7 +247,7 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
                 const hasScheduled = !!todayScheduled;
 
                 if (hasScheduled && !hasWorkout) return (
-                    <Link href="/train" className="block w-full bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-xl px-4 py-4 flex items-center justify-between shadow-lg shadow-orange-900/20 active:scale-[0.98] transition">
+                    <Link href="/train" className={`block w-full bg-gradient-to-r ${theme.accentGradient} text-white rounded-xl px-4 py-4 flex items-center justify-between shadow-lg shadow-orange-900/20 active:scale-[0.98] transition`}>
                         <div>
                             <div className="text-[10px] text-white/60 uppercase font-bold">Today&apos;s Workout</div>
                             <div className="text-sm font-bold">{todayScheduled.title || 'Ready to train'}</div>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { useTheme } from '@/context/ThemeContext';
 
 interface Quest {
   id: string;
@@ -13,6 +14,14 @@ interface Quest {
 }
 
 export default function WeeklyQuestsCard({ userId }: { userId: string }) {
+  const { currentTheme } = useTheme();
+  const questCompleteMessages: Record<string, string> = {
+    athlete: 'All quests crushed. Rest up, champion.',
+    dragon: 'The dragon is satisfied... for now.',
+    samurai: 'Discipline rewarded. Honor earned.',
+    dinosaur: 'Dominant. Every target eliminated.',
+    viking: 'Odin smiles upon your deeds.',
+  };
   const [quests, setQuests] = useState<Quest[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(() => {
@@ -127,6 +136,10 @@ export default function WeeklyQuestsCard({ userId }: { userId: string }) {
               <span className="text-[9px] text-zinc-600 ml-auto">+{q.xp_awarded} XP</span>
             </div>
           ))}
+
+          {allComplete && (
+            <p className="text-[11px] text-emerald-400/80 italic text-center pt-1">{questCompleteMessages[currentTheme] || questCompleteMessages.athlete}</p>
+          )}
         </div>
       )}
     </div>

@@ -103,7 +103,7 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                     <div className="flex items-center gap-2">
                         <span className="text-sm" style={{ color: theme.accentHex }}>{greeting}</span>
                         {streak > 0 && (
-                            <span className="text-xs font-bold text-orange-400">🔥 {streak}d</span>
+                            <span className="text-xs font-bold" style={{ color: theme.accentHex }}>🔥 {streak}d</span>
                         )}
                         {streakAtRisk && (
                             <span className="text-[10px] text-amber-400 animate-pulse">⚠️</span>
