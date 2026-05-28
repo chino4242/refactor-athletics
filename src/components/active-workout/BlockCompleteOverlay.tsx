@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useTheme } from '@/context/ThemeContext';
+import { THEMES } from '@/data/themes';
 
 interface BlockCompleteOverlayProps {
   blockResults: any[];
@@ -63,6 +64,14 @@ export default function BlockCompleteOverlay({
         {/* Glow */}
         <div className="absolute inset-0 bg-gradient-radial from-orange-500/10 via-transparent to-transparent pointer-events-none" />
 
+        {/* Rank image — hero reveal */}
+        {(() => {
+          const theme = THEMES[currentTheme] || THEMES.athlete;
+          const img = theme.ranks?.[`level${levelUps[0].level}`]?.image;
+          if (!img) return null;
+          return <img src={img} alt="" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 object-contain opacity-50 pointer-events-none" />;
+        })()}
+
         {/* Content */}
         <div className="text-6xl mb-4 animate-bounce">⚡</div>
         <div className="text-xs font-bold text-orange-400 uppercase tracking-[0.3em] mb-2">Rank Up</div>
@@ -93,7 +102,16 @@ export default function BlockCompleteOverlay({
   }
 
   return (
-    <div className="w-full max-w-md mx-auto flex flex-col items-center justify-center text-center px-4">
+    <div className="w-full max-w-md mx-auto flex flex-col items-center justify-center text-center px-4 relative">
+      {/* Current rank image — subtle background */}
+      {(() => {
+        const theme = THEMES[currentTheme] || THEMES.athlete;
+        const highestLevel = Math.max(...blockResults.map((r: any) => r.level || 0), 0);
+        const img = theme.ranks?.[`level${highestLevel}`]?.image || theme.ranks?.level0?.image;
+        if (!img) return null;
+        return <img src={img} alt="" className="absolute top-4 left-1/2 -translate-x-1/2 w-24 h-24 object-contain opacity-20 pointer-events-none" />;
+      })()}
+
       {/* Progress ring */}
       <div className="relative w-20 h-20 mb-4">
         <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">

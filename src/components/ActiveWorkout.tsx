@@ -227,6 +227,13 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
 
   return (
     <div className="relative w-full max-w-md mx-auto">
+      {/* Atmospheric banner — arena floor */}
+      {!isClassic && (
+        <div className="fixed bottom-16 left-0 right-0 h-28 pointer-events-none z-0 overflow-hidden opacity-15">
+          <img src={`/themes/${currentTheme}/banner.png`} alt="" className="w-full h-full object-cover object-bottom" style={{ maskImage: 'linear-gradient(transparent, black 40%)' }} />
+        </div>
+      )}
+
       {/* Workout Header */}
       <div className="mb-3 flex items-center justify-between px-1">
         <button onClick={() => setViewMode('HUB')} className="text-left cursor-pointer">
