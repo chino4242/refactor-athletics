@@ -5,6 +5,7 @@ import { getToday } from '@/utils/date';
 import FirstVisitTooltip from './common/FirstVisitTooltip';
 import { startOfWeek, addDays, format } from 'date-fns';
 import { getWeeklySchedule, getProfile } from '@/services/api';
+import { createClient } from '@/utils/supabase/client';
 import { useTheme } from '@/context/ThemeContext';
 import { THEMES } from '@/data/themes';
 import ActiveWorkout from './ActiveWorkout';
@@ -66,16 +67,27 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
     getProfile(userId).then(p => { if (p?.selected_path) setUserPath(p.selected_path); });
   }, [userId]);
 
-  // Load completed dates this week (for swap locking)
+  // Load completed dates this week (days with actual workout sets — not just synced habits)
   useEffect(() => {
-    if (!initialHistory) return;
+    if (!userId) return;
     const start = startOfWeek(new Date(), { weekStartsOn: 1 });
-    const dates = new Set<string>();
-    (initialHistory || []).forEach((h: any) => {
-      if (h.date && new Date(h.date) >= start) dates.add(h.date);
-    });
-    setCompletedDates(dates);
-  }, [initialHistory]);
+    const startStr = format(start, 'yyyy-MM-dd');
+    const supabase = createClient();
+    supabase.from('workouts')
+      .select('date, sets')
+      .eq('user_id', userId)
+      .gte('date', startStr)
+      .then(({ data }) => {
+        const dates = new Set<string>();
+        (data || []).forEach((w: any) => {
+          // Only count as completed if it has actual sets with reps/weight
+          if (w.sets && Array.isArray(w.sets) && w.sets.some((s: any) => s.reps > 0 || s.weight > 0 || s.duration > 0)) {
+            dates.add(w.date);
+          }
+        });
+        setCompletedDates(dates);
+      });
+  }, [userId]);
 
   // Load schedule
   useEffect(() => {
