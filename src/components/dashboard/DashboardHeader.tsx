@@ -72,21 +72,36 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
         return 0;
     }, [powerLevel]);
 
-    // Greeting based on time of day
+    // Themed greeting based on time of day
     const greeting = useMemo(() => {
         const hour = new Date().getHours();
-        if (hour < 12) return 'Good morning';
-        if (hour < 17) return 'Good afternoon';
-        return 'Good evening';
-    }, []);
+        if (isClassic) {
+            if (hour < 12) return 'Good morning';
+            if (hour < 17) return 'Good afternoon';
+            return 'Good evening';
+        }
+        const themeGreetings: Record<string, string[]> = {
+            athlete: ['Time to compete.', 'The grind continues.', 'Champions train today.'],
+            dragon: ['The forge awaits.', 'Breathe fire today.', 'Grow stronger, wyrm.'],
+            samurai: ['The path demands discipline.', 'Honor through effort.', 'Steel sharpens steel.'],
+            apex: ['The hunt begins.', 'Apex predators never rest.', 'Evolve or perish.'],
+            viking: ['Valhalla favors the bold.', 'Earn your place, warrior.', 'Iron sharpens iron.'],
+        };
+        const greetings = themeGreetings[currentTheme] || themeGreetings.athlete;
+        return greetings[Math.floor(hour / 8) % greetings.length];
+    }, [currentTheme, isClassic]);
+
+    const rankKey = `level${tier}`;
+    const rankImage = theme.ranks?.[rankKey]?.image;
+    const rankName = theme.ranks?.[rankKey]?.name?.split(': ')[1] || '';
 
     return (
-        <div className="bg-zinc-900 border-b border-zinc-800 px-6 pt-5 pb-4">
+        <div className="border-b border-zinc-800 px-6 pt-5 pb-4" style={{ backgroundImage: theme.bgTexture, backgroundColor: '#18181b' }}>
             <div className="max-w-6xl mx-auto">
                 {/* Greeting + Streak */}
                 <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                        <span className="text-sm text-zinc-400">{greeting}</span>
+                        <span className="text-sm" style={{ color: theme.accentHex }}>{greeting}</span>
                         {streak > 0 && (
                             <span className="text-xs font-bold text-orange-400">🔥 {streak}d</span>
                         )}
@@ -99,8 +114,11 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                     )}
                 </div>
 
-                {/* Power Level — Hero Metric */}
-                <Link href="/power-level" className="block mb-3">
+                {/* Power Level + Rank Badge */}
+                <Link href="/power-level" className="flex items-center gap-3 mb-3">
+                    {!isClassic && rankImage && (
+                        <img src={rankImage} alt={rankName} className="w-10 h-10 object-contain" />
+                    )}
                     <div className="flex items-baseline gap-2">
                         <span className={`text-4xl font-black italic text-transparent bg-clip-text bg-gradient-to-r ${progressGradient}`}>
                             {powerLevel}
@@ -112,6 +130,9 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                             {isClassic ? 'Fitness Score' : 'Power Level'}
                         </span>
                     </div>
+                    {!isClassic && rankName && (
+                        <span className="text-[10px] font-bold ml-auto" style={{ color: theme.accentHex }}>{rankName}</span>
+                    )}
                 </Link>
 
                 {/* XP Bar — Compact */}
