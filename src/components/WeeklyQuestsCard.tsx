@@ -110,11 +110,12 @@ export default function WeeklyQuestsCard({ userId }: { userId: string }) {
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-sm">{q.quest_templates.icon}</span>
                   <span className="text-xs font-medium text-white flex-1">{q.quest_templates.name}</span>
-                  <span className="text-[9px] text-zinc-500">{Math.round(q.current_value)}/{Math.round(q.target_value)}</span>
+                  <span className="text-[10px] text-zinc-500">{Math.round(q.current_value)}/{Math.round(q.target_value)}</span>
                 </div>
                 <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
                   <div className={`h-full rounded-full transition-all ${pct >= 100 ? 'bg-emerald-500' : 'bg-orange-500'}`} style={{ width: `${pct}%` }} />
                 </div>
+                <div className="text-[9px] text-zinc-600 mt-1">{q.quest_templates.description?.replace('{target}', String(Math.round(q.target_value)))}</div>
               </div>
             );
           })}

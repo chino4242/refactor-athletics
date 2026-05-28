@@ -20,14 +20,18 @@ export async function checkQuestProgress(supabase: any, userId: string) {
     // Get this week's data
     const weekStartTs = Math.floor(monday.getTime() / 1000);
     const [{ data: workouts }, { data: habits }] = await Promise.all([
-      supabase.from('workouts').select('xp, raw_value, date, level').eq('user_id', userId).gte('timestamp', weekStartTs),
+      supabase.from('workouts').select('xp, raw_value, date, level, sets').eq('user_id', userId).gte('timestamp', weekStartTs),
       supabase.from('habit_logs').select('habit_id, value, date').eq('user_id', userId).gte('timestamp', weekStartTs),
     ]);
 
     // Calculate metrics
     const metrics: Record<string, number> = {};
     metrics.workout_count = new Set((workouts || []).map((w: any) => w.date)).size;
-    metrics.total_volume = (workouts || []).reduce((s: number, w: any) => s + (w.raw_value || 0), 0);
+    // Total volume = sum of (weight × reps) across all sets
+    metrics.total_volume = (workouts || []).reduce((s: number, w: any) => {
+      if (!w.sets || !Array.isArray(w.sets)) return s;
+      return s + w.sets.reduce((ss: number, set: any) => ss + ((set.weight || 0) * (set.reps || 0)), 0);
+    }, 0);
     metrics.rank_up = (workouts || []).filter((w: any) => w.level > 0).length > 0 ? 1 : 0;
     metrics.weekly_steps = (habits || []).filter((h: any) => h.habit_id === 'habit_steps').reduce((s: number, h: any) => s + (h.value || 0), 0);
 
