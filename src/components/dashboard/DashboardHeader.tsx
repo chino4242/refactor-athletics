@@ -20,6 +20,7 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
     const [streak, setStreak] = useState(0);
     const [streakAtRisk, setStreakAtRisk] = useState(false);
     const [todayProgram, setTodayProgram] = useState<string | null>(null);
+    const [challenge75, setChallenge75] = useState<{ day: number; title: string } | null>(null);
     const { currentTheme } = useTheme();
     const { isClassic } = useExperienceMode();
     const theme = THEMES[currentTheme] || THEMES['athlete'];
@@ -56,6 +57,15 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                 const dayMap: Record<number, string> = { 0: 'sunday', 1: 'monday', 2: 'tuesday', 3: 'wednesday', 4: 'thursday', 5: 'friday', 6: 'saturday' };
                 const todayEntry = (data || []).find((s: any) => s.day === dayMap[today]);
                 if (todayEntry?.program_name) setTodayProgram(todayEntry.program_name);
+            }).catch(() => {});
+
+            // Get active 75-day challenge
+            fetch('/api/challenge-75').then(r => r.json()).then(data => {
+                const active = (data.challenges || []).find((c: any) => c.status === 'active');
+                if (active) {
+                    const dayNum = Math.floor((Date.now() - new Date(active.start_date).getTime()) / 86400000) + 1;
+                    setChallenge75({ day: Math.min(dayNum, 75), title: active.title });
+                }
             }).catch(() => {});
         }
     }, [userId]);
@@ -111,6 +121,11 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                     </div>
                     {todayProgram && (
                         <span className="text-[11px] text-zinc-500 font-medium">{todayProgram}</span>
+                    )}
+                    {challenge75 && (
+                        <Link href="/challenge-75" className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                            🎯 Day {challenge75.day}/75
+                        </Link>
                     )}
                 </div>
 

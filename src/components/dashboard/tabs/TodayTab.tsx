@@ -39,6 +39,7 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
         maxDailyXp: 0,
     });
     const [loading, setLoading] = useState(true);
+    const [challenge75, setChallenge75] = useState<{ day: number; title: string; passed: number } | null>(null);
     const [showWeeklySummary, setShowWeeklySummary] = useState(() => {
         if (typeof window === 'undefined') return false;
         const today = new Date();
@@ -194,6 +195,16 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
         };
 
         loadTodayData();
+
+        // Fetch active 75-day challenge
+        fetch('/api/challenge-75').then(r => r.json()).then(data => {
+            const active = (data.challenges || []).find((c: any) => c.status === 'active');
+            if (active) {
+                const dayNum = Math.floor((Date.now() - new Date(active.start_date).getTime()) / 86400000) + 1;
+                const passed = (active.challenge_75_days || []).filter((d: any) => d.status === 'passed').length;
+                setChallenge75({ day: Math.min(dayNum, 75), title: active.title, passed });
+            }
+        }).catch(() => {});
     }, [userId]);
 
     if (loading) {
@@ -218,6 +229,20 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
         <div className="space-y-3">
             {/* Weekly Quests — collapsible pill */}
             <WeeklyQuestsCard userId={userId} />
+
+            {/* 75 Day Challenge progress */}
+            {challenge75 && (
+                <Link href="/challenge-75" className="flex items-center justify-between bg-zinc-900 border border-emerald-500/20 rounded-xl px-4 py-3 hover:border-emerald-500/40 transition">
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm">🎯</span>
+                        <div>
+                            <span className="text-xs font-bold text-white">{challenge75.title}</span>
+                            <span className="text-[10px] text-zinc-500 ml-2">Day {challenge75.day}/75 · ✅ {challenge75.passed}</span>
+                        </div>
+                    </div>
+                    <span className="text-[10px] text-emerald-400 font-bold">View →</span>
+                </Link>
+            )}
 
             {/* Compact Stats Row */}
             {profile && (
