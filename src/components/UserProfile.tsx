@@ -12,7 +12,6 @@ import RewardsTrack from './RewardsTrack';
 import { useExperienceMode } from '../context/ExperienceModeContext';
 import { THEMES } from '../data/themes';
 
-import RewardsTrack from './RewardsTrack';
 import MilestoneTable from './profile/MilestoneTable';
 import ConfirmModal from './ConfirmModal';
 import WeeklyReview from './WeeklyReview';
