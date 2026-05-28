@@ -79,6 +79,10 @@ export default function TrophyList({
                 const items = groupedTrophies[category];
                 if (!items || items.length === 0) return null;
 
+                // Show only top 3 exercises by level (highest first)
+                const sorted = [...items].sort((a, b) => (b.best?.level || 0) - (a.best?.level || 0));
+                const topItems = sorted.slice(0, 3);
+
                 // Handle legacy category merging for display
                 const displayCategory = category === "Strength (5 Rep Max)" ? "Strength" : category;
 

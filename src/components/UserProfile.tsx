@@ -12,8 +12,7 @@ import RewardsTrack from './RewardsTrack';
 import { useExperienceMode } from '../context/ExperienceModeContext';
 import { THEMES } from '../data/themes';
 
-import ProfileCard from './profile/ProfileCard';
-import TrophyList from './profile/TrophyList';
+import RewardsTrack from './RewardsTrack';
 import MilestoneTable from './profile/MilestoneTable';
 import ConfirmModal from './ConfirmModal';
 import WeeklyReview from './WeeklyReview';
@@ -85,13 +84,18 @@ export default function UserProfile({
 
 
   // --- TAB STATE ---
-  const [activeTab, setActiveTab] = useState<'trophies' | 'milestones'>('trophies');
   const [showWeeklyReview, setShowWeeklyReview] = useState(false);
 
   const theme = THEMES[activeTheme] || THEMES.athlete;
   const tier = (() => { const thresholds = [0, 5, 15, 30, 50, 80]; for (let i = thresholds.length - 1; i >= 0; i--) { if ((stats?.power_level || 0) >= thresholds[i]) return i; } return 0; })();
   const rankImage = theme.ranks?.[`level${tier}`]?.image;
   const rankName = theme.ranks?.[`level${tier}`]?.name?.split(': ')[1] || '';
+
+  // Top 3 exercises by rank level
+  const topExercises = Object.values(groupedTrophies).flat()
+    .filter((t: any) => t.best?.level > 0)
+    .sort((a: any, b: any) => (b.best?.level || 0) - (a.best?.level || 0))
+    .slice(0, 3);
 
   return (
     <div className="w-full max-w-4xl mx-auto animate-fade-in-up space-y-0">
@@ -138,48 +142,41 @@ export default function UserProfile({
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-2 p-3 px-4">
-        {(['trophies', 'milestones'] as const).map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`flex-1 py-3 px-2 rounded-xl font-bold uppercase tracking-wider transition-all text-xs ${
-              activeTab === tab
-                ? 'bg-zinc-800 text-white border border-zinc-700'
-                : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'
-            }`}
-            style={activeTab === tab ? { color: theme.accentHex } : {}}
-          >
-            {tab === 'trophies' ? '🏆 Trophies' : '🎯 Milestones'}
-          </button>
-        ))}
-      </div>
-
-      {/* Tab Content */}
-      <div className="px-4 pb-8">
-        {activeTab === 'trophies' && (
-          <div className="space-y-6 animate-fade-in-up">
-            <TrophyList
-              groupedTrophies={groupedTrophies}
-              categoryStats={categoryStats}
-              sex={sex}
-              currentTheme={currentTheme}
-              onDelete={handleDeleteClick}
-              getExerciseName={getExerciseName}
-            />
+      {/* Top Exercises */}
+      <div className="px-4 pt-5 space-y-4">
+        {topExercises.length > 0 && (
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Top Ranked</h2>
+              <a href="/power-level" className="text-[10px] text-orange-400 font-bold">See all →</a>
+            </div>
+            <div className="space-y-2">
+              {topExercises.map((trophy: any) => {
+                const name = getExerciseName(trophy.exerciseId.replace(/^(five_rm_|one_rm_)/, '')) || trophy.exerciseId.replace(/_/g, ' ');
+                const img = theme.ranks?.[`level${trophy.best?.level || 0}`]?.image;
+                return (
+                  <div key={trophy.exerciseId} className="flex items-center gap-3 bg-zinc-900 border border-zinc-800 rounded-xl p-3">
+                    {img && <img src={img} alt="" className="w-10 h-10 object-contain" />}
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-bold text-white capitalize truncate">{name}</div>
+                      <div className="text-[10px] text-zinc-500">{trophy.best?.value}</div>
+                    </div>
+                    <span className="text-xs font-bold" style={{ color: theme.accentHex }}>Lv {trophy.best?.level}</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 
-        {activeTab === 'milestones' && (
-          <div className="animate-fade-in-up space-y-4">
-            <RewardsTrack playerLevel={stats?.player_level || 1} />
-            <div className="text-sm text-zinc-400 mb-2">
-              Targets to reach the next Rank level based on your current stats.
-            </div>
+        {/* Milestones */}
+        <div>
+          <h2 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">Next Milestones</h2>
+          <RewardsTrack playerLevel={stats?.player_level || 1} />
+          <div className="mt-3">
             <MilestoneTable userId={userId} age={age} sex={sex} bodyweight={currentWeight} />
           </div>
-        )}
+        </div>
       </div>
 
       <ConfirmModal
