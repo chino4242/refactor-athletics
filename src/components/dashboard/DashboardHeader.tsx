@@ -106,7 +106,19 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
     const rankName = theme.ranks?.[rankKey]?.name?.split(': ')[1] || '';
 
     return (
-        <div className="border-b border-zinc-800 px-6 pt-5 pb-4" style={{ backgroundImage: theme.bgTexture, backgroundColor: '#18181b' }}>
+        <div className="border-b border-zinc-800">
+            {/* Compact theme banner */}
+            {!isClassic && (
+                <div className="relative h-12 overflow-hidden">
+                    <img
+                        src={`/themes/${currentTheme}/banner.png`}
+                        alt=""
+                        className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#18181b] via-[#18181b]/80 to-transparent" />
+                </div>
+            )}
+            <div className="px-6 pt-3 pb-4" style={{ backgroundImage: theme.bgTexture, backgroundColor: '#18181b' }}>
             <div className="max-w-6xl mx-auto">
                 {/* Greeting + Streak */}
                 <div className="flex items-center justify-between mb-3">
@@ -164,6 +176,7 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                     </div>
                     <span className="text-[10px] text-zinc-600">{xpToNext} to next</span>
                 </div>
+            </div>
             </div>
         </div>
     );
