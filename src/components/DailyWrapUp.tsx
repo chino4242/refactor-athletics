@@ -57,15 +57,6 @@ export default function DailyWrapUp({ userId, mode, onDismiss }: DailyWrapUpProp
       const dayStart = Math.floor(targetDate.getTime() / 1000);
       const dayEnd = dayStart + 86400;
 
-      // Fetch XP ledger entries for the target date
-      const { data: xpEntries } = await supabase
-        .from('xp_ledger')
-        .select('amount, source_label')
-        .eq('user_id', userId)
-        .gte('created_at', new Date(dayStart * 1000).toISOString())
-        .lt('created_at', new Date(dayEnd * 1000).toISOString())
-        .order('amount', { ascending: false });
-
       // Fetch habits for the date
       const { data: habits } = await supabase
         .from('habit_logs')
@@ -117,39 +108,9 @@ export default function DailyWrapUp({ userId, mode, onDismiss }: DailyWrapUpProp
         xp: workouts.reduce((s, w) => s + (w.xp || 0), 0),
       } : null;
 
-      // Deduplicate: keep highest XP entry per source_label, filter out noise
-      const deduped = new Map<string, number>();
-      for (const e of (xpEntries || [])) {
-        if (e.amount <= 0) continue;
-        if (e.source_label === 'exercise_minutes' || e.source_label === 'Exercise Minutes') continue;
-        if (e.source_label.startsWith('Auto-Cal')) continue;
-        const existing = deduped.get(e.source_label) || 0;
-        if (e.amount > existing) deduped.set(e.source_label, e.amount);
-      }
-
-      // Fallback: if ledger is sparse, synthesize from actual habit/workout data
-      if (steps > 0 && !deduped.has('Steps')) {
-        const { stepsToXp } = await import('@/utils/xp');
-        deduped.set('Steps', stepsToXp(steps));
-      }
-      if (sleep > 0 && !deduped.has('Sleep')) {
-        deduped.set('Sleep', Math.round(sleep * 2));
-      }
-      if (workout && !deduped.has('Workout')) {
-        deduped.set('Workout', workout.xp);
-      }
-
-      // Consolidate individual macro entries into one "Nutrition" line
-      let nutritionXp = 0;
-      const macroLabels = ['Protein', 'Carbs', 'Fat', 'Water', 'Calories Burned', 'protein', 'carbs', 'fat'];
-      for (const label of macroLabels) {
-        if (deduped.has(label)) { nutritionXp += deduped.get(label)!; deduped.delete(label); }
-      }
-      if (nutritionXp > 0) deduped.set('Logged nutrition', nutritionXp);
-
-      const xpItems = Array.from(deduped.entries()).map(([source_label, amount]) => ({ source_label, amount }));
-      xpItems.sort((a, b) => b.amount - a.amount);
-      const totalXp = xpItems.reduce((s, e) => s + e.amount, 0);
+      // Deduplicate and calculate XP using shared utility
+      const { getTodayXp } = await import('@/utils/getTodayXp');
+      const { xpItems, totalXp } = await getTodayXp(userId, targetDate);
 
       setData({ date: dateStr, xpItems, totalXp, steps, sleep, macros, workout });
       setLoading(false);
