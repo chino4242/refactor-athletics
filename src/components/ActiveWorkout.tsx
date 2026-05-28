@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from 'react';
 import { Info, ChevronRight } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { THEMES } from '@/data/themes';
@@ -17,6 +18,7 @@ import SupersetView from './active-workout/SupersetView';
 import BlockCompleteOverlay from './active-workout/BlockCompleteOverlay';
 import MissionHub from './active-workout/MissionHub';
 import { useWorkoutSession } from './active-workout/useWorkoutSession';
+import FlexibleWorkoutView from './active-workout/FlexibleWorkoutView';
 
 interface ActiveWorkoutProps {
   userId: string;
@@ -26,6 +28,7 @@ interface ActiveWorkoutProps {
 
 export default function ActiveWorkout({ userId, onLogComplete, initialDate }: ActiveWorkoutProps) {
   const session = useWorkoutSession({ userId, onLogComplete, initialDate });
+  const [workoutMode, setWorkoutMode] = useState<'guided' | 'flexible'>('guided');
 
   // Theme-aware rank names
   const { currentTheme } = useTheme();
@@ -234,19 +237,37 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
         </div>
       )}
 
-      {/* Workout Header */}
+      {/* Workout Header + Mode Toggle */}
       <div className="mb-3 flex items-center justify-between px-1">
         <button onClick={() => setViewMode('HUB')} className="text-left cursor-pointer">
           <div className="flex items-center gap-1.5">
             <span className="text-zinc-500 text-sm">‹</span>
             <span className="text-[10px] font-bold uppercase tracking-widest text-orange-400">
-              Block {completedIndices.length + 1} of {workoutData.length} · Today&apos;s Workout
+              Block {completedIndices.length + 1} of {workoutData.length}
             </span>
           </div>
         </button>
+        <div className="flex bg-zinc-800 rounded-lg p-0.5">
+          <button onClick={() => setWorkoutMode('guided')} className={`px-2.5 py-1 rounded text-[10px] font-bold transition ${workoutMode === 'guided' ? 'bg-zinc-700 text-white' : 'text-zinc-500'}`}>Guided</button>
+          <button onClick={() => setWorkoutMode('flexible')} className={`px-2.5 py-1 rounded text-[10px] font-bold transition ${workoutMode === 'flexible' ? 'bg-zinc-700 text-white' : 'text-zinc-500'}`}>Flexible</button>
+        </div>
       </div>
 
-      {mainView}
+      {/* Flexible Mode */}
+      {workoutMode === 'flexible' ? (
+        <FlexibleWorkoutView
+          workoutData={workoutData}
+          completedIndices={completedIndices}
+          onCompleteBlock={(idx, data) => { setBlockIndex(idx); handleBlockComplete(false, data || []); }}
+          onSkipBlock={(idx) => { setBlockIndex(idx); handleBlockComplete(true); }}
+          fullHistory={fullHistory}
+          catalog={catalog}
+          userProfile={userProfile}
+        />
+      ) : (
+        /* Guided Mode (existing) */
+        mainView
+      )}
 
       {/* End Workout */}
       <div className="mt-3 text-center">
