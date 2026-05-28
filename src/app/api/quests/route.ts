@@ -100,7 +100,7 @@ export async function POST(request: Request) {
   return NextResponse.json({ success: true, week: weekStart, quests: slate.length });
 }
 
-// GET: fetch current week's slate
+// GET: fetch current week's slate with live progress
 export async function GET(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -108,6 +108,10 @@ export async function GET(request: Request) {
 
   const service = createServiceClient();
   const weekStart = getWeekStart();
+
+  // Recalculate progress on every fetch
+  const { checkQuestProgress } = await import('@/utils/questProgress');
+  await checkQuestProgress(service, user.id).catch(() => {});
 
   const { data: slate } = await service.from('quest_slate')
     .select('*, quest_templates(*)')
