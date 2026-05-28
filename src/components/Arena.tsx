@@ -30,7 +30,7 @@ type TabId = typeof TABS[number]['id'];
 export default function Arena({ userId }: ArenaProps) {
   const toast = useToast();
   const { isClassic } = useExperienceMode();
-  const { theme: _theme } = useTheme();
+  const { currentTheme, theme: _theme } = useTheme();
   const theme = _theme || THEMES.athlete;
   const [activeTab, setActiveTab] = useState<TabId>('duels');
   const [isLoading, setIsLoading] = useState(true);
@@ -63,50 +63,53 @@ export default function Arena({ userId }: ArenaProps) {
   useEffect(() => { loadDuels(); }, [loadDuels]);
 
   return (
-    <div className="max-w-3xl mx-auto flex flex-col gap-4 pb-32" style={{ backgroundImage: theme.bgTexture }}>
+    <div className="max-w-3xl mx-auto flex flex-col gap-0 pb-32 relative" style={{ backgroundImage: theme.bgTexture }}>
 
-      {/* Header */}
-      <div className="flex items-center justify-between px-2 pt-2">
-        <div>
-          <h1 className="text-xl font-black text-white">{isClassic ? 'Social' : theme.labels.arena}</h1>
-          <p className="text-xs text-zinc-500">{isClassic ? 'Challenge friends' : 'Prove your strength'}</p>
+      {/* Hero Banner Section */}
+      <section className="relative w-full h-44 overflow-hidden rounded-b-2xl mx-0">
+        <img src={`/themes/${currentTheme}/banner.png`} alt="" className="absolute inset-0 w-full h-full object-cover object-[center_20%]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-zinc-950/30 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 px-4 pb-4 flex items-end justify-between">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: theme.accentHex }}>{theme.displayName}</p>
+            <h1 className="text-2xl font-black text-white">{isClassic ? 'Social' : theme.labels.arena}</h1>
+          </div>
+          <LevelGate featureId="duels" playerLevel={playerLevel} inline>
+            <button
+              onClick={() => setIsChallengeModalOpen(true)}
+              className={`flex items-center gap-1.5 bg-gradient-to-r ${theme.accentGradient} text-white px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all active:scale-95 shadow-lg`}
+            >
+              <Plus size={14} />
+              Challenge
+            </button>
+          </LevelGate>
         </div>
-        <LevelGate featureId="duels" playerLevel={playerLevel} inline>
-          <button
-            onClick={() => setIsChallengeModalOpen(true)}
-            className={`flex items-center gap-1.5 bg-gradient-to-r ${theme.accentGradient} text-white px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all active:scale-95 shadow-lg`}
-            style={{ boxShadow: `0 10px 15px -3px ${theme.accentHex}20` }}
-          >
-            <Plus size={14} />
-            Challenge
-          </button>
-        </LevelGate>
+      </section>
+
+      {/* 75 Day Challenge CTA */}
+      <div className="px-3 mt-4">
+        <Link href="/challenge-75" className="flex items-center gap-3 p-3 bg-zinc-900 border border-zinc-800 rounded-xl hover:border-zinc-700 transition">
+          <span className="text-xl">🎯</span>
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-bold text-white">75 Day Challenge</div>
+            <div className="text-[10px] text-zinc-500">Solo or with your group</div>
+          </div>
+          <span className="text-zinc-600">›</span>
+        </Link>
       </div>
 
-      {/* 75 Day Challenge Banner */}
-      <Link href="/challenge-75" className="mx-2 bg-gradient-to-r from-orange-600/20 to-red-600/20 border border-orange-500/30 rounded-xl p-4 flex items-center justify-between hover:border-orange-500/50 transition">
-        <div className="flex items-center gap-3">
-          <span className="text-2xl">🎯</span>
-          <div>
-            <div className="text-sm font-bold text-white">75 Day Challenge</div>
-            <div className="text-[11px] text-zinc-400">Solo or with your group — no excuses for 75 days</div>
-          </div>
-        </div>
-        <span className="text-zinc-500 text-xs">→</span>
-      </Link>
-
       {/* Tabs */}
-      <div className="flex gap-1.5 px-2">
+      <div className="flex gap-1.5 px-3 mt-5">
         {TABS.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
               activeTab === tab.id
-                ? 'bg-gradient-to-b from-zinc-700/80 to-zinc-800/80 text-white border border-zinc-600/50 shadow-lg shadow-black/20'
+                ? 'bg-gradient-to-b from-zinc-700/80 to-zinc-800/80 border border-zinc-600/50 shadow-lg shadow-black/20'
                 : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'
             }`}
-            style={activeTab === tab.id ? { borderColor: `${theme.accentHex}30` } : {}}
+            style={activeTab === tab.id ? { borderColor: `${theme.accentHex}30`, color: theme.accentHex } : {}}
           >
             <span>{tab.icon}</span>
             <span>{isClassic ? tab.label : tab.rpgLabel}</span>

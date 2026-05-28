@@ -85,139 +85,102 @@ export default function UserProfile({
 
 
   // --- TAB STATE ---
-  const [activeTab, setActiveTab] = useState<'settings' | 'trophies' | 'milestones'>('settings');
-  const [showThemes, setShowThemes] = useState(false);
+  const [activeTab, setActiveTab] = useState<'trophies' | 'milestones'>('trophies');
   const [showWeeklyReview, setShowWeeklyReview] = useState(false);
 
+  const theme = THEMES[activeTheme] || THEMES.athlete;
+  const tier = (() => { const thresholds = [0, 5, 15, 30, 50, 80]; for (let i = thresholds.length - 1; i >= 0; i--) { if ((stats?.power_level || 0) >= thresholds[i]) return i; } return 0; })();
+  const rankImage = theme.ranks?.[`level${tier}`]?.image;
+  const rankName = theme.ranks?.[`level${tier}`]?.name?.split(': ')[1] || '';
+
   return (
-    <div className="w-full max-w-4xl mx-auto animate-fade-in-up space-y-6 p-4">
+    <div className="w-full max-w-4xl mx-auto animate-fade-in-up space-y-0">
 
       {showWeeklyReview && (
-        <WeeklyReview
-          userId={userId}
-          onClose={() => setShowWeeklyReview(false)}
-        />
+        <WeeklyReview userId={userId} onClose={() => setShowWeeklyReview(false)} />
       )}
 
-      {/* HEADER */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-black uppercase tracking-widest">{displayName}</h1>
-          <p className="text-xs text-zinc-500">LVL {stats?.player_level || 1} · {stats?.total_career_xp || 0} XP</p>
+      {/* Hero Banner — Character Identity */}
+      <section className="relative w-full h-52 overflow-hidden rounded-b-2xl">
+        <img src={`/themes/${activeTheme}/banner.png`} alt="" className="absolute inset-0 w-full h-full object-cover object-[center_20%]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/95 via-zinc-950/40 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 px-5 pb-5 flex items-end gap-4">
+          {rankImage && <img src={rankImage} alt={rankName} className="w-16 h-16 object-contain" />}
+          <div className="flex-1">
+            <h1 className="text-2xl font-black text-white uppercase tracking-wide">{displayName}</h1>
+            <div className="flex items-center gap-3 mt-1">
+              <span className="text-xs font-bold" style={{ color: theme.accentHex }}>{rankName || `Tier ${tier}`}</span>
+              <span className="text-[10px] text-zinc-400">Lv {stats?.player_level || 1}</span>
+              <span className="text-[10px] text-zinc-500">{stats?.total_career_xp || 0} XP</span>
+            </div>
+          </div>
+          <button onClick={() => setShowWeeklyReview(true)} className="p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-700/50 text-sm" title="Weekly Report">📜</button>
         </div>
-        <button
-          onClick={() => setShowWeeklyReview(true)}
-          className="p-3 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-600 transition text-sm"
-          title="Weekly Report"
-        >
-          📜
-        </button>
+      </section>
+
+      {/* Stats Row */}
+      <div className="flex items-center justify-around px-4 py-4 bg-zinc-900 border-b border-zinc-800">
+        <div className="text-center">
+          <div className="text-lg font-black text-white">{stats?.power_level || 0}</div>
+          <div className="text-[9px] text-zinc-500 uppercase font-bold">{isClassic ? 'Score' : 'Power'}</div>
+        </div>
+        <div className="text-center">
+          <div className="text-lg font-black text-white">{stats?.exercises_tracked || 0}</div>
+          <div className="text-[9px] text-zinc-500 uppercase font-bold">Ranked</div>
+        </div>
+        <div className="text-center">
+          <div className="text-lg font-black text-white">{currentWeight}</div>
+          <div className="text-[9px] text-zinc-500 uppercase font-bold">lbs</div>
+        </div>
+        <div className="text-center">
+          <div className="text-lg font-black text-white">{stats?.player_level || 1}</div>
+          <div className="text-[9px] text-zinc-500 uppercase font-bold">Level</div>
+        </div>
       </div>
 
-      {/* TABS */}
-      <div className="flex gap-2 p-1 bg-zinc-900/50 rounded-xl border border-zinc-800">
-        {(['settings', 'trophies', 'milestones'] as const).map(tab => (
+      {/* Tabs */}
+      <div className="flex gap-2 p-3 px-4">
+        {(['trophies', 'milestones'] as const).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`flex-1 py-3 px-2 rounded-lg font-black italic uppercase tracking-wider transition-all text-[10px] md:text-sm ${
+            className={`flex-1 py-3 px-2 rounded-xl font-bold uppercase tracking-wider transition-all text-xs ${
               activeTab === tab
-                ? tab === 'milestones' ? 'bg-emerald-600/20 text-emerald-500 border border-emerald-500/30' : 'bg-zinc-800 text-white border border-zinc-700'
+                ? 'bg-zinc-800 text-white border border-zinc-700'
                 : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'
             }`}
+            style={activeTab === tab ? { color: theme.accentHex } : {}}
           >
-            {tab === 'settings' ? '⚙️ Settings' : tab === 'trophies' ? '🏆 Trophies' : '🎯 Milestones'}
+            {tab === 'trophies' ? '🏆 Trophies' : '🎯 Milestones'}
           </button>
         ))}
       </div>
 
-      {activeTab === 'settings' && (
-        <div className="space-y-6 animate-fade-in-up">
-          <ProfileCard
-            displayName={displayName}
-            userId={userId}
-            age={age}
-            sex={sex}
-            currentWeight={currentWeight}
-            goalWeight={initialGoalWeight}
-            measurementMode={measurementMode}
-            level={stats?.player_level || 1}
-            onProfileUpdate={handleProfileUpdate}
-            onReload={loadUserData}
-          />
+      {/* Tab Content */}
+      <div className="px-4 pb-8">
+        {activeTab === 'trophies' && (
+          <div className="space-y-6 animate-fade-in-up">
+            <TrophyList
+              groupedTrophies={groupedTrophies}
+              categoryStats={categoryStats}
+              sex={sex}
+              currentTheme={currentTheme}
+              onDelete={handleDeleteClick}
+              getExerciseName={getExerciseName}
+            />
+          </div>
+        )}
 
-          {/* Theme Picker */}
-          {(isClassic && !showThemes) ? (
-          <button
-              onClick={() => setShowThemes(true)}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-4 text-left hover:border-zinc-700 transition"
-          >
-              <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                      <span>🎨</span>
-                      <span className="text-sm text-zinc-400">Customize Theme</span>
-                  </div>
-                  <span className="text-xs text-zinc-600">Optional</span>
-              </div>
-          </button>
-          ) : (
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
-            <h2 className="text-sm font-black uppercase tracking-widest mb-4">🎨 Theme</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {Object.entries(THEMES).map(([key, theme]) => (
-                <button
-                  key={key}
-                  onClick={() => setCurrentTheme(key)}
-                  className={`relative rounded-xl overflow-hidden border-2 transition-all aspect-video ${activeTheme === key
-                    ? 'border-emerald-400 shadow-[0_0_20px_rgba(52,211,153,0.4)]'
-                    : 'border-zinc-700 hover:border-zinc-500'
-                  }`}
-                >
-                  <img src={`/themes/${key}/banner.png`} alt={theme.displayName} className="w-full h-full object-cover opacity-70" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                  <div className="absolute bottom-2 left-2 right-2">
-                    <p className="text-white text-xs font-black uppercase tracking-wider leading-tight">{theme.emoji} {theme.displayName}</p>
-                  </div>
-                  {activeTheme === key && (
-                    <div className="absolute top-2 right-2 w-5 h-5 bg-emerald-400 rounded-full flex items-center justify-center">
-                      <span className="text-black text-xs font-black">✓</span>
-                    </div>
-                  )}
-                </button>
-              ))}
+        {activeTab === 'milestones' && (
+          <div className="animate-fade-in-up space-y-4">
+            <RewardsTrack playerLevel={stats?.player_level || 1} />
+            <div className="text-sm text-zinc-400 mb-2">
+              Targets to reach the next Rank level based on your current stats.
             </div>
+            <MilestoneTable userId={userId} age={age} sex={sex} bodyweight={currentWeight} />
           </div>
-          )}
-        </div>
-      )}
-
-      {activeTab === 'trophies' && (
-        <div className="space-y-6 animate-fade-in-up">
-          <TrophyList
-            groupedTrophies={groupedTrophies}
-            categoryStats={categoryStats}
-            sex={sex}
-            currentTheme={currentTheme}
-            onDelete={handleDeleteClick}
-            getExerciseName={getExerciseName}
-          />
-        </div>
-      )}
-
-      {activeTab === 'milestones' && (
-        <div className="animate-fade-in-up space-y-4">
-          <RewardsTrack playerLevel={stats?.player_level || 1} />
-          <div className="text-sm text-zinc-400 mb-2">
-            Targets to reach the next Rank level based on your current stats.
-          </div>
-          <MilestoneTable
-            userId={userId}
-            age={age}
-            sex={sex}
-            bodyweight={currentWeight}
-          />
-        </div>
-      )}
+        )}
+      </div>
 
       <ConfirmModal
         isOpen={!!itemToDelete}
