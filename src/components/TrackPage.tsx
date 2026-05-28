@@ -245,12 +245,11 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
 
   return (
     <div className="max-w-3xl mx-auto flex flex-col gap-4 relative pb-32" style={{ backgroundImage: theme.bgTexture }}>
-      {/* Rank watermark */}
-      {(() => {
-        const img = theme.ranks?.level1?.image || theme.ranks?.level0?.image;
-        if (!img) return null;
-        return <img src={img} alt="" className="absolute bottom-36 right-2 w-20 h-20 object-contain opacity-[0.08] pointer-events-none" />;
-      })()}
+      {/* Theme banner behind header area */}
+      <div className="absolute top-0 left-0 right-0 h-40 overflow-hidden pointer-events-none">
+        <img src={`/themes/${currentTheme}/banner.png`} alt="" className="w-full h-full object-cover object-[center_20%] opacity-20" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-zinc-950" />
+      </div>
       <FirstVisitTooltip id="track" message="Log meals, habits, and body measurements here. Everything earns XP." />
       {showLevelUp && <LevelUpOverlay level={showLevelUp} onClose={() => setShowLevelUp(null)} />}
 
