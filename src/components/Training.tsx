@@ -121,7 +121,12 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
   }
 
   return (
-    <div className="max-w-3xl mx-auto flex flex-col gap-4 pb-32" style={{ backgroundImage: theme.bgTexture }}>
+    <div className="max-w-3xl mx-auto flex flex-col gap-4 pb-32 relative" style={{ backgroundImage: theme.bgTexture }}>
+      {/* Theme banner behind header */}
+      <div className="absolute top-0 left-0 right-0 h-40 overflow-hidden pointer-events-none">
+        <img src={`/themes/${currentTheme}/banner.png`} alt="" className="w-full h-full object-cover object-[center_20%] opacity-20" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-zinc-950" />
+      </div>
 
       <FirstVisitTooltip id="train" message="Your scheduled workout for today. Tap Start to begin — you'll earn XP for every set." />
 
