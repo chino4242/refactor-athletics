@@ -106,6 +106,7 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
                 for (const e of (ledgerEntries || [])) {
                     if (e.amount <= 0) continue;
                     if (e.source_label?.startsWith('Auto-Cal')) continue;
+                    if (e.source_label === 'exercise_minutes' || e.source_label === 'Exercise Minutes') continue;
                     const existing = deduped.get(e.source_label) || 0;
                     if (e.amount > existing) deduped.set(e.source_label, e.amount);
                 }
