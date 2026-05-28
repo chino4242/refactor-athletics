@@ -1,23 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { createClient } from '@/utils/supabase/server';
 
 export async function POST(request: NextRequest) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
     const { day1, day2 } = await request.json();
     if (!day1 || !day2) return NextResponse.json({ error: 'Missing days' }, { status: 400 });
 
-    const dir = path.join(process.cwd(), 'public', 'workouts', 'weekly');
-    const file1 = path.join(dir, `${day1}.txt`);
-    const file2 = path.join(dir, `${day2}.txt`);
+    // Get programs assigned to these days
+    const { data: programs } = await supabase
+        .from('workout_programs')
+        .select('id, day_of_week')
+        .eq('user_id', user.id)
+        .in('day_of_week', [day1, day2]);
 
-    if (!fs.existsSync(file1) || !fs.existsSync(file2)) {
-        return NextResponse.json({ error: 'Workout file not found' }, { status: 404 });
+    if (!programs || programs.length === 0) {
+        return NextResponse.json({ error: 'No programs found for these days' }, { status: 404 });
     }
 
-    const content1 = fs.readFileSync(file1, 'utf8');
-    const content2 = fs.readFileSync(file2, 'utf8');
-    fs.writeFileSync(file1, content2, 'utf8');
-    fs.writeFileSync(file2, content1, 'utf8');
+    // Swap day_of_week values
+    const day1Programs = programs.filter(p => p.day_of_week === day1);
+    const day2Programs = programs.filter(p => p.day_of_week === day2);
+
+    const updates = [
+        ...day1Programs.map(p => supabase.from('workout_programs').update({ day_of_week: day2 }).eq('id', p.id)),
+        ...day2Programs.map(p => supabase.from('workout_programs').update({ day_of_week: day1 }).eq('id', p.id)),
+    ];
+
+    await Promise.all(updates);
 
     return NextResponse.json({ success: true });
 }

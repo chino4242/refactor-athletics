@@ -54,6 +54,9 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
   }, []);
   const [showWeekView, setShowWeekView] = useState(false);
   const [showQuickLog, setShowQuickLog] = useState(false);
+  const [swapMode, setSwapMode] = useState(false);
+  const [swapFrom, setSwapFrom] = useState<string | null>(null);
+  const [completedDates, setCompletedDates] = useState<Set<string>>(new Set());
 
   const todayStr = format(new Date(), 'yyyy-MM-dd');
   const [userPath, setUserPath] = useState('hybrid');
@@ -62,6 +65,17 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
   useEffect(() => {
     getProfile(userId).then(p => { if (p?.selected_path) setUserPath(p.selected_path); });
   }, [userId]);
+
+  // Load completed dates this week (for swap locking)
+  useEffect(() => {
+    if (!initialHistory) return;
+    const start = startOfWeek(new Date(), { weekStartsOn: 1 });
+    const dates = new Set<string>();
+    (initialHistory || []).forEach((h: any) => {
+      if (h.date && new Date(h.date) >= start) dates.add(h.date);
+    });
+    setCompletedDates(dates);
+  }, [initialHistory]);
 
   // Load schedule
   useEffect(() => {
@@ -202,20 +216,73 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
           <Link href="/workouts" className="p-1.5 text-zinc-500 hover:text-orange-400 rounded hover:bg-zinc-800/50 transition">
             <Settings size={14} />
           </Link>
+          {showWeekView && (
+            <button onClick={() => { setSwapMode(!swapMode); setSwapFrom(null); }}
+              className={`text-[10px] font-bold px-2 py-1 rounded-lg transition ${swapMode ? 'bg-orange-500/20 text-orange-400' : 'text-zinc-500 hover:text-orange-400'}`}>
+              Swap
+            </button>
+          )}
         </div>
 
         {showWeekView && (
           <div className="flex flex-col gap-1.5 animate-fade-in-up pb-2">
+            {swapMode && (
+              <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg px-3 py-2 flex items-center justify-between mb-1">
+                <span className="text-[11px] text-orange-400 font-bold">
+                  {swapFrom ? `Tap another day to swap with ${format(weekDays.find(d => d.dateStr === swapFrom)?.date || new Date(), 'EEEE')}` : 'Tap a day to swap'}
+                </span>
+                <button onClick={() => { setSwapMode(false); setSwapFrom(null); }} className="text-[10px] text-zinc-500">Cancel</button>
+              </div>
+            )}
             {weekDays.map(day => {
               const isToday = day.dateStr === todayStr;
               const style = TYPE_STYLES[day.plan.type] || TYPE_STYLES.Recovery;
+              const isCompleted = completedDates.has(day.dateStr);
+              const isSwapSelected = swapFrom === day.dateStr;
 
               return (
                 <button
                   key={day.dateStr}
-                  onClick={() => { setSelectedDayStr(day.dateStr); setShowActiveWorkout(true); }}
+                  onClick={async () => {
+                    if (swapMode) {
+                      if (isCompleted) return; // Can't swap completed days
+                      if (!swapFrom) {
+                        setSwapFrom(day.dateStr);
+                      } else if (swapFrom !== day.dateStr) {
+                        // Perform swap
+                        const fromDay = weekDays.find(d => d.dateStr === swapFrom);
+                        const toDay = day;
+                        if (fromDay) {
+                          const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+                          await fetch('/api/workouts/swap-days', {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ day1: dayNames[fromDay.date.getDay()], day2: dayNames[toDay.date.getDay()] }),
+                          });
+                          setSwapMode(false);
+                          setSwapFrom(null);
+                          // Reload schedule
+                          const apiData = await getWeeklySchedule();
+                          const start = startOfWeek(new Date(), { weekStartsOn: 1 });
+                          const scheduleMap = new Map<number, any>();
+                          (apiData || []).forEach((d: any) => scheduleMap.set(d.order, d));
+                          setWeekDays(Array.from({ length: 7 }, (_, i) => {
+                            const date = addDays(start, i);
+                            const api = scheduleMap.get(i);
+                            return { date, dateStr: format(date, 'yyyy-MM-dd'), plan: api ? { title: api.title, type: api.type || 'Training', xp: api.xp || 0, exercises: api.exercises, treadmillBlocks: api.treadmillBlocks } : { title: 'Rest Day', type: 'Recovery', xp: 0 } };
+                          }));
+                        }
+                      }
+                    } else {
+                      setSelectedDayStr(day.dateStr); setShowActiveWorkout(true);
+                    }
+                  }}
+                  disabled={swapMode && isCompleted}
                   className={`flex items-center gap-3 p-3 rounded-xl transition-all active:scale-[0.98] ${
-                    isToday
+                    isSwapSelected
+                      ? 'bg-orange-500/20 border border-orange-500/50'
+                      : swapMode && isCompleted
+                      ? 'bg-zinc-900/20 border border-transparent opacity-40'
+                      : isToday
                       ? 'bg-zinc-800/80 border border-zinc-700/50'
                       : 'bg-zinc-900/40 border border-transparent hover:bg-zinc-800/50 hover:border-zinc-700/30'
                   }`}
