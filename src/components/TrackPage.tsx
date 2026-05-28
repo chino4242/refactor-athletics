@@ -40,8 +40,8 @@ type TabId = typeof ALL_TABS[number]['id'];
 
 export default function TrackPage({ userId, bodyweight, initialProfile, initialStats, onLogComplete }: TrackPageProps) {
   const toast = useToast();
-  const { theme: _theme } = useTheme();
-  const theme = _theme || THEMES.athlete;
+  const { currentTheme } = useTheme();
+  const theme = THEMES[currentTheme] || THEMES.athlete;
 
   // --- Date navigation ---
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -245,6 +245,12 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
 
   return (
     <div className="max-w-3xl mx-auto flex flex-col gap-4 relative pb-32" style={{ backgroundImage: theme.bgTexture }}>
+      {/* Rank watermark */}
+      {(() => {
+        const img = theme.ranks?.level1?.image || theme.ranks?.level0?.image;
+        if (!img) return null;
+        return <img src={img} alt="" className="absolute bottom-36 right-2 w-20 h-20 object-contain opacity-[0.08] pointer-events-none" />;
+      })()}
       <FirstVisitTooltip id="track" message="Log meals, habits, and body measurements here. Everything earns XP." />
       {showLevelUp && <LevelUpOverlay level={showLevelUp} onClose={() => setShowLevelUp(null)} />}
 
@@ -343,10 +349,10 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
             onClick={() => handleTabChange(tab.id)}
             className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
               activeTab === tab.id
-                ? 'bg-gradient-to-b from-zinc-700/80 to-zinc-800/80 text-white border border-zinc-600/50 shadow-lg shadow-black/20'
+                ? 'bg-gradient-to-b from-zinc-700/80 to-zinc-800/80 border border-zinc-600/50 shadow-lg shadow-black/20'
                 : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'
             }`}
-            style={activeTab === tab.id ? { borderColor: `${theme.accentHex}30` } : {}}
+            style={activeTab === tab.id ? { borderColor: `${theme.accentHex}30`, color: theme.accentHex } : {}}
           >
             <span>{tab.icon}</span>
             <span>{tab.label}</span>
