@@ -81,7 +81,7 @@ export default function WeeklyQuestsCard({ userId }: { userId: string }) {
         <div className="flex items-center gap-2">
           <span className="text-sm">⚔️</span>
           <span className="text-xs font-bold text-zinc-300">
-            {offered.length > 0 && total === 0 ? 'New quests available' : `${completed.length}/${total} Quests`}
+            {offered.length > 0 && total === 0 ? 'New quests available' : `${completed.length}/${total} Weekly Quests`}
           </span>
           {allComplete && <Check size={12} className="text-emerald-400" />}
         </div>
