@@ -39,7 +39,7 @@ const TYPE_STYLES: Record<string, { bg: string; text: string; dot: string }> = {
 };
 
 export default function Training({ userId, bodyweight, sex, age, initialHistory, initialCatalog, onLogComplete, highestLevel = 0 }: TrainingProps) {
-  const { theme: _theme } = useTheme();
+  const { currentTheme, theme: _theme } = useTheme();
   const theme = _theme || THEMES.athlete;
   const [weekDays, setWeekDays] = useState<DayPlan[]>([]);
   const [selectedDayStr, setSelectedDayStr] = useState('');
