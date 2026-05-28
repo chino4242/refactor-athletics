@@ -319,35 +319,6 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
                 );
             })()}
 
-            {/* Today's Scheduled Workout */}
-            <Link href="/train" className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-700 transition-colors block">
-                <div className="flex items-center gap-2 mb-1">
-                    <span className="text-lg">📅</span>
-                    <h3 className="text-xs font-bold text-white uppercase tracking-wider">Today</h3>
-                </div>
-                {todayScheduled ? (
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm font-bold text-white mb-1">{todayScheduled.name}</p>
-                            <div className="flex items-center gap-2 text-xs text-zinc-500">
-                                <span className={`px-1.5 py-0.5 rounded font-bold text-[10px] ${
-                                    todayScheduled.type === 'Strength' ? 'bg-blue-950/50 text-blue-400' :
-                                    todayScheduled.type === 'Cardio' ? 'bg-red-950/50 text-red-400' :
-                                    todayScheduled.type === 'Hybrid' ? 'bg-purple-950/50 text-purple-400' :
-                                    'bg-zinc-800 text-zinc-400'
-                                }`}>
-                                    {todayScheduled.type}
-                                </span>
-                                <span className="text-[10px]">⚡ {todayScheduled.xp} {isClassic ? 'pts' : 'XP'}</span>
-                            </div>
-                        </div>
-                        <span className="text-orange-500 text-xs font-bold uppercase">Start →</span>
-                    </div>
-                ) : (
-                    <p className="text-xs text-zinc-500">Rest day 😴</p>
-                )}
-            </Link>
-
             {/* Tomorrow Preview (after 8 PM) */}
             <TomorrowPreview userId={userId} />
         </div>
