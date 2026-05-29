@@ -253,18 +253,23 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate }: Ac
         </div>
       </div>
 
-      {/* Flexible Mode */}
-      {workoutMode === 'flexible' ? (
-        <FlexibleWorkoutView
-          workoutData={workoutData}
-          completedIndices={completedIndices}
-          onCompleteBlock={(idx, data) => { setBlockIndex(idx); handleBlockComplete(false, data || []); }}
-          onSkipBlock={(idx) => { setBlockIndex(idx); handleBlockComplete(true); }}
-          fullHistory={fullHistory}
-          catalog={catalog}
-          userProfile={userProfile}
-        />
-      ) : (
+      {/* Flexible Mode — current section only */}
+      {workoutMode === 'flexible' ? (() => {
+        const currentSection = currentBlock?.section || 'General';
+        const sectionBlocks = workoutData.map((b, i) => ({ ...b, _globalIdx: i })).filter(b => (b.section || 'General') === currentSection);
+        const sectionCompletedIndices = completedIndices;
+        return (
+          <FlexibleWorkoutView
+            workoutData={sectionBlocks}
+            completedIndices={sectionCompletedIndices}
+            onCompleteBlock={(idx, data) => { const globalIdx = sectionBlocks[idx]._globalIdx; setBlockIndex(globalIdx); handleBlockComplete(false, data || []); }}
+            onSkipBlock={(idx) => { const globalIdx = sectionBlocks[idx]._globalIdx; setBlockIndex(globalIdx); handleBlockComplete(true); }}
+            fullHistory={fullHistory}
+            catalog={catalog}
+            userProfile={userProfile}
+          />
+        );
+      })() : (
         /* Guided Mode (existing) */
         mainView
       )}

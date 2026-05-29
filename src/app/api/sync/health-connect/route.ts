@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
           if (rankedExerciseId) {
             try {
               const { logTrainingAction } = await import('@/app/actions');
-              const result = await logTrainingAction(user.id, rankedExerciseId, user.bodyweight || 180, 'male', [{ duration: dur, reps: 1, weight: 0 }]);
+              const result = await logTrainingAction(user.id, rankedExerciseId, user.bodyweight || 180, 'male', [{ duration: dur, weight: 0 }]);
               synced.push(`${rankedExerciseId}: Lv.${result.level}`);
               continue;
             } catch (e: any) { console.error('Ranked exercise failed:', e.message); }

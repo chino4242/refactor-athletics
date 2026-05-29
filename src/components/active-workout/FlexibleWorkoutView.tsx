@@ -92,7 +92,7 @@ export default function FlexibleWorkoutView({ workoutData, completedIndices, onC
       <RestTimerBar restTime={restTime} totalRest={60} onSkip={() => { setRestTime(0); setIsResting(false); }} />
 
       {workoutData.map((block, idx) => {
-        const isCompleted = completedIndices.includes(idx);
+        const isCompleted = completedIndices.includes(block._globalIdx ?? idx);
         const isExpanded = expandedBlock === idx;
         const totalSets = block.sets || 1;
         const state = getBlockState(idx);

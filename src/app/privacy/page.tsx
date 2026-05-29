@@ -34,6 +34,11 @@ export default function PrivacyPage() {
                 </section>
 
                 <section>
+                    <h2 className="text-white font-bold mb-2">AI Processing</h2>
+                    <p>When you use the photo-to-macros feature, your food photos are sent to Anthropic&apos;s Claude AI for analysis. Photos are processed in real-time and are not stored by Anthropic. The AI identifies food items and estimates nutritional content. No personal information is sent with the photo.</p>
+                </section>
+
+                <section>
                     <h2 className="text-white font-bold mb-2">Data Storage</h2>
                     <p>Your data is stored securely on Supabase (PostgreSQL) with row-level security enabled. All data is transmitted over HTTPS. We do not store payment information — subscriptions are handled by Apple/Google through RevenueCat.</p>
                 </section>

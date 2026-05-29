@@ -543,7 +543,7 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                                 <span className="text-2xl">🍎</span>
                                 <div>
                                     <div className="text-sm font-bold text-white">Connect Apple Health</div>
-                                    <div className="text-xs text-zinc-400">Steps, sleep, calories, heart rate, weight</div>
+                                    <div className="text-xs text-zinc-400">Auto-sync steps, sleep, calories, heart rate, and weight daily</div>
                                 </div>
                             </div>
                         </button>

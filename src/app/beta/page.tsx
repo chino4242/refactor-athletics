@@ -60,7 +60,7 @@ export default function BetaPage() {
             </h1>
             <div className="w-12 h-0.5 bg-gradient-to-r from-orange-600 to-red-600 rounded-full mt-3 mb-4" />
             <p className="text-zinc-400 text-sm text-center leading-relaxed max-w-xs">
-              Refactor Athletics is currently in closed beta. Enter your access code to continue.
+              You&apos;re early! Refactor Athletics is in closed beta. Enter your access code below to get started. Don&apos;t have one? Reach out to the team.
             </p>
           </div>
 
