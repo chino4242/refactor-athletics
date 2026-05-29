@@ -147,15 +147,21 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                         <img src={rankImage} alt={rankName} className="w-10 h-10 object-contain" />
                     )}
                     <div className="flex items-baseline gap-2">
-                        <span className={`text-4xl font-black italic text-transparent bg-clip-text bg-gradient-to-r ${progressGradient}`}>
-                            {powerLevel}
-                        </span>
-                        {stats?.max_expertise && (
-                            <span className="text-sm text-zinc-600 font-bold">/ {stats.max_expertise}</span>
+                        {powerLevel > 0 ? (
+                            <>
+                                <span className={`text-4xl font-black italic text-transparent bg-clip-text bg-gradient-to-r ${progressGradient}`}>
+                                    {powerLevel}
+                                </span>
+                                {stats?.max_expertise && (
+                                    <span className="text-sm text-zinc-600 font-bold">/ {stats.max_expertise}</span>
+                                )}
+                                <span className="text-xs text-zinc-500 uppercase font-bold tracking-wider ml-1">
+                                    {isClassic ? 'Fitness Score' : 'Power Level'}
+                                </span>
+                            </>
+                        ) : (
+                            <span className="text-sm text-zinc-500">Complete a workout to earn your Power Level</span>
                         )}
-                        <span className="text-xs text-zinc-500 uppercase font-bold tracking-wider ml-1">
-                            {isClassic ? 'Fitness Score' : 'Power Level'}
-                        </span>
                     </div>
                     {!isClassic && rankName && (
                         <span className="text-[10px] font-bold ml-auto" style={{ color: theme.accentHex }}>{rankName}</span>
