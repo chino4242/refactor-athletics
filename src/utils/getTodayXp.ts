@@ -70,8 +70,12 @@ export async function getTodayXp(userId: string, date?: Date): Promise<TodayXpRe
     deduped.set('Sleep', Math.round(sleep * 2));
   }
   if (workouts?.length && !deduped.has('Workout')) {
-    const workoutXp = workouts.reduce((s, w) => s + (w.xp || 0), 0);
-    if (workoutXp > 0) deduped.set('Workout', workoutXp);
+    // Only add aggregate "Workout" if no individual exercise entries exist in ledger
+    const hasExerciseEntries = workouts.some(w => deduped.has(w.exercise_id?.replace(/_/g, ' ')) || [...deduped.keys()].some(k => k.toLowerCase().includes((w.exercise_id || '').replace(/_/g, ' ').toLowerCase().slice(0, 10))));
+    if (!hasExerciseEntries) {
+      const workoutXp = workouts.reduce((s, w) => s + (w.xp || 0), 0);
+      if (workoutXp > 0) deduped.set('Workout', workoutXp);
+    }
   }
 
   // Consolidate macro entries into one "Nutrition" line

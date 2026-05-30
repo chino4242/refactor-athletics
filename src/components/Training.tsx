@@ -45,11 +45,13 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
   const [weekDays, setWeekDays] = useState<DayPlan[]>([]);
   const [selectedDayStr, setSelectedDayStr] = useState('');
   const [showActiveWorkout, setShowActiveWorkout] = useState(false);
+  const [sectionFilter, setSectionFilter] = useState<'all' | 'strength' | 'cardio' | 'core' | null>(null);
 
   // Check for active workout after hydration
   useEffect(() => {
     if (localStorage.getItem('active_workout')) {
       setShowActiveWorkout(true);
+      setSectionFilter('all');
       setSelectedDayStr(getToday());
     }
   }, []);
@@ -119,15 +121,56 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
 
   // Active workout view
   if (showActiveWorkout && selectedDayStr) {
+    // Show section selector before launching workout
+    if (!sectionFilter) {
+      return (
+        <div className="max-w-md mx-auto pb-32 px-2">
+          <button
+            onClick={() => setShowActiveWorkout(false)}
+            className="flex items-center gap-2 text-zinc-400 hover:text-white text-sm font-medium px-2 py-3 transition"
+          >
+            <span>‹</span> Back to schedule
+          </button>
+          <div className="text-center mb-6 mt-4">
+            <h2 className="text-xs font-bold uppercase tracking-widest" style={{ color: theme.accentHex }}>Choose Your Focus</h2>
+            <p className="text-zinc-500 text-sm mt-1">What are you training today?</p>
+          </div>
+          <div className="space-y-3">
+            {[
+              { key: 'all' as const, emoji: '⚡', label: 'Full Workout', desc: 'Run the entire scheduled program' },
+              { key: 'strength' as const, emoji: '🏋️', label: 'Strength', desc: 'Lifts and resistance training only' },
+              { key: 'cardio' as const, emoji: '🏃', label: 'Cardio', desc: 'Treadmill, intervals, and conditioning' },
+              { key: 'core' as const, emoji: '🎯', label: 'Core', desc: 'Abs and midline stability work' },
+            ].map(opt => (
+              <button
+                key={opt.key}
+                onClick={() => setSectionFilter(opt.key)}
+                className="w-full p-5 bg-zinc-900 border border-zinc-800 rounded-2xl hover:border-orange-500/50 transition-all text-left group"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="text-3xl">{opt.emoji}</div>
+                  <div className="flex-1">
+                    <div className="text-white font-black uppercase text-sm">{opt.label}</div>
+                    <div className="text-zinc-500 text-xs mt-0.5">{opt.desc}</div>
+                  </div>
+                  <ChevronDown size={18} className="text-zinc-600 group-hover:text-orange-500 transition -rotate-90" />
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="max-w-3xl mx-auto pb-32">
         <button
-          onClick={() => setShowActiveWorkout(false)}
+          onClick={() => { setSectionFilter(null); }}
           className="flex items-center gap-2 text-zinc-400 hover:text-white text-sm font-medium px-2 py-3 transition"
         >
-          <span>‹</span> Back to schedule
+          <span>‹</span> Back to focus selection
         </button>
-        <ActiveWorkout userId={userId} initialDate={selectedDayStr} onLogComplete={() => onLogComplete?.()} />
+        <ActiveWorkout userId={userId} initialDate={selectedDayStr} sectionFilter={sectionFilter === 'all' ? undefined : sectionFilter} onLogComplete={() => onLogComplete?.()} />
       </div>
     );
   }
@@ -192,7 +235,7 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
                   <span className="text-xs text-zinc-500 font-medium">🏃 Treadmill</span>
                 )}
                 <button
-                  onClick={() => { setSelectedDayStr(todayStr); setShowActiveWorkout(true); }}
+                  onClick={() => { setSelectedDayStr(todayStr); setShowActiveWorkout(true); setSectionFilter(null); }}
                   className={`ml-auto bg-gradient-to-r ${theme.accentGradient} text-white px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all active:scale-95 shadow-lg`}
                   style={{ boxShadow: `0 10px 15px -3px ${theme.accentHex}20` }}
                 >

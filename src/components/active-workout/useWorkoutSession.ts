@@ -12,9 +12,10 @@ interface UseWorkoutSessionProps {
   userId: string;
   onLogComplete: () => void;
   initialDate?: string | null;
+  sectionFilter?: 'strength' | 'cardio' | 'core';
 }
 
-export function useWorkoutSession({ userId, onLogComplete, initialDate }: UseWorkoutSessionProps) {
+export function useWorkoutSession({ userId, onLogComplete, initialDate, sectionFilter }: UseWorkoutSessionProps) {
   const [blockIndex, setBlockIndex] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [workoutData, setWorkoutData] = useState<any[]>([]);
@@ -185,6 +186,16 @@ export function useWorkoutSession({ userId, onLogComplete, initialDate }: UseWor
 
   // --- Loaders ---
 
+  const filterBySection = (blocks: any[], filter: 'strength' | 'cardio' | 'core'): any[] => {
+    const SECTION_MAP: Record<string, string[]> = {
+      strength: ['Armor', 'Strength Protocol', 'Strength'],
+      cardio: ['Engine', 'Cardio'],
+      core: ['Core Work', 'Abdominal Protocol', 'Core'],
+    };
+    const allowed = SECTION_MAP[filter];
+    return blocks.filter(b => allowed.includes(b.section || ''));
+  };
+
   const loadSchedule = async () => {
     try { const data = await getWeeklySchedule(); setWeeklySchedule(data || []); } catch {}
   };
@@ -202,7 +213,8 @@ export function useWorkoutSession({ userId, onLogComplete, initialDate }: UseWor
       }
 
       const data = await getActiveWorkout(date);
-      setWorkoutData(data || []);
+      const filtered = sectionFilter ? filterBySection(data || [], sectionFilter) : (data || []);
+      setWorkoutData(filtered);
       setSelectedDate(date || null);
 
       let dbCompleted: number[] = [];

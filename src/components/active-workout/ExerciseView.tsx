@@ -7,8 +7,98 @@ import { playCountdownBeep } from '../../utils/audio';
 import EquipmentVariantPicker, { getEquipmentVariants } from '../EquipmentVariantPicker';
 import WeightCalculator from '../WeightCalculator';
 import RestTimerBar from './RestTimerBar';
-import { Info, ArrowLeftRight, Calendar, CheckCircle } from 'lucide-react';
+import { Info, ArrowLeftRight, Calendar, CheckCircle, Play, Square } from 'lucide-react';
 import { EXERCISE_CUES } from '@/data/exerciseCues';
+
+function DurationSetTimer({ setIndex, targetSeconds, isDone, onComplete }: { setIndex: number; targetSeconds: number; isDone: boolean; onComplete: (actualSecs: number) => void }) {
+  const [elapsed, setElapsed] = useState(0);
+  const [running, setRunning] = useState(false);
+  const [finished, setFinished] = useState(isDone);
+
+  useEffect(() => {
+    if (!running) return;
+    const interval = setInterval(() => {
+      setElapsed(prev => {
+        const next = prev + 1;
+        if (next >= targetSeconds) {
+          setRunning(false);
+          setFinished(true);
+          import('@/utils/haptics').then(m => m.haptic('heavy'));
+          onComplete(next);
+        }
+        if (next === targetSeconds - 3) playCountdownBeep();
+        return next;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [running, targetSeconds]);
+
+  const progress = Math.min((elapsed / targetSeconds) * 100, 100);
+  const remaining = Math.max(targetSeconds - elapsed, 0);
+
+  if (finished || isDone) {
+    return (
+      <div className="w-full p-4 rounded-xl border bg-green-500/10 border-green-500/50 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
+            <CheckCircle size={16} className="text-black" />
+          </div>
+          <div>
+            <span className="text-green-400 font-bold font-mono">SET {setIndex + 1}</span>
+            <span className="text-green-400/70 text-xs ml-2">{elapsed || targetSeconds}s</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!running && elapsed === 0) {
+    return (
+      <button
+        onClick={() => setRunning(true)}
+        className="w-full p-5 rounded-xl border border-zinc-700 bg-zinc-800 hover:border-orange-500/50 transition-all flex items-center justify-between group"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-orange-500/20 border border-orange-500/40 flex items-center justify-center group-hover:bg-orange-500/30 transition">
+            <Play size={18} className="text-orange-400 ml-0.5" />
+          </div>
+          <div className="text-left">
+            <div className="text-white font-bold font-mono">SET {setIndex + 1}</div>
+            <div className="text-zinc-500 text-xs">{targetSeconds}s hold — tap to start</div>
+          </div>
+        </div>
+      </button>
+    );
+  }
+
+  // Running state
+  return (
+    <div className="w-full rounded-xl border border-orange-500/50 bg-zinc-800 overflow-hidden">
+      {/* Progress bar */}
+      <div className="h-1.5 bg-zinc-700">
+        <div className="h-full bg-orange-500 transition-all duration-1000" style={{ width: `${progress}%` }} />
+      </div>
+      <div className="p-5 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="text-4xl font-black font-mono text-white tabular-nums">
+            {remaining}
+          </div>
+          <div className="text-left">
+            <div className="text-orange-400 font-bold text-xs uppercase tracking-wider">Set {setIndex + 1}</div>
+            <div className="text-zinc-500 text-[10px]">{elapsed}s / {targetSeconds}s</div>
+          </div>
+        </div>
+        <button
+          onClick={() => { setRunning(false); setFinished(true); onComplete(elapsed); }}
+          className="p-3 rounded-full bg-zinc-700 hover:bg-zinc-600 transition"
+          title="Stop early"
+        >
+          <Square size={16} className="text-zinc-300" />
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function ExerciseView({ block, blockIndex, onComplete, fullHistory, catalog, exerciseSwaps, onSwap, userProfile }: any) {
   // Smart rest time based on exercise type
@@ -126,7 +216,7 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
   const progress = (completedSets.length / totalSets) * 100;
 
   return (
-    <div className="w-full max-w-md mx-auto h-[calc(100dvh-80px)] md:h-[600px] rounded-3xl overflow-hidden shadow-2xl flex flex-col relative bg-zinc-900 border border-zinc-800">
+    <div className="w-full max-w-md mx-auto min-h-[400px] rounded-3xl overflow-hidden shadow-2xl flex flex-col relative bg-zinc-900 border border-zinc-800">
 
       {/* 🟢 HISTORY MODAL */}
       {showHistoryModal && catalogItem && (
@@ -138,10 +228,10 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
       )}
 
       {/* HEADER */}
-      <div className="bg-zinc-900 border-b border-zinc-800 p-6 z-10">
+      <div className="bg-zinc-900 border-b border-zinc-800 p-4 z-10">
         <div className="flex justify-between items-start mb-2">
           <h2 className="text-orange-500 font-bold uppercase tracking-widest text-xs">
-            Strength Block
+            {(block.section || '').toLowerCase().includes('core') ? 'Core Block' : 'Strength Block'}
           </h2>
           <div className="bg-orange-500/10 text-orange-500 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 border border-orange-500/20">
             <span>+{block.xp_value} XP</span>
@@ -233,7 +323,12 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
           if (logs.length === 0) return null;
           const last = logs[0];
           const sets = last.details || last.data || [];
-          const summary = sets.map((s: any) => s.weight ? `${s.weight}×${s.reps}` : `${s.reps} reps`).join(', ');
+          const summary = sets.map((s: any) => {
+            if (s.duration) return `${s.duration}s`;
+            if (s.weight) return `${s.weight}×${s.reps}`;
+            if (s.reps) return `${s.reps} reps`;
+            return null;
+          }).filter(Boolean).join(', ');
 
           // Progressive overload target
           let targetHint = null;
@@ -272,11 +367,13 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
 
           return (
             <>
+              {summary && (
               <div className="mt-2 px-2 py-1.5 bg-zinc-800/50 border border-zinc-700/50 rounded-lg">
                 <span className="text-[10px] text-zinc-500">Last: </span>
                 <span className="text-[10px] text-zinc-300 font-mono">{summary}</span>
               </div>
-              {targetHint && (
+              )}
+              {targetHint && !isDurationExercise && (
                 <div className="mt-1 px-2 py-1.5 bg-orange-500/10 border border-orange-500/20 rounded-lg">
                   <span className="text-[10px] text-orange-400 font-bold">🎯 Hit {targetHint.weight} lbs (+{targetHint.diff}) to reach next rank</span>
                 </div>
@@ -287,7 +384,7 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
       </div>
 
       {/* SCROLLABLE CONTENT */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
 
         {/* Tips / Instructions */}
         {block.tips && block.tips.length > 0 && (
@@ -315,6 +412,25 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
               ? block.reps_list[i]
               : ((typeof block.reps_per_set === 'number' || (typeof block.reps_per_set === 'string' && !block.reps_per_set.includes('/'))) ? block.reps_per_set : null);
 
+            // Duration exercise: show timer UI
+            if (isDurationExercise) {
+              const targetSecs = parseInt(repsInputs[i] || '60', 10) || 60;
+              return (
+                <DurationSetTimer
+                  key={i}
+                  setIndex={i}
+                  targetSeconds={targetSecs}
+                  isDone={isDone}
+                  onComplete={(actualSecs) => {
+                    const next = [...repsInputs];
+                    next[i] = String(actualSecs);
+                    setRepsInputs(next);
+                    toggleSet(i);
+                  }}
+                />
+              );
+            }
+
             return (
               <div
                 key={i}
@@ -325,7 +441,7 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
               >
                 {/* Weight + Reps Inputs */}
                 <div className="flex flex-col mr-3 gap-1.5">
-                  {!isRepsOnly && (
+                  {!isRepsOnly && !isDurationExercise && (
                   <div>
                     <span className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Weight</span>
                     <div className="flex gap-1 items-center">

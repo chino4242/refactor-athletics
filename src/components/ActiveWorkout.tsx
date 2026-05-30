@@ -24,10 +24,11 @@ interface ActiveWorkoutProps {
   userId: string;
   onLogComplete: () => void;
   initialDate?: string | null;
+  sectionFilter?: 'strength' | 'cardio' | 'core';
 }
 
-export default function ActiveWorkout({ userId, onLogComplete, initialDate }: ActiveWorkoutProps) {
-  const session = useWorkoutSession({ userId, onLogComplete, initialDate });
+export default function ActiveWorkout({ userId, onLogComplete, initialDate, sectionFilter }: ActiveWorkoutProps) {
+  const session = useWorkoutSession({ userId, onLogComplete, initialDate, sectionFilter });
   const [workoutMode, setWorkoutMode] = useState<'guided' | 'flexible'>('guided');
 
   // Theme-aware rank names
