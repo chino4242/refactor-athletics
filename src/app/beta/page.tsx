@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 
-const BETA_CODE = 'IRONSHARPENS';
+const BETA_CODE = 'BETA2026';
 
 export default function BetaPage() {
   const [code, setCode] = useState('');
