@@ -217,7 +217,7 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
             {profile && (
                 <Link href="/track" className="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 hover:border-zinc-700 transition">
                     {[
-                        { icon: '🍽️', val: Math.round(todayProgress.calories), target: profile.nutrition_targets?.calories || 2000, unit: 'cal' },
+                        { icon: '🍽️', val: Math.round(todayProgress.calories - (todayProgress.caloriesBurned || 0)), target: profile.nutrition_targets?.net_calorie_target ? null : (profile.nutrition_targets?.calories || 2000), unit: 'net' },
                         { icon: '💧', val: Math.round(todayProgress.water), target: profile.habit_targets?.habit_water || 100, unit: 'oz' },
                         { icon: '👟', val: Math.round(todayProgress.steps), target: profile.habit_targets?.habit_steps || 10000, unit: '' },
                         { icon: '⚡', val: todayProgress.xp || 0, target: null, unit: 'XP' },

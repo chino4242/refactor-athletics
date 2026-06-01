@@ -24,11 +24,7 @@ export default function WeeklyQuestsCard({ userId }: { userId: string }) {
   };
   const [quests, setQuests] = useState<Quest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expanded, setExpanded] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    const lastSeen = localStorage.getItem('quests_collapsed_date');
-    return lastSeen !== new Date().toLocaleDateString('en-CA');
-  });
+  const [expanded, setExpanded] = useState(false);
 
   const toggleExpanded = () => {
     setExpanded(prev => {
