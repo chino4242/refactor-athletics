@@ -464,6 +464,29 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                     {loading ? 'Saving...' : 'Save Settings'}
                 </button>
 
+                {/* Reset Profile */}
+                <div className="mt-8 pt-6 border-t border-zinc-800">
+                    <button
+                        onClick={async () => {
+                            const input = window.prompt('This will delete ALL your data (workouts, habits, nutrition, body measurements, programs) and restart onboarding. Your account stays intact.\n\nType RESET to confirm:');
+                            if (input?.trim().toUpperCase() !== 'RESET') return;
+                            try {
+                                const res = await fetch('/api/account/reset', { method: 'POST' });
+                                if (res.ok) {
+                                    localStorage.clear();
+                                    window.location.href = '/dashboard';
+                                } else {
+                                    toast.error('Failed to reset profile');
+                                }
+                            } catch { toast.error('Failed to reset profile'); }
+                        }}
+                        className="w-full py-3 text-orange-500 hover:text-orange-400 text-xs font-bold uppercase tracking-widest transition"
+                    >
+                        Reset Profile & Restart Onboarding
+                    </button>
+                    <p className="text-[10px] text-zinc-700 text-center mt-1">Wipes all data and restarts setup. Your account stays intact.</p>
+                </div>
+
                 {/* Delete Account */}
                 <div className="mt-8 pt-6 border-t border-zinc-800">
                     <button
