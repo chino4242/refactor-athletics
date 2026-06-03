@@ -48,7 +48,7 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
         path: 'hybrid',
         equipment: [] as string[],
     });
-    const [activityLevel, setActivityLevel] = useState<ActivityLevel>('active');
+    const [activityLevel, setActivityLevel] = useState<ActivityLevel>('moderate');
     const [macroGoal, setMacroGoal] = useState<MacroGoal>('maintain');
     const [calcResult, setCalcResult] = useState<MacroResult | null>(null);
     const [syncToken, setSyncToken] = useState('');
@@ -63,7 +63,7 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
     const totalSteps = steps.length;
     const isLastStep = currentIndex === totalSteps - 1;
 
-    const handleNext = () => {
+    const handleNext = async () => {
         if (!isLastStep) {
             const nextStep = steps[currentIndex + 1];
             // Auto-infer goal and calculate when entering nutrition step
@@ -73,6 +73,10 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                 const goal: MacroGoal = tw && tw < bw ? 'lose' : tw && tw > bw ? 'gain' : 'maintain';
                 setMacroGoal(goal);
                 setCalcResult(calculateMacros({ weightLbs: bw, age: parseInt(formData.age), sex: formData.sex, activityLevel, goal }));
+            }
+            // Save profile early when entering Health Sync (step 10) so OAuth flows don't lose progress
+            if (nextStep === 10) {
+                await handleComplete();
             }
             setStep(nextStep);
         }
@@ -123,6 +127,13 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
         key,
         name: theme.displayName,
         emoji: theme.emoji,
+        description: {
+            athlete: 'Clean and competitive. Climb from Rookie to Hall of Fame.',
+            dragon: 'Mythic fire. Evolve from Hatchling to Ancient Dragon.',
+            samurai: 'Discipline and honor. Rise from Ronin to Legendary Warrior.',
+            dinosaur: 'Primal power. Evolve from Fossil to T-Rex.',
+            viking: 'Brutal strength. Fight from Thrall to Einherjar.',
+        }[key] || '',
     }));
 
     const canAdvance = () => {
@@ -245,7 +256,7 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                                     </p>
                                     <p className="text-sm">
                                         Your performance is ranked against age and sex-adjusted standards, so everyone competes fairly.
-                                        Build your <span className="text-orange-400 font-semibold">Expertise</span> by mastering exercises across
+                                        Build your <span className="text-orange-400 font-semibold">Power Level</span> by mastering exercises across
                                         Strength, Endurance, Power, and Mobility.
                                     </p>
                                     <p className="text-sm">
@@ -275,20 +286,25 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                 {/* Step 4: Theme Selection (RPG only) */}
                 {step === 4 && (
                     <div className="space-y-4">
-                        <p className="text-zinc-400">Choose your theme</p>
-                        <div className="grid grid-cols-2 gap-3">
+                        <p className="text-zinc-400">Your theme shapes your rank names and visual identity as you progress.</p>
+                        <div className="space-y-3">
                             {themeOptions.map(theme => (
                                 <button
                                     key={theme.key}
                                     onClick={() => setFormData({ ...formData, theme: theme.key })}
-                                    className={`p-4 rounded-lg border-2 transition-all ${
+                                    className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
                                         formData.theme === theme.key
                                             ? 'border-orange-500 bg-orange-500/10'
                                             : 'border-zinc-700 bg-zinc-800 hover:border-zinc-600'
                                     }`}
                                 >
-                                    <div className="text-3xl mb-2">{theme.emoji}</div>
-                                    <div className="text-sm font-medium text-white">{theme.name}</div>
+                                    <div className="flex items-center gap-3">
+                                        <div className="text-3xl">{theme.emoji}</div>
+                                        <div>
+                                            <div className="text-sm font-bold text-white">{theme.name}</div>
+                                            <div className="text-[11px] text-zinc-500 mt-0.5">{theme.description}</div>
+                                        </div>
+                                    </div>
                                 </button>
                             ))}
                         </div>
@@ -550,7 +566,9 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
 
                         {/* WHOOP */}
                         <a
-                            href="/api/whoop/auth"
+                            href="/api/whoop/auth?origin=onboarding"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="block w-full p-4 rounded-lg border-2 border-zinc-700 bg-zinc-800 hover:border-emerald-500 transition-all text-left"
                         >
                             <div className="flex items-center gap-3">

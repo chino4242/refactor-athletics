@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, RotateCcw, Users, Check, X } from 'lucide-react';
+import { Plus, RotateCcw, Users, Check, X, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
 const APP_METRICS = [
@@ -81,6 +81,38 @@ export default function Challenge75Client({ userId, groups }: { userId: string; 
   );
 }
 
+const TEMPLATES = [
+  {
+    id: 'full_send',
+    name: 'Full Send',
+    emoji: '🔥',
+    description: 'No compromises. Train, eat right, and build habits daily.',
+    defaultTitle: '75 Day Full Send',
+    metrics: [
+      { id: 'workout_count', label: 'Workouts', type: 'app', minimum: 1 },
+      { id: 'habit_steps', label: 'Steps', type: 'app', minimum: 10000 },
+      { id: 'habit_water', label: 'Water', type: 'app', minimum: 64 },
+      { id: 'macro_protein', label: 'Protein', type: 'app', minimum: 150 },
+      { id: 'habit_sleep', label: 'Sleep', type: 'app', minimum: 7 },
+      { id: 'custom_read', label: 'Read 10 pages', type: 'custom', minimum: 0 },
+      { id: 'custom_no_alcohol', label: 'No alcohol', type: 'custom', minimum: 0 },
+    ],
+  },
+  {
+    id: 'foundation',
+    name: 'Foundation',
+    emoji: '🧱',
+    description: 'Build consistency with the basics — sustainable and effective.',
+    defaultTitle: '75 Day Foundation',
+    metrics: [
+      { id: 'workout_count', label: 'Workouts', type: 'app', minimum: 1 },
+      { id: 'habit_steps', label: 'Steps', type: 'app', minimum: 7500 },
+      { id: 'habit_water', label: 'Water', type: 'app', minimum: 64 },
+      { id: 'habit_sleep', label: 'Sleep', type: 'app', minimum: 7 },
+    ],
+  },
+];
+
 function CreateChallenge({ userId, groups, onDone }: { userId: string; groups: any[]; onDone: () => void }) {
   const [title, setTitle] = useState('75 Day Challenge');
   const [selectedMetrics, setSelectedMetrics] = useState<{ id: string; label: string; type: string; minimum: number }[]>([]);
@@ -88,6 +120,13 @@ function CreateChallenge({ userId, groups, onDone }: { userId: string; groups: a
   const [startDate, setStartDate] = useState(new Date().toLocaleDateString('en-CA'));
   const [groupId, setGroupId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [step, setStep] = useState<'pick' | 'build'>('pick');
+
+  const applyTemplate = (t: typeof TEMPLATES[0]) => {
+    setTitle(t.defaultTitle);
+    setSelectedMetrics(t.metrics);
+    setStep('build');
+  };
 
   const toggleMetric = (m: typeof APP_METRICS[0]) => {
     setSelectedMetrics(prev => prev.some(s => s.id === m.id)
@@ -116,10 +155,52 @@ function CreateChallenge({ userId, groups, onDone }: { userId: string; groups: a
     onDone();
   };
 
+  // Step 1: Template picker
+  if (step === 'pick') {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold text-white">New Challenge</h2>
+          <button onClick={onDone} className="text-zinc-500 text-xs">Cancel</button>
+        </div>
+
+        <p className="text-sm text-zinc-400">Choose a template to get started, or build your own from scratch.</p>
+
+        <div className="space-y-3">
+          {TEMPLATES.map(t => (
+            <button key={t.id} onClick={() => applyTemplate(t)} className="w-full text-left bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-orange-500/50 transition">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">{t.emoji}</span>
+                <div className="flex-1">
+                  <div className="text-sm font-bold text-white">{t.name}</div>
+                  <div className="text-[11px] text-zinc-500 mt-0.5">{t.description}</div>
+                  <div className="text-[10px] text-zinc-600 mt-1">{t.metrics.length} daily requirements</div>
+                </div>
+                <ChevronRight size={16} className="text-zinc-600" />
+              </div>
+            </button>
+          ))}
+
+          <button onClick={() => setStep('build')} className="w-full text-left bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-orange-500/50 transition">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">⚙️</span>
+              <div className="flex-1">
+                <div className="text-sm font-bold text-white">Custom</div>
+                <div className="text-[11px] text-zinc-500 mt-0.5">Pick your own metrics and set your own rules.</div>
+              </div>
+              <ChevronRight size={16} className="text-zinc-600" />
+            </div>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Step 2: Builder (pre-filled from template or empty for custom)
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-white">New Challenge</h2>
+        <button onClick={() => setStep('pick')} className="text-zinc-500 text-xs">← Back</button>
         <button onClick={onDone} className="text-zinc-500 text-xs">Cancel</button>
       </div>
 

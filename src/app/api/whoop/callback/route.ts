@@ -10,17 +10,21 @@ export async function GET(request: NextRequest) {
   const error = searchParams.get('error');
 
   const settingsUrl = new URL('/settings', process.env.NEXT_PUBLIC_APP_URL!);
+  const origin = request.cookies.get('whoop_oauth_origin')?.value || 'settings';
+  const returnUrl = origin === 'onboarding'
+    ? new URL('/dashboard', process.env.NEXT_PUBLIC_APP_URL!)
+    : settingsUrl;
 
   if (error || !code) {
-    settingsUrl.searchParams.set('whoop', 'error');
-    return NextResponse.redirect(settingsUrl.toString());
+    returnUrl.searchParams.set('whoop', 'error');
+    return NextResponse.redirect(returnUrl.toString());
   }
 
   // Validate CSRF state
   const savedState = request.cookies.get('whoop_oauth_state')?.value;
   if (!savedState || savedState !== state) {
-    settingsUrl.searchParams.set('whoop', 'error');
-    return NextResponse.redirect(settingsUrl.toString());
+    returnUrl.searchParams.set('whoop', 'error');
+    return NextResponse.redirect(returnUrl.toString());
   }
 
   // Get authenticated user
@@ -44,17 +48,18 @@ export async function GET(request: NextRequest) {
 
     if (updateError) {
       console.error('WHOOP DB update error:', updateError);
-      settingsUrl.searchParams.set('whoop', 'error');
+      returnUrl.searchParams.set('whoop', 'error');
     } else {
-      settingsUrl.searchParams.set('whoop', 'connected');
+      returnUrl.searchParams.set('whoop', 'connected');
     }
   } catch (e: any) {
     console.error('WHOOP OAuth callback error:', e.message || e);
-    settingsUrl.searchParams.set('whoop', 'error');
-    settingsUrl.searchParams.set('whoop_error', encodeURIComponent(e.message || 'Unknown error'));
+    returnUrl.searchParams.set('whoop', 'error');
+    returnUrl.searchParams.set('whoop_error', encodeURIComponent(e.message || 'Unknown error'));
   }
 
-  const response = NextResponse.redirect(settingsUrl.toString());
+  const response = NextResponse.redirect(returnUrl.toString());
   response.cookies.delete('whoop_oauth_state');
+  response.cookies.delete('whoop_oauth_origin');
   return response;
 }

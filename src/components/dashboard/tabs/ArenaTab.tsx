@@ -17,6 +17,8 @@ export default function ArenaTab({ userId, activeDuels }: ArenaTabProps) {
     const { isClassic } = useExperienceMode();
     const [showCreate, setShowCreate] = useState(false);
     const [publicChallenges, setPublicChallenges] = useState<any[]>([]);
+    const [challenge75, setChallenge75] = useState<{ day: number; title: string; passed: number; status: string } | null>(null);
+    const [challenge75Loading, setChallenge75Loading] = useState(true);
 
     const loadChallenges = async () => {
         const res = await fetch(`/api/public-challenges?user_id=${userId}`);
@@ -24,10 +26,56 @@ export default function ArenaTab({ userId, activeDuels }: ArenaTabProps) {
         setPublicChallenges(data.challenges || []);
     };
 
-    useEffect(() => { loadChallenges(); }, [userId]);
+    const loadChallenge75 = async () => {
+        try {
+            const res = await fetch('/api/challenge-75');
+            if (!res.ok) { setChallenge75Loading(false); return; }
+            const data = await res.json();
+            const active = (data.challenges || []).find((c: any) => c.status === 'active');
+            if (active) {
+                const dayNum = Math.floor((Date.now() - new Date(active.start_date).getTime()) / 86400000);
+                const passed = (active.challenge_75_days || []).filter((d: any) => d.user_id === userId && d.status === 'passed').length;
+                setChallenge75({ day: Math.min(dayNum + 1, 75), title: active.title, passed, status: 'active' });
+            }
+        } catch {}
+        setChallenge75Loading(false);
+    };
+
+    useEffect(() => { loadChallenges(); loadChallenge75(); }, [userId]);
 
     return (
         <div className="space-y-4">
+            {/* 75 Day Challenge */}
+            {!challenge75Loading && (
+                <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-1">
+                        <span className="text-lg">🎯</span>
+                        <h3 className="text-sm font-bold text-white uppercase tracking-wider">75 Day Challenge</h3>
+                    </div>
+                    {challenge75 ? (
+                        <Link href="/challenge-75" className="block mt-3">
+                            <div className="bg-zinc-800 rounded-lg p-3 hover:bg-zinc-700 transition">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-bold text-white">{challenge75.title}</p>
+                                        <p className="text-[10px] text-zinc-500">Day {challenge75.day}/75 · ✅ {challenge75.passed} days passed</p>
+                                    </div>
+                                    <ChevronRight size={14} className="text-zinc-600" />
+                                </div>
+                            </div>
+                        </Link>
+                    ) : (
+                        <div className="text-center py-6">
+                            <p className="text-sm text-zinc-400 mb-3">Commit to 75 days of daily discipline — track workouts, nutrition, and habits.</p>
+                            <Link href="/challenge-75" className="inline-flex items-center gap-1 text-xs text-orange-500 hover:text-orange-400 font-semibold">
+                                Start a 75 Day Challenge
+                                <ChevronRight size={14} />
+                            </Link>
+                        </div>
+                    )}
+                </div>
+            )}
+
             {/* Group / Party */}
             <GroupCard userId={userId} />
 

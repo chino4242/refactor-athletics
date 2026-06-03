@@ -20,10 +20,6 @@ export async function POST() {
     service.from('meal_entries').delete().eq('user_id', userId),
     service.from('pending_exercises').delete().eq('user_id', userId),
     service.from('quest_slate').delete().eq('user_id', userId),
-    service.from('program_blocks').delete().in('workout_id',
-      (await service.from('workout_programs').select('id').eq('user_id', userId)).data?.map(p => p.id) || []
-    ),
-    service.from('workout_programs').delete().eq('user_id', userId),
     service.from('group_members').delete().eq('user_id', userId),
     service.from('challenge_75_members').delete().eq('user_id', userId),
   ]);

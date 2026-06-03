@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { CatalogItem, HistoryItem } from '@/types';
 import ExerciseHistoryModal from '../ExerciseHistoryModal';
 import { playCountdownBeep } from '../../utils/audio';
@@ -176,10 +176,25 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
     setWeights(newWeights);
   };
 
+  const restStartRef = useRef<number>(0);
+  const restDurationRef = useRef<number>(0);
+
   useEffect(() => {
-    let interval: any = null;
-    if (isResting && restTime > 0) {
-      if (restTime === 10) {
+    if (!isResting || restTime <= 0) {
+      if (restTime === 0 && isResting) setIsResting(false);
+      return;
+    }
+    // Record when rest started (only on fresh start, not re-renders)
+    if (restStartRef.current === 0) {
+      restStartRef.current = Date.now();
+      restDurationRef.current = restTime;
+    }
+
+    const tick = () => {
+      const elapsed = Math.floor((Date.now() - restStartRef.current) / 1000);
+      const remaining = Math.max(0, restDurationRef.current - elapsed);
+      setRestTime(remaining);
+      if (remaining === 10) {
         try {
           if ('speechSynthesis' in window) {
             speechSynthesis.cancel();
@@ -189,13 +204,14 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
           }
         } catch {}
       }
-      if (restTime <= 5) playCountdownBeep();
-      interval = setInterval(() => setRestTime((p) => p - 1), 1000);
-    } else if (restTime === 0 && isResting) {
-      setIsResting(false);
-    }
+      if (remaining <= 5 && remaining > 0) playCountdownBeep();
+      if (remaining === 0) setIsResting(false);
+    };
+
+    tick();
+    const interval = setInterval(tick, 250);
     return () => clearInterval(interval);
-  }, [isResting, restTime]);
+  }, [isResting]);
 
   const toggleSet = (setIndex: number) => {
     if (completedSets.includes(setIndex)) {
@@ -207,6 +223,7 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
       // Start rest timer if not the last set
       if (completedSets.length < totalSets - 1) {
         setRestTime(block.rest_seconds || smartRest);
+        restStartRef.current = 0;
         setIsResting(true);
       }
     }
@@ -333,34 +350,32 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
           // Progressive overload target
           let targetHint = null;
           if (catalogItem?.standards?.brackets && last.level !== undefined) {
-            const sexKey = 'male'; // TODO: get from profile
+            const sexKey = (userProfile?.sex || 'male').toLowerCase() === 'female' ? 'female' : 'male';
             const brackets = catalogItem.standards.brackets[sexKey] || [];
-            const ageBracket = brackets[0];
+            const userAge = userProfile?.age || 25;
+            const ageBracket = brackets.find((b: any) => userAge >= b.min && userAge <= b.max) || brackets[0];
             const levels = ageBracket?.levels || [];
             const nextLevel = (last.level || 0) + 1;
             if (nextLevel < levels.length) {
               const nextThreshold = levels[nextLevel];
               const normFactor = catalogItem.normalization_factor || 1.0;
               const isXBW = catalogItem.standards.unit === 'xBW';
-              const is5RM = (catalogItem.name || '').toLowerCase().includes('5rm');
-              const bestWeight = Math.max(...sets.map((s: any) => s.weight || 0));
-              const typicalReps = sets[0]?.reps || 10;
+              const bw = userProfile?.bodyweight || 180;
 
-              // Reverse the comparison: threshold → actual weight needed
-              // For xBW: threshold is in xBW units, multiply by bodyweight
-              // Then reverse normalization and Epley
-              let rawThreshold = isXBW ? nextThreshold * (userProfile?.bodyweight || 180) : nextThreshold;
-              let targetWeight: number;
-              if (is5RM) {
-                targetWeight = rawThreshold / normFactor;
-              } else {
-                // Reverse Epley: weight = threshold / (1 + reps/30) / normFactor
-                targetWeight = rawThreshold / (1 + typicalReps / 30) / normFactor;
+              // Compute target Epley value needed
+              const rawNeeded = isXBW ? nextThreshold * bw : nextThreshold;
+              const targetEpley = rawNeeded / normFactor;
+
+              // Generate concrete weight×reps combos
+              const repOptions = [3, 5, 8, 10];
+              const targets: string[] = [];
+              for (const r of repOptions) {
+                const w = Math.ceil(targetEpley / (1 + r / 30) / 5) * 5;
+                if (w > 0 && w < 1000) targets.push(`${w}×${r}`);
               }
-              targetWeight = Math.round(targetWeight / 5) * 5; // Round to nearest 5 lbs
-              const diff = targetWeight - bestWeight;
-              if (diff > 0 && diff < 100) {
-                targetHint = { weight: targetWeight, diff, level: nextLevel };
+
+              if (targets.length > 0) {
+                targetHint = { targets: [...new Set(targets)].slice(0, 3) };
               }
             }
           }
@@ -375,7 +390,7 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
               )}
               {targetHint && !isDurationExercise && (
                 <div className="mt-1 px-2 py-1.5 bg-orange-500/10 border border-orange-500/20 rounded-lg">
-                  <span className="text-[10px] text-orange-400 font-bold">🎯 Hit {targetHint.weight} lbs (+{targetHint.diff}) to reach next rank</span>
+                  <span className="text-[10px] text-orange-400 font-bold">🎯 Hit {targetHint.targets.join(' or ')} to rank up</span>
                 </div>
               )}
             </>
@@ -551,13 +566,16 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
           if (completedData.length === 0) return null;
 
           let normalized: number;
+          let estimatedStrength: number; // The raw estimated 1RM in lbs
           if (isLowerBetter) {
             // Timed exercises: use best (lowest) duration
             normalized = Math.min(...completedData.map((s: any) => s.duration));
+            estimatedStrength = normalized;
           } else {
             const bestEpley = Math.max(...completedData.map((s: any) => s.weight * (1 + Math.min(s.reps, 100) / 30)));
+            estimatedStrength = Math.round(bestEpley * normFactor);
             normalized = bestEpley * normFactor;
-            if (isWeightedPullup) normalized += bw; // add bodyweight for weighted pullups
+            if (isWeightedPullup) { normalized += bw; estimatedStrength += bw; }
             if (isXBW && bw > 0) normalized = normalized / bw;
           }
 
@@ -571,10 +589,26 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
           if (currentLevel >= 5) return (
             <div className="mx-4 mb-2 px-3 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-center">
               <span className="text-[11px] font-bold text-emerald-400">⚡ Max rank on this exercise!</span>
+              {!isLowerBetter && <div className="text-[10px] text-zinc-500 mt-0.5">Estimated Strength: {estimatedStrength} lbs</div>}
             </div>
           );
 
           const nextThreshold = bracket.levels[currentLevel];
+
+          // Compute concrete targets: weight×reps combos that would hit nextThreshold
+          let targets: string[] = [];
+          if (!isLowerBetter) {
+            const rawNeeded = isXBW ? nextThreshold * bw : nextThreshold;
+            const targetEpley = rawNeeded / normFactor;
+            // Generate a few weight×reps options
+            const repOptions = [3, 5, 8, 10];
+            for (const r of repOptions) {
+              const w = Math.ceil(targetEpley / (1 + r / 30) / 5) * 5;
+              if (w > 0 && w < 1000) targets.push(`${w}×${r}`);
+            }
+            // Deduplicate and limit to 3
+            targets = [...new Set(targets)].slice(0, 3);
+          }
 
           let gap: number;
           let gapLabel: string;
@@ -592,25 +626,23 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
           if (gap <= 0) return (
             <div className="mx-4 mb-2 px-3 py-2 bg-orange-500/10 border border-orange-500/20 rounded-xl text-center">
               <span className="text-[11px] font-bold text-orange-400">⚡ You&apos;re in range for the next rank!</span>
+              {!isLowerBetter && <div className="text-[10px] text-zinc-500 mt-0.5">Estimated Strength: {estimatedStrength} lbs</div>}
             </div>
           );
 
-          if (gap <= 15) return (
-            <div className="mx-4 mb-2 px-3 py-2 bg-orange-500/10 border border-orange-500/20 rounded-xl text-center animate-pulse">
-              <span className="text-[11px] font-bold text-orange-400">🔥 {gapLabel}</span>
-            </div>
-          );
-
-          if (gap <= 30) return (
-            <div className="mx-4 mb-2 px-3 py-2 bg-orange-500/10 border border-orange-500/20 rounded-xl text-center">
-              <span className="text-[11px] text-orange-400">🎯 <span className="font-bold">{gapLabel}</span></span>
-            </div>
-          );
-
-          // Always show target — subtle when far away
           return (
-            <div className="mx-4 mb-2 px-3 py-2 bg-zinc-800/50 border border-zinc-700/30 rounded-xl text-center">
-              <span className="text-[10px] text-zinc-500">Next rank: <span className="font-bold text-zinc-400">{gapLabel}</span></span>
+            <div className={`mx-4 mb-2 px-3 py-2 rounded-xl text-center ${gap <= 15 ? 'bg-orange-500/10 border border-orange-500/20 animate-pulse' : gap <= 30 ? 'bg-orange-500/10 border border-orange-500/20' : 'bg-zinc-800/50 border border-zinc-700/30'}`}>
+              {!isLowerBetter && (
+                <div className="text-[10px] text-zinc-500 mb-0.5">Estimated Strength: <span className="font-bold text-zinc-300">{estimatedStrength} lbs</span></div>
+              )}
+              <span className={`text-[11px] font-bold ${gap <= 15 ? 'text-orange-400' : gap <= 30 ? 'text-orange-400' : 'text-zinc-400'}`}>
+                {gap <= 15 ? '🔥' : '🎯'} {gapLabel}
+              </span>
+              {targets.length > 0 && (
+                <div className="text-[10px] text-zinc-500 mt-0.5">
+                  Hit {targets.join(' or ')} to rank up
+                </div>
+              )}
             </div>
           );
         })()}

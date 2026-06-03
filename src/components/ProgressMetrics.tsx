@@ -37,11 +37,11 @@ export default function ProgressMetrics({ stats, profile, bodyCompHistory }: Pro
     return (
         <div className="mb-6">
             <div className="grid grid-cols-3 gap-4 mb-4">
-                {/* Expertise */}
+                {/* Power Level */}
                 <Link href="/test" className="group">
                     <div className="flex items-center gap-2 mb-2">
                         <span className="text-xl">{theme.emoji}</span>
-                        <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider group-hover:text-orange-400 transition">Expertise</span>
+                        <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider group-hover:text-orange-400 transition">Power Level</span>
                         <InfoTooltip text={`Your best rank level (1-5) across ${stats?.max_expertise ? stats.max_expertise / 5 : 0} ranked exercises. Max = ${stats?.max_expertise || 0}. Log your best result on an exercise to earn your rank!`} size={14} />
                     </div>
                     <div className="text-4xl font-black italic text-orange-500">

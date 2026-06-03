@@ -251,14 +251,34 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                                             const exRank = theme.ranks[levelKey];
                                             const exImage = (sex.toLowerCase() === 'female' && exRank && 'femaleImage' in exRank && exRank.femaleImage) ? exRank.femaleImage : exRank?.image;
 
+                                            // Compute concrete targets for next rank
+                                            let targetCombos: string[] = [];
+                                            if (ex.nextThreshold && ex.unit !== 'Sec' && ex.unit !== 'sec' && ex.unit !== 'Reps' && ex.unit !== 'reps') {
+                                                const cleanId = ex.exerciseId.replace(/^(five_rm_|one_rm_|est_1rm_)/, '');
+                                                const catalogMap = new Map(catalog.map((c: any) => [c.id, c]));
+                                                const catItem = catalogMap.get(cleanId) || catalogMap.get(ex.exerciseId);
+                                                const normFactor = catItem?.normalization_factor || 1;
+                                                const isXBW = (ex.unit || '').toLowerCase() === 'xbw';
+                                                const bw = profile?.bodyweight || 180;
+                                                const rawNeeded = isXBW ? ex.nextThreshold * bw : ex.nextThreshold;
+                                                const targetEpley = rawNeeded / normFactor;
+                                                for (const r of [3, 5, 8]) {
+                                                    const w = Math.ceil(targetEpley / (1 + r / 30) / 5) * 5;
+                                                    if (w > 0 && w < 1000) targetCombos.push(`${w}×${r}`);
+                                                }
+                                                targetCombos = [...new Set(targetCombos)];
+                                            }
+
                                             return (
                                                 <div key={ex.exerciseId} className="flex items-center gap-2 py-1.5">
                                                     {exImage && <Image src={exImage} alt="" width={24} height={24} className="object-contain" />}
-                                                    <span className="text-[11px] text-white flex-1 truncate">{ex.displayName}</span>
+                                                    <div className="flex-1 min-w-0">
+                                                        <span className="text-[11px] text-white truncate block">{ex.displayName}</span>
+                                                        {targetCombos.length > 0 && (
+                                                            <span className="text-[9px] text-zinc-600">Hit {targetCombos.join(' or ')} to rank up</span>
+                                                        )}
+                                                    </div>
                                                     <span className="text-[10px] font-bold text-zinc-400">Lv.{ex.currentLevel}</span>
-                                                    {ex.nextThreshold && (
-                                                        <span className="text-[9px] text-zinc-600">→ {ex.nextThreshold} {ex.unit}</span>
-                                                    )}
                                                 </div>
                                             );
                                         })}

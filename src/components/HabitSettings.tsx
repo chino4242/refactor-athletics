@@ -62,7 +62,7 @@ export default function HabitSettings({ isOpen, onClose, userProfile, onUpdate }
     const [loading, setLoading] = useState(false);
     const [expandedCats, setExpandedCats] = useState<Record<string, boolean>>({ health: true, recovery: true, wearable: true, discipline: true });
     const [showCalc, setShowCalc] = useState(false);
-    const [activityLevel, setActivityLevel] = useState<ActivityLevel>('active');
+    const [activityLevel, setActivityLevel] = useState<ActivityLevel>('moderate');
     const [macroGoal, setMacroGoal] = useState<MacroGoal>(() => {
         const tw = parseFloat(userProfile.body_composition_goals?.target_weight || '0');
         if (tw && tw < userProfile.bodyweight) return 'lose';

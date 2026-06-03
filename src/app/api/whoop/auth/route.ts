@@ -1,12 +1,13 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { randomBytes } from 'crypto';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.redirect(new URL('/login', process.env.NEXT_PUBLIC_APP_URL));
 
+  const origin = new URL(request.url).searchParams.get('origin') || 'settings';
   const state = randomBytes(8).toString('hex');
   const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/whoop/callback`;
 
@@ -22,6 +23,13 @@ export async function GET() {
   const isLocal = process.env.NEXT_PUBLIC_APP_URL?.includes('localhost');
   const response = NextResponse.redirect(url.toString());
   response.cookies.set('whoop_oauth_state', state, {
+    httpOnly: true,
+    secure: !isLocal,
+    sameSite: 'lax',
+    maxAge: 600,
+    path: '/',
+  });
+  response.cookies.set('whoop_oauth_origin', origin, {
     httpOnly: true,
     secure: !isLocal,
     sameSite: 'lax',

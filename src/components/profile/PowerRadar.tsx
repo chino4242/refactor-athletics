@@ -34,9 +34,9 @@ export default function PowerRadar({ stats, categoryStats }: PowerRadarProps) {
                         <div>
                             <h3 className="text-orange-500 font-bold uppercase tracking-widest text-xs mb-2">{isClassic ? 'Overall' : 'Aggregate Score'}</h3>
                             <h2 className="text-4xl md:text-5xl font-black italic text-white tracking-tighter flex items-center">
-                                {isClassic ? 'FITNESS SCORE' : 'EXPERTISE'}
+                                {isClassic ? 'TRAINING LEVEL' : 'POWER LEVEL'}
                                 <InfoTooltip text={isClassic
-                                    ? `Your fitness score across ${stats?.max_expertise ? stats.max_expertise / 5 : 0} exercises. Test an exercise to see where you stand.`
+                                    ? `Your training level across ${stats?.max_expertise ? stats.max_expertise / 5 : 0} exercises. Test an exercise to see where you stand.`
                                     : `Your best rank level (1-5) across ${stats?.max_expertise ? stats.max_expertise / 5 : 0} ranked exercises. Max = ${stats?.max_expertise || 0} (${stats?.max_expertise ? stats.max_expertise / 5 : 0} exercises × 5 levels).`} size={24} />
                             </h2>
                         </div>

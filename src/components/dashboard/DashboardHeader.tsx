@@ -156,7 +156,7 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                                     <span className="text-sm text-zinc-600 font-bold">/ {stats.max_expertise}</span>
                                 )}
                                 <span className="text-xs text-zinc-500 uppercase font-bold tracking-wider ml-1">
-                                    {isClassic ? 'Fitness Score' : 'Power Level'}
+                                    {isClassic ? 'Training Level' : 'Power Level'}
                                 </span>
                             </>
                         ) : (

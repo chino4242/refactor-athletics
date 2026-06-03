@@ -231,7 +231,7 @@ export default function WorkoutReport({ sessionId, userId, onExit }: Props) {
                             <span className="text-lg">🏃</span>
                             <span className="text-sm font-bold text-white">Treadmill Summary</span>
                         </div>
-                        <div className="grid grid-cols-3 gap-3">
+                        <div className="grid grid-cols-2 gap-3">
                             <div className="text-center">
                                 <div className="text-lg font-black text-white">{treadIntervals}</div>
                                 <div className="text-[10px] text-zinc-500 uppercase font-bold">Intervals</div>
@@ -239,10 +239,6 @@ export default function WorkoutReport({ sessionId, userId, onExit }: Props) {
                             <div className="text-center">
                                 <div className="text-lg font-black text-yellow-400">+{treadXp}</div>
                                 <div className="text-[10px] text-zinc-500 uppercase font-bold">XP</div>
-                            </div>
-                            <div className="text-center">
-                                <div className="text-lg font-black text-orange-400">~{Math.round(treadIntervals * 1.2 * 8)}</div>
-                                <div className="text-[10px] text-zinc-500 uppercase font-bold">Est. Cal</div>
                             </div>
                         </div>
                     </div>

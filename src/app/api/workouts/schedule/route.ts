@@ -18,6 +18,36 @@ function inferType(blocks: any[]): string {
     return 'Recovery';
 }
 
+function generateTitle(blocks: any[], catalogMap: Map<string, any>): string {
+    const mainBlocks = blocks.filter(b => b.block_type === 'exercise' && b.section === 'main');
+    const hasTreadmill = blocks.some(b => b.block_type === 'treadmill');
+
+    if (mainBlocks.length === 0 && !hasTreadmill) return 'Active Recovery';
+    if (mainBlocks.length === 0 && hasTreadmill) return 'Cardio Day';
+
+    // Identify muscle groups from exercise categories
+    const muscles = new Set<string>();
+    for (const b of mainBlocks) {
+        const cat = catalogMap.get(b.exercise_id);
+        const category = (cat?.category || '').toLowerCase();
+        const name = (cat?.name || b.exercise_id || '').toLowerCase();
+
+        if (category.includes('chest') || name.includes('bench') || name.includes('push_up') || name.includes('chest')) muscles.add('Chest');
+        else if (category.includes('back') || name.includes('row') || name.includes('pull') || name.includes('lat')) muscles.add('Back');
+        else if (category.includes('leg') || name.includes('squat') || name.includes('deadlift') || name.includes('lunge') || name.includes('leg')) muscles.add('Legs');
+        else if (category.includes('shoulder') || name.includes('press') || name.includes('shoulder') || name.includes('lateral')) muscles.add('Shoulders');
+        else if (category.includes('arm') || name.includes('curl') || name.includes('tricep') || name.includes('bicep')) muscles.add('Arms');
+        else if (category.includes('core') || name.includes('plank') || name.includes('crunch') || name.includes('ab')) muscles.add('Core');
+        else if (category.includes('cardio') || category.includes('endurance')) muscles.add('Cardio');
+        else muscles.add('Strength');
+    }
+
+    const parts = [...muscles].slice(0, 3);
+    const title = parts.join(' + ');
+    if (hasTreadmill) return parts.length > 0 ? `${title} + Cardio` : 'Cardio Day';
+    return title || 'Strength';
+}
+
 export async function GET() {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -74,10 +104,11 @@ export async function GET() {
                     }
                 }
 
+                const dayLower = (prog.day_of_week || '').toLowerCase();
                 return {
-                    day: prog.day_of_week,
-                    title: prog.name,
-                    order: DAY_ORDER[prog.day_of_week!] ?? 99,
+                    day: dayLower,
+                    title: generateTitle(blocks, catalogMap),
+                    order: DAY_ORDER[dayLower] ?? 99,
                     xp,
                     type: blocks.length === 0 ? 'Recovery' : inferType(blocks),
                     exercises: exerciseNames,

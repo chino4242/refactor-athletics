@@ -93,8 +93,21 @@ export default function BlockCompleteOverlay({
           <div className="text-sm text-zinc-400 mb-2">{rankUp.best_set}</div>
         )}
         {rankUp.e1rm && (
-          <div className="text-xs text-zinc-500">e1RM: {rankUp.e1rm} lbs</div>
+          <div className="text-xs text-zinc-500">Estimated Strength: {rankUp.e1rm} lbs</div>
         )}
+
+        {/* One-time education on first rank-up */}
+        {typeof window !== 'undefined' && !localStorage.getItem('rank_education_seen') && (() => {
+          localStorage.setItem('rank_education_seen', '1');
+          return (
+            <div className="mt-6 px-4 py-3 bg-zinc-800/80 border border-zinc-700 rounded-xl max-w-xs text-left">
+              <div className="text-[10px] font-bold text-orange-400 uppercase tracking-wider mb-1">How Ranks Work</div>
+              <p className="text-[11px] text-zinc-400 leading-relaxed">
+                Your rank is based on <span className="text-white font-bold">Estimated Strength</span> — calculated from your weight × reps. More weight <em>or</em> more reps = higher rank.
+              </p>
+            </div>
+          );
+        })()}
 
         <div className="mt-8 text-[10px] text-zinc-600 uppercase tracking-wider animate-pulse">Tap to continue</div>
       </div>

@@ -183,7 +183,7 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                 <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                         <span className="text-lg">💪</span>
-                        <h3 className="text-sm font-bold text-white uppercase tracking-wider">{isClassic ? 'Performance Breakdown' : 'Expertise Contributors'}</h3>
+                        <h3 className="text-sm font-bold text-white uppercase tracking-wider">{isClassic ? 'Performance Breakdown' : 'Power Level Contributors'}</h3>
                     </div>
                     <p className="text-[10px] text-zinc-600 mt-1">Your best rank per exercise — log a ranked exercise to grow your score</p>
                     <Link href="/profile" className="text-xs text-orange-500 hover:text-orange-400 flex items-center gap-1">
@@ -197,7 +197,7 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                     <div className="text-center py-8">
                         <div className="text-5xl mb-4">🏆</div>
                         <p className="text-sm text-zinc-400 mb-2">No exercises completed yet</p>
-                        <p className="text-xs text-zinc-500 mb-4">{isClassic ? 'Complete workouts to see your performance' : 'Complete workouts to build your Expertise'}</p>
+                        <p className="text-xs text-zinc-500 mb-4">{isClassic ? 'Complete workouts to see your performance' : 'Complete workouts to build your Power Level'}</p>
                         <Link 
                             href="/train" 
                             className="inline-flex items-center gap-1 text-xs text-orange-500 hover:text-orange-400 font-semibold"

@@ -131,7 +131,7 @@ export default function MissionHub({
                   </h3>
                   <p className="text-[10px] text-zinc-500 mt-0.5">
                     {allDone ? (
-                      <span className="text-emerald-400">Complete · +{sectionXp} XP</span>
+                      <span className="text-emerald-400">Complete · {sectionXp} XP earned</span>
                     ) : (
                       <>
                         {sectionDoneCount}/{section.count} blocks
@@ -143,8 +143,7 @@ export default function MissionHub({
                             if (b.type === 'superset') return s + (b.sets || 3) * ((b.rest_seconds || 60) + 45) / 60;
                             return s;
                           }, 0);
-                          const totalXp = sectionBlocks.reduce((s: number, b: any) => s + (b.xp_value || 0), 0);
-                          return <span> · ~{Math.round(estMins)} min · {totalXp} XP</span>;
+                          return <span> · ~{Math.round(estMins)} min</span>;
                         })()}
                       </>
                     )}

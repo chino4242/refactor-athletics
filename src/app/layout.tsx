@@ -27,7 +27,7 @@ import AuthGuard from "@/components/AuthGuard";
 
 export const metadata: Metadata = {
   title: "Refactor Athletics",
-  description: "Modern fitness tracking and arena duels.",
+  description: "Track workouts, macros, and habits — earn XP, climb ranks, and compete with friends.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

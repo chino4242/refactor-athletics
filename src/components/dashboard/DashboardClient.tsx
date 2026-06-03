@@ -137,7 +137,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
     // Show focused first-session view for brand new users
     // Note: disabled conditional return to prevent hook ordering issues
     // FirstSessionView renders as a section within the dashboard instead
-    const isFirstSession = stats && stats.exercises_tracked === 0 && !firstSessionDismissed;
+    const isFirstSession = stats && stats.exercises_tracked === 0 && (stats.total_career_xp || 0) === 0 && !firstSessionDismissed;
 
     return (
         <div 
