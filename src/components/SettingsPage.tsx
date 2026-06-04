@@ -7,7 +7,7 @@ import { useToast } from '@/context/ToastContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useExperienceMode } from '@/context/ExperienceModeContext';
 import { THEMES } from '@/data/themes';
-import { Settings, User, Target, Palette, ChevronLeft, RefreshCw, Copy, Check, Link2, Eye, EyeOff } from 'lucide-react';
+import { Settings, User, Target, Palette, ChevronLeft, RefreshCw, Copy, Check, Link2, Eye, EyeOff, Dumbbell } from 'lucide-react';
 import type { UserProfileData } from '@/types';
 
 interface SettingsPageClientProps {
@@ -68,6 +68,7 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
         habit_meditation: initialProfile?.habit_targets?.habit_meditation || 10,
     });
     const [hiddenHabits, setHiddenHabits] = useState<string[]>(initialProfile?.hidden_habits || []);
+    const [equipment, setEquipment] = useState<string[]>(initialProfile?.available_equipment || []);
 
     const handleThemeSelect = (themeKey: string) => {
         setCurrentTheme(themeKey);
@@ -86,6 +87,7 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                 bodyweight,
                 habit_targets: targets,
                 hidden_habits: hiddenHabits,
+                available_equipment: equipment,
                 nutrition_targets: {
                     ...initialProfile?.nutrition_targets,
                     water: targets.habit_water,
@@ -335,6 +337,42 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                                 />
                                 <span className="text-zinc-500 text-xs w-10">{unit}</span>
                             </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* Equipment Section */}
+                <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+                    <div className="flex items-center gap-2 mb-2">
+                        <Dumbbell size={16} className="text-purple-400" />
+                        <h2 className="text-sm font-black uppercase tracking-widest">Equipment</h2>
+                    </div>
+                    <p className="text-[10px] text-zinc-600 mb-4">Workouts adapt to what you have access to. Uncheck items when traveling.</p>
+                    <div className="grid grid-cols-2 gap-2">
+                        {[
+                            { id: 'barbell', label: 'Barbell', emoji: '🏋️' },
+                            { id: 'dumbbells', label: 'Dumbbells', emoji: '💪' },
+                            { id: 'kettlebells', label: 'Kettlebells', emoji: '🔔' },
+                            { id: 'pull_up_bar', label: 'Pull-Up Bar', emoji: '🪜' },
+                            { id: 'bench', label: 'Bench', emoji: '🪑' },
+                            { id: 'squat_rack', label: 'Squat Rack', emoji: '🏗️' },
+                            { id: 'smith_machine', label: 'Smith Machine', emoji: '🔩' },
+                            { id: 'cables', label: 'Cable Machine', emoji: '🔗' },
+                            { id: 'treadmill', label: 'Treadmill', emoji: '🏃' },
+                            { id: 'rower', label: 'Rower', emoji: '🚣' },
+                            { id: 'resistance_bands', label: 'Bands', emoji: '🔄' },
+                            { id: 'box', label: 'Plyo Box', emoji: '📦' },
+                            { id: 'outdoor_running', label: 'Outdoor Run', emoji: '🌳' },
+                            { id: 'bodyweight_only', label: 'Bodyweight', emoji: '🙋' },
+                        ].map(item => {
+                            const selected = equipment.includes(item.id);
+                            return (
+                                <button key={item.id} onClick={() => setEquipment(prev => selected ? prev.filter(e => e !== item.id) : [...prev, item.id])}
+                                    className={`p-2.5 rounded-lg border text-left flex items-center gap-2 transition-all text-xs ${selected ? 'border-purple-500/50 bg-purple-500/10 text-white' : 'border-zinc-800 bg-zinc-950 text-zinc-500'}`}>
+                                    <span>{item.emoji}</span>
+                                    <span className="font-bold">{item.label}</span>
+                                </button>
                             );
                         })}
                     </div>

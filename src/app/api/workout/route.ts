@@ -26,6 +26,15 @@ function intensityToZone(intensity: string | null): [string, string] {
     }
 }
 
+function applyEquipmentSwaps(blocks: any[], userEquipment: Set<string>): any[] {
+    return blocks.map(b => {
+        if (b.block_type !== 'exercise' || !b.alt_exercise_id || !b.alt_equipment?.length) return b;
+        const needsSwap = b.alt_equipment.some((eq: string) => !userEquipment.has(eq));
+        if (needsSwap) return { ...b, exercise_id: b.alt_exercise_id };
+        return b;
+    });
+}
+
 function dbBlocksToWorkoutBlocks(blocks: any[], catalog: any[]): any[] {
     const catalogMap = new Map(catalog.map((c: any) => [c.id, c]));
     const result: any[] = [];
@@ -226,6 +235,9 @@ export async function GET(request: Request) {
 
     // Try DB programs first
     if (user) {
+        const { data: profile } = await supabase.from('users').select('available_equipment, selected_path').eq('id', user.id).single();
+        const userEquipment = new Set<string>(profile?.available_equipment || []);
+
         const { data: programs } = await supabase
             .from('workout_programs')
             .select('id, name, variant')
@@ -245,7 +257,8 @@ export async function GET(request: Request) {
                 .order('block_order');
 
             if (blocks && blocks.length > 0) {
-                return NextResponse.json(dbBlocksToWorkoutBlocks(blocks, catalog || []));
+                const swappedBlocks = applyEquipmentSwaps(blocks, userEquipment);
+                return NextResponse.json(dbBlocksToWorkoutBlocks(swappedBlocks, catalog || []));
             }
             // Rest day — no blocks
             return NextResponse.json([]);
@@ -254,9 +267,11 @@ export async function GET(request: Request) {
 
     // Fallback: check default programs in DB for user's training path
     let userPath = 'hybrid';
+    let fallbackEquipment = new Set<string>();
     if (user) {
-        const { data: profile } = await supabase.from('users').select('selected_path').eq('id', user.id).single();
+        const { data: profile } = await supabase.from('users').select('selected_path, available_equipment').eq('id', user.id).single();
         userPath = profile?.selected_path || 'hybrid';
+        fallbackEquipment = new Set<string>(profile?.available_equipment || []);
     }
 
     // Pick variant based on week number (A/B/C rotation)
@@ -281,7 +296,8 @@ export async function GET(request: Request) {
             .order('block_order');
 
         if (blocks && blocks.length > 0) {
-            return NextResponse.json(dbBlocksToWorkoutBlocks(blocks, catalog || []));
+            const swapped = applyEquipmentSwaps(blocks, fallbackEquipment);
+            return NextResponse.json(dbBlocksToWorkoutBlocks(swapped, catalog || []));
         }
     }
 

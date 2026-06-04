@@ -178,6 +178,7 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
 
   const restStartRef = useRef<number>(0);
   const restDurationRef = useRef<number>(0);
+  const lastAnnouncedSecond = useRef<number>(-1);
 
   useEffect(() => {
     if (!isResting || restTime <= 0) {
@@ -188,23 +189,29 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
     if (restStartRef.current === 0) {
       restStartRef.current = Date.now();
       restDurationRef.current = restTime;
+      lastAnnouncedSecond.current = -1;
     }
 
     const tick = () => {
       const elapsed = Math.floor((Date.now() - restStartRef.current) / 1000);
       const remaining = Math.max(0, restDurationRef.current - elapsed);
       setRestTime(remaining);
-      if (remaining === 10) {
-        try {
-          if ('speechSynthesis' in window) {
-            speechSynthesis.cancel();
-            const u = new SpeechSynthesisUtterance('10 seconds');
-            u.rate = 1.1; u.volume = 1;
-            speechSynthesis.speak(u);
-          }
-        } catch {}
+
+      // Only fire audio once per second (tick runs 4x/sec)
+      if (remaining !== lastAnnouncedSecond.current) {
+        lastAnnouncedSecond.current = remaining;
+        if (remaining === 10) {
+          try {
+            if ('speechSynthesis' in window) {
+              speechSynthesis.cancel();
+              const u = new SpeechSynthesisUtterance('10 seconds');
+              u.rate = 1.1; u.volume = 1;
+              speechSynthesis.speak(u);
+            }
+          } catch {}
+        }
+        if (remaining <= 5 && remaining > 0) playCountdownBeep();
       }
-      if (remaining <= 5 && remaining > 0) playCountdownBeep();
       if (remaining === 0) setIsResting(false);
     };
 
