@@ -134,12 +134,8 @@ describe('OnboardingWizard — Integration', () => {
         // Step 8: Equipment (just advance)
         fireEvent.click(screen.getByRole('button', { name: /^next$/i }));
 
-        // Step 9: Nutrition (just advance)
+        // Step 9: Nutrition (just advance — profile saves automatically when entering step 10)
         fireEvent.click(screen.getByRole('button', { name: /^next$/i }));
-
-        // Step 10: Health sync — click Complete
-        const completeBtn = screen.getByRole('button', { name: /^complete$/i });
-        fireEvent.click(completeBtn);
 
         await waitFor(() => {
             expect(mockSaveProfile).toHaveBeenCalledWith(

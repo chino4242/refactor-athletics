@@ -12,9 +12,12 @@ import RewardsTrack from './RewardsTrack';
 import { useExperienceMode } from '../context/ExperienceModeContext';
 import { THEMES } from '../data/themes';
 
+import { getTier } from '@/utils/calculations';
 import MilestoneTable from './profile/MilestoneTable';
 import ConfirmModal from './ConfirmModal';
 import WeeklyReview from './WeeklyReview';
+import Link from 'next/link';
+import { Settings, ChevronRight } from 'lucide-react';
 
 interface UserProfileProps {
   displayName: string;
@@ -86,7 +89,7 @@ export default function UserProfile({
   const [showWeeklyReview, setShowWeeklyReview] = useState(false);
 
   const theme = THEMES[activeTheme] || THEMES.athlete;
-  const tier = (() => { const thresholds = [0, 5, 15, 30, 50, 80]; for (let i = thresholds.length - 1; i >= 0; i--) { if ((stats?.power_level || 0) >= thresholds[i]) return i; } return 0; })();
+  const tier = getTier(stats?.power_level || 0);
   const rankImage = theme.ranks?.[`level${tier}`]?.image;
   const rankName = theme.ranks?.[`level${tier}`]?.name?.split(': ')[1] || '';
 
@@ -140,6 +143,14 @@ export default function UserProfile({
           <div className="text-[9px] text-zinc-500 uppercase font-bold">Level</div>
         </div>
       </div>
+
+      {/* Settings Link */}
+      <Link href="/settings" className="flex items-center gap-3 mx-4 mt-3 px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl hover:border-zinc-700 transition">
+        <Settings size={18} className="text-zinc-400" />
+        <span className="flex-1 text-sm font-bold text-white">Settings</span>
+        <span className="text-[10px] text-zinc-600">Equipment, integrations, macros</span>
+        <ChevronRight size={14} className="text-zinc-600" />
+      </Link>
 
       {/* Top Exercises */}
       <div className="px-4 pt-5 space-y-4">

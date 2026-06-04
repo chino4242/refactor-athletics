@@ -7,7 +7,7 @@ import { useToast } from '@/context/ToastContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useExperienceMode } from '@/context/ExperienceModeContext';
 import { THEMES } from '@/data/themes';
-import { Settings, User, Target, Palette, ChevronLeft, RefreshCw, Copy, Check, Link2 } from 'lucide-react';
+import { Settings, User, Target, Palette, ChevronLeft, RefreshCw, Copy, Check, Link2, Eye, EyeOff } from 'lucide-react';
 import type { UserProfileData } from '@/types';
 
 interface SettingsPageClientProps {
@@ -67,6 +67,7 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
         habit_mobility: initialProfile?.habit_targets?.habit_mobility || 15,
         habit_meditation: initialProfile?.habit_targets?.habit_meditation || 10,
     });
+    const [hiddenHabits, setHiddenHabits] = useState<string[]>(initialProfile?.hidden_habits || []);
 
     const handleThemeSelect = (themeKey: string) => {
         setCurrentTheme(themeKey);
@@ -84,6 +85,7 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                 sex,
                 bodyweight,
                 habit_targets: targets,
+                hidden_habits: hiddenHabits,
                 nutrition_targets: {
                     ...initialProfile?.nutrition_targets,
                     water: targets.habit_water,
@@ -312,18 +314,29 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                             { key: 'habit_reading', label: 'Reading', unit: 'min' },
                             { key: 'habit_mobility', label: 'Mobility', unit: 'min' },
                             { key: 'habit_meditation', label: 'Meditation', unit: 'min' },
-                        ].map(({ key, label, unit }) => (
-                            <div key={key} className="flex items-center gap-4">
-                                <label className="text-xs font-bold text-zinc-400 uppercase tracking-widest w-28 shrink-0">{label}</label>
+                        ].map(({ key, label, unit }) => {
+                            const isHidden = hiddenHabits.includes(key);
+                            return (
+                            <div key={key} className={`flex items-center gap-3 ${isHidden ? 'opacity-40' : ''}`}>
+                                <button
+                                    onClick={() => setHiddenHabits(prev => prev.includes(key) ? prev.filter(h => h !== key) : [...prev, key])}
+                                    className="p-1.5 rounded-lg hover:bg-zinc-800 transition"
+                                    title={isHidden ? 'Show habit' : 'Hide habit'}
+                                >
+                                    {isHidden ? <EyeOff size={14} className="text-zinc-600" /> : <Eye size={14} className="text-zinc-400" />}
+                                </button>
+                                <label className="text-xs font-bold text-zinc-400 uppercase tracking-widest w-24 shrink-0">{label}</label>
                                 <input
                                     type="number"
                                     value={targets[key]}
                                     onChange={e => setTargets(prev => ({ ...prev, [key]: Number(e.target.value) }))}
-                                    className="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-emerald-500 transition-colors font-mono text-sm"
+                                    disabled={isHidden}
+                                    className="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-emerald-500 transition-colors font-mono text-sm disabled:text-zinc-600"
                                 />
                                 <span className="text-zinc-500 text-xs w-10">{unit}</span>
                             </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
 

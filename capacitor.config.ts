@@ -7,19 +7,26 @@ const config: CapacitorConfig = {
   server: {
     url: 'https://refactorathletics.com',
     cleartext: false,
-    allowNavigation: ['refactorathletics.com', 'ohxysyzrwccieioWjwpi.supabase.co'],
+    allowNavigation: [
+      'refactorathletics.com',
+      '*.refactorathletics.com',
+      '*.supabase.co',
+      'api.prod.whoop.com',
+      'accounts.google.com',
+    ],
     hostname: 'refactorathletics.com',
   },
   ios: {
     scheme: 'Refactor Athletics',
     contentInset: 'automatic',
-    limitsNavigationsToAppBoundDomains: true,
   },
   plugins: {
     SplashScreen: {
-      launchAutoHide: true,
+      launchAutoHide: false,
+      launchShowDuration: 10000,
       backgroundColor: '#09090b',
-      showSpinner: false,
+      showSpinner: true,
+      spinnerColor: '#f97316',
     },
   },
 };

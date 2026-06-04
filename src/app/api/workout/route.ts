@@ -226,14 +226,18 @@ export async function GET(request: Request) {
 
     // Try DB programs first
     if (user) {
-        const { data: program } = await supabase
+        const { data: programs } = await supabase
             .from('workout_programs')
-            .select('id, name')
+            .select('id, name, variant')
             .eq('user_id', user.id)
             .ilike('day_of_week', targetDay)
-            .single();
+            .order('variant');
 
-        if (program) {
+        if (programs && programs.length > 0) {
+            // Pick variant based on week rotation (A/B/C)
+            const weekNum = Math.floor((Date.now() - new Date('2026-01-05').getTime()) / (7 * 24 * 60 * 60 * 1000));
+            const program = programs[weekNum % programs.length];
+
             const { data: blocks } = await supabase
                 .from('program_blocks')
                 .select('*')

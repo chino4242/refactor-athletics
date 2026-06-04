@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { getToday } from '@/utils/date';
 import { getActiveWorkout, getWorkoutHistory, getWeeklySchedule, getHistory, getTrainingCatalog, getProfile } from '@/services/api';
 import { logWorkoutBlockAction, logTrainingAction } from '@/app/actions';
+import { calculateTotalSetXp } from '@/utils/xpCalculator';
 import { createClient } from '@/utils/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
 import type { HistoryItem, CatalogItem } from '@/types';
@@ -332,7 +333,7 @@ export function useWorkoutSession({ userId, onLogComplete, initialDate, sectionF
                 results.push({ name: ex.name, xp_earned: 0, level: 0, rank_name: null, hasStandards: false, isPR: false });
               }
             } else {
-              const setXp = ex.sets.reduce((sum: number, s: any) => sum + Math.floor((s.reps || 10) * 1.0), 0);
+              const setXp = calculateTotalSetXp(ex.sets, { bodyweight: userProfile?.bodyweight || 180, xpFactor: 1 });
               await logWorkoutBlockAction(userId, ex.name, `${ex.sets.length} Sets`, setXp, 'Strength', ex.sets, sessionId);
               results.push({ name: ex.name, xp_earned: setXp, level: 0, rank_name: null, value: `${ex.sets.length} Sets`, hasStandards: false, isPR: false });
             }
