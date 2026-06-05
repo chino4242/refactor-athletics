@@ -37,7 +37,6 @@ describe('OnboardingWizard — Integration', () => {
 
         expect(screen.getByText('Liability Waiver')).toBeInTheDocument();
 
-        // Next button should be disabled
         const nextBtn = screen.getByRole('button', { name: /^next$/i });
         expect(nextBtn).toBeDisabled();
     });
@@ -45,55 +44,53 @@ describe('OnboardingWizard — Integration', () => {
     it('advances to step 2 after accepting waiver', () => {
         render(<OnboardingWizard userId="user-123" />);
 
-        // Accept waiver
-        const checkbox = screen.getByRole('checkbox');
-        fireEvent.click(checkbox);
-
-        // Click next
+        fireEvent.click(screen.getByRole('checkbox'));
         const nextBtn = screen.getByRole('button', { name: /^next$/i });
         expect(nextBtn).not.toBeDisabled();
         fireEvent.click(nextBtn);
 
-        // Should be on step 2
         expect(screen.getByText('What brings you here?')).toBeInTheDocument();
     });
 
-    it('selecting Classic mode skips theme step (step 4)', () => {
+    it('step flow is: waiver → mode → personal info → goals → equipment → health sync', () => {
         render(<OnboardingWizard userId="user-123" />);
 
-        // Step 1: Accept waiver
+        // Step 1: Waiver
         fireEvent.click(screen.getByRole('checkbox'));
         fireEvent.click(screen.getByRole('button', { name: /^next$/i }));
 
-        // Step 2: Select Classic mode
+        // Step 2: Mode
         expect(screen.getByText('What brings you here?')).toBeInTheDocument();
-        fireEvent.click(screen.getByText('Track & Improve'));
-        fireEvent.click(screen.getByRole('button', { name: /^next$/i }));
-
-        // Step 3: Intro
-        expect(screen.getByText(/Welcome to Refactor Athletics/)).toBeInTheDocument();
-        fireEvent.click(screen.getByRole('button', { name: /^next$/i }));
-
-        // Should skip step 4 (theme) and go to step 5 (path)
-        expect(screen.getByText(/Choose Your Focus/)).toBeInTheDocument();
-    });
-
-    it('selecting RPG mode shows theme step (step 4)', () => {
-        render(<OnboardingWizard userId="user-123" />);
-
-        // Step 1: Accept waiver
-        fireEvent.click(screen.getByRole('checkbox'));
-        fireEvent.click(screen.getByRole('button', { name: /^next$/i }));
-
-        // Step 2: Select RPG mode
         fireEvent.click(screen.getByText('Compete & Level Up'));
         fireEvent.click(screen.getByRole('button', { name: /^next$/i }));
 
-        // Step 3: Intro
+        // Step 3: Personal info (step number 6 internally)
+        expect(screen.getByText('About You')).toBeInTheDocument();
+    });
+
+    it('cannot advance past goals without selecting at least one', () => {
+        render(<OnboardingWizard userId="user-123" />);
+
+        // Navigate to goals step
+        fireEvent.click(screen.getByRole('checkbox'));
+        fireEvent.click(screen.getByRole('button', { name: /^next$/i }));
+        fireEvent.click(screen.getByText('Compete & Level Up'));
         fireEvent.click(screen.getByRole('button', { name: /^next$/i }));
 
-        // Step 4: Theme selection (RPG only)
-        expect(screen.getByText('Choose Your Theme')).toBeInTheDocument();
+        // Fill personal info
+        fireEvent.change(screen.getByPlaceholderText('25'), { target: { value: '28' } });
+        fireEvent.change(screen.getByPlaceholderText('180'), { target: { value: '185' } });
+        fireEvent.change(screen.getByRole('combobox'), { target: { value: 'male' } });
+        fireEvent.click(screen.getByRole('button', { name: /^next$/i }));
+
+        // Goals step — Next should be disabled without selection
+        expect(screen.getByText('Your Goals')).toBeInTheDocument();
+        const nextBtn = screen.getByRole('button', { name: /^next$/i });
+        expect(nextBtn).toBeDisabled();
+
+        // Select a goal
+        fireEvent.click(screen.getByText('Get stronger'));
+        expect(nextBtn).not.toBeDisabled();
     });
 
     it('completes full onboarding and calls saveProfile with correct data', async () => {
@@ -107,36 +104,20 @@ describe('OnboardingWizard — Integration', () => {
         fireEvent.click(screen.getByText('Compete & Level Up'));
         fireEvent.click(screen.getByRole('button', { name: /^next$/i }));
 
-        // Step 3: Intro
+        // Step 3: Personal info
+        fireEvent.change(screen.getByPlaceholderText('25'), { target: { value: '28' } });
+        fireEvent.change(screen.getByPlaceholderText('180'), { target: { value: '185' } });
+        fireEvent.change(screen.getByRole('combobox'), { target: { value: 'male' } });
         fireEvent.click(screen.getByRole('button', { name: /^next$/i }));
 
-        // Step 4: Theme (default is athlete, just advance)
+        // Step 4: Goals
+        fireEvent.click(screen.getByText('Get stronger'));
         fireEvent.click(screen.getByRole('button', { name: /^next$/i }));
 
-        // Step 5: Path (default is hybrid, just advance)
+        // Step 5: Equipment (just advance)
         fireEvent.click(screen.getByRole('button', { name: /^next$/i }));
 
-        // Step 6: Personal info
-        const ageInput = screen.getByPlaceholderText('25');
-        const weightInput = screen.getByPlaceholderText('180');
-        fireEvent.change(ageInput, { target: { value: '28' } });
-        fireEvent.change(weightInput, { target: { value: '185' } });
-        // Select sex via select element
-        const sexSelect = screen.getByRole('combobox');
-        fireEvent.change(sexSelect, { target: { value: 'male' } });
-        fireEvent.click(screen.getByRole('button', { name: /^next$/i }));
-
-        // Step 7: Goal (target weight)
-        const targetInput = screen.getByPlaceholderText('170');
-        fireEvent.change(targetInput, { target: { value: '175' } });
-        fireEvent.click(screen.getByRole('button', { name: /^next$/i }));
-
-        // Step 8: Equipment (just advance)
-        fireEvent.click(screen.getByRole('button', { name: /^next$/i }));
-
-        // Step 9: Nutrition (just advance — profile saves automatically when entering step 10)
-        fireEvent.click(screen.getByRole('button', { name: /^next$/i }));
-
+        // Entering step 6 (Health Sync) triggers auto-save
         await waitFor(() => {
             expect(mockSaveProfile).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -146,8 +127,8 @@ describe('OnboardingWizard — Integration', () => {
                     bodyweight: 185,
                     experience_mode: 'rpg',
                     is_onboarded: true,
-                    waiver_accepted_at: expect.any(String),
-                    selected_path: 'hybrid',
+                    goals: expect.objectContaining({ motivations: ['get_stronger'] }),
+                    starter_quest_progress: [],
                 })
             );
         });
