@@ -15,6 +15,8 @@ import { useToast } from '@/context/ToastContext';
 import DailyWrapUp from '../../DailyWrapUp';
 import TomorrowPreview from '../../TomorrowPreview';
 import WeeklyQuestsCard from '../../WeeklyQuestsCard';
+import StarterQuestCard, { LockedFeatureOverlay } from '../../StarterQuestCard';
+import { useStarterQuests } from '@/hooks/useStarterQuests';
 
 interface TodayTabProps {
     userId: string;
@@ -31,6 +33,7 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
     const [todayScheduled, setTodayScheduled] = useState<any>(null);
     const [showTodayWrapUp, setShowTodayWrapUp] = useState(false);
     const [lastWorkout, setLastWorkout] = useState<{ date: string; totalXp: number; lifts: { name: string; volume: number }[]; treadmillSets: number } | null>(null);
+    const { quests, activeQuest, allComplete, isFeatureUnlocked } = useStarterQuests(userId, profile?.starter_quest_progress || []);
     const [todayProgress, setTodayProgress] = useState<any>({
         calories: 0,
         caloriesBurned: 0,
@@ -214,7 +217,7 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
             )}
 
             {/* Compact Stats Row */}
-            {profile && (
+            {profile && (isFeatureUnlocked('nutrition_card') ? (
                 <Link href="/track" className="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 hover:border-zinc-700 transition">
                     {[
                         { icon: '🍽️', val: Math.round(todayProgress.calories - (todayProgress.caloriesBurned || 0)), target: profile.nutrition_targets?.net_calorie_target ? null : (profile.nutrition_targets?.calories || 2000), unit: 'net' },
@@ -231,37 +234,30 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
                         </div>
                     ))}
                 </Link>
+            ) : (
+                <LockedFeatureOverlay questTitle="Fuel Up">
+                    <div className="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3">
+                        <span className="text-xs text-zinc-600">🍽️ Nutrition · 💧 Water · 👟 Steps · ⚡ XP</span>
+                    </div>
+                </LockedFeatureOverlay>
+            ))}
+
+            {/* Starter Quest — shows active quest during onboarding phase */}
+            {!allComplete && activeQuest && (
+                <div className="space-y-2">
+                    {quests.filter(q => q.isComplete).map(q => (
+                        <StarterQuestCard key={q.id} quest={q} />
+                    ))}
+                    <StarterQuestCard quest={{ ...activeQuest, isComplete: false, isActive: true }} />
+                </div>
             )}
 
             {/* Smart CTA — Primary Action */}
-            {profile && (() => {
+            {profile && allComplete && (() => {
                 const hour = new Date().getHours();
                 const hasWorkout = lastWorkout?.date === getToday();
                 const hasFood = todayProgress.calories > 0;
                 const hasScheduled = !!todayScheduled;
-                const isFirstDay = !todayProgress.xp && !hasWorkout && !hasFood && todayProgress.steps < 100;
-
-                if (isFirstDay) return (
-                    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 space-y-3">
-                        <div className="text-center">
-                            <div className="text-2xl mb-2">🎯</div>
-                            <h3 className="text-sm font-bold text-white">Welcome to Refactor Athletics</h3>
-                            <p className="text-xs text-zinc-400 mt-1">Your journey starts with one action. Pick one:</p>
-                        </div>
-                        <div className="space-y-2">
-                            <Link href="/train" className="flex items-center gap-3 p-3 bg-zinc-800/50 border border-zinc-700/50 rounded-lg hover:border-orange-500/30 transition">
-                                <span>🏋️</span>
-                                <div className="flex-1"><span className="text-xs font-bold text-white">Start a workout</span><span className="text-[10px] text-zinc-500 ml-2">Earn your first rank</span></div>
-                                <span className="text-zinc-600">→</span>
-                            </Link>
-                            <Link href="/track" className="flex items-center gap-3 p-3 bg-zinc-800/50 border border-zinc-700/50 rounded-lg hover:border-orange-500/30 transition">
-                                <span>🥗</span>
-                                <div className="flex-1"><span className="text-xs font-bold text-white">Log a meal</span><span className="text-[10px] text-zinc-500 ml-2">Track your nutrition</span></div>
-                                <span className="text-zinc-600">→</span>
-                            </Link>
-                        </div>
-                    </div>
-                );
 
                 if (hasScheduled && !hasWorkout) return (
                     <Link href="/train" className={`block w-full bg-gradient-to-r ${theme.accentGradient} text-white rounded-xl px-4 py-4 flex items-center justify-between shadow-lg shadow-orange-900/20 active:scale-[0.98] transition`}>
