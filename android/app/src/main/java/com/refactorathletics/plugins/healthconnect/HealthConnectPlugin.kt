@@ -62,14 +62,19 @@ class HealthConnectPlugin : Plugin() {
         scope.launch {
             try {
                 val granted = hc.permissionController.getGrantedPermissions()
-                if (granted.containsAll(permissions)) {
+                // If at least some permissions are granted, consider it successful
+                if (granted.any { it in permissions }) {
                     call.resolve(JSObject().put("granted", true))
                 } else {
-                    // Launch permission request activity
-                    val intent = PermissionController.createRequestPermissionResultContract()
-                        .createIntent(context, permissions)
-                    activity.startActivity(intent)
-                    call.resolve(JSObject().put("granted", true))
+                    // Try to launch HC permissions screen
+                    try {
+                        val intent = PermissionController.createRequestPermissionResultContract()
+                            .createIntent(context, permissions)
+                        activity.startActivity(intent)
+                    } catch (_: Exception) {}
+                    // Re-check after potential grant
+                    val recheck = hc.permissionController.getGrantedPermissions()
+                    call.resolve(JSObject().put("granted", recheck.isNotEmpty()))
                 }
             } catch (e: Exception) {
                 call.resolve(JSObject().put("granted", false))

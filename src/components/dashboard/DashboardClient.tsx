@@ -82,12 +82,8 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             try {
                 const { isHealthAvailable, requestPermissions, syncTodayHealth } = await import('@/services/nativeHealth');
                 if (!(await isHealthAvailable())) return;
-                // Request permissions on first sync attempt
-                if (!localStorage.getItem('health_permissions_granted')) {
-                    const granted = await requestPermissions();
-                    if (granted) localStorage.setItem('health_permissions_granted', 'true');
-                    else return;
-                }
+                // Request permissions if not yet granted (no-op if already granted)
+                await requestPermissions();
                 const data = await syncTodayHealth();
                 const { logHabitAction } = await import('@/app/actions');
                 const promises = [];
