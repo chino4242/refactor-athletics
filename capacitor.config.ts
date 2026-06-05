@@ -23,6 +23,7 @@ const config: CapacitorConfig = {
   android: {
     backgroundColor: '#09090b',
     allowMixedContent: true,
+    includePlugins: ['@capacitor/splash-screen'],
   },
   plugins: {
     SplashScreen: {
