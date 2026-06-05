@@ -12,9 +12,21 @@ export default function ActiveWorkoutBanner() {
     useEffect(() => {
         const check = () => {
             try {
+                // Don't show on auth/login pages
+                if (pathname.includes('/login') || pathname.includes('/register') || pathname.includes('/beta') || pathname.includes('/reset-password')) {
+                    setActive(null);
+                    return;
+                }
                 const saved = localStorage.getItem('active_workout');
                 if (saved) {
                     const data = JSON.parse(saved);
+                    // Auto-clear stale entries from a different day
+                    const today = new Date().toLocaleDateString('en-CA');
+                    if (data.date && data.date !== today) {
+                        localStorage.removeItem('active_workout');
+                        setActive(null);
+                        return;
+                    }
                     // Only show on pages that aren't the workout page itself
                     if (data.path && !pathname.includes('/train') && !pathname.includes('/workouts')) {
                         setActive(data);

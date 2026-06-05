@@ -38,6 +38,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
     };
     const [refreshing, setRefreshing] = useState(false);
     const [firstSessionDismissed, setFirstSessionDismissed] = useState(false);
+    const [starterProgress, setStarterProgress] = useState<any[]>([]);
     const { setMode } = useExperienceMode();
     
     // Pull to refresh state
@@ -52,10 +53,11 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                 getUserStats(userId).catch(e => { console.error('Stats error:', e); return null; }),
                 getActiveDuels(userId).catch(e => { console.error('Duels error:', e); return []; }),
                 getWorkouts(userId).catch(e => { console.error('Programs error:', e); return []; }),
-                supabase.from('users').select('experience_mode').eq('id', userId).single(),
+                supabase.from('users').select('experience_mode, starter_quest_progress').eq('id', userId).single(),
             ]);
             const dbMode = profileData?.data?.experience_mode;
             if (dbMode === 'rpg' || dbMode === 'classic') setMode(dbMode);
+            setStarterProgress(profileData?.data?.starter_quest_progress || []);
             setStats(statsData);
             setActiveDuels(duelsData || []);
             setPrograms(programsData || []);
@@ -174,7 +176,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             )}
 
             {/* Yesterday's Wrap-Up (collapsible card, not blocking) */}
-            {!yesterdayDismissed && (
+            {!yesterdayDismissed && !isFirstSession && stats && (stats.total_career_xp || 0) > 0 && (
                 <div className="px-4 mb-4 animate-fade-in-up stagger-1">
                     <details open>
                         <summary className="list-none cursor-pointer">
@@ -206,6 +208,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                         hasActiveDuels={hasActiveDuels}
                         activeDuels={activeDuels}
                         programs={programs}
+                        starterQuestProgress={starterProgress}
                     />
                 </div>
             )}

@@ -16,6 +16,8 @@ export interface UserProfileData {
     habit_targets?: Record<string, number>;
     body_composition_goals?: Record<string, string>;
     available_equipment?: string[];
+    goals?: Record<string, any>;
+    starter_quest_progress?: any[];
     measurement_mode?: 'tape' | 'scale';
     sync_token?: string;
     whoop_connected_at?: string;
