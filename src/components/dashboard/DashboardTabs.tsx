@@ -8,6 +8,7 @@ import { THEMES } from '@/data/themes';
 import TodayTab from './tabs/TodayTab';
 import ArenaTab from './tabs/ArenaTab';
 import StatsTab from './tabs/StatsTab';
+import { LockedFeatureOverlay } from '../StarterQuestCard';
 
 interface DashboardTabsProps {
     userId: string;
@@ -15,9 +16,10 @@ interface DashboardTabsProps {
     hasActiveDuels: boolean;
     activeDuels: DuelResponse[];
     programs: Workout[];
+    starterQuestProgress?: any[];
 }
 
-export default function DashboardTabs({ userId, stats, hasActiveDuels, activeDuels, programs }: DashboardTabsProps) {
+export default function DashboardTabs({ userId, stats, hasActiveDuels, activeDuels, programs, starterQuestProgress }: DashboardTabsProps) {
     const { currentTheme } = useTheme();
     const { isClassic } = useExperienceMode();
     const theme = THEMES[currentTheme] || THEMES['athlete'];

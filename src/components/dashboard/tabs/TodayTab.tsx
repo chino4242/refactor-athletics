@@ -199,8 +199,8 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
 
     return (
         <div className="space-y-3">
-            {/* Weekly Quests — collapsible pill */}
-            <WeeklyQuestsCard userId={userId} />
+            {/* Weekly Quests — only show after daily discipline quest is complete */}
+            {isFeatureUnlocked('daily_quests') && <WeeklyQuestsCard userId={userId} />}
 
             {/* 75 Day Challenge progress */}
             {challenge75 && (
