@@ -25,18 +25,25 @@ export default function Challenge75Client({ userId, groups }: { userId: string; 
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
+  const [joinableChallenge, setJoinableChallenge] = useState<any | null>(null);
 
   useEffect(() => { load(); }, []);
 
   const load = async () => {
     const res = await fetch('/api/challenge-75');
-    if (res.ok) { const data = await res.json(); setChallenges(data.challenges || []); }
+    if (res.ok) {
+      const data = await res.json();
+      setChallenges(data.challenges || []);
+      // Show first joinable challenge if any
+      if (data.joinable?.length > 0 && !joinableChallenge) setJoinableChallenge(data.joinable[0]);
+    }
     setLoading(false);
   };
 
   if (loading) return <div className="text-center py-8 text-zinc-500">Loading...</div>;
 
   if (selectedChallenge) return <ChallengeView challenge={selectedChallenge} userId={userId} onBack={() => { setSelectedChallenge(null); load(); }} />;
+  if (joinableChallenge) return <JoinChallenge challenge={joinableChallenge} userId={userId} onDone={() => { setJoinableChallenge(null); load(); }} onSkip={() => setJoinableChallenge(null)} />;
   if (showCreate) return <CreateChallenge userId={userId} groups={groups} onDone={() => { setShowCreate(false); load(); }} />;
 
   return (
@@ -119,6 +126,7 @@ function CreateChallenge({ userId, groups, onDone }: { userId: string; groups: a
   const [customLabel, setCustomLabel] = useState('');
   const [startDate, setStartDate] = useState(new Date().toLocaleDateString('en-CA'));
   const [groupId, setGroupId] = useState<string | null>(null);
+  const [sharedFailure, setSharedFailure] = useState(false);
   const [saving, setSaving] = useState(false);
   const [step, setStep] = useState<'pick' | 'build'>('pick');
 
@@ -150,7 +158,7 @@ function CreateChallenge({ userId, groups, onDone }: { userId: string; groups: a
     setSaving(true);
     await fetch('/api/challenge-75', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'create', title, start_date: startDate, group_id: groupId, metrics: selectedMetrics }),
+      body: JSON.stringify({ action: 'create', title, start_date: startDate, group_id: groupId, shared_failure: sharedFailure, metrics: selectedMetrics }),
     });
     onDone();
   };
@@ -228,6 +236,19 @@ function CreateChallenge({ userId, groups, onDone }: { userId: string; groups: a
         </div>
       )}
 
+      {groupId && (
+        <div className="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-3">
+          <div>
+            <div className="text-xs font-bold text-white">Shared Fate</div>
+            <div className="text-[10px] text-zinc-500">If one person fails, everyone fails</div>
+          </div>
+          <button onClick={() => setSharedFailure(!sharedFailure)}
+            className={`w-10 h-5 rounded-full transition-colors ${sharedFailure ? 'bg-orange-500' : 'bg-zinc-700'}`}>
+            <div className={`w-4 h-4 rounded-full bg-white transition-transform ${sharedFailure ? 'translate-x-5' : 'translate-x-0.5'}`} />
+          </button>
+        </div>
+      )}
+
       <div>
         <label className="text-[11px] font-bold text-zinc-500 uppercase mb-2 block">What to Track</label>
         <div className="grid grid-cols-2 gap-2">
@@ -282,15 +303,121 @@ function CreateChallenge({ userId, groups, onDone }: { userId: string; groups: a
   );
 }
 
+function JoinChallenge({ challenge, userId, onDone, onSkip }: { challenge: any; userId: string; onDone: () => void; onSkip: () => void }) {
+  // Pre-fill with creator's metrics
+  const creatorMember = (challenge.challenge_75_members || []).find((m: any) => m.user_id !== userId);
+  const creatorMetrics = (challenge.challenge_75_metrics || []).filter((m: any) => m.member_id === creatorMember?.id);
+  const [selectedMetrics, setSelectedMetrics] = useState<{ id: string; label: string; type: string; minimum: number }[]>(
+    creatorMetrics.map((m: any) => ({ id: m.metric_id, label: m.label, type: m.metric_type, minimum: m.minimum || 0 }))
+  );
+  const [customLabel, setCustomLabel] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const toggleMetric = (m: typeof APP_METRICS[0]) => {
+    setSelectedMetrics(prev => prev.some(s => s.id === m.id)
+      ? prev.filter(s => s.id !== m.id)
+      : [...prev, { id: m.id, label: m.label, type: 'app', minimum: m.defaultMin }]);
+  };
+
+  const addCustom = () => {
+    if (!customLabel.trim()) return;
+    const id = `custom_${customLabel.trim().toLowerCase().replace(/\s+/g, '_')}`;
+    setSelectedMetrics(prev => [...prev, { id, label: customLabel.trim(), type: 'custom', minimum: 0 }]);
+    setCustomLabel('');
+  };
+
+  const updateMinimum = (id: string, val: number) => {
+    setSelectedMetrics(prev => prev.map(m => m.id === id ? { ...m, minimum: val } : m));
+  };
+
+  const handleJoin = async () => {
+    if (selectedMetrics.length === 0) return;
+    setSaving(true);
+    await fetch('/api/challenge-75', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'join', challenge_id: challenge.id, metrics: selectedMetrics }),
+    });
+    onDone();
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-bold text-white">Join Challenge</h2>
+        <button onClick={onSkip} className="text-zinc-500 text-xs">Skip</button>
+      </div>
+
+      <div className="bg-zinc-800/50 border border-zinc-700/50 rounded-xl p-3 text-center">
+        <div className="text-sm font-bold text-white">{challenge.title}</div>
+        <div className="text-[10px] text-zinc-500 mt-1">Created by a group member · {challenge.challenge_75_members?.length || 1} participant(s)</div>
+      </div>
+
+      <p className="text-sm text-zinc-400">Choose your daily requirements. You&apos;ll be evaluated against these targets each day.</p>
+
+      <div>
+        <label className="text-[11px] font-bold text-zinc-500 uppercase mb-2 block">What to Track</label>
+        <div className="grid grid-cols-2 gap-2">
+          {APP_METRICS.map(m => {
+            const selected = selectedMetrics.some(s => s.id === m.id);
+            return (
+              <button key={m.id} onClick={() => toggleMetric(m)}
+                className={`p-3 rounded-lg border text-left transition ${selected ? 'border-orange-500 bg-orange-500/10' : 'border-zinc-800 bg-zinc-900 hover:border-zinc-700'}`}>
+                <div className="text-xs font-bold text-white">{m.label}</div>
+                <div className="text-[10px] text-zinc-500">{m.unit}</div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div>
+        <label className="text-[11px] font-bold text-zinc-500 uppercase mb-2 block">Custom Daily Habits</label>
+        <div className="flex gap-2">
+          <input type="text" value={customLabel} onChange={e => setCustomLabel(e.target.value)} placeholder="e.g. Read 30 min, No alcohol"
+            className="flex-1 bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 outline-none"
+            onKeyDown={e => { if (e.key === 'Enter') addCustom(); }} />
+          <button onClick={addCustom} className="bg-zinc-800 border border-zinc-700 text-zinc-400 px-3 rounded-lg text-xs font-bold">Add</button>
+        </div>
+      </div>
+
+      {selectedMetrics.length > 0 && (
+        <div className="space-y-2">
+          <label className="text-[11px] font-bold text-zinc-500 uppercase block">Your Minimums</label>
+          {selectedMetrics.map(m => (
+            <div key={m.id} className="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2">
+              <span className="text-xs text-white">{m.label}</span>
+              {m.type === 'app' ? (
+                <input type="number" value={m.minimum} onChange={e => updateMinimum(m.id, Number(e.target.value))}
+                  className="w-20 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs text-white text-center focus:border-orange-500 outline-none" />
+              ) : (
+                <span className="text-[10px] text-zinc-500">Daily checkbox</span>
+              )}
+              <button onClick={() => setSelectedMetrics(prev => prev.filter(s => s.id !== m.id))} className="text-zinc-600 hover:text-red-400 ml-2"><X size={14} /></button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <button onClick={handleJoin} disabled={selectedMetrics.length === 0 || saving}
+        className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold py-3 rounded-xl text-sm uppercase tracking-wider disabled:opacity-50">
+        {saving ? 'Joining...' : 'Join Challenge'}
+      </button>
+    </div>
+  );
+}
+
 function ChallengeView({ challenge, userId, onBack }: { challenge: Challenge; userId: string; onBack: () => void }) {
   const [days, setDays] = useState(challenge.challenge_75_days || []);
   const startDate = new Date(challenge.start_date);
-  const daysPassed = Math.floor((Date.now() - startDate.getTime()) / 86400000);
-  const endDate = new Date(startDate.getTime() + 74 * 86400000);
   const myDays = days.filter((d: any) => d.user_id === userId);
   const passedCount = myDays.filter((d: any) => d.status === 'passed').length;
-  const metrics = challenge.challenge_75_metrics || [];
   const members = challenge.challenge_75_members || [];
+  const myMembership = members.find((m: any) => m.user_id === userId);
+  const allMetrics = challenge.challenge_75_metrics || [];
+  // Show per-member metrics if available, fall back to shared (member_id null)
+  const metrics = allMetrics.filter((m: any) => m.member_id === myMembership?.id) .length > 0
+    ? allMetrics.filter((m: any) => m.member_id === myMembership?.id)
+    : allMetrics.filter((m: any) => !m.member_id);
   const isGroup = !!challenge.group_id;
 
   const today = new Date().toLocaleDateString('en-CA');
@@ -331,11 +458,15 @@ function ChallengeView({ challenge, userId, onBack }: { challenge: Challenge; us
     return { day: i + 1, date: dateStr, status: record?.status || (isFuture ? 'future' : 'pending'), isToday };
   });
 
+  const myStatus = myMembership?.status || challenge.status;
+  const daysPassed = Math.floor((Date.now() - startDate.getTime()) / 86400000);
+  const endDate = new Date(startDate.getTime() + 74 * 86400000);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <button onClick={onBack} className="text-zinc-500 text-xs">← Back</button>
-        {challenge.status === 'failed' && (
+        {myStatus === 'failed' && (
           <button onClick={handleRestart} className="flex items-center gap-1 text-xs text-orange-400 font-bold"><RotateCcw size={12} /> Restart</button>
         )}
       </div>
@@ -343,9 +474,9 @@ function ChallengeView({ challenge, userId, onBack }: { challenge: Challenge; us
       <div className="text-center">
         <h2 className="text-lg font-black text-white">{challenge.title}</h2>
         <div className="text-sm text-zinc-400 mt-1">
-          {challenge.status === 'active' && <span>Day {Math.min(daysPassed + 1, 75)} of 75 · ✅ {passedCount} days</span>}
-          {challenge.status === 'completed' && <span className="text-emerald-400 font-bold">🏆 Completed!</span>}
-          {challenge.status === 'failed' && <span className="text-red-400">Failed on day {Math.floor((new Date(challenge.failed_on!).getTime() - startDate.getTime()) / 86400000) + 1} — {challenge.failed_metric}</span>}
+          {myStatus === 'joined' && <span>Day {Math.min(daysPassed + 1, 75)} of 75 · ✅ {passedCount} days</span>}
+          {myStatus === 'completed' && <span className="text-emerald-400 font-bold">🏆 Completed!</span>}
+          {myStatus === 'failed' && <span className="text-red-400">Failed on day {Math.floor((new Date(myMembership.failed_on!).getTime() - startDate.getTime()) / 86400000) + 1} — {myMembership.failed_metric}</span>}
         </div>
         <div className="text-[10px] text-zinc-600 mt-1">
           {startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} → {endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}

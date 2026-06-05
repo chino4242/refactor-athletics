@@ -11,15 +11,32 @@ export async function GET(request: NextRequest) {
 
   // Get all challenges user is a member of
   const { data: memberships } = await service.from('challenge_75_members')
-    .select('challenge_id').eq('user_id', user.id).eq('status', 'joined');
+    .select('challenge_id').eq('user_id', user.id).in('status', ['joined', 'failed', 'completed']);
 
-  if (!memberships?.length) return NextResponse.json({ challenges: [] });
+  const memberIds = (memberships || []).map(m => m.challenge_id);
 
-  const ids = memberships.map(m => m.challenge_id);
-  const { data: challenges } = await service.from('challenges_75')
-    .select('*, challenge_75_metrics(*), challenge_75_members(user_id, status)')
-    .in('id', ids)
-    .order('created_at', { ascending: false });
+  // Also find group challenges user can join (in user's groups but not yet a member)
+  const { data: userGroups } = await service.from('group_members').select('group_id').eq('user_id', user.id);
+  const groupIds = (userGroups || []).map(g => g.group_id);
+  let joinable: any[] = [];
+  if (groupIds.length > 0) {
+    const { data: groupChallenges } = await service.from('challenges_75')
+      .select('*, challenge_75_metrics(*), challenge_75_members(id, user_id, status, failed_on, failed_metric)')
+      .in('group_id', groupIds)
+      .eq('status', 'active');
+    joinable = (groupChallenges || []).filter(c => !memberIds.includes(c.id));
+  }
+
+  if (!memberships?.length && !joinable.length) return NextResponse.json({ challenges: [], joinable: [] });
+
+  let challenges: any[] = [];
+  if (memberIds.length > 0) {
+    const { data } = await service.from('challenges_75')
+      .select('*, challenge_75_metrics(*), challenge_75_members(id, user_id, status, failed_on, failed_metric)')
+      .in('id', memberIds)
+      .order('created_at', { ascending: false });
+    challenges = data || [];
+  }
 
   // Evaluate yesterday for each active challenge (on-demand)
   const today = new Date().toLocaleDateString('en-CA');
@@ -28,12 +45,16 @@ export async function GET(request: NextRequest) {
   }
 
   // Re-fetch after evaluation
-  const { data: updated } = await service.from('challenges_75')
-    .select('*, challenge_75_metrics(*), challenge_75_members(user_id, status), challenge_75_days(user_id, date, status, metrics_snapshot, custom_checks)')
-    .in('id', ids)
-    .order('created_at', { ascending: false });
+  let updated: any[] = [];
+  if (memberIds.length > 0) {
+    const { data } = await service.from('challenges_75')
+      .select('*, challenge_75_metrics(*), challenge_75_members(id, user_id, status, failed_on, failed_metric), challenge_75_days(user_id, date, status, metrics_snapshot, custom_checks)')
+      .in('id', memberIds)
+      .order('created_at', { ascending: false });
+    updated = data || [];
+  }
 
-  return NextResponse.json({ challenges: updated || [] });
+  return NextResponse.json({ challenges: updated, joinable });
 }
 
 export async function POST(request: NextRequest) {
@@ -46,22 +67,29 @@ export async function POST(request: NextRequest) {
   const service = createServiceClient();
 
   if (action === 'create') {
-    const { title, metrics, start_date, group_id } = body;
+    const { title, metrics, start_date, group_id, shared_failure } = body;
     // Create challenge
     const { data: challenge, error } = await service.from('challenges_75').insert({
       creator_id: user.id,
       title: title || '75 Day Challenge',
       start_date: start_date || new Date().toLocaleDateString('en-CA'),
       group_id: group_id || null,
+      shared_failure: shared_failure || false,
     }).select().single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-    // Insert metrics
-    if (metrics?.length) {
+    // Creator auto-joins
+    const { data: membership } = await service.from('challenge_75_members').insert({
+      challenge_id: challenge.id, user_id: user.id,
+    }).select().single();
+
+    // Insert metrics linked to creator's membership
+    if (metrics?.length && membership) {
       await service.from('challenge_75_metrics').insert(
         metrics.map((m: any, i: number) => ({
           challenge_id: challenge.id,
+          member_id: membership.id,
           metric_type: m.type,
           metric_id: m.id,
           label: m.label,
@@ -71,19 +99,52 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Creator auto-joins
-    await service.from('challenge_75_members').insert({
-      challenge_id: challenge.id, user_id: user.id,
-    });
-
     return NextResponse.json({ challenge });
   }
 
   if (action === 'join') {
-    const { challenge_id } = body;
-    await service.from('challenge_75_members').upsert({
+    const { challenge_id, metrics } = body;
+    const { data: membership } = await service.from('challenge_75_members').upsert({
       challenge_id, user_id: user.id, status: 'joined',
-    }, { onConflict: 'challenge_id,user_id' });
+    }, { onConflict: 'challenge_id,user_id' }).select().single();
+
+    if (membership) {
+      if (metrics?.length) {
+        // Use provided metrics
+        await service.from('challenge_75_metrics').insert(
+          metrics.map((m: any, i: number) => ({
+            challenge_id,
+            member_id: membership.id,
+            metric_type: m.type,
+            metric_id: m.id,
+            label: m.label,
+            minimum: m.minimum || null,
+            sort_order: i,
+          }))
+        );
+      } else {
+        // Copy creator's metrics as defaults
+        const { data: creatorMember } = await service.from('challenge_75_members')
+          .select('id').eq('challenge_id', challenge_id).neq('user_id', user.id).limit(1).single();
+        if (creatorMember) {
+          const { data: creatorMetrics } = await service.from('challenge_75_metrics')
+            .select('*').eq('challenge_id', challenge_id).eq('member_id', creatorMember.id);
+          if (creatorMetrics?.length) {
+            await service.from('challenge_75_metrics').insert(
+              creatorMetrics.map((m: any) => ({
+                challenge_id,
+                member_id: membership.id,
+                metric_type: m.metric_type,
+                metric_id: m.metric_id,
+                label: m.label,
+                minimum: m.minimum,
+                sort_order: m.sort_order,
+              }))
+            );
+          }
+        }
+      }
+    }
     return NextResponse.json({ success: true });
   }
 
@@ -113,16 +174,18 @@ export async function POST(request: NextRequest) {
     const { challenge_id } = body;
     const today = new Date().toLocaleDateString('en-CA');
 
-    // Reset challenge
+    // Reset only this user's membership status
+    await service.from('challenge_75_members').update({
+      status: 'joined', failed_on: null, failed_metric: null,
+    }).eq('challenge_id', challenge_id).eq('user_id', user.id);
+
+    // Clear only this user's day records
+    await service.from('challenge_75_days').delete().eq('challenge_id', challenge_id).eq('user_id', user.id);
+
+    // Update challenge start_date to today (for this user's fresh start)
     await service.from('challenges_75').update({
-      status: 'active', start_date: today, failed_on: null, failed_by: null, failed_metric: null, completed_at: null,
+      start_date: today, status: 'active', failed_on: null, failed_by: null, failed_metric: null, completed_at: null,
     }).eq('id', challenge_id);
-
-    // Clear all day records
-    await service.from('challenge_75_days').delete().eq('challenge_id', challenge_id);
-
-    // Reset member statuses
-    await service.from('challenge_75_members').update({ status: 'joined' }).eq('challenge_id', challenge_id);
 
     return NextResponse.json({ success: true });
   }
@@ -152,7 +215,29 @@ async function evaluateChallenge(service: any, challenge: any, userId: string, t
 
   const evaluatedDates = new Set((existingDays || []).filter((d: any) => d.status !== 'pending').map((d: any) => d.date));
 
-  const metrics = challenge.challenge_75_metrics || [];
+  // Get this member's metrics (per-member first, fall back to shared/challenge-level)
+  const { data: membership } = await service.from('challenge_75_members')
+    .select('id, status, failed_on')
+    .eq('challenge_id', challenge.id).eq('user_id', userId).single();
+
+  if (!membership || membership.status === 'failed') return;
+
+  let metrics = [];
+  if (membership) {
+    const { data: memberMetrics } = await service.from('challenge_75_metrics')
+      .select('*').eq('challenge_id', challenge.id).eq('member_id', membership.id);
+    if (memberMetrics?.length) {
+      metrics = memberMetrics;
+    } else {
+      // Fall back to shared metrics (legacy: member_id is null)
+      const { data: sharedMetrics } = await service.from('challenge_75_metrics')
+        .select('*').eq('challenge_id', challenge.id).is('member_id', null);
+      metrics = sharedMetrics || [];
+    }
+  }
+
+  if (metrics.length === 0) return;
+
   let d = new Date(startDate);
 
   while (d <= yesterday) {
@@ -160,22 +245,32 @@ async function evaluateChallenge(service: any, challenge: any, userId: string, t
     if (!evaluatedDates.has(dateStr)) {
       const result = await evaluateDay(service, challenge.id, userId, dateStr, metrics);
       if (!result.passed) {
-        // FAIL — mark challenge and all members as failed
-        await service.from('challenges_75').update({
-          status: 'failed', failed_on: dateStr, failed_by: userId, failed_metric: result.failedMetric,
-        }).eq('id', challenge.id);
+        // Mark this member as failed
+        await service.from('challenge_75_members').update({
+          status: 'failed', failed_on: dateStr, failed_metric: result.failedMetric,
+        }).eq('id', membership.id);
+
+        // If shared_failure enabled, fail ALL members
+        if (challenge.shared_failure) {
+          await service.from('challenge_75_members').update({
+            status: 'failed', failed_on: dateStr, failed_metric: `${result.failedMetric} (by group member)`,
+          }).eq('challenge_id', challenge.id).neq('id', membership.id);
+          await service.from('challenges_75').update({
+            status: 'failed', failed_on: dateStr, failed_by: userId, failed_metric: result.failedMetric,
+          }).eq('id', challenge.id);
+        }
         return;
       }
     }
     d.setDate(d.getDate() + 1);
   }
 
-  // Check if 75 days completed
+  // Check if 75 days completed for this member
   const dayCount = Math.floor((todayDate.getTime() - startDate.getTime()) / 86400000);
-  if (dayCount >= 75 && challenge.status === 'active') {
-    await service.from('challenges_75').update({
-      status: 'completed', completed_at: new Date().toISOString(),
-    }).eq('id', challenge.id);
+  if (dayCount >= 75) {
+    await service.from('challenge_75_members').update({
+      status: 'completed',
+    }).eq('id', membership.id);
   }
 }
 

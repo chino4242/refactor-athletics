@@ -80,11 +80,11 @@ describe('75 Day Challenge API', () => {
   describe('POST - create', () => {
     it('creates a challenge with metrics and auto-joins creator', async () => {
       const challengeId = 'challenge-456';
+      const membershipId = 'member-789';
       const insertChain = createChainMock({ id: challengeId, title: 'My Challenge' });
       const metricsChain = createChainMock();
-      const membersChain = createChainMock();
+      const membersChain = createChainMock({ id: membershipId, challenge_id: challengeId, user_id: 'user-123' });
 
-      let callCount = 0;
       mockServiceFrom.mockImplementation((table: string) => {
         if (table === 'challenges_75') return insertChain;
         if (table === 'challenge_75_metrics') return metricsChain;
