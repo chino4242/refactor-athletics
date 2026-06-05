@@ -77,11 +77,17 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             .then(d => { if (d.synced?.length) { loadData(); localStorage.setItem('last_health_sync', new Date().toISOString()); } })
             .catch(() => {});
 
-        // Native HealthKit sync (iOS/Android via Capacitor)
+        // Native HealthKit/Health Connect sync (iOS/Android via Capacitor)
         (async () => {
             try {
-                const { isHealthAvailable, syncTodayHealth } = await import('@/services/nativeHealth');
+                const { isHealthAvailable, requestPermissions, syncTodayHealth } = await import('@/services/nativeHealth');
                 if (!(await isHealthAvailable())) return;
+                // Request permissions on first sync attempt
+                if (!localStorage.getItem('health_permissions_granted')) {
+                    const granted = await requestPermissions();
+                    if (granted) localStorage.setItem('health_permissions_granted', 'true');
+                    else return;
+                }
                 const data = await syncTodayHealth();
                 const { logHabitAction } = await import('@/app/actions');
                 const promises = [];

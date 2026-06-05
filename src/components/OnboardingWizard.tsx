@@ -558,7 +558,7 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                     <div className="space-y-4">
                         <p className="text-zinc-400 text-sm">Auto-sync steps, sleep, calories, and more from your wearable. You can always set this up later in Settings.</p>
 
-                        {/* Apple Health (Native) */}
+                        {/* Native Health (Apple Health on iOS, Health Connect on Android) */}
                         <button
                             onClick={async () => {
                                 try {
@@ -571,9 +571,9 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                             className="block w-full p-4 rounded-lg border-2 border-zinc-700 bg-zinc-800 hover:border-emerald-500 transition-all text-left"
                         >
                             <div className="flex items-center gap-3">
-                                <span className="text-2xl">🍎</span>
+                                <span className="text-2xl">{typeof window !== 'undefined' && (window as any).Capacitor?.getPlatform?.() === 'android' ? '💚' : '🍎'}</span>
                                 <div>
-                                    <div className="text-sm font-bold text-white">Connect Apple Health</div>
+                                    <div className="text-sm font-bold text-white">{typeof window !== 'undefined' && (window as any).Capacitor?.getPlatform?.() === 'android' ? 'Connect Health Connect' : 'Connect Apple Health'}</div>
                                     <div className="text-xs text-zinc-400">Auto-sync steps, sleep, calories, heart rate, and weight daily</div>
                                 </div>
                             </div>
