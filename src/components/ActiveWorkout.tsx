@@ -263,8 +263,8 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate, sect
           <FlexibleWorkoutView
             workoutData={sectionBlocks}
             completedIndices={sectionCompletedIndices}
-            onCompleteBlock={(idx, data) => { const globalIdx = sectionBlocks[idx]._globalIdx; setBlockIndex(globalIdx); handleBlockComplete(false, data || []); }}
-            onSkipBlock={(idx) => { const globalIdx = sectionBlocks[idx]._globalIdx; setBlockIndex(globalIdx); handleBlockComplete(true); }}
+            onCompleteBlock={(idx, data) => { const globalIdx = sectionBlocks[idx]._globalIdx; setBlockIndex(globalIdx); handleBlockComplete(false, data || [], undefined, undefined, globalIdx); }}
+            onSkipBlock={(idx) => { const globalIdx = sectionBlocks[idx]._globalIdx; setBlockIndex(globalIdx); handleBlockComplete(true, [], undefined, undefined, globalIdx); }}
             fullHistory={fullHistory}
             catalog={catalog}
             userProfile={userProfile}

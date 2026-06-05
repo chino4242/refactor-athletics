@@ -129,14 +129,14 @@ export function useWorkoutSession({ userId, onLogComplete, initialDate, sectionF
       const blockExId = (block.exercise_id || '').toLowerCase();
 
       if (block.type === 'checklist_exercise') {
-        if (loggedIds.has(blockExId) || loggedIds.has(blockName) ||
-            [...loggedIds].some(id => id.includes(blockName) || blockName.includes(id))) {
+        if (loggedIds.has(blockExId) || loggedIds.has(blockName)) {
           restored.push(idx);
         }
       } else if (block.type === 'superset' && block.exercises) {
         const allLogged = block.exercises.every((ex: any) => {
-          const exName = (ex.name || '').toLowerCase();
-          return loggedIds.has(exName) || [...loggedIds].some(id => id.includes(exName) || exName.includes(id));
+          const exId = (ex.exercise_id || '').toLowerCase();
+          const exName = (ex.name || '').toLowerCase().replace(/\s+/g, '_');
+          return loggedIds.has(exId) || loggedIds.has(exName);
         });
         if (allLogged) restored.push(idx);
       } else if (block.type === 'timer') {
@@ -309,12 +309,14 @@ export function useWorkoutSession({ userId, onLogComplete, initialDate, sectionF
     return newRawValue > prevBest && prevBest > 0;
   };
 
-  const handleBlockComplete = async (skipped: boolean = false, exercisesData: any[] = [], timerXp?: number, distance?: number) => {
-    const isExerciseBlock = ['checklist_exercise', 'list', 'superset'].includes(currentBlock.type);
+  const handleBlockComplete = async (skipped: boolean = false, exercisesData: any[] = [], timerXp?: number, distance?: number, targetIndex?: number) => {
+    const idx = targetIndex ?? blockIndex;
+    const targetBlock = workoutData[idx] || currentBlock;
+    const isExerciseBlock = ['checklist_exercise', 'list', 'superset'].includes(targetBlock.type);
 
     if (skipped) {
-      setSkippedIndices(prev => [...prev, blockIndex]);
-    } else if (userId && currentBlock) {
+      setSkippedIndices(prev => [...prev, idx]);
+    } else if (userId && targetBlock) {
       try {
         if (isExerciseBlock && exercisesData.length > 0 && userProfile) {
           const results: any[] = [];
@@ -342,17 +344,17 @@ export function useWorkoutSession({ userId, onLogComplete, initialDate, sectionF
           setBlockResults(results);
           setShowBlockComplete(true);
           if (onLogComplete) onLogComplete();
-          const newCompleted = [...completedIndices, blockIndex];
+          const newCompleted = [...completedIndices, idx];
           setCompletedIndices(newCompleted);
           if (newCompleted.length === workoutData.length) { setIsComplete(true); localStorage.removeItem(progressKey); }
           return;
-        } else if (!isExerciseBlock && currentBlock.xp_value > 0) {
-          await logWorkoutBlockAction(userId, currentBlock.name, distance ? `${distance} mi` : (currentBlock.description || `${currentBlock.sets || 1} Sets`), currentBlock.xp_value, currentBlock.type === 'card' || currentBlock.name.includes('Tread') ? 'Cardio' : 'Strength', exercisesData, sessionId);
+        } else if (!isExerciseBlock && targetBlock.xp_value > 0) {
+          await logWorkoutBlockAction(userId, targetBlock.name, distance ? `${distance} mi` : (targetBlock.description || `${targetBlock.sets || 1} Sets`), targetBlock.xp_value, targetBlock.type === 'card' || targetBlock.name.includes('Tread') ? 'Cardio' : 'Strength', exercisesData, sessionId);
           if (onLogComplete) onLogComplete();
-          const displayXp = timerXp || currentBlock.xp_value;
-          setBlockResults([{ name: currentBlock.name, xp_earned: displayXp, level: 0, rank_name: null, hasStandards: false, isPR: false, value: distance ? `${distance} mi` : 'Complete' }]);
+          const displayXp = timerXp || targetBlock.xp_value;
+          setBlockResults([{ name: targetBlock.name, xp_earned: displayXp, level: 0, rank_name: null, hasStandards: false, isPR: false, value: distance ? `${distance} mi` : 'Complete' }]);
           setShowBlockComplete(true);
-          const newCompleted = [...completedIndices, blockIndex];
+          const newCompleted = [...completedIndices, idx];
           setCompletedIndices(newCompleted);
           if (newCompleted.length === workoutData.length) { setIsComplete(true); localStorage.removeItem(progressKey); }
           return;
