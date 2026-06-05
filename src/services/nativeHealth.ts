@@ -2,7 +2,7 @@
 
 const isNative = typeof window !== 'undefined' && !!(window as any).Capacitor?.isNativePlatform?.();
 
-async function getHealth() {
+async function getHealth(): Promise<any> {
   const { registerPlugin } = await import('@capacitor/core');
   return registerPlugin('Health');
 }
