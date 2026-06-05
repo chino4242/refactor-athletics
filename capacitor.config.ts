@@ -20,10 +20,13 @@ const config: CapacitorConfig = {
     scheme: 'Refactor Athletics',
     contentInset: 'automatic',
   },
+  android: {
+    backgroundColor: '#09090b',
+  },
   plugins: {
     SplashScreen: {
-      launchAutoHide: false,
-      launchShowDuration: 10000,
+      launchAutoHide: true,
+      launchShowDuration: 3000,
       backgroundColor: '#09090b',
       showSpinner: true,
       spinnerColor: '#f97316',

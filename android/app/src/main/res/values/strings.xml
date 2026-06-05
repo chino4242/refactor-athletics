@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Refactor Athletics</string>
+    <string name="title_activity_main">Refactor Athletics</string>
+    <string name="package_name">com.refactorathletics.app</string>
+    <string name="custom_url_scheme">com.refactorathletics.app</string>
+</resources>
