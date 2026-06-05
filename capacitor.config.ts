@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'Refactor Athletics',
   webDir: 'out',
   server: {
-    url: 'https://refactorathletics.com',
+    url: 'https://www.refactorathletics.com',
     cleartext: false,
     allowNavigation: [
       'refactorathletics.com',
@@ -14,7 +14,7 @@ const config: CapacitorConfig = {
       'api.prod.whoop.com',
       'accounts.google.com',
     ],
-    hostname: 'refactorathletics.com',
+    hostname: 'www.refactorathletics.com',
   },
   ios: {
     scheme: 'Refactor Athletics',
@@ -22,6 +22,7 @@ const config: CapacitorConfig = {
   },
   android: {
     backgroundColor: '#09090b',
+    allowMixedContent: true,
   },
   plugins: {
     SplashScreen: {

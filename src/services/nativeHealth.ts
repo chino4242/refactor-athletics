@@ -3,8 +3,8 @@
 const isNative = typeof window !== 'undefined' && !!(window as any).Capacitor?.isNativePlatform?.();
 
 async function getHealth() {
-  const mod = await import('@capgo/capacitor-health');
-  return (mod as any).CapacitorHealth || (mod as any).Health || mod;
+  const { registerPlugin } = await import('@capacitor/core');
+  return registerPlugin('Health');
 }
 
 const READ_TYPES = ['steps', 'calories', 'sleep', 'weight', 'heart_rate', 'heart_rate_variability', 'body_fat_percentage', 'lean_body_mass', 'exercise'];
