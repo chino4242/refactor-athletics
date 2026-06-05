@@ -208,7 +208,8 @@ export function useWorkoutSession({ userId, onLogComplete, initialDate, sectionF
       if (hasSavedProgress) {
         try {
           const saved = JSON.parse(hasSavedProgress);
-          if (saved.workoutData?.length > 0 && saved.workoutData[0]?.type) { setIsLoading(false); return; }
+          // Only restore if saved data has multiple valid blocks (prevents loading stale/empty cache)
+          if (saved.workoutData?.length > 2 && saved.workoutData[0]?.type) { setIsLoading(false); return; }
         } catch {}
         localStorage.removeItem(progressKey);
       }

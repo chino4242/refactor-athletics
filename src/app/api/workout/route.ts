@@ -246,22 +246,24 @@ export async function GET(request: Request) {
             .order('variant');
 
         if (programs && programs.length > 0) {
-            // Pick variant based on week rotation (A/B/C)
+            // Pick variant based on week rotation (A/B/C), try others if selected has no blocks
             const weekNum = Math.floor((Date.now() - new Date('2026-01-05').getTime()) / (7 * 24 * 60 * 60 * 1000));
-            const program = programs[weekNum % programs.length];
+            const startIdx = weekNum % programs.length;
 
-            const { data: blocks } = await supabase
-                .from('program_blocks')
-                .select('*')
-                .eq('workout_id', program.id)
-                .order('block_order');
+            for (let i = 0; i < programs.length; i++) {
+                const program = programs[(startIdx + i) % programs.length];
+                const { data: blocks } = await supabase
+                    .from('program_blocks')
+                    .select('*')
+                    .eq('workout_id', program.id)
+                    .order('block_order');
 
-            if (blocks && blocks.length > 0) {
-                const swappedBlocks = applyEquipmentSwaps(blocks, userEquipment);
-                return NextResponse.json(dbBlocksToWorkoutBlocks(swappedBlocks, catalog || []));
+                if (blocks && blocks.length > 0) {
+                    const swappedBlocks = applyEquipmentSwaps(blocks, userEquipment);
+                    return NextResponse.json(dbBlocksToWorkoutBlocks(swappedBlocks, catalog || []));
+                }
             }
-            // Rest day — no blocks
-            return NextResponse.json([]);
+            // All variants empty — fall through to defaults
         }
     }
 
