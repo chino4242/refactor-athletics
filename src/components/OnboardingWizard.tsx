@@ -54,10 +54,11 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
     const [syncToken, setSyncToken] = useState('');
     const [generatingToken, setGeneratingToken] = useState(false);
 
-    // Classic mode skips theme selection (step 4)
-    const steps = experienceMode === 'classic'
-        ? [1, 2, 3, 5, 6, 7, 8, 9, 10]
-        : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    const [goals, setGoals] = useState<string[]>([]);
+    const [successStatement, setSuccessStatement] = useState('');
+
+    // Slimmed wizard: waiver → mode → personal info → goals → equipment → health sync
+    const steps = [1, 2, 6, 11, 8, 10];
 
     const currentIndex = steps.indexOf(step);
     const totalSteps = steps.length;
@@ -66,14 +67,6 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
     const handleNext = async () => {
         if (!isLastStep) {
             const nextStep = steps[currentIndex + 1];
-            // Auto-infer goal and calculate when entering nutrition step
-            if (nextStep === 9 && formData.bodyweight && formData.age && formData.sex) {
-                const tw = parseFloat(formData.target_weight || '0');
-                const bw = parseFloat(formData.bodyweight);
-                const goal: MacroGoal = tw && tw < bw ? 'lose' : tw && tw > bw ? 'gain' : 'maintain';
-                setMacroGoal(goal);
-                setCalcResult(calculateMacros({ weightLbs: bw, age: parseInt(formData.age), sex: formData.sex, activityLevel, goal }));
-            }
             // Save profile early when entering Health Sync (step 10) so OAuth flows don't lose progress
             if (nextStep === 10) {
                 await handleComplete();
@@ -95,18 +88,13 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
             body_composition_goals: {
                 target_weight: formData.target_weight,
             },
-            selected_theme: experienceMode === 'classic' ? 'athlete' : formData.theme,
-            selected_path: formData.path,
+            goals: { motivations: goals, target_weight: formData.target_weight, success_statement: successStatement },
+            selected_theme: 'athlete',
+            selected_path: 'hybrid',
             experience_mode: experienceMode,
             available_equipment: formData.equipment,
-            nutrition_targets: calcResult ? {
-                calories: calcResult.calories,
-                protein: calcResult.protein,
-                carbs: calcResult.carbs,
-                fat: calcResult.fat,
-                water: 100,
-            } : undefined,
-            hidden_habits: getDefaultHiddenHabits(experienceMode, formData.path),
+            starter_quest_progress: [],
+            hidden_habits: getDefaultHiddenHabits(experienceMode, 'hybrid'),
             is_onboarded: true,
             waiver_accepted_at: new Date().toISOString(),
         });
@@ -141,7 +129,7 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
             case 1: return waiverAccepted;
             case 2: return selectedMotivation !== null;
             case 6: return formData.age && formData.sex && formData.bodyweight;
-            case 7: return !!formData.target_weight;
+            case 11: return goals.length > 0;
             default: return true;
         }
     };
@@ -163,13 +151,9 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                     <h2 className="text-2xl font-bold text-white">
                         {step === 1 && 'Liability Waiver'}
                         {step === 2 && 'What brings you here?'}
-                        {step === 3 && (experienceMode === 'rpg' ? 'Welcome to Refactor Athletics' : 'Welcome to Refactor Athletics')}
-                        {step === 4 && 'Choose Your Theme'}
-                        {step === 5 && (experienceMode === 'rpg' ? 'Choose Your Path' : 'Choose Your Focus')}
                         {step === 6 && 'About You'}
-                        {step === 7 && 'Set Your Goal'}
+                        {step === 11 && 'Your Goals'}
                         {step === 8 && 'Your Equipment'}
-                        {step === 9 && 'Your Nutrition Plan'}
                         {step === 10 && 'Connect Your Health Data'}
                     </h2>
                 </div>
@@ -479,6 +463,37 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                             })}
                         </div>
                         <p className="text-xs text-zinc-500">You can update this anytime in settings.</p>
+                    </div>
+                )}
+
+                {/* Step 11: Goals & Motivation */}
+                {step === 11 && (
+                    <div className="space-y-4">
+                        <p className="text-zinc-400">What are you looking to accomplish? Select all that apply.</p>
+                        <div className="space-y-2">
+                            {[
+                                { id: 'lose_weight', label: 'Lose weight / cut fat', emoji: '⚖️' },
+                                { id: 'build_muscle', label: 'Build muscle / bulk', emoji: '💪' },
+                                { id: 'get_stronger', label: 'Get stronger', emoji: '🏋️' },
+                                { id: 'stay_consistent', label: 'Stay consistent / build habits', emoji: '🎯' },
+                                { id: 'compete', label: 'Compete with friends', emoji: '🏆' },
+                                { id: 'general_health', label: 'General health & wellness', emoji: '❤️' },
+                            ].map(item => {
+                                const selected = goals.includes(item.id);
+                                return (
+                                    <button key={item.id} onClick={() => setGoals(prev => selected ? prev.filter(g => g !== item.id) : [...prev, item.id])}
+                                        className={`w-full p-3 rounded-lg border-2 transition-all text-left flex items-center gap-3 ${selected ? 'border-orange-500 bg-orange-500/10' : 'border-zinc-700 bg-zinc-800 hover:border-zinc-600'}`}>
+                                        <span className="text-xl">{item.emoji}</span>
+                                        <span className={`text-sm font-medium ${selected ? 'text-white' : 'text-zinc-300'}`}>{item.label}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        <div>
+                            <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2 block">Target Weight (lbs)</label>
+                            <input type="number" value={formData.target_weight} onChange={e => setFormData({ ...formData, target_weight: e.target.value })}
+                                className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-white" placeholder="Optional" />
+                        </div>
                     </div>
                 )}
 

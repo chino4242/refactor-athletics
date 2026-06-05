@@ -75,6 +75,24 @@ export function useStarterQuests(userId: string, initialProgress: QuestProgress[
     await supabase.from('users').update({ starter_quest_progress: updated }).eq('id', userId);
   }, [userId, progress, completedIds]);
 
+  // Auto-complete quests based on user actions
+  const checkQuestTrigger = useCallback(async (trigger: 'workout_logged' | 'meal_logged' | 'habit_logged' | 'session_complete' | 'all_targets_met' | 'group_joined') => {
+    const map: Record<string, string> = {
+      workout_logged: 'first_strike',
+      meal_logged: 'fuel_up',
+      habit_logged: 'daily_discipline',
+      session_complete: 'full_session',
+      all_targets_met: 'perfect_day',
+      group_joined: 'join_the_arena',
+    };
+    const questId = map[trigger];
+    if (questId && !completedIds.has(questId) && activeQuest?.id === questId) {
+      await completeQuest(questId);
+      return questId;
+    }
+    return null;
+  }, [completedIds, activeQuest, completeQuest]);
+
   const quests = useMemo(() => {
     return QUEST_DEFINITIONS.map(q => ({
       ...q,
@@ -84,7 +102,7 @@ export function useStarterQuests(userId: string, initialProgress: QuestProgress[
     }));
   }, [completedIds, activeQuest, progress]);
 
-  return { quests, activeQuest, allComplete, isFeatureUnlocked, isQuestComplete, completeQuest };
+  return { quests, activeQuest, allComplete, isFeatureUnlocked, isQuestComplete, completeQuest, checkQuestTrigger };
 }
 
 export { QUEST_DEFINITIONS, UNLOCK_MAP };
