@@ -181,3 +181,29 @@ See `MONETIZATION_DESIGN.md` for full details.
 ---
 
 *Last updated: May 18, 2026*
+
+---
+
+## Backlog — UX Redesign
+
+### Onboarding Checklist (Replace Sequential Quest Locks)
+
+**Problem:** The starter quest system gates features behind sequential completion (First Strike → Choose Identity → Fuel Up → etc.). Users see "Complete Fuel Up to unlock" but can't see what Fuel Up is or how to get there. This creates confusion and feels punishing rather than guiding.
+
+**Proposed Solution:** Replace locked overlays with a visible onboarding checklist:
+- Show all quests as a progress list (checkmarks for completed, highlight for current)
+- All features remain accessible immediately (no locks)
+- Completing quests earns XP bonuses and shows celebratory feedback
+- Checklist appears as a card on the Today tab until all quests are done
+- Optional: gentle nudges ("You haven't logged a meal yet — try it!") instead of hard blocks
+
+**Acceptance Criteria:**
+- [ ] All dashboard features visible without completing quests
+- [ ] Checklist card shows full quest chain with progress
+- [ ] Tapping a quest navigates to the relevant action
+- [ ] Completing a quest shows XP reward + checkmark animation
+- [ ] Checklist auto-hides once all quests complete
+- [ ] No regression for existing users with progress
+
+**Priority:** P1 (impacts new user experience)
+**Effort:** 4-6 hours
