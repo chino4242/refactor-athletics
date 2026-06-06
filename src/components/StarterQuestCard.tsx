@@ -74,17 +74,17 @@ export default function StarterQuestCard({ quest, onInlineAction }: StarterQuest
   return content;
 }
 
-export function LockedFeatureOverlay({ questTitle, children }: { questTitle: string; children: React.ReactNode }) {
+export function LockedFeatureOverlay({ questTitle, children, href = '/track' }: { questTitle: string; children: React.ReactNode; href?: string }) {
   return (
     <div className="relative">
       <div className="opacity-40 pointer-events-none select-none">
         {children}
       </div>
       <div className="absolute inset-0 flex items-center justify-center">
-        <div className="bg-zinc-900/90 border border-zinc-700 rounded-lg px-3 py-1.5 flex items-center gap-2">
+        <Link href={href} className="bg-zinc-900/90 border border-zinc-700 rounded-lg px-3 py-1.5 flex items-center gap-2 hover:border-orange-500 transition-colors">
           <span className="text-[10px]">🔒</span>
-          <span className="text-[10px] text-zinc-400 font-bold">Complete &quot;{questTitle}&quot; to unlock</span>
-        </div>
+          <span className="text-[10px] text-zinc-400 font-bold">Tap to complete &quot;{questTitle}&quot;</span>
+        </Link>
       </div>
     </div>
   );
