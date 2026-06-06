@@ -199,8 +199,8 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
 
     return (
         <div className="space-y-3">
-            {/* Weekly Quests — only show after daily discipline quest is complete */}
-            {isFeatureUnlocked('daily_quests') && <WeeklyQuestsCard userId={userId} />}
+            {/* Weekly Quests */}
+            <WeeklyQuestsCard userId={userId} />
 
             {/* 75 Day Challenge progress */}
             {challenge75 && (
@@ -217,7 +217,7 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
             )}
 
             {/* Compact Stats Row */}
-            {profile && (isFeatureUnlocked('nutrition_card') ? (
+            {profile && (
                 <Link href="/track" className="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 hover:border-zinc-700 transition">
                     {[
                         { icon: '🍽️', val: Math.round(todayProgress.calories - (todayProgress.caloriesBurned || 0)), target: profile.nutrition_targets?.net_calorie_target ? null : (profile.nutrition_targets?.calories || 2000), unit: 'net' },
@@ -234,13 +234,7 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
                         </div>
                     ))}
                 </Link>
-            ) : (
-                <LockedFeatureOverlay questTitle="Fuel Up">
-                    <div className="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3">
-                        <span className="text-xs text-zinc-600">🍽️ Nutrition · 💧 Water · 👟 Steps · ⚡ XP</span>
-                    </div>
-                </LockedFeatureOverlay>
-            ))}
+            )}
 
             {/* Starter Quest — shows active quest during onboarding phase */}
             {!allComplete && activeQuest && (
