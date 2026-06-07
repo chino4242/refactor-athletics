@@ -2,12 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { X, Check, ChevronRight } from 'lucide-react';
+import { X, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { useTheme } from '@/context/ThemeContext';
+import { useExperienceMode } from '@/context/ExperienceModeContext';
+import { xpToLevel } from '@/utils/xp';
 
 interface DailyWrapUpProps {
   userId: string;
   mode: 'today' | 'yesterday';
   onDismiss?: () => void;
+  stats?: { player_level?: number; level_progress_percent?: number; xp_to_next_level?: number; total_career_xp?: number; highest_daily_xp?: number } | null;
 }
 
 interface WrapUpData {
@@ -18,6 +22,54 @@ interface WrapUpData {
   sleep: number;
   macros: { protein: number; carbs: number; fat: number; calories: number; caloriesBurned: number };
   workout: { name: string; exercises: number; xp: number } | null;
+  streak: number;
+  targets: { steps: number; sleep: number; protein: number };
+}
+
+function getHeroStat(data: WrapUpData): { emoji: string; value: string; label: string } | null {
+  // Pick the most impressive stat — highest absolute value that's meaningful
+  const candidates: { emoji: string; value: string; label: string; priority: number }[] = [];
+  if (data.workout) candidates.push({ emoji: '🏋️', value: `${data.workout.exercises} exercises`, label: 'trained', priority: data.workout.xp });
+  if (data.steps >= 5000) candidates.push({ emoji: '🏃', value: data.steps.toLocaleString(), label: 'steps', priority: data.steps / 100 });
+  if (data.sleep >= 7) candidates.push({ emoji: '😴', value: `${data.sleep}h`, label: 'sleep', priority: data.sleep * 5 });
+  if (data.macros.protein >= 100) candidates.push({ emoji: '🥩', value: `${data.macros.protein}g`, label: 'protein', priority: data.macros.protein / 3 });
+  if (candidates.length === 0 && data.totalXp > 0) return { emoji: '⚡', value: `${data.totalXp}`, label: 'XP earned' };
+  candidates.sort((a, b) => b.priority - a.priority);
+  return candidates[0] || null;
+}
+
+// Theme-voiced recap messages keyed by theme ID
+const THEMED_RECAPS: Record<string, { active: string[]; rest: string[] }> = {
+  athlete: {
+    active: ['Solid day in the books.', 'That\'s how champions are built.', 'Another day, another edge.'],
+    rest: ['Recovery is part of the game.', 'Even pros take rest days.'],
+  },
+  dragon: {
+    active: ['The hoard grows. Your power swells.', 'Fire coursed through you yesterday.', 'The wyrm stirs — stronger.'],
+    rest: ['The dragon rests between hunts.', 'Even flame needs fuel to burn.'],
+  },
+  samurai: {
+    active: ['Discipline honored. The path continues.', 'A worthy day on the warrior\'s road.', 'Your blade grew sharper.'],
+    rest: ['The samurai meditates between battles.', 'Stillness sharpens the mind.'],
+  },
+  dinosaur: {
+    active: ['The predator fed well.', 'You moved. You hunted. You grew.', 'Evolution favors the relentless.'],
+    rest: ['Even apex predators conserve energy.', 'The hunt resumes tomorrow.'],
+  },
+  viking: {
+    active: ['The forge burned bright.', 'A saga worth telling.', 'Odin watched — and nodded.'],
+    rest: ['The warrior rests by the fire.', 'Mead and rest before the next raid.'],
+  },
+};
+
+function generateThemedReflection(data: WrapUpData, themeKey: string): string {
+  const isActive = data.workout || data.steps >= 7500 || data.totalXp >= 50;
+  const recaps = THEMED_RECAPS[themeKey];
+  if (!recaps) return generateReflection(data); // fallback for classic mode
+  const pool = isActive ? recaps.active : recaps.rest;
+  // Deterministic pick based on date to avoid randomness on re-render
+  const dayNum = parseInt(data.date.replace(/-/g, ''), 10);
+  return pool[dayNum % pool.length];
 }
 
 function generateReflection(data: WrapUpData): string {
@@ -35,16 +87,20 @@ function generateReflection(data: WrapUpData): string {
 }
 
 function generateNudge(data: WrapUpData): string | null {
-  if (data.steps > 0 && data.steps < 7500) return `Hit ${data.steps.toLocaleString()} of 7,500 steps. A short walk after lunch gets you there.`;
-  if (data.macros.protein > 0 && data.macros.protein < 120) return `${data.macros.protein}g protein — try adding a shake or extra serving today.`;
-  if (data.sleep > 0 && data.sleep < 6.5) return `${data.sleep}h sleep. Try winding down 30 min earlier tonight.`;
+  const { steps, sleep, protein } = data.targets;
+  if (data.steps > 0 && data.steps < steps) return `${data.steps.toLocaleString()} of ${steps.toLocaleString()} steps. A short walk gets you there.`;
+  if (data.macros.protein > 0 && data.macros.protein < protein) return `${data.macros.protein}g of ${protein}g protein — try a shake or extra serving today.`;
+  if (data.sleep > 0 && data.sleep < sleep) return `${data.sleep}h of ${sleep}h sleep. Wind down 30 min earlier tonight.`;
   if (!data.workout) return 'No workout logged. Even 20 minutes counts.';
   return null;
 }
 
-export default function DailyWrapUp({ userId, mode, onDismiss }: DailyWrapUpProps) {
+export default function DailyWrapUp({ userId, mode, onDismiss, stats }: DailyWrapUpProps) {
   const [data, setData] = useState<WrapUpData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [expanded, setExpanded] = useState(false);
+  const { currentTheme } = useTheme();
+  const { isClassic } = useExperienceMode();
 
   useEffect(() => {
     const load = async () => {
@@ -57,29 +113,22 @@ export default function DailyWrapUp({ userId, mode, onDismiss }: DailyWrapUpProp
       const dayStart = Math.floor(targetDate.getTime() / 1000);
       const dayEnd = dayStart + 86400;
 
-      // Fetch habits for the date
       const { data: habits } = await supabase
-        .from('habit_logs')
-        .select('habit_id, value')
-        .eq('user_id', userId)
-        .eq('date', dateStr);
+        .from('habit_logs').select('habit_id, value')
+        .eq('user_id', userId).eq('date', dateStr);
 
-      // Fetch nutrition for the date
+      const { data: userProfile } = await supabase
+        .from('users').select('habit_targets')
+        .eq('id', userId).single();
+
       const { data: nutrition } = await supabase
-        .from('nutrition_logs')
-        .select('macro_type, amount')
-        .eq('user_id', userId)
-        .eq('date', dateStr);
+        .from('nutrition_logs').select('macro_type, amount')
+        .eq('user_id', userId).eq('date', dateStr);
 
-      // Fetch workouts for the date
       const { data: workouts } = await supabase
-        .from('workouts')
-        .select('exercise_id, xp')
-        .eq('user_id', userId)
-        .gte('timestamp', dayStart)
-        .lt('timestamp', dayEnd);
+        .from('workouts').select('exercise_id, xp')
+        .eq('user_id', userId).gte('timestamp', dayStart).lt('timestamp', dayEnd);
 
-      // Process
       const steps = habits?.find(h => h.habit_id === 'habit_steps')?.value || 0;
       const sleep = habits?.find(h => h.habit_id === 'habit_sleep')?.value || 0;
 
@@ -91,7 +140,6 @@ export default function DailyWrapUp({ userId, mode, onDismiss }: DailyWrapUpProp
         if (n.macro_type === 'calories_burned') macros.caloriesBurned += n.amount;
       }
 
-      // Prefer meal_entries.calories (label value) over formula
       const { data: mealCals } = await supabase.from('meal_entries')
         .select('calories, protein, carbs, fat')
         .eq('user_id', userId).eq('date', dateStr);
@@ -108,11 +156,35 @@ export default function DailyWrapUp({ userId, mode, onDismiss }: DailyWrapUpProp
         xp: workouts.reduce((s, w) => s + (w.xp || 0), 0),
       } : null;
 
-      // Deduplicate and calculate XP using shared utility
       const { getTodayXp } = await import('@/utils/getTodayXp');
       const { xpItems, totalXp } = await getTodayXp(userId, targetDate);
 
-      setData({ date: dateStr, xpItems, totalXp, steps, sleep, macros, workout });
+      // Calculate streak: consecutive days with any activity (working backwards from target date)
+      let streak = 0;
+      if (totalXp > 0) {
+        const { data: recentDays } = await supabase
+          .from('habit_logs').select('date')
+          .eq('user_id', userId)
+          .lte('date', dateStr)
+          .order('date', { ascending: false })
+          .limit(90);
+        if (recentDays?.length) {
+          const activeDates = new Set(recentDays.map(r => r.date));
+          const d = new Date(targetDate);
+          while (activeDates.has(d.toLocaleDateString('en-CA'))) {
+            streak++;
+            d.setDate(d.getDate() - 1);
+          }
+        }
+      }
+
+      const targets = {
+        steps: userProfile?.habit_targets?.habit_steps || 10000,
+        sleep: userProfile?.habit_targets?.habit_sleep || 7,
+        protein: userProfile?.habit_targets?.macro_protein || 150,
+      };
+
+      setData({ date: dateStr, xpItems, totalXp, steps, sleep, macros, workout, streak, targets });
       setLoading(false);
     };
     load();
@@ -125,71 +197,125 @@ export default function DailyWrapUp({ userId, mode, onDismiss }: DailyWrapUpProp
     ? `Yesterday, ${new Date(data.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
     : 'Today So Far';
 
-  const reflection = generateReflection(data);
+  const reflection = isClassic ? generateReflection(data) : generateThemedReflection(data, currentTheme);
   const nudge = mode === 'yesterday' ? generateNudge(data) : null;
-  const netCal = data.macros.calories - data.macros.caloriesBurned;
+  const hero = getHeroStat(data);
+  const xpLabel = isClassic ? 'pts' : 'XP';
+  const progressPercent = stats?.level_progress_percent ?? 0;
+  const level = stats?.player_level ?? 1;
+  const xpToNext = stats?.xp_to_next_level ?? 0;
+
+  // Detect if yesterday's XP caused a level-up
+  const totalCareerXp = stats?.total_career_xp ?? 0;
+  const leveledUp = totalCareerXp > 0 && data.totalXp > 0 &&
+    xpToLevel(totalCareerXp - data.totalXp).level < xpToLevel(totalCareerXp).level;
+  const bestDay = stats?.highest_daily_xp ?? 0;
+
+  // Habit checkmarks
+  const checks: { emoji: string; label: string; met: boolean }[] = [];
+  if (data.sleep > 0) checks.push({ emoji: '😴', label: `${data.sleep}h`, met: data.sleep >= data.targets.sleep });
+  if (data.steps > 0) checks.push({ emoji: '👟', label: `${(data.steps / 1000).toFixed(1)}k`, met: data.steps >= data.targets.steps });
+  if (data.macros.protein > 0) checks.push({ emoji: '🥩', label: `${data.macros.protein}g`, met: data.macros.protein >= data.targets.protein });
+  if (data.workout) checks.push({ emoji: '🏋️', label: 'Trained', met: true });
+  if (data.macros.calories > 0) checks.push({ emoji: '🥗', label: 'Logged', met: true });
 
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 pb-2">
-        <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">{dateLabel}</span>
+      {/* Header + Dismiss */}
+      <div className="flex items-center justify-between px-4 pt-4 pb-1">
+        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{dateLabel}</span>
         {onDismiss && <button onClick={onDismiss} className="text-zinc-600 hover:text-zinc-400 p-1"><X size={14} /></button>}
       </div>
 
-      {/* Reflection */}
-      <div className="px-4 pb-3">
-        <p className="text-sm text-zinc-300 italic">"{reflection}"</p>
-      </div>
-
-      {/* XP Attribution */}
-      {data.xpItems.length > 0 && (
-        <div className="px-4 pb-3">
-          <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5">XP Earned: {data.totalXp}</div>
-          <div className="space-y-1">
-            {data.xpItems.slice(0, 6).map((item, i) => (
-              <div key={i} className="flex items-center justify-between text-xs">
-                <span className="text-zinc-300 flex items-center gap-1.5">
-                  <Check size={10} className="text-emerald-500" /> {item.source_label}
-                </span>
-                <span className="text-orange-400 font-bold">+{item.amount}</span>
-              </div>
-            ))}
+      {/* Hero Stat */}
+      {hero && (
+        <div className="px-4 pt-2 pb-3">
+          <div className="flex items-baseline gap-2">
+            <span className="text-2xl">{hero.emoji}</span>
+            <span className="text-2xl font-black text-white">{hero.value}</span>
+            <span className="text-sm text-zinc-400">{hero.label}</span>
           </div>
         </div>
       )}
 
-      {/* Data Blocks */}
-      <div className="px-4 pb-3 space-y-2">
-        {data.steps > 0 && (
-          <div className="flex items-center justify-between text-xs bg-zinc-800/50 rounded-lg px-3 py-2">
-            <span className="text-zinc-400">🏃 Steps</span>
-            <span className="text-white font-bold">{data.steps.toLocaleString()}</span>
+      {/* Reflection — theme-voiced */}
+      <div className="px-4 pb-3">
+        <p className="text-[13px] text-zinc-400 italic">{reflection}</p>
+      </div>
+
+      {/* XP Progress / Level-Up Celebration */}
+      <div className="px-4 pb-3">
+        {leveledUp ? (
+          <div className="text-center py-2">
+            <div className="text-2xl mb-1">🎉</div>
+            <div className="text-sm font-black text-amber-400">Level {level} Reached!</div>
+            <div className="text-[11px] text-zinc-500 mt-0.5">+{data.totalXp} {xpLabel} pushed you over the edge</div>
           </div>
-        )}
-        {data.macros.protein > 0 && (
-          <div className="flex items-center justify-between text-xs bg-zinc-800/50 rounded-lg px-3 py-2">
-            <span className="text-zinc-400">🥗 Nutrition</span>
-            <span className="text-white font-bold">
-              {netCal !== 0 ? `Net: ${netCal > 0 ? '+' : ''}${netCal} cal` : ''} P:{data.macros.protein} C:{data.macros.carbs} F:{data.macros.fat}
-            </span>
-          </div>
-        )}
-        {data.workout && (
-          <div className="flex items-center justify-between text-xs bg-zinc-800/50 rounded-lg px-3 py-2">
-            <span className="text-zinc-400">🏋️ Training</span>
-            <span className="text-white font-bold">{data.workout.exercises} exercises · +{data.workout.xp} XP</span>
-          </div>
-        )}
-        {data.sleep > 0 && (
-          <div className="flex items-center justify-between text-xs bg-zinc-800/50 rounded-lg px-3 py-2">
-            <span className="text-zinc-400">😴 Sleep</span>
-            <span className="text-white font-bold">{data.sleep}h</span>
-          </div>
+        ) : (
+          <>
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs font-bold text-orange-400">+{data.totalXp} {xpLabel}</span>
+              <span className="text-[10px] text-zinc-500">
+                {xpToNext > 0 ? `${xpToNext.toLocaleString()} to Lv ${level + 1}` : `Level ${level}`}
+              </span>
+            </div>
+            <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-orange-600 to-amber-500 rounded-full transition-all duration-500"
+                style={{ width: `${Math.min(progressPercent * 100, 100)}%` }}
+              />
+            </div>
+            {bestDay > 0 && data.totalXp > 0 && (
+              <div className="text-[10px] text-zinc-500 mt-1.5">
+                {data.totalXp >= bestDay
+                  ? '⭐ New personal best!'
+                  : `Your best: ${bestDay} ${xpLabel}`}
+              </div>
+            )}
+          </>
         )}
       </div>
 
-      {/* Nudge (yesterday only) */}
+      {/* Habit Checkmarks — compact row */}
+      {checks.length > 0 && (
+        <div className="px-4 pb-3 flex items-center gap-3 flex-wrap">
+          {checks.map((c, i) => (
+            <span key={i} className={`text-[11px] font-medium flex items-center gap-1 ${c.met ? 'text-emerald-400' : 'text-zinc-500'}`}>
+              {c.met ? <Check size={10} className="text-emerald-500" /> : <span className="w-2.5" />}
+              {c.emoji} {c.label}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Streak Callout */}
+      {data.streak >= 2 && (
+        <div className="px-4 pb-3">
+          <span className="text-[11px] font-bold text-amber-400">🔥 {data.streak}-day streak</span>
+        </div>
+      )}
+
+      {/* Expandable XP Breakdown */}
+      {data.xpItems.length > 0 && (
+        <div className="px-4 pb-2">
+          <button onClick={() => setExpanded(!expanded)} className="flex items-center gap-1 text-[10px] text-zinc-500 hover:text-zinc-400 uppercase tracking-wider font-bold">
+            {expanded ? 'Hide' : 'Details'}
+            {expanded ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
+          </button>
+          {expanded && (
+            <div className="mt-2 space-y-1">
+              {data.xpItems.map((item, i) => (
+                <div key={i} className="flex items-center justify-between text-xs">
+                  <span className="text-zinc-400">{item.source_label}</span>
+                  <span className="text-orange-400/80 font-medium">+{item.amount}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Nudge */}
       {nudge && (
         <div className="px-4 pb-3">
           <div className="bg-orange-500/5 border border-orange-500/20 rounded-lg px-3 py-2">
@@ -198,11 +324,11 @@ export default function DailyWrapUp({ userId, mode, onDismiss }: DailyWrapUpProp
         </div>
       )}
 
-      {/* Dismiss (yesterday mode) */}
+      {/* Dismiss */}
       {onDismiss && (
-        <div className="px-4 pb-4">
+        <div className="px-4 pb-4 pt-1">
           <button onClick={onDismiss} className="w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold uppercase tracking-wider rounded-lg transition flex items-center justify-center gap-1">
-            Looks good <Check size={12} />
+            Onward <ChevronDown size={12} className="rotate-[-90deg]" />
           </button>
         </div>
       )}

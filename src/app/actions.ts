@@ -134,8 +134,9 @@ export async function logHabitAction(
 
         await maybeSetLevelUp(supabase, userId, xp, 'habit');
 
-        // Write to XP ledger via service
-        await awardXp(supabase, userId, event || { type: 'habit_other' }, label || habitId.replace('habit_', ''), label?.includes('(Sync)') || false);
+        // Write to XP ledger via service — strip "(Sync)" from label for clean display
+        const xpLabel = (label || habitId.replace('habit_', '')).replace(/\s*\(Sync\)/, '');
+        await awardXp(supabase, userId, event || { type: 'habit_other' }, xpLabel, label?.includes('(Sync)') || false);
 
         // Check quest progress (fire-and-forget)
         import('@/utils/questProgress').then(m => m.checkQuestProgress(supabase, userId)).catch(() => {});

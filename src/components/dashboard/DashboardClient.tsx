@@ -82,16 +82,22 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             try {
                 const { isHealthAvailable, requestPermissions, syncTodayHealth } = await import('@/services/nativeHealth');
                 if (!(await isHealthAvailable())) return;
-                // Request permissions if not yet granted (no-op if already granted)
-                await requestPermissions();
+                // Request permissions if not yet granted
+                const granted = await requestPermissions();
+                if (!granted) {
+                    // Store denial so onboarding/settings can show guidance
+                    localStorage.setItem('health_permission_denied', 'true');
+                    return;
+                }
+                localStorage.removeItem('health_permission_denied');
                 const data = await syncTodayHealth();
                 const { logHabitAction } = await import('@/app/actions');
                 const promises = [];
-                if (data.steps > 0) promises.push(logHabitAction(userId, 'habit_steps', data.steps, undefined, 'Steps (Sync)'));
-                if (data.caloriesBurned > 0) promises.push(logHabitAction(userId, 'macro_calories_burned', data.caloriesBurned, undefined, 'Calories Burned (Sync)'));
-                if (data.sleep > 0) promises.push(logHabitAction(userId, 'habit_sleep', data.sleep, undefined, 'Sleep (Sync)'));
-                if (data.hrv) promises.push(logHabitAction(userId, 'habit_hrv', data.hrv, undefined, 'HRV (Sync)'));
-                if (data.restingHR) promises.push(logHabitAction(userId, 'habit_resting_hr', data.restingHR, undefined, 'Resting HR (Sync)'));
+                if (data.steps > 0) promises.push(logHabitAction(userId, 'habit_steps', data.steps, undefined, 'Steps'));
+                if (data.caloriesBurned > 0) promises.push(logHabitAction(userId, 'macro_calories_burned', data.caloriesBurned, undefined, 'Calories Burned'));
+                if (data.sleep > 0) promises.push(logHabitAction(userId, 'habit_sleep', data.sleep, undefined, 'Sleep'));
+                if (data.hrv) promises.push(logHabitAction(userId, 'habit_hrv', data.hrv, undefined, 'HRV'));
+                if (data.restingHR) promises.push(logHabitAction(userId, 'habit_resting_hr', data.restingHR, undefined, 'Resting HR'));
                 if (promises.length > 0) {
                     await Promise.all(promises);
                     localStorage.setItem('last_health_sync', new Date().toISOString());
@@ -188,7 +194,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                             </div>
                         </summary>
                         <div className="mt-2">
-                            <DailyWrapUp userId={userId} mode="yesterday" onDismiss={dismissYesterday} />
+                            <DailyWrapUp userId={userId} mode="yesterday" onDismiss={dismissYesterday} stats={stats} />
                         </div>
                     </details>
                 </div>

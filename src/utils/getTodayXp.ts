@@ -49,14 +49,15 @@ export async function getTodayXp(userId: string, date?: Date): Promise<TodayXpRe
     .gte('timestamp', dayStartUnix)
     .lt('timestamp', dayEndUnix);
 
-  // Deduplicate: keep highest XP entry per source_label
+  // Deduplicate: keep highest XP entry per source_label (normalize legacy "(Sync)" labels)
   const deduped = new Map<string, number>();
   for (const e of (xpEntries || [])) {
     if (e.amount <= 0) continue;
     if (e.source_label === 'exercise_minutes' || e.source_label === 'Exercise Minutes') continue;
     if (e.source_label.startsWith('Auto-Cal')) continue;
-    const existing = deduped.get(e.source_label) || 0;
-    if (e.amount > existing) deduped.set(e.source_label, e.amount);
+    const normalizedLabel = e.source_label.replace(/\s*\(Sync\)/, '');
+    const existing = deduped.get(normalizedLabel) || 0;
+    if (e.amount > existing) deduped.set(normalizedLabel, e.amount);
   }
 
   // Fallback: synthesize from habit/workout data if ledger is missing entries
@@ -85,6 +86,13 @@ export async function getTodayXp(userId: string, date?: Date): Promise<TodayXpRe
     if (deduped.has(label)) { nutritionXp += deduped.get(label)!; deduped.delete(label); }
   }
   if (nutritionXp > 0) deduped.set('Logged nutrition', nutritionXp);
+
+  // Roll low-value sources into "Other"
+  let otherXp = 0;
+  for (const [label, amount] of deduped) {
+    if (amount < 5) { otherXp += amount; deduped.delete(label); }
+  }
+  if (otherXp > 0) deduped.set('Other', otherXp);
 
   const xpItems = Array.from(deduped.entries()).map(([source_label, amount]) => ({ source_label, amount }));
   xpItems.sort((a, b) => b.amount - a.amount);
