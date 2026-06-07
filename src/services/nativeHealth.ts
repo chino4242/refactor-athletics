@@ -77,8 +77,10 @@ export async function syncTodayHealth() {
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
   const endOfDay = now.toISOString();
   const sleepStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 20, 0).toISOString();
+  // Query 36h window for exercises (yesterday's run might not show until today)
+  const exerciseStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, now.getHours() - 12, 0).toISOString();
 
-  const [steps, caloriesBurned, sleep, weight, hrv, restingHR, bodyFat] = await Promise.all([
+  const [steps, caloriesBurned, sleep, weight, hrv, restingHR, bodyFat, exercises] = await Promise.all([
     getSteps(startOfDay, endOfDay),
     getCaloriesBurned(startOfDay, endOfDay),
     getSleep(sleepStart, startOfDay),
@@ -86,7 +88,18 @@ export async function syncTodayHealth() {
     getHRV(sleepStart, startOfDay),
     getRestingHR(sleepStart, startOfDay),
     getBodyFat(),
+    getExerciseSessions(exerciseStart, endOfDay),
   ]);
 
-  return { steps, caloriesBurned, sleep, weight, hrv, restingHR, bodyFat };
+  return { steps, caloriesBurned, sleep, weight, hrv, restingHR, bodyFat, exercises };
+}
+
+/** Query exercise sessions from Health Connect / HealthKit */
+export async function getExerciseSessions(startDate: string, endDate: string): Promise<any[]> {
+  if (!isNative) return [];
+  try {
+    const h = getHealth();
+    const { results } = await h.query({ dataType: 'exercise', startDate, endDate, limit: 20 });
+    return results || [];
+  } catch { return []; }
 }
