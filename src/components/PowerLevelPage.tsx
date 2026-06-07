@@ -85,6 +85,36 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                 nextThreshold,
                 unit,
                 bestValue: entry.best?.raw_value || parseFloat(String(entry.best?.value).replace(/[^0-9.]/g, '')) || 0,
+                // Partial progress: % between current threshold and next
+                progressToNext: (() => {
+                    if (!levels || currentLevel >= 5) return 100;
+                    const currentThreshold = currentLevel > 0 ? levels[currentLevel - 1] : 0;
+                    const nextT = levels[currentLevel];
+                    if (!nextT) return 100;
+                    const best = entry.best?.raw_value || parseFloat(String(entry.best?.value).replace(/[^0-9.]/g, '')) || 0;
+                    const isXBW = (ex?.standards?.unit || '').toLowerCase() === 'xbw';
+                    const scoring = ex?.standards?.scoring || 'higher_is_better';
+                    let compareVal = isXBW ? best / (profile?.bodyweight || 180) : best;
+                    if (scoring === 'lower_is_better') {
+                        if (compareVal >= nextT) return 0;
+                        return Math.min(Math.round(((currentThreshold - compareVal) / (currentThreshold - nextT)) * 100), 99);
+                    }
+                    if (compareVal <= currentThreshold) return 0;
+                    return Math.min(Math.round(((compareVal - currentThreshold) / (nextT - currentThreshold)) * 100), 99);
+                })(),
+                // Gap to next threshold (raw value needed)
+                gapToNext: (() => {
+                    if (!levels || currentLevel >= 5) return null;
+                    const nextT = levels[currentLevel];
+                    if (!nextT) return null;
+                    const best = entry.best?.raw_value || parseFloat(String(entry.best?.value).replace(/[^0-9.]/g, '')) || 0;
+                    const isXBW = (ex?.standards?.unit || '').toLowerCase() === 'xbw';
+                    const bw = profile?.bodyweight || 180;
+                    const scoring = ex?.standards?.scoring || 'higher_is_better';
+                    if (isXBW) return Math.round((nextT * bw) - best);
+                    if (scoring === 'lower_is_better') return Math.round(best - nextT);
+                    return Math.round(nextT - best);
+                })(),
             };
         }).filter((x): x is NonNullable<typeof x> => x !== null).sort((a, b) => b.currentLevel - a.currentLevel || (b.bestValue as number) - (a.bestValue as number));
     }, [groupedTrophies, catalog, age, sex, pathSet]);
@@ -92,6 +122,18 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
     // Tier calculation
     const tier = getTier(powerLevel);
     const nextTierThreshold = getNextTierThreshold(powerLevel);
+
+    // Letter grade: A-F based on power level vs max possible
+    const maxPossible = exerciseData.length * 5 || maxPower || 1;
+    const powerPct = powerLevel / maxPossible;
+    const letterGrade = powerPct >= 0.9 ? 'S' : powerPct >= 0.8 ? 'A' : powerPct >= 0.6 ? 'B' : powerPct >= 0.4 ? 'C' : powerPct >= 0.2 ? 'D' : 'F';
+
+    // Easiest next level-up: exercise with highest progressToNext (closest to threshold)
+    const easiestLevelUp = useMemo(() => {
+        const candidates = exerciseData.filter(e => e.currentLevel < 5 && e.progressToNext < 100);
+        if (candidates.length === 0) return null;
+        return candidates.reduce((best, e) => e.progressToNext > best.progressToNext ? e : best);
+    }, [exerciseData]);
     const rankKey = `level${tier}` as keyof typeof theme.ranks;
     const rank = theme.ranks[rankKey];
     const rankName = rank?.name?.split(': ')[1] || rank?.name || 'Unranked';
@@ -137,6 +179,7 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                         <div className={`text-5xl font-black italic leading-none bg-gradient-to-r ${theme.progressGradient || 'from-orange-500 to-red-500'} bg-clip-text text-transparent`}>
                             {powerLevel}
                             <span className="text-xl text-zinc-500 font-bold ml-1">/ {maxPower}</span>
+                            <span className="text-lg font-black text-zinc-400 ml-2">{letterGrade}</span>
                         </div>
                         <div className={`text-sm font-black uppercase tracking-wider mt-1 bg-gradient-to-r ${theme.progressGradient || 'from-orange-500 to-red-500'} bg-clip-text text-transparent`}>
                             {rankName}
@@ -170,6 +213,36 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                     )}
                 </div>
             </div>
+
+            {/* === EASIEST LEVEL-UP === */}
+            {easiestLevelUp && (
+                <div className="bg-orange-500/5 border border-orange-500/20 rounded-xl p-4">
+                    <div className="text-[10px] font-bold text-orange-400 uppercase tracking-widest mb-1">⚡ Easiest Next Level-Up</div>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <div className="text-sm font-bold text-white">{easiestLevelUp.displayName}</div>
+                            <div className="text-[11px] text-zinc-400">
+                                Lv.{easiestLevelUp.currentLevel} → Lv.{easiestLevelUp.currentLevel + 1}
+                                {easiestLevelUp.gapToNext !== null && (
+                                    <span className="text-orange-400 ml-1">
+                                        ({easiestLevelUp.gapToNext > 0 ? '+' : ''}{easiestLevelUp.gapToNext} {easiestLevelUp.unit} needed)
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <div className="text-lg font-black text-orange-400">{easiestLevelUp.progressToNext}%</div>
+                            <div className="text-[9px] text-zinc-500">to next level</div>
+                        </div>
+                    </div>
+                    <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden mt-2">
+                        <div className="h-full bg-gradient-to-r from-orange-600 to-amber-500 rounded-full" style={{ width: `${easiestLevelUp.progressToNext}%` }} />
+                    </div>
+                    <div className="text-[9px] text-zinc-500 mt-1.5">
+                        If you hit this, Power Level goes from {powerLevel} → {powerLevel + 1}
+                    </div>
+                </div>
+            )}
 
             {/* === RANK LADDER === */}
             <div>
@@ -270,15 +343,28 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                                             }
 
                                             return (
-                                                <div key={ex.exerciseId} className="flex items-center gap-2 py-1.5">
-                                                    {exImage && <Image src={exImage} alt="" width={24} height={24} className="object-contain" />}
-                                                    <div className="flex-1 min-w-0">
-                                                        <span className="text-[11px] text-white truncate block">{ex.displayName}</span>
-                                                        {targetCombos.length > 0 && (
-                                                            <span className="text-[9px] text-zinc-600">Hit {targetCombos.join(' or ')} to rank up</span>
-                                                        )}
+                                                <div key={ex.exerciseId} className="py-2">
+                                                    <div className="flex items-center gap-2">
+                                                        {exImage && <Image src={exImage} alt="" width={24} height={24} className="object-contain" />}
+                                                        <div className="flex-1 min-w-0">
+                                                            <span className="text-[11px] text-white truncate block">{ex.displayName}</span>
+                                                            {targetCombos.length > 0 && (
+                                                                <span className="text-[9px] text-zinc-600">Hit {targetCombos.join(' or ')} to rank up</span>
+                                                            )}
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <span className="text-[10px] font-bold text-zinc-400">Lv.{ex.currentLevel}</span>
+                                                            {ex.currentLevel < 5 && (
+                                                                <div className="text-[8px] text-zinc-500">{ex.progressToNext}%</div>
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                    <span className="text-[10px] font-bold text-zinc-400">Lv.{ex.currentLevel}</span>
+                                                    {/* Progress bar within level */}
+                                                    {ex.currentLevel < 5 && (
+                                                        <div className="h-1 bg-zinc-800 rounded-full overflow-hidden mt-1.5 ml-8">
+                                                            <div className={`h-full bg-gradient-to-r ${theme.progressGradient || 'from-orange-500 to-red-500'} rounded-full`} style={{ width: `${ex.progressToNext}%` }} />
+                                                        </div>
+                                                    )}
                                                 </div>
                                             );
                                         })}
