@@ -316,12 +316,12 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
                             <span className="text-xs text-zinc-300 truncate block">{q.name}</span>
                             <div className="flex items-center gap-2 mt-1">
                                 <div className="flex-1 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
-                                    <div className={`h-full rounded-full ${q.pct >= 90 ? 'bg-orange-500 animate-pulse' : 'bg-orange-600'}`} style={{ width: `${q.pct}%` }} />
+                                    <div className={`h-full rounded-full ${q.pct >= 90 ? 'bg-amber-400 animate-pulse' : 'bg-zinc-600'}`} style={{ width: `${q.pct}%` }} />
                                 </div>
                                 <span className="text-[10px] text-zinc-500 font-mono shrink-0">{q.current} → {q.target}</span>
                             </div>
                         </div>
-                        <span className="text-[10px] font-bold text-orange-400">Lv{q.nextLevel}</span>
+                        <span className="text-[10px] font-bold text-amber-400">Lv{q.nextLevel}</span>
                     </Link>
                 );
             })()}

@@ -9,8 +9,8 @@ export default function MobileNav() {
     const { isClassic } = useExperienceMode();
 
     const isActive = (path: string) => {
-        if (path === '/dashboard' && (pathname === '/' || pathname === '/dashboard')) return 'text-orange-500 bg-orange-500/10';
-        return pathname === path ? 'text-orange-500 bg-orange-500/10' : 'text-zinc-500 hover:text-zinc-300';
+        if (path === '/dashboard' && (pathname === '/' || pathname === '/dashboard')) return 'text-white bg-zinc-800';
+        return pathname === path ? 'text-white bg-zinc-800' : 'text-zinc-500 hover:text-zinc-300';
     }
 
     return (

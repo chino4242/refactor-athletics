@@ -17,27 +17,27 @@ export default function TopHeader() {
             <div className="hidden md:flex flex-1 justify-start">
                 <nav className="flex items-center gap-1 bg-zinc-950/50 p-1 rounded-xl border border-zinc-800">
                     <Link href="/dashboard">
-                        <button className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-300 ${pathname === '/dashboard' || pathname === '/' ? 'bg-orange-600 text-white shadow-lg shadow-orange-900/20' : 'text-zinc-500 hover:text-white hover:bg-zinc-800'}`}>
+                        <button className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-300 ${pathname === '/dashboard' || pathname === '/' ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-white hover:bg-zinc-800'}`}>
                             Home
                         </button>
                     </Link>
                     <Link href="/track">
-                        <button className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-300 ${pathname === '/track' ? 'bg-orange-600 text-white shadow-lg shadow-orange-900/20' : 'text-zinc-500 hover:text-white hover:bg-zinc-800'}`}>
+                        <button className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-300 ${pathname === '/track' ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-white hover:bg-zinc-800'}`}>
                             Track
                         </button>
                     </Link>
                     <Link href="/train">
-                        <button className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-300 ${pathname === '/train' ? 'bg-orange-600 text-white shadow-lg shadow-orange-900/20' : 'text-zinc-500 hover:text-white hover:bg-zinc-800'}`}>
+                        <button className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-300 ${pathname === '/train' ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-white hover:bg-zinc-800'}`}>
                             Train
                         </button>
                     </Link>
                     <Link href="/arena">
-                        <button className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-300 ${pathname === '/arena' ? 'bg-orange-600 text-white shadow-lg shadow-orange-900/20' : 'text-zinc-500 hover:text-white hover:bg-zinc-800'}`}>
+                        <button className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-300 ${pathname === '/arena' ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-white hover:bg-zinc-800'}`}>
                             {isClassic ? 'Social' : 'Arena'}
                         </button>
                     </Link>
                     <Link href="/profile">
-                        <button className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-300 ${pathname === '/profile' ? 'bg-orange-600 text-white shadow-lg shadow-orange-900/20' : 'text-zinc-500 hover:text-white hover:bg-zinc-800'}`}>
+                        <button className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-300 ${pathname === '/profile' ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-white hover:bg-zinc-800'}`}>
                             Profile
                         </button>
                     </Link>

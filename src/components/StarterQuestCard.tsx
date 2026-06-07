@@ -28,14 +28,14 @@ export default function StarterQuestCard({ quest, onInlineAction }: StarterQuest
   if (!quest.isActive) return null;
 
   const content = (
-    <div className="relative overflow-hidden bg-gradient-to-br from-orange-500/10 via-zinc-900 to-zinc-900 border-2 border-orange-500/40 rounded-2xl p-5 shadow-lg shadow-orange-900/10">
+    <div className="relative overflow-hidden bg-gradient-to-br from-zinc-800/80 via-zinc-900 to-zinc-900 border border-zinc-700 rounded-2xl p-5">
       {/* Glow effect */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full blur-2xl pointer-events-none" />
+      <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl pointer-events-none" />
       
       <div className="relative">
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-[10px] font-bold text-orange-400 uppercase tracking-widest">Active Quest</span>
-          {quest.xpReward > 0 && <span className="text-[10px] text-orange-500/60">+{quest.xpReward} XP</span>}
+          <span className="text-[10px] font-bold text-amber-400 uppercase tracking-widest">Active Quest</span>
+          {quest.xpReward > 0 && <span className="text-[10px] text-zinc-500">+{quest.xpReward} XP</span>}
         </div>
         
         <div className="flex items-start gap-3 mt-3">

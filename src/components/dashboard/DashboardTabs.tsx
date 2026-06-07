@@ -49,7 +49,7 @@ export default function DashboardTabs({ userId, stats, hasActiveDuels, activeDue
                         onClick={() => setActiveTab(tab)}
                         className={`flex-1 py-4 text-sm font-bold uppercase tracking-wider transition-colors relative ${
                             activeTab === tab
-                                ? 'text-orange-500'
+                                ? 'text-white'
                                 : 'text-zinc-500 hover:text-zinc-300'
                         }`}
                     >
