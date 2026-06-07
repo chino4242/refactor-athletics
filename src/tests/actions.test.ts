@@ -35,6 +35,11 @@ vi.mock('next/cache', () => ({
     revalidatePath: vi.fn(),
 }));
 
+// Mock refactorScore to prevent power-up from affecting XP in tests
+vi.mock('@/utils/refactorScore', () => ({
+    getDailyPowerUp: vi.fn(() => 'habit_never_matches'),
+}));
+
 // Mock cookies
 vi.mock('next/headers', () => ({
     cookies: vi.fn(() => ({ get: () => ({ value: 'America/New_York' }) })),

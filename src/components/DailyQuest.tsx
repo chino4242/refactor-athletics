@@ -5,6 +5,7 @@ import { getHabitProgress, saveProfile, getHistory, getProfile } from '../servic
 import type { UserProfileData, UserStats, HistoryItem, Challenge } from '@/types';
 import HabitHeatmap from './HabitHeatmap';
 import NutritionSection from './NutritionSection';
+import RefactorScoreCard from './RefactorScoreCard';
 import { useToast } from '@/context/ToastContext';
 import { SlidersHorizontal, Footprints, Timer, Share2, ChevronDown } from 'lucide-react';
 import HabitSettings from './HabitSettings';
@@ -289,6 +290,9 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
           );
         })()}
 
+        {/* REFACTOR SCORE */}
+        {profile && <RefactorScoreCard userId={userId} profile={profile} />}
+
         {/* 2. HABITS — Grouped by Category */}
         {(() => {
           const categories = [
@@ -299,6 +303,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
               habits: [
                 { type: 'card', id: 'habit_steps', label: 'Steps', icon: <Footprints size={14} className="text-orange-500" />, unit: 'steps', color: 'bg-orange-500', heatColor: 'bg-orange-500 shadow-orange-500/50 shadow-[0_0_5px]', goalKey: 'habit_steps', defaultGoal: 10000, xp: 150, setOnly: true, enableTotalSync: true },
                 { type: 'card', id: 'habit_sleep', label: 'Sleep', icon: '💤', unit: 'hrs', color: 'bg-purple-500', heatColor: 'bg-purple-500 shadow-purple-500/50 shadow-[0_0_5px]', goalKey: 'habit_sleep', defaultGoal: 8, xp: 16 },
+                { type: 'mood', id: 'habit_mood', label: 'Mood / Energy', icon: '😊', xp: 10 },
                 { type: 'card', id: 'habit_exercise_minutes', label: 'Exercise', icon: '💪', unit: 'mins', color: 'bg-green-500', heatColor: 'bg-green-500 shadow-green-500/50 shadow-[0_0_5px]', goalKey: 'habit_exercise_minutes', defaultGoal: 30, xp: 0 },
                 { type: 'card', id: 'habit_stand_hours', label: 'Stand', icon: '🚶', unit: 'hrs', color: 'bg-blue-400', heatColor: 'bg-blue-400 shadow-blue-400/50 shadow-[0_0_5px]', goalKey: 'habit_stand_hours', defaultGoal: 12, xp: 2 },
                 { type: 'tap', id: 'habit_creatine', label: 'Supplements', icon: '🧪', doneIcon: '✅', xp: 25, color: 'bg-blue-500' },
@@ -436,6 +441,39 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
                               <div className="flex gap-0.5 mt-1.5 justify-end">
                                 {getWeekDots(h.id, 1).map((met, i) => (
                                   <div key={i} className={`w-1.5 h-1.5 rounded-full ${met ? (tap.color || 'bg-emerald-500') : 'bg-zinc-800'}`} />
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        }
+                        if (h.type === 'mood') {
+                          const currentMood = totals[h.id] || 0;
+                          const moods = [
+                            { val: 1, emoji: '😫', label: 'Rough' },
+                            { val: 2, emoji: '😐', label: 'Low' },
+                            { val: 3, emoji: '🙂', label: 'OK' },
+                            { val: 4, emoji: '😊', label: 'Good' },
+                            { val: 5, emoji: '🔥', label: 'Great' },
+                          ];
+                          return (
+                            <div key={h.id} className="p-2 bg-zinc-900/50 rounded-xl border border-zinc-800/50">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-[10px] uppercase font-bold text-zinc-400">{h.label}</span>
+                                {currentMood > 0 && <span className="text-[10px] text-emerald-400 font-bold">✓ {moods[currentMood - 1]?.label}</span>}
+                              </div>
+                              <div className="flex justify-between gap-1">
+                                {moods.map(m => (
+                                  <button
+                                    key={m.val}
+                                    onClick={() => handleLog(h.id, m.val, `Mood: ${m.label}`)}
+                                    disabled={loading === h.id || currentMood > 0}
+                                    className={`flex-1 py-2 rounded-lg text-center transition-all ${
+                                      currentMood === m.val ? 'bg-orange-600/20 border border-orange-500 scale-110' :
+                                      currentMood > 0 ? 'opacity-30 bg-zinc-800' : 'bg-zinc-800 hover:bg-zinc-700 border border-zinc-700'
+                                    }`}
+                                  >
+                                    <div className="text-lg">{m.emoji}</div>
+                                  </button>
                                 ))}
                               </div>
                             </div>

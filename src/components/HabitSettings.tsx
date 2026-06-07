@@ -19,6 +19,7 @@ const HABIT_CATALOG = {
     habits: [
       { id: 'habit_steps', label: 'Steps', desc: 'Daily step count from walking/running', hasTarget: true, min: 1000, max: 25000, step: 500, unit: 'steps', color: 'accent-orange-500' },
       { id: 'habit_sleep', label: 'Sleep', desc: 'Hours of sleep per night', hasTarget: true, min: 4, max: 12, step: 0.5, unit: 'hrs', color: 'accent-purple-500' },
+      { id: 'habit_mood', label: 'Mood / Energy', desc: 'How do you feel today? (1-5)', hasTarget: false },
       { id: 'habit_exercise_minutes', label: 'Exercise', desc: 'Minutes of intentional exercise', hasTarget: true, min: 10, max: 120, step: 5, unit: 'min', color: 'accent-green-500' },
       { id: 'habit_stand_hours', label: 'Stand Hours', desc: 'Hours spent standing/moving (Apple Watch)', hasTarget: true, min: 6, max: 16, step: 1, unit: 'hrs', color: 'accent-blue-500' },
       { id: 'habit_creatine', label: 'Supplements', desc: 'Daily creatine or supplement intake', hasTarget: false },

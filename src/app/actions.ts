@@ -55,7 +55,14 @@ export async function logHabitAction(
 
         // XP: from centralized service, skip for Auto-Cal
         const isAutoCal = label?.startsWith('Auto-Cal');
-        const xp = isAutoCal ? 0 : calculateXp({ type: 'nutrition', entryCount: 1 });
+        let xp = isAutoCal ? 0 : calculateXp({ type: 'nutrition', entryCount: 1 });
+
+        // Daily Power-Up: 2x XP for today's featured macro
+        if (xp > 0) {
+            const { getDailyPowerUp } = await import('@/utils/refactorScore');
+            const todayStr = new Date().toLocaleDateString('en-CA');
+            if (habitId === getDailyPowerUp(todayStr)) xp *= 2;
+        }
 
         // "Set" mode for calories_burned: replace today's entries instead of adding
         if (macroType === 'calories_burned') {
@@ -104,7 +111,12 @@ export async function logHabitAction(
         else if (habitId === 'habit_no_alcohol' || habitId === 'habit_no_vice' || habitId === 'habit_creatine') event = { type: 'habit_binary' };
         else event = { type: 'habit_other' };
 
-        const xp = event ? calculateXp(event) : 0;
+        let xp = event ? calculateXp(event) : 0;
+
+        // Daily Power-Up: 2x XP for today's featured habit
+        const { getDailyPowerUp } = await import('@/utils/refactorScore');
+        const today = new Date().toLocaleDateString('en-CA');
+        if (habitId === getDailyPowerUp(today) && xp > 0) xp *= 2;
 
         // If this is a "Set" (sync) operation, delete existing entries for this habit today first
         if (label?.includes('(Sync)')) {
