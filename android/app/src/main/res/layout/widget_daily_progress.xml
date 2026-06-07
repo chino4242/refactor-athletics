@@ -59,9 +59,7 @@
             android:layout_height="6dp"
             android:layout_weight="1"
             android:max="100"
-            android:progress="0"
-            android:progressTintList="@color/orange_500"
-            android:progressBackgroundTintList="@color/zinc_800" />
+            android:progress="0" />
 
         <TextView
             android:id="@+id/quest_count"
