@@ -103,7 +103,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                     localStorage.setItem('last_health_sync', new Date().toISOString());
                     loadData();
                 }
-                // Sync exercise sessions via the existing HC webhook endpoint
+                // Sync exercise sessions via session-authenticated endpoint
                 if (data.exercises?.length) {
                     const lastExSync = localStorage.getItem('last_exercise_sync_ts');
                     const newExercises = data.exercises.filter((ex: any) => {
@@ -112,25 +112,11 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                         return t && new Date(t).getTime() > parseInt(lastExSync);
                     });
                     if (newExercises.length > 0) {
-                        // Get user's sync token for HC endpoint auth
-                        const supabase = (await import('@/utils/supabase/client')).createClient();
-                        const { data: userRow } = await supabase.from('users').select('sync_token').eq('id', userId).single();
-                        if (userRow?.sync_token) {
-                            const payload = { exercise: newExercises.map((ex: any) => ({
-                                start_time: ex.startDate || ex.start || ex.startTime,
-                                end_time: ex.endDate || ex.end || ex.endTime,
-                                duration_seconds: ex.duration || ex.value || 0,
-                                distance_meters: ex.distance || 0,
-                                type: ex.type || ex.exerciseType || '0',
-                                steps: ex.steps || 0,
-                                avg_cadence_spm: ex.cadence || 0,
-                            }))};
-                            await fetch('/api/sync/health-connect', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${userRow.sync_token}` },
-                                body: JSON.stringify(payload),
-                            }).catch(() => {});
-                        }
+                        await fetch('/api/sync/exercises', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ exercises: newExercises }),
+                        }).catch(() => {});
                         localStorage.setItem('last_exercise_sync_ts', String(Date.now()));
                     }
                 }

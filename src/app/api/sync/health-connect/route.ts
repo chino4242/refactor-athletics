@@ -77,93 +77,14 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Exercise sessions — sum duration to minutes
+    // Exercise sessions — via shared service
     if (body.exercise?.length) {
-      // Include exercises from today AND yesterday (HC sends 48hr window, runs may be from previous day)
-      const recentExercise = body.exercise.filter((r: any) => {
-        const t = r.start_time || r.end_time || r.time || r.session_start_time || r.startTime;
-        if (!t) return true;
-        try {
-          const d = new Date(t);
-          const diffHours = (Date.now() - d.getTime()) / (1000 * 60 * 60);
-          return diffHours < 36; // last 36 hours
-        } catch { return true; }
-      });
-      // Exercise minutes habit — only count today's exercises
-      const todayOnlyExercise = recentExercise.filter((r: any) => {
-        const t = r.start_time || r.end_time || r.session_start_time;
-        if (!t) return true;
-        try { return new Date(t).toLocaleDateString('en-CA', { timeZone: tz }) === today; } catch { return true; }
-      });
-      const totalMin = Math.round(todayOnlyExercise.reduce((s: number, r: any) => {
-        const dur = r.duration_seconds || r.durationSeconds || 0;
-        if (dur > 0) return s + dur / 60;
-        if (r.start_time && r.end_time) return s + (new Date(r.end_time).getTime() - new Date(r.start_time).getTime()) / 60000;
-        return s;
-      }, 0));
-      if (totalMin > 0) {
-        await upsertHabit(supabase, user.id, 'habit_exercise_minutes', today, ts, totalMin, 0);
-        synced.push(`exercise: ${totalMin} min`);
+      const { processExerciseSessions } = await import('@/services/exerciseSyncService');
+      const result = await processExerciseSessions(supabase, user.id, user.bodyweight || 180, tz, body.exercise);
+      if (result.totalMinutes > 0) {
+        await upsertHabit(supabase, user.id, 'habit_exercise_minutes', today, ts, result.totalMinutes, 0);
       }
-
-      // Log individual exercise sessions
-      for (const ex of recentExercise) {
-        const dur = ex.duration_seconds || ex.durationSeconds || 0;
-        const distMeters = ex.distance_meters || ex.distanceMeters || ex.distance || 0;
-        const typeCode = parseInt(ex.type || ex.exerciseType || ex.exercise_type) || 0;
-        console.log(`[HC Exercise] type=${typeCode} dur=${dur}s dist=${distMeters}m`);
-        const exTime = ex.start_time || ex.end_time || ex.session_start_time || ex.startTime || ex.endTime;
-        const exDate = exTime ? new Date(exTime).toLocaleDateString('en-CA', { timeZone: tz }) : today;
-        const exTs = exTime ? Math.floor(new Date(exTime).getTime() / 1000) : ts;
-
-        if (dur < 60) continue;
-
-        // Known running types (46, 47) — process immediately with rank evaluation
-        if (typeCode === 46 || typeCode === 47) {
-          const distMiles = distMeters / 1609.34;
-          let rankedExerciseId: string | null = null;
-          if (distMiles >= 0.9 && distMiles <= 1.1) rankedExerciseId = 'run_1_mile';
-          else if (distMeters >= 350 && distMeters <= 450) rankedExerciseId = 'run_400m';
-          else if (distMiles >= 1.9 && distMiles <= 2.1) rankedExerciseId = 'run_2_mile';
-          else if (distMiles >= 3.0 && distMiles <= 3.7) rankedExerciseId = 'run_5k';
-
-          if (rankedExerciseId) {
-            try {
-              const { logTrainingAction } = await import('@/app/actions');
-              const result = await logTrainingAction(user.id, rankedExerciseId, user.bodyweight || 180, 'male', [{ duration: dur, weight: 0 }]);
-              synced.push(`${rankedExerciseId}: Lv.${result.level}`);
-              continue;
-            } catch (e: any) { console.error('Ranked exercise failed:', e.message); }
-          }
-        }
-
-        // Everything else → save as pending for user confirmation
-        const cadence = ex.avg_cadence_spm || ex.cadence || 0;
-        const distMiles = distMeters / 1609.34;
-        const paceMinPerMile = distMiles > 0 ? (dur / 60) / distMiles : 999;
-        let suggestedType = 'other';
-        if (cadence > 130 && distMeters > 500 && paceMinPerMile < 15) suggestedType = 'run';
-        else if (distMeters > 1000 && paceMinPerMile < 5) suggestedType = 'bike';
-        else if (typeCode === 8 || typeCode === 9) suggestedType = 'bike';
-        else if (typeCode === 69) suggestedType = 'walk';
-        else if (cadence > 0 && cadence <= 130 && distMeters > 200) suggestedType = 'walk';
-        else if (distMeters > 500 && paceMinPerMile >= 15) suggestedType = 'walk';
-        else if (distMeters > 500 && paceMinPerMile < 15) suggestedType = 'run';
-        else if (distMeters > 200) suggestedType = 'walk';
-
-        const { data: existing } = await supabase.from('pending_exercises')
-          .select('id').eq('user_id', user.id).eq('date', exDate).eq('duration_seconds', dur).limit(1);
-        if (!existing?.length) {
-          await supabase.from('pending_exercises').insert({
-            user_id: user.id, date: exDate, timestamp: exTs,
-            duration_seconds: dur, distance_meters: distMeters,
-            steps: ex.steps || null, avg_cadence: cadence || null,
-            stride_length: ex.stride_length_m || null,
-            suggested_type: suggestedType, raw_data: ex,
-          });
-          synced.push(`pending: ${suggestedType} ${Math.round(dur / 60)}min`);
-        }
-      }
+      synced.push(...result.synced);
     }
 
     // HRV — latest reading (skip if WHOOP connected)
