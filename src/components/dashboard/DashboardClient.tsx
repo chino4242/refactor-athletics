@@ -138,12 +138,16 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                 localStorage.removeItem('health_permission_denied');
                 const data = await syncTodayHealth();
                 const { logHabitAction } = await import('@/app/actions');
+                // Check if WHOOP is connected (skip calories/sleep/HRV if so — WHOOP handles those)
+                const supabaseCheck = (await import('@/utils/supabase/client')).createClient();
+                const { data: userFlags } = await supabaseCheck.from('users').select('whoop_connected_at').eq('id', userId).single();
+                const hasWhoop = !!userFlags?.whoop_connected_at;
                 const promises = [];
                 if (data.steps > 0) promises.push(logHabitAction(userId, 'habit_steps', data.steps, undefined, 'Steps'));
-                if (data.caloriesBurned > 0) promises.push(logHabitAction(userId, 'macro_calories_burned', data.caloriesBurned, undefined, 'Calories Burned'));
-                if (data.sleep > 0) promises.push(logHabitAction(userId, 'habit_sleep', data.sleep, undefined, 'Sleep'));
-                if (data.hrv) promises.push(logHabitAction(userId, 'habit_hrv', data.hrv, undefined, 'HRV'));
-                if (data.restingHR) promises.push(logHabitAction(userId, 'habit_resting_hr', data.restingHR, undefined, 'Resting HR'));
+                if (data.caloriesBurned > 0 && !hasWhoop) promises.push(logHabitAction(userId, 'macro_calories_burned', data.caloriesBurned, undefined, 'Calories Burned'));
+                if (data.sleep > 0 && !hasWhoop) promises.push(logHabitAction(userId, 'habit_sleep', data.sleep, undefined, 'Sleep'));
+                if (data.hrv && !hasWhoop) promises.push(logHabitAction(userId, 'habit_hrv', data.hrv, undefined, 'HRV'));
+                if (data.restingHR && !hasWhoop) promises.push(logHabitAction(userId, 'habit_resting_hr', data.restingHR, undefined, 'Resting HR'));
                 if (promises.length > 0) {
                     await Promise.all(promises);
                     localStorage.setItem('last_health_sync', new Date().toISOString());

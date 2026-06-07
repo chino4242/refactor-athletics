@@ -168,11 +168,12 @@ export const getHistory = async (userId: string): Promise<HistoryItem[]> => {
 export const getHabitProgress = async (userId: string, startTs: number): Promise<any> => {
     const supabase = createClient();
     const endTs = startTs + 86400; // end of day (24 hours)
+    const todayDate = new Date(startTs * 1000).toLocaleDateString('en-CA');
     
-    // Query nutrition and habits tables for the specific day
+    // Query nutrition by date (matches delete logic), habits by timestamp
     const [nutrition, habits] = await Promise.all([
-        supabase.from('nutrition_logs').select('*').eq('user_id', userId).gte('timestamp', startTs).lt('timestamp', endTs).order('timestamp', { ascending: false }),
-        supabase.from('habit_logs').select('*').eq('user_id', userId).gte('timestamp', startTs).lt('timestamp', endTs).order('timestamp', { ascending: false })
+        supabase.from('nutrition_logs').select('*').eq('user_id', userId).eq('date', todayDate).order('timestamp', { ascending: false }),
+        supabase.from('habit_logs').select('*').eq('user_id', userId).eq('date', todayDate).order('timestamp', { ascending: false })
     ]);
 
     const totals: Record<string, number> = {};
@@ -184,7 +185,6 @@ export const getHabitProgress = async (userId: string, startTs: number): Promise
     }
 
     // Derive macros from meal_entries if available (source of truth for food logs)
-    const todayDate = new Date(startTs * 1000).toLocaleDateString('en-CA');
     let mealEntries: any[] | null = null;
     try {
         const { data } = await supabase.from('meal_entries')

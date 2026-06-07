@@ -177,29 +177,27 @@ describe('API Functions', () => {
             mockSelect.mockImplementation(() => {
                 callCount++;
                 const chain = {
-                    eq: vi.fn().mockReturnValue({
-                        gte: vi.fn().mockReturnValue({
-                            lt: vi.fn().mockReturnValue({
-                                order: vi.fn().mockResolvedValue(
-                                    callCount === 1
-                                        ? {
-                                              data: [
-                                                  { macro_type: 'protein', amount: 150 },
-                                                  { macro_type: 'protein', amount: 50 },
-                                              ],
-                                              error: null,
-                                          }
-                                        : {
-                                              data: [
-                                                  { habit_id: 'habit_steps', value: 10000 },
-                                                  { habit_id: 'habit_steps', value: 5000 },
-                                              ],
-                                              error: null,
-                                          }
-                                ),
-                            }),
+                    eq: vi.fn().mockImplementation(() => ({
+                        eq: vi.fn().mockReturnValue({
+                            order: vi.fn().mockResolvedValue(
+                                callCount === 1
+                                    ? {
+                                          data: [
+                                              { macro_type: 'protein', amount: 150 },
+                                              { macro_type: 'protein', amount: 50 },
+                                          ],
+                                          error: null,
+                                      }
+                                    : {
+                                          data: [
+                                              { habit_id: 'habit_steps', value: 10000 },
+                                              { habit_id: 'habit_steps', value: 5000 },
+                                          ],
+                                          error: null,
+                                      }
+                            ),
                         }),
-                    }),
+                    })),
                 };
                 return chain;
             });
@@ -214,10 +212,8 @@ describe('API Functions', () => {
         it('handles empty results', async () => {
             mockSelect.mockReturnValue({
                 eq: vi.fn().mockReturnValue({
-                    gte: vi.fn().mockReturnValue({
-                        lt: vi.fn().mockReturnValue({
-                            order: vi.fn().mockResolvedValue({ data: [], error: null }),
-                        }),
+                    eq: vi.fn().mockReturnValue({
+                        order: vi.fn().mockResolvedValue({ data: [], error: null }),
                     }),
                 }),
             });
