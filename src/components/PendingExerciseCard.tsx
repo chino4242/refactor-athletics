@@ -145,7 +145,7 @@ export default function PendingExerciseCard({ userId }: { userId: string }) {
                   <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-500" />
                   <input type="text" value={searchQuery} onChange={e => handleSearch(e.target.value)} autoFocus
                     placeholder="Search exercises..."
-                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg pl-8 pr-3 py-2 text-xs text-white focus:border-orange-500 outline-none" />
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg pl-8 pr-3 py-2 text-xs text-white focus:border-zinc-500 outline-none" />
                 </div>
                 {searchResults.map(r => (
                   <button key={r.id} onClick={() => confirm(ex.id, r.id, r.id)}

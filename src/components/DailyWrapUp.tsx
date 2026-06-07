@@ -254,14 +254,14 @@ export default function DailyWrapUp({ userId, mode, onDismiss, stats }: DailyWra
         ) : (
           <>
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-xs font-bold text-orange-400">+{data.totalXp} {xpLabel}</span>
+              <span className="text-xs font-bold text-amber-400">+{data.totalXp} {xpLabel}</span>
               <span className="text-[10px] text-zinc-500">
                 {xpToNext > 0 ? `${xpToNext.toLocaleString()} to Lv ${level + 1}` : `Level ${level}`}
               </span>
             </div>
             <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-orange-600 to-amber-500 rounded-full transition-all duration-500"
+                className="h-full bg-gradient-to-r from-amber-600 to-amber-400 rounded-full transition-all duration-500"
                 style={{ width: `${Math.min(progressPercent * 100, 100)}%` }}
               />
             </div>
@@ -307,7 +307,7 @@ export default function DailyWrapUp({ userId, mode, onDismiss, stats }: DailyWra
               {data.xpItems.map((item, i) => (
                 <div key={i} className="flex items-center justify-between text-xs">
                   <span className="text-zinc-400">{item.source_label}</span>
-                  <span className="text-orange-400/80 font-medium">+{item.amount}</span>
+                  <span className="text-amber-400/80 font-medium">+{item.amount}</span>
                 </div>
               ))}
             </div>

@@ -30,7 +30,7 @@ export default function RecentFoods({ onInstantLog }: RecentFoodsProps) {
           <button
             key={i}
             onClick={() => onInstantLog(food)}
-            className="shrink-0 bg-zinc-800/60 border border-zinc-700/40 rounded-lg px-3 py-2 hover:border-orange-500/50 transition text-left"
+            className="shrink-0 bg-zinc-800/60 border border-zinc-700/40 rounded-lg px-3 py-2 hover:border-zinc-600/50 transition text-left"
           >
             <div className="text-[11px] font-medium text-white truncate max-w-[100px]">{food.name}</div>
             <div className="text-[9px] text-zinc-500">P:{p} C:{c} F:{f}</div>

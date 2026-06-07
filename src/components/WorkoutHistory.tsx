@@ -138,7 +138,7 @@ export default function WorkoutHistory({ userId }: { userId: string }) {
                         <h2 className="text-sm font-bold text-white">
                             {new Date(selectedDay + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
                         </h2>
-                        <span className="text-[10px] text-orange-400 font-bold">+{selectedDayData.totalXp} XP</span>
+                        <span className="text-[10px] text-amber-400 font-bold">+{selectedDayData.totalXp} XP</span>
                     </div>
                     {selectedDayData.exercises.map((ex, i) => {
                         const catItem = catalog.find(c => c.id === ex.exercise_id);
@@ -170,7 +170,7 @@ export default function WorkoutHistory({ userId }: { userId: string }) {
                                         <span>Best: {bestSet.weight} × {bestSet.reps}</span>
                                     )}
                                     <span>{ex.sets.length} set{ex.sets.length !== 1 ? 's' : ''}</span>
-                                    <span className="text-orange-400/70">+{ex.xp} XP</span>
+                                    <span className="text-amber-400/70">+{ex.xp} XP</span>
                                 </div>
                                 {ex.sets.length > 0 && ex.sets[0]?.weight > 0 && (
                                     <div className="flex gap-1.5 mt-2 flex-wrap">

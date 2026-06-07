@@ -458,7 +458,7 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
                             <button
                                 key={day.day}
                                 onClick={() => handleViewDefaultWorkout(day)}
-                                className={`bg-zinc-800/50 border rounded-lg p-3 hover:border-orange-500 hover:bg-zinc-800 transition text-left ${
+                                className={`bg-zinc-800/50 border rounded-lg p-3 hover:border-zinc-600 hover:bg-zinc-800 transition text-left ${
                                     daySwapMode && daySwapFirst === day.day ? 'border-orange-500 ring-1 ring-orange-500' :
                                     daySwapMode ? 'border-zinc-700 animate-pulse' : 'border-zinc-700'
                                 }`}
@@ -632,7 +632,7 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
                                         placeholder="Search exercises..."
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="w-full bg-zinc-800 border border-zinc-700 rounded-lg pl-10 pr-4 py-2 text-sm text-white focus:border-orange-500 outline-none transition-colors"
+                                        className="w-full bg-zinc-800 border border-zinc-700 rounded-lg pl-10 pr-4 py-2 text-sm text-white focus:border-zinc-500 outline-none transition-colors"
                                     />
                                 </div>
 
@@ -771,7 +771,7 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
                                                                                     const val = parseFloat(e.target.value);
                                                                                     handleUpdateBlock(block.id, 'duration_seconds', isNaN(val) ? '' : (val * 60).toString());
                                                                                 }}
-                                                                                className="w-14 bg-zinc-900 border border-zinc-700 rounded px-1.5 py-1 text-center text-white focus:border-orange-500 focus:outline-none transition-colors"
+                                                                                className="w-14 bg-zinc-900 border border-zinc-700 rounded px-1.5 py-1 text-center text-white focus:border-zinc-500 focus:outline-none transition-colors"
                                                                                 placeholder="0.0"
                                                                             />
                                                                             <span>min</span>
@@ -787,7 +787,7 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
                                                                                 step="0.5"
                                                                                 value={block.incline !== null && block.incline !== undefined ? block.incline : ''}
                                                                                 onChange={(e) => handleUpdateBlock(block.id, 'incline', e.target.value)}
-                                                                                className="w-12 bg-zinc-900 border border-zinc-700 rounded px-1.5 py-1 text-center text-white focus:border-orange-500 focus:outline-none transition-colors"
+                                                                                className="w-12 bg-zinc-900 border border-zinc-700 rounded px-1.5 py-1 text-center text-white focus:border-zinc-500 focus:outline-none transition-colors"
                                                                                 placeholder="-"
                                                                             />
                                                                             <span>% Inc</span>
@@ -803,7 +803,7 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
                                                                                 min="0"
                                                                                 value={block.target_weight || ''}
                                                                                 onChange={(e) => handleUpdateBlock(block.id, 'target_weight', e.target.value)}
-                                                                                className="w-16 bg-zinc-900 border border-zinc-700 rounded px-1.5 py-1 text-center text-white focus:border-orange-500 focus:outline-none transition-colors"
+                                                                                className="w-16 bg-zinc-900 border border-zinc-700 rounded px-1.5 py-1 text-center text-white focus:border-zinc-500 focus:outline-none transition-colors"
                                                                                 placeholder="lbs"
                                                                             />
                                                                             <span>lbs</span>
@@ -817,7 +817,7 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
                                                                                 min="1"
                                                                                 value={block.target_sets || ''}
                                                                                 onChange={(e) => handleUpdateBlock(block.id, 'target_sets', e.target.value)}
-                                                                                className="w-12 bg-zinc-900 border border-zinc-700 rounded px-1.5 py-1 text-center text-white focus:border-orange-500 focus:outline-none transition-colors"
+                                                                                className="w-12 bg-zinc-900 border border-zinc-700 rounded px-1.5 py-1 text-center text-white focus:border-zinc-500 focus:outline-none transition-colors"
                                                                             />
                                                                             <span>sets</span>
                                                                         </div>
@@ -830,7 +830,7 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
                                                                                 min="1"
                                                                                 value={block.target_reps || ''}
                                                                                 onChange={(e) => handleUpdateBlock(block.id, 'target_reps', e.target.value)}
-                                                                                className="w-12 bg-zinc-900 border border-zinc-700 rounded px-1.5 py-1 text-center text-white focus:border-orange-500 focus:outline-none transition-colors"
+                                                                                className="w-12 bg-zinc-900 border border-zinc-700 rounded px-1.5 py-1 text-center text-white focus:border-zinc-500 focus:outline-none transition-colors"
                                                                                 placeholder="-"
                                                                             />
                                                                             <span>reps</span>
@@ -945,7 +945,7 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
                                     <textarea
                                         value={defaultWorkoutContent}
                                         onChange={(e) => setDefaultWorkoutContent(e.target.value)}
-                                        className="w-full h-full min-h-[500px] bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white font-mono text-sm focus:border-orange-500 outline-none resize-none"
+                                        className="w-full h-full min-h-[500px] bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white font-mono text-sm focus:border-zinc-500 outline-none resize-none"
                                         placeholder="Enter workout content..."
                                     />
                                 </>

@@ -90,7 +90,7 @@ export default function QuickLogModal({ userId, bodyweight, sex, catalog, onClos
                 const item = catalog.find(c => c.id === qp.id);
                 if (!item) return null;
                 return (
-                  <button key={qp.id} onClick={() => setSelected(item)} className="flex flex-col items-center gap-1 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-xl hover:border-orange-500 transition min-w-[64px]">
+                  <button key={qp.id} onClick={() => setSelected(item)} className="flex flex-col items-center gap-1 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-xl hover:border-zinc-600 transition min-w-[64px]">
                     <span className="text-lg">{qp.emoji}</span>
                     <span className="text-[9px] font-bold text-zinc-400 whitespace-nowrap">{qp.label}</span>
                   </button>
@@ -105,7 +105,7 @@ export default function QuickLogModal({ userId, bodyweight, sex, catalog, onClos
                 placeholder="Search exercises..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg pl-9 pr-3 py-2 text-sm text-white focus:border-orange-500 outline-none"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg pl-9 pr-3 py-2 text-sm text-white focus:border-zinc-500 outline-none"
                 autoFocus
               />
             </div>
@@ -159,32 +159,32 @@ export default function QuickLogModal({ userId, bodyweight, sex, catalog, onClos
                   <div className="flex gap-2">
                     <div className="flex flex-col flex-1">
                       <span className="text-[8px] text-zinc-600 text-center mb-0.5">MIN</span>
-                      <input type="text" inputMode="numeric" placeholder="0" value={s.duration} onChange={e => updateSet(i, 'duration', e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1.5 text-center text-sm text-white focus:border-orange-500 outline-none" />
+                      <input type="text" inputMode="numeric" placeholder="0" value={s.duration} onChange={e => updateSet(i, 'duration', e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1.5 text-center text-sm text-white focus:border-zinc-500 outline-none" />
                     </div>
                     <div className="flex flex-col flex-1">
                       <span className="text-[8px] text-zinc-600 text-center mb-0.5">SEC</span>
-                      <input type="text" inputMode="numeric" placeholder="0" value={s.seconds} onChange={e => updateSet(i, 'seconds', e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1.5 text-center text-sm text-white focus:border-orange-500 outline-none" />
+                      <input type="text" inputMode="numeric" placeholder="0" value={s.seconds} onChange={e => updateSet(i, 'seconds', e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1.5 text-center text-sm text-white focus:border-zinc-500 outline-none" />
                     </div>
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[8px] text-zinc-600 text-center mb-0.5">DISTANCE (MILES)</span>
-                    <input type="text" inputMode="decimal" placeholder="0.0" value={s.distance} onChange={e => updateSet(i, 'distance', e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1.5 text-center text-sm text-white focus:border-orange-500 outline-none" />
+                    <input type="text" inputMode="decimal" placeholder="0.0" value={s.distance} onChange={e => updateSet(i, 'distance', e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1.5 text-center text-sm text-white focus:border-zinc-500 outline-none" />
                   </div>
                 </div>
               ) : isBodyweight ? (
                 <div className="flex flex-col flex-1">
                   <span className="text-[8px] text-zinc-600 text-center mb-0.5">REPS</span>
-                  <input type="text" inputMode="numeric" placeholder="—" value={s.reps} onChange={e => updateSet(i, 'reps', e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1.5 text-center text-sm text-white focus:border-orange-500 outline-none" />
+                  <input type="text" inputMode="numeric" placeholder="—" value={s.reps} onChange={e => updateSet(i, 'reps', e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1.5 text-center text-sm text-white focus:border-zinc-500 outline-none" />
                 </div>
               ) : (
                 <>
                   <div className="flex flex-col flex-1">
                     <span className="text-[8px] text-zinc-600 text-center mb-0.5">LBS</span>
-                    <input type="text" inputMode="decimal" placeholder="—" value={s.weight} onChange={e => updateSet(i, 'weight', e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1.5 text-center text-sm text-white focus:border-orange-500 outline-none" />
+                    <input type="text" inputMode="decimal" placeholder="—" value={s.weight} onChange={e => updateSet(i, 'weight', e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1.5 text-center text-sm text-white focus:border-zinc-500 outline-none" />
                   </div>
                   <div className="flex flex-col flex-1">
                     <span className="text-[8px] text-zinc-600 text-center mb-0.5">REPS</span>
-                    <input type="text" inputMode="numeric" placeholder="—" value={s.reps} onChange={e => updateSet(i, 'reps', e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1.5 text-center text-sm text-white focus:border-orange-500 outline-none" />
+                    <input type="text" inputMode="numeric" placeholder="—" value={s.reps} onChange={e => updateSet(i, 'reps', e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1.5 text-center text-sm text-white focus:border-zinc-500 outline-none" />
                   </div>
                 </>
               )}

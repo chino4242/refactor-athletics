@@ -153,26 +153,26 @@ export default function ProfileCard({
                 <div className="grid grid-cols-2 gap-4 relative z-10 bg-zinc-900/50 p-4 rounded-xl border border-zinc-700/50">
                     <div>
                         <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">Sex</label>
-                        <select value={formSex} onChange={(e) => setFormSex(e.target.value)} className="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2 text-white text-sm outline-none focus:border-orange-500 transition-colors">
+                        <select value={formSex} onChange={(e) => setFormSex(e.target.value)} className="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2 text-white text-sm outline-none focus:border-zinc-500 transition-colors">
                             <option value="male">Male</option>
                             <option value="female">Female</option>
                         </select>
                     </div>
                     <div>
                         <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">Birth Date</label>
-                        <input type="date" value={formDob} onChange={(e) => handleDobChange(e.target.value)} className="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2 text-white text-sm outline-none focus:border-orange-500 transition-colors" />
+                        <input type="date" value={formDob} onChange={(e) => handleDobChange(e.target.value)} className="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2 text-white text-sm outline-none focus:border-zinc-500 transition-colors" />
                     </div>
                     <div>
                         <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">Current Weight</label>
-                        <input type="number" value={formWeight} onChange={(e) => setFormWeight(Number(e.target.value))} className="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2 text-white text-sm outline-none focus:border-orange-500 transition-colors" />
+                        <input type="number" value={formWeight} onChange={(e) => setFormWeight(Number(e.target.value))} className="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2 text-white text-sm outline-none focus:border-zinc-500 transition-colors" />
                     </div>
                     <div>
                         <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">Goal Weight</label>
-                        <input type="number" value={formGoalWeight} onChange={(e) => setFormGoalWeight(Number(e.target.value))} placeholder="Optional" className="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2 text-white text-sm outline-none focus:border-orange-500 transition-colors" />
+                        <input type="number" value={formGoalWeight} onChange={(e) => setFormGoalWeight(Number(e.target.value))} placeholder="Optional" className="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2 text-white text-sm outline-none focus:border-zinc-500 transition-colors" />
                     </div>
                     <div>
                         <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">Body Tracking</label>
-                        <select value={formMeasurementMode} onChange={(e) => setFormMeasurementMode(e.target.value as 'tape' | 'scale')} className="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2 text-white text-sm outline-none focus:border-orange-500 transition-colors">
+                        <select value={formMeasurementMode} onChange={(e) => setFormMeasurementMode(e.target.value as 'tape' | 'scale')} className="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2 text-white text-sm outline-none focus:border-zinc-500 transition-colors">
                             <option value="tape">📏 Tape Measure</option>
                             <option value="scale">⚖️ Scale</option>
                         </select>

@@ -40,7 +40,7 @@ export default async function LoginPage({
                                 name="email"
                                 type="email"
                                 required
-                                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white focus:outline-none focus:border-orange-500 transition-colors"
+                                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white focus:outline-none focus:border-zinc-500 transition-colors"
                                 placeholder="you@example.com"
                             />
                         </div>
@@ -51,7 +51,7 @@ export default async function LoginPage({
                                 name="password"
                                 type="password"
                                 required
-                                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white focus:outline-none focus:border-orange-500 transition-colors"
+                                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white focus:outline-none focus:border-zinc-500 transition-colors"
                                 placeholder="••••••••"
                             />
                         </div>
@@ -65,7 +65,7 @@ export default async function LoginPage({
                             </button>
                             <button
                                 formAction={signup}
-                                className="w-full bg-transparent border border-zinc-700 text-zinc-400 font-bold uppercase tracking-widest text-xs py-4 rounded-xl hover:border-orange-500/50 hover:text-white transition-all"
+                                className="w-full bg-transparent border border-zinc-700 text-zinc-400 font-bold uppercase tracking-widest text-xs py-4 rounded-xl hover:border-zinc-600/50 hover:text-white transition-all"
                             >
                                 Begin Your Journey
                             </button>

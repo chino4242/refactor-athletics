@@ -177,7 +177,7 @@ function CreateChallenge({ userId, groups, onDone }: { userId: string; groups: a
 
         <div className="space-y-3">
           {TEMPLATES.map(t => (
-            <button key={t.id} onClick={() => applyTemplate(t)} className="w-full text-left bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-orange-500/50 transition">
+            <button key={t.id} onClick={() => applyTemplate(t)} className="w-full text-left bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-600/50 transition">
               <div className="flex items-center gap-3">
                 <span className="text-2xl">{t.emoji}</span>
                 <div className="flex-1">
@@ -190,7 +190,7 @@ function CreateChallenge({ userId, groups, onDone }: { userId: string; groups: a
             </button>
           ))}
 
-          <button onClick={() => setStep('build')} className="w-full text-left bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-orange-500/50 transition">
+          <button onClick={() => setStep('build')} className="w-full text-left bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-600/50 transition">
             <div className="flex items-center gap-3">
               <span className="text-2xl">⚙️</span>
               <div className="flex-1">
@@ -214,12 +214,12 @@ function CreateChallenge({ userId, groups, onDone }: { userId: string; groups: a
       </div>
 
       <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Challenge name"
-        className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm text-white focus:border-orange-500 outline-none" />
+        className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm text-white focus:border-zinc-500 outline-none" />
 
       <div>
         <label className="text-[11px] font-bold text-zinc-500 uppercase mb-2 block">Start Date</label>
         <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
-          className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 outline-none" />
+          className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:border-zinc-500 outline-none" />
         <span className="text-[10px] text-zinc-600 ml-2">Ends: {new Date(new Date(startDate).getTime() + 74 * 86400000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
       </div>
 
@@ -271,7 +271,7 @@ function CreateChallenge({ userId, groups, onDone }: { userId: string; groups: a
         <label className="text-[11px] font-bold text-zinc-500 uppercase mb-2 block">Custom Daily Habits</label>
         <div className="flex gap-2">
           <input type="text" value={customLabel} onChange={e => setCustomLabel(e.target.value)} placeholder="e.g. Read 30 min, No alcohol"
-            className="flex-1 bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 outline-none"
+            className="flex-1 bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:border-zinc-500 outline-none"
             onKeyDown={e => { if (e.key === 'Enter') addCustom(); }} />
           <button onClick={addCustom} className="bg-zinc-800 border border-zinc-700 text-zinc-400 px-3 rounded-lg text-xs font-bold">Add</button>
         </div>
@@ -286,7 +286,7 @@ function CreateChallenge({ userId, groups, onDone }: { userId: string; groups: a
               <span className="text-xs text-white">{m.label}</span>
               {m.type === 'app' ? (
                 <input type="number" value={m.minimum} onChange={e => updateMinimum(m.id, Number(e.target.value))}
-                  className="w-20 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs text-white text-center focus:border-orange-500 outline-none" />
+                  className="w-20 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs text-white text-center focus:border-zinc-500 outline-none" />
               ) : (
                 <span className="text-[10px] text-zinc-500">Daily checkbox</span>
               )}
@@ -375,7 +375,7 @@ function JoinChallenge({ challenge, userId, onDone, onSkip }: { challenge: any; 
         <label className="text-[11px] font-bold text-zinc-500 uppercase mb-2 block">Custom Daily Habits</label>
         <div className="flex gap-2">
           <input type="text" value={customLabel} onChange={e => setCustomLabel(e.target.value)} placeholder="e.g. Read 30 min, No alcohol"
-            className="flex-1 bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 outline-none"
+            className="flex-1 bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:border-zinc-500 outline-none"
             onKeyDown={e => { if (e.key === 'Enter') addCustom(); }} />
           <button onClick={addCustom} className="bg-zinc-800 border border-zinc-700 text-zinc-400 px-3 rounded-lg text-xs font-bold">Add</button>
         </div>
@@ -389,7 +389,7 @@ function JoinChallenge({ challenge, userId, onDone, onSkip }: { challenge: any; 
               <span className="text-xs text-white">{m.label}</span>
               {m.type === 'app' ? (
                 <input type="number" value={m.minimum} onChange={e => updateMinimum(m.id, Number(e.target.value))}
-                  className="w-20 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs text-white text-center focus:border-orange-500 outline-none" />
+                  className="w-20 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs text-white text-center focus:border-zinc-500 outline-none" />
               ) : (
                 <span className="text-[10px] text-zinc-500">Daily checkbox</span>
               )}

@@ -99,7 +99,7 @@ export default function PartyPulse({ userId }: PartyPulseProps) {
           ))}
         </div>
         <div className="text-[10px] text-zinc-500">
-          {activeCount} of {members.length} active today · <span className="text-orange-400 font-bold">+{todayXp} party XP</span>
+          {activeCount} of {members.length} active today · <span className="text-amber-400 font-bold">+{todayXp} party XP</span>
         </div>
       </button>
 

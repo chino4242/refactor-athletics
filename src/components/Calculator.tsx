@@ -417,7 +417,7 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
                             onClick={() => { setSearchTerm(''); setIsDropdownOpen(true); }}
                             onChange={(e) => { setSearchTerm(e.target.value); setIsDropdownOpen(true); }}
                             placeholder="Search exercises..."
-                            className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white focus:border-orange-500 outline-none transition placeholder-zinc-600"
+                            className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white focus:border-zinc-500 outline-none transition placeholder-zinc-600"
                         />
                         <div className="absolute right-3 bottom-3.5 pointer-events-none text-zinc-500">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z" /></svg>
@@ -472,7 +472,7 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
                                         <InfoTooltip text="Enter the distance covered (e.g. 1.5 for 1.5 miles)." />
                                     </label>
                                     <div className="flex gap-2 items-center">
-                                        <input type="number" value={distanceValue || ''} onChange={(e) => setDistanceValue(Number(e.target.value))} placeholder="e.g. 1.0" className="flex-1 bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white text-lg font-mono focus:border-orange-500 outline-none transition" />
+                                        <input type="number" value={distanceValue || ''} onChange={(e) => setDistanceValue(Number(e.target.value))} placeholder="e.g. 1.0" className="flex-1 bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white text-lg font-mono focus:border-zinc-500 outline-none transition" />
                                         <span className="text-sm font-bold text-zinc-500">{unitLabel === 'Distance' ? 'Mi/Km' : unitLabel === 'meters' ? 'm' : unitLabel}</span>
                                     </div>
                                 </div>
@@ -480,12 +480,12 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
                                     <label className="block text-xs font-bold text-zinc-400 uppercase mb-2">Time</label>
                                     <div className="flex gap-2">
                                         <div className="flex-1">
-                                            <input type="number" value={minutes || ''} onChange={(e) => setMinutes(Number(e.target.value))} placeholder="Min" className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white text-lg font-mono focus:border-orange-500 outline-none transition text-center" />
+                                            <input type="number" value={minutes || ''} onChange={(e) => setMinutes(Number(e.target.value))} placeholder="Min" className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white text-lg font-mono focus:border-zinc-500 outline-none transition text-center" />
                                             <span className="text-xs text-zinc-500 mt-1 block text-center">Minutes</span>
                                         </div>
                                         <div className="flex items-center text-xl font-bold text-zinc-600">:</div>
                                         <div className="flex-1">
-                                            <input type="number" value={seconds || ''} onChange={(e) => setSeconds(Number(e.target.value))} placeholder="Sec" className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white text-lg font-mono focus:border-orange-500 outline-none transition text-center" />
+                                            <input type="number" value={seconds || ''} onChange={(e) => setSeconds(Number(e.target.value))} placeholder="Sec" className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white text-lg font-mono focus:border-zinc-500 outline-none transition text-center" />
                                             <span className="text-xs text-zinc-500 mt-1 block text-center">Seconds</span>
                                         </div>
                                     </div>
@@ -516,7 +516,7 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
                                             value={minutes || ''} 
                                             onChange={(e) => setMinutes(Number(e.target.value))} 
                                             placeholder="Min" 
-                                            className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white text-lg font-mono focus:border-orange-500 outline-none transition text-center" 
+                                            className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white text-lg font-mono focus:border-zinc-500 outline-none transition text-center" 
                                         />
                                         <span className="text-xs text-zinc-500 mt-1 block text-center">Minutes</span>
                                     </div>
@@ -528,7 +528,7 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
                                             value={seconds || ''} 
                                             onChange={(e) => setSeconds(Number(e.target.value))} 
                                             placeholder="Sec" 
-                                            className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white text-lg font-mono focus:border-orange-500 outline-none transition text-center" 
+                                            className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white text-lg font-mono focus:border-zinc-500 outline-none transition text-center" 
                                         />
                                         <span className="text-xs text-zinc-500 mt-1 block text-center">Seconds</span>
                                     </div>
@@ -591,7 +591,7 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
                                         }
                                     }}
                                     placeholder={unitLabel === 'lbs' ? "e.g., 225" : "e.g., 50"} 
-                                    className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white text-lg font-mono focus:border-orange-500 outline-none transition" 
+                                    className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white text-lg font-mono focus:border-zinc-500 outline-none transition" 
                                 />
                             </div>
                         )}

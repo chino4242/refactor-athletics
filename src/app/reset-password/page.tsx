@@ -35,7 +35,7 @@ export default async function ResetPasswordPage({
                                 type="password"
                                 required
                                 minLength={6}
-                                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white focus:outline-none focus:border-orange-500 transition-colors"
+                                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white focus:outline-none focus:border-zinc-500 transition-colors"
                                 placeholder="••••••••"
                             />
                         </div>
@@ -46,7 +46,7 @@ export default async function ResetPasswordPage({
                                 type="password"
                                 required
                                 minLength={6}
-                                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white focus:outline-none focus:border-orange-500 transition-colors"
+                                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white focus:outline-none focus:border-zinc-500 transition-colors"
                                 placeholder="••••••••"
                             />
                         </div>

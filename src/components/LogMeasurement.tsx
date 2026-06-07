@@ -102,7 +102,7 @@ export default function LogMeasurement({ isOpen, onClose, userId, bodyweight, sy
                 value={weight}
                 onChange={e => setWeight(e.target.value)}
                 placeholder={String(bodyweight || '')}
-                className="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white text-center font-bold focus:border-orange-500 outline-none"
+                className="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white text-center font-bold focus:border-zinc-500 outline-none"
               />
               <span className="text-xs text-zinc-500 font-bold">lbs</span>
             </div>
@@ -125,7 +125,7 @@ export default function LogMeasurement({ isOpen, onClose, userId, bodyweight, sy
                     {bodyFatSynced && <span className="text-[8px] text-emerald-400">synced</span>}
                   </div>
                   <input type="number" inputMode="decimal" value={bodyFat} onChange={e => setBodyFat(e.target.value)} placeholder="—"
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white text-center focus:border-orange-500 outline-none" />
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white text-center focus:border-zinc-500 outline-none" />
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-1">
@@ -133,7 +133,7 @@ export default function LogMeasurement({ isOpen, onClose, userId, bodyweight, sy
                     {leanMassSynced && <span className="text-[8px] text-emerald-400">synced</span>}
                   </div>
                   <input type="number" inputMode="decimal" value={leanMass} onChange={e => setLeanMass(e.target.value)} placeholder="—"
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white text-center focus:border-orange-500 outline-none" />
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white text-center focus:border-zinc-500 outline-none" />
                 </div>
               </div>
             )}
@@ -160,7 +160,7 @@ export default function LogMeasurement({ isOpen, onClose, userId, bodyweight, sy
                   <div key={label}>
                     <label className="text-[10px] text-zinc-500 mb-0.5 block">{label} (in)</label>
                     <input type="number" inputMode="decimal" value={val} onChange={e => set(e.target.value)} placeholder="—"
-                      className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white text-center focus:border-orange-500 outline-none" />
+                      className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white text-center focus:border-zinc-500 outline-none" />
                   </div>
                 ))}
               </div>

@@ -47,7 +47,7 @@ export default function ProgressMetrics({ stats, profile, bodyCompHistory }: Pro
                     <div className="text-4xl font-black italic text-orange-500">
                         {powerLevel}<span className="text-lg text-zinc-500">/{stats?.max_expertise || 0}</span>
                     </div>
-                    <div className="text-[10px] text-orange-500/70 group-hover:text-orange-400 mt-1 transition">Test an exercise to build Expertise →</div>
+                    <div className="text-[10px] text-zinc-400 group-hover:text-white mt-1 transition">Test an exercise to build Expertise →</div>
                 </Link>
 
                 {/* Body Composition */}

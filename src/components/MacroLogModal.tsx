@@ -364,7 +364,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                             onChange={e => setAiInput(e.target.value)}
                             onKeyDown={e => { if (e.key === 'Enter' && aiInput.trim()) handleAiParse(); }}
                             placeholder="What did you eat? e.g. chicken breast and rice"
-                            className="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:border-orange-500 outline-none placeholder:text-zinc-600"
+                            className="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:border-zinc-500 outline-none placeholder:text-zinc-600"
                             autoFocus
                         />
                         <label className={`border text-zinc-400 hover:text-white px-3 rounded-xl transition cursor-pointer flex items-center shrink-0 ${photoLoading ? 'bg-orange-500/10 border-orange-500/30 animate-pulse' : 'bg-zinc-800 hover:bg-zinc-700 border-zinc-700'}`}>
@@ -423,7 +423,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                                             const f = Math.round(food.per100g.fat * mult);
                                             setMealCart(prev => [...prev, { food, servingGrams: String(Math.round(servGrams)), p, c, f }]);
                                         }}
-                                        className="shrink-0 bg-zinc-800/60 border border-zinc-700/40 rounded-xl px-3 py-2 hover:border-orange-500/40 transition text-left"
+                                        className="shrink-0 bg-zinc-800/60 border border-zinc-700/40 rounded-xl px-3 py-2 hover:border-zinc-600/40 transition text-left"
                                     >
                                         <div className="text-[11px] font-semibold text-white truncate max-w-[100px]">{food.name}</div>
                                         <div className="text-[9px] text-orange-400 font-bold mt-0.5">{p}g P</div>
@@ -455,12 +455,12 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                                     placeholder="Search foods..."
                                     value={foodQuery}
                                     onChange={e => handleFoodSearch(e.target.value)}
-                                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-9 pr-3 py-2.5 text-sm text-white focus:border-orange-500 outline-none"
+                                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-9 pr-3 py-2.5 text-sm text-white focus:border-zinc-500 outline-none"
                                     autoFocus
                                 />
                             </div>
                             <button onClick={() => setShowScanner(true)}
-                                className="bg-zinc-800 border border-zinc-700 hover:border-orange-500 rounded-lg px-3 transition flex items-center"
+                                className="bg-zinc-800 border border-zinc-700 hover:border-zinc-600 rounded-lg px-3 transition flex items-center"
                                 title="Scan barcode">
                                 <ScanBarcode size={18} className="text-zinc-400" />
                             </button>
@@ -480,7 +480,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                                     <div className="flex-1">
                                         <label className="text-[9px] text-zinc-500 uppercase block mb-0.5">Serving (g)</label>
                                         <input type="number" value={servingGrams} onChange={e => setServingGrams(e.target.value)}
-                                            className="w-full bg-zinc-900 border border-zinc-700 rounded px-2 py-1.5 text-sm text-white text-center focus:border-orange-500 outline-none" />
+                                            className="w-full bg-zinc-900 border border-zinc-700 rounded px-2 py-1.5 text-sm text-white text-center focus:border-zinc-500 outline-none" />
                                         {selectedFood.servingLabel && <div className="text-[9px] text-zinc-500 mt-0.5 text-center">{selectedFood.servingLabel}</div>}
                                     </div>
                                     <div className="flex gap-1 flex-wrap">
@@ -544,7 +544,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                                             <div className="flex items-center gap-2 flex-1">
                                                 <span className="text-xs text-white truncate max-w-[120px]">{item.food.name}</span>
                                                 <input type="number" value={item.servingGrams} onChange={e => handleUpdateCartItem(idx, e.target.value)}
-                                                    className="w-14 bg-zinc-800 border border-zinc-600 rounded px-1.5 py-0.5 text-xs text-white text-center focus:border-orange-500 outline-none" />
+                                                    className="w-14 bg-zinc-800 border border-zinc-600 rounded px-1.5 py-0.5 text-xs text-white text-center focus:border-zinc-500 outline-none" />
                                                 <span className="text-[9px] text-zinc-500">g</span>
                                                 <button onClick={() => setEditingCartIdx(null)} className="text-[9px] text-emerald-400 font-bold">Done</button>
                                             </div>
@@ -745,7 +745,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                                 value={carbs}
                                 placeholder={String(Math.round(totals['macro_carbs'] || 0))}
                                 onChange={(e) => setCarbs(e.target.value)}
-                                className="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-white text-center font-bold focus:border-orange-500 outline-none"
+                                className="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-white text-center font-bold focus:border-zinc-500 outline-none"
                             />
                         </div>
 

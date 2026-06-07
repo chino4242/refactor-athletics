@@ -204,11 +204,11 @@ export default function FlexibleWorkoutView({ workoutData, completedIndices, onC
                               <span className="text-[10px] text-zinc-500 w-8">S{i + 1}</span>
                               <input type="text" inputMode="decimal" placeholder="lbs" value={state.weights[i] || ''}
                                 onChange={e => updateExState(idx, ex.id, ex.sets, prev => { const w = [...prev.weights]; w[i] = e.target.value; return { ...prev, weights: w }; })}
-                                className="w-14 bg-zinc-900 border border-zinc-700 rounded px-1.5 py-1 text-xs text-white text-center focus:border-orange-500 outline-none" />
+                                className="w-14 bg-zinc-900 border border-zinc-700 rounded px-1.5 py-1 text-xs text-white text-center focus:border-zinc-500 outline-none" />
                               <span className="text-zinc-600 text-[10px]">×</span>
                               <input type="text" inputMode="numeric" placeholder={ex.repsPerSet} value={state.reps[i] || ''}
                                 onChange={e => updateExState(idx, ex.id, ex.sets, prev => { const r = [...prev.reps]; r[i] = e.target.value; return { ...prev, reps: r }; })}
-                                className="w-12 bg-zinc-900 border border-zinc-700 rounded px-1.5 py-1 text-xs text-white text-center focus:border-orange-500 outline-none" />
+                                className="w-12 bg-zinc-900 border border-zinc-700 rounded px-1.5 py-1 text-xs text-white text-center focus:border-zinc-500 outline-none" />
                               <button onClick={() => toggleSet(idx, ex.id, i, ex.sets, restSeconds)}
                                 className={`ml-auto w-6 h-6 rounded-full border-2 flex items-center justify-center ${isDone ? 'bg-emerald-500 border-emerald-500' : 'border-zinc-600'}`}>
                                 {isDone && <Check size={12} className="text-black" />}

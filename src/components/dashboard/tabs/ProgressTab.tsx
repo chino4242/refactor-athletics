@@ -168,7 +168,7 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                         <h3 className="text-sm font-bold text-white uppercase tracking-wider">Attribute Balance</h3>
                     </div>
                     <p className="text-[10px] text-zinc-600 mt-1">How your training distributes across STR, END, PWR & MOB</p>
-                    <Link href="/profile" className="text-xs text-orange-500 hover:text-orange-400 flex items-center gap-1">
+                    <Link href="/profile" className="text-xs text-zinc-300 hover:text-white flex items-center gap-1">
                         View Profile
                         <ChevronRight size={14} />
                     </Link>
@@ -186,7 +186,7 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                         <h3 className="text-sm font-bold text-white uppercase tracking-wider">{isClassic ? 'Performance Breakdown' : 'Power Level Contributors'}</h3>
                     </div>
                     <p className="text-[10px] text-zinc-600 mt-1">Your best rank per exercise — log a ranked exercise to grow your score</p>
-                    <Link href="/profile" className="text-xs text-orange-500 hover:text-orange-400 flex items-center gap-1">
+                    <Link href="/profile" className="text-xs text-zinc-300 hover:text-white flex items-center gap-1">
                         {isClassic ? 'View All' : 'Trophy Case'}
                         <ChevronRight size={14} />
                     </Link>
@@ -200,7 +200,7 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                         <p className="text-xs text-zinc-500 mb-4">{isClassic ? 'Complete workouts to see your performance' : 'Complete workouts to build your Power Level'}</p>
                         <Link 
                             href="/train" 
-                            className="inline-flex items-center gap-1 text-xs text-orange-500 hover:text-orange-400 font-semibold"
+                            className="inline-flex items-center gap-1 text-xs text-zinc-300 hover:text-white font-semibold"
                         >
                             Start Training
                             <ChevronRight size={14} />
@@ -274,11 +274,11 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                         <h3 className="text-sm font-bold text-white uppercase tracking-wider">Recent Activity</h3>
                     </div>
                     <div className="flex items-center gap-3">
-                        <Link href="/progress" className="text-xs text-orange-500 hover:text-orange-400 flex items-center gap-1">
+                        <Link href="/progress" className="text-xs text-zinc-300 hover:text-white flex items-center gap-1">
                             Charts
                             <ChevronRight size={14} />
                         </Link>
-                        <Link href="/track" className="text-xs text-orange-500 hover:text-orange-400 flex items-center gap-1">
+                        <Link href="/track" className="text-xs text-zinc-300 hover:text-white flex items-center gap-1">
                             View All
                             <ChevronRight size={14} />
                         </Link>

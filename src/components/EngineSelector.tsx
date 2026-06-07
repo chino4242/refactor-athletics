@@ -77,7 +77,7 @@ export default function EngineSelector({ onSelect, recommendation }: Props) {
 
             <button
                 onClick={() => onSelect('hiit')}
-                className={`w-full p-5 bg-zinc-800 border rounded-2xl hover:border-orange-500 hover:bg-zinc-800/80 transition-all text-left group ${recommendation === 'hiit' ? 'border-orange-500/50 ring-1 ring-orange-500/20' : 'border-zinc-700'}`}
+                className={`w-full p-5 bg-zinc-800 border rounded-2xl hover:border-zinc-600 hover:bg-zinc-800/80 transition-all text-left group ${recommendation === 'hiit' ? 'border-orange-500/50 ring-1 ring-orange-500/20' : 'border-zinc-700'}`}
             >
                 <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-orange-500/10 rounded-full flex items-center justify-center shrink-0">

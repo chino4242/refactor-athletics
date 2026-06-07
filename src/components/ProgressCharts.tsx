@@ -122,7 +122,7 @@ export default function ProgressCharts({ history, catalog, bodyweight }: Props) 
         </div>
 
         <select value={activeExercise} onChange={e => setSelectedExercise(e.target.value)}
-          className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white mb-4 outline-none focus:border-orange-500">
+          className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white mb-4 outline-none focus:border-zinc-500">
           {loggedExercises.map(ex => (
             <option key={ex.id} value={ex.id}>{ex.name} ({ex.count})</option>
           ))}

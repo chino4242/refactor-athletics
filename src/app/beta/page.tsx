@@ -80,7 +80,7 @@ export default function BetaPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white focus:outline-none focus:border-orange-500 transition-colors"
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white focus:outline-none focus:border-zinc-500 transition-colors"
                 placeholder="you@example.com"
               />
             </div>
@@ -93,7 +93,7 @@ export default function BetaPage() {
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 required
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white uppercase tracking-widest focus:outline-none focus:border-orange-500 transition-colors"
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white uppercase tracking-widest focus:outline-none focus:border-zinc-500 transition-colors"
                 placeholder="ENTER CODE"
               />
             </div>

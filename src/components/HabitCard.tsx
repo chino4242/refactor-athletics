@@ -131,7 +131,7 @@ export default function HabitCard({
                             if (e.key === 'Enter') handleSubmit();
                             if (e.key === 'Escape') setIsEditing(false);
                         }}
-                        className={`w-full bg-zinc-950 rounded p-1.5 text-xs text-white text-center outline-none border transition-all ${mode === 'total' ? 'border-orange-900 focus:border-orange-500 placeholder-orange-500/50' : 'border-zinc-800 focus:border-zinc-600'}`}
+                        className={`w-full bg-zinc-950 rounded p-1.5 text-xs text-white text-center outline-none border transition-all ${mode === 'total' ? 'border-orange-900 focus:border-zinc-500 placeholder-orange-500/50' : 'border-zinc-800 focus:border-zinc-600'}`}
                         placeholder={mode === 'total' ? String(current) : unit}
                     />
                     <button

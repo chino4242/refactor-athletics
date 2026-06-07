@@ -140,7 +140,7 @@ export default function BlockCompleteOverlay({
           </defs>
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-lg font-black text-orange-400">+{totalXp}</span>
+          <span className="text-lg font-black text-amber-400">+{totalXp}</span>
         </div>
       </div>
 

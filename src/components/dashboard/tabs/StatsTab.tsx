@@ -166,7 +166,7 @@ export default function StatsTab({ userId, stats }: StatsTabProps) {
             <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-3">
                     <h3 className="text-sm font-bold text-white uppercase tracking-wider">Recent Activity</h3>
-                    <Link href="/track" className="text-[10px] text-orange-500 hover:text-orange-400 font-bold flex items-center gap-0.5">
+                    <Link href="/track" className="text-[10px] text-zinc-300 hover:text-white font-bold flex items-center gap-0.5">
                         View All <ChevronRight size={12} />
                     </Link>
                 </div>

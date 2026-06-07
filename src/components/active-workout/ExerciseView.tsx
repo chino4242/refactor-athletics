@@ -56,7 +56,7 @@ function DurationSetTimer({ setIndex, targetSeconds, isDone, onComplete }: { set
     return (
       <button
         onClick={() => setRunning(true)}
-        className="w-full p-5 rounded-xl border border-zinc-700 bg-zinc-800 hover:border-orange-500/50 transition-all flex items-center justify-between group"
+        className="w-full p-5 rounded-xl border border-zinc-700 bg-zinc-800 hover:border-zinc-600/50 transition-all flex items-center justify-between group"
       >
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-orange-500/20 border border-orange-500/40 flex items-center justify-center group-hover:bg-orange-500/30 transition">
@@ -478,7 +478,7 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
                         })())}
                         value={weights[i]}
                         onChange={(e) => updateWeight(i, e.target.value)}
-                        className="bg-zinc-900 text-white border border-zinc-600 rounded p-1.5 w-16 text-center font-mono text-sm focus:border-orange-500 focus:outline-none"
+                        className="bg-zinc-900 text-white border border-zinc-600 rounded p-1.5 w-16 text-center font-mono text-sm focus:border-zinc-500 focus:outline-none"
                         onClick={(e) => e.stopPropagation()}
                       />
                       <div className="flex flex-col gap-0.5">
@@ -516,7 +516,7 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
                         next[i] = e.target.value;
                         setRepsInputs(next);
                       }}
-                      className="bg-zinc-900 text-white border border-zinc-600 rounded p-1.5 w-16 text-center font-mono text-sm focus:border-orange-500 focus:outline-none"
+                      className="bg-zinc-900 text-white border border-zinc-600 rounded p-1.5 w-16 text-center font-mono text-sm focus:border-zinc-500 focus:outline-none"
                       onClick={(e) => e.stopPropagation()}
                     />
                   </div>

@@ -408,7 +408,7 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                                                 {untestedInCat.slice(0, 5).map((c: any) => (
                                                     <div key={c.id} className="flex items-center gap-2 py-1">
                                                         <span className="text-[10px] text-zinc-600 flex-1 truncate">{c.name || formatExerciseName(c.id)}</span>
-                                                        <Link href={`/test?exercise=${encodeURIComponent(c.id)}`} className="text-[9px] text-orange-500/60 hover:text-orange-400 font-bold">Test</Link>
+                                                        <Link href={`/test?exercise=${encodeURIComponent(c.id)}`} className="text-[9px] text-zinc-400 hover:text-white font-bold">Test</Link>
                                                     </div>
                                                 ))}
                                                 {untestedInCat.length > 5 && (

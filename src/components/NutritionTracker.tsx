@@ -332,7 +332,7 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
                             inputMode="numeric"
                             value={targets.carbs} 
                             onChange={e => setTargets({ ...targets, carbs: Number(e.target.value) })} 
-                            className="w-full bg-black p-2 rounded text-white text-center font-bold outline-none border border-zinc-700 focus:border-orange-500" 
+                            className="w-full bg-black p-2 rounded text-white text-center font-bold outline-none border border-zinc-700 focus:border-zinc-500" 
                         />
                     </div>
                     <div>
@@ -441,7 +441,7 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
                                         if (c > 0) promises.push(handleLogMacro('carbs', (totals['macro_carbs'] || 0) + c));
                                         if (f > 0) promises.push(handleLogMacro('fat', (totals['macro_fat'] || 0) + f));
                                         if (promises.length) await Promise.all(promises);
-                                    }} className="shrink-0 bg-zinc-800/60 border border-zinc-700/40 rounded-lg px-3 py-1.5 hover:border-orange-500/40 transition text-left">
+                                    }} className="shrink-0 bg-zinc-800/60 border border-zinc-700/40 rounded-lg px-3 py-1.5 hover:border-zinc-600/40 transition text-left">
                                         <div className="text-[10px] font-semibold text-white truncate max-w-[90px]">{food.name}</div>
                                         <div className="text-[9px] text-zinc-500">P:{p} C:{c} F:{f}</div>
                                     </button>

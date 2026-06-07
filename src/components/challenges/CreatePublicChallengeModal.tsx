@@ -78,7 +78,7 @@ export default function CreatePublicChallengeModal({ userId, displayName, onCrea
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
                                     placeholder="e.g. April Step Challenge"
-                                    className="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-3 text-white text-sm outline-none focus:border-orange-500"
+                                    className="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-3 text-white text-sm outline-none focus:border-zinc-500"
                                 />
                             </div>
                             <div>

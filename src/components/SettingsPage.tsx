@@ -531,7 +531,7 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                                 }
                             } catch { toast.error('Failed to reset profile'); }
                         }}
-                        className="w-full py-3 text-orange-500 hover:text-orange-400 text-xs font-bold uppercase tracking-widest transition"
+                        className="w-full py-3 text-zinc-300 hover:text-white text-xs font-bold uppercase tracking-widest transition"
                     >
                         Reset Profile & Restart Onboarding
                     </button>

@@ -94,7 +94,7 @@ export default function WeeklyQuestsCard({ userId }: { userId: string }) {
               <div className="space-y-1.5">
                 {offered.map(q => (
                   <button key={q.id} onClick={() => accept(q.id)}
-                    className="w-full flex items-center gap-3 bg-zinc-800/50 border border-zinc-700/50 hover:border-orange-500/30 rounded-lg p-2.5 transition text-left">
+                    className="w-full flex items-center gap-3 bg-zinc-800/50 border border-zinc-700/50 hover:border-zinc-600/30 rounded-lg p-2.5 transition text-left">
                     <span className="text-lg">{q.quest_templates.icon}</span>
                     <div className="flex-1 min-w-0">
                       <div className="text-xs font-bold text-white">{q.quest_templates.name}</div>

@@ -81,7 +81,7 @@ export function LockedFeatureOverlay({ questTitle, children, href = '/track' }: 
         {children}
       </div>
       <div className="absolute inset-0 flex items-center justify-center">
-        <Link href={href} className="bg-zinc-900/90 border border-zinc-700 rounded-lg px-3 py-1.5 flex items-center gap-2 hover:border-orange-500 transition-colors">
+        <Link href={href} className="bg-zinc-900/90 border border-zinc-700 rounded-lg px-3 py-1.5 flex items-center gap-2 hover:border-zinc-600 transition-colors">
           <span className="text-[10px]">🔒</span>
           <span className="text-[10px] text-zinc-400 font-bold">Tap to complete &quot;{questTitle}&quot;</span>
         </Link>

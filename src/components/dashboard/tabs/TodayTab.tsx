@@ -296,7 +296,7 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
                         <span className="text-sm">⚡</span>
                         <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Today&apos;s XP</span>
                     </div>
-                    <span className="text-sm font-black text-orange-400">+{todayProgress.xp || 0}</span>
+                    <span className="text-sm font-black text-amber-400">+{todayProgress.xp || 0}</span>
                 </div>
             </button>
             {showTodayWrapUp && (

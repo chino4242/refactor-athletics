@@ -168,7 +168,7 @@ export default function WorkoutReport({ sessionId, userId, onExit }: Props) {
                 <h1 className="text-3xl font-black italic text-white uppercase tracking-tight mb-2">Workout Complete</h1>
                 <div className="flex items-center gap-4 mt-4">
                     <div className="text-center">
-                        <div className="text-2xl font-black text-orange-400">+{totalXp}</div>
+                        <div className="text-2xl font-black text-amber-400">+{totalXp}</div>
                         <div className="text-[9px] text-zinc-500 uppercase">XP Earned</div>
                     </div>
                     {liftExercises.filter(e => !e.isBlock).length > 0 && (

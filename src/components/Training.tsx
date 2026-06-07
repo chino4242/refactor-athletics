@@ -145,7 +145,7 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
               <button
                 key={opt.key}
                 onClick={() => setSectionFilter(opt.key)}
-                className="w-full p-5 bg-zinc-900 border border-zinc-800 rounded-2xl hover:border-orange-500/50 transition-all text-left group"
+                className="w-full p-5 bg-zinc-900 border border-zinc-800 rounded-2xl hover:border-zinc-600/50 transition-all text-left group"
               >
                 <div className="flex items-center gap-4">
                   <div className="text-3xl">{opt.emoji}</div>

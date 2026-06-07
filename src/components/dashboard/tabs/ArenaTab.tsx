@@ -67,7 +67,7 @@ export default function ArenaTab({ userId, activeDuels }: ArenaTabProps) {
                     ) : (
                         <div className="text-center py-6">
                             <p className="text-sm text-zinc-400 mb-3">Commit to 75 days of daily discipline — track workouts, nutrition, and habits.</p>
-                            <Link href="/challenge-75" className="inline-flex items-center gap-1 text-xs text-orange-500 hover:text-orange-400 font-semibold">
+                            <Link href="/challenge-75" className="inline-flex items-center gap-1 text-xs text-zinc-300 hover:text-white font-semibold">
                                 Start a 75 Day Challenge
                                 <ChevronRight size={14} />
                             </Link>
@@ -86,7 +86,7 @@ export default function ArenaTab({ userId, activeDuels }: ArenaTabProps) {
                         <span className="text-lg">{isClassic ? '🤝' : '⚔️'}</span>
                         <h3 className="text-sm font-bold text-white uppercase tracking-wider">{isClassic ? 'Active Matchups' : 'Active Duels'}</h3>
                     </div>
-                    <Link href="/arena" className="text-xs text-orange-500 hover:text-orange-400 flex items-center gap-1">
+                    <Link href="/arena" className="text-xs text-zinc-300 hover:text-white flex items-center gap-1">
                         View All
                         <ChevronRight size={14} />
                     </Link>
@@ -123,7 +123,7 @@ export default function ArenaTab({ userId, activeDuels }: ArenaTabProps) {
                         <p className="text-sm text-zinc-400 mb-3">{isClassic ? 'No active matchups. Challenge a friend!' : 'No active duels. Time to challenge someone!'}</p>
                         <Link 
                             href="/arena" 
-                            className="inline-flex items-center gap-1 text-xs text-orange-500 hover:text-orange-400 font-semibold"
+                            className="inline-flex items-center gap-1 text-xs text-zinc-300 hover:text-white font-semibold"
                         >
                             Start a Duel
                             <ChevronRight size={14} />
@@ -139,7 +139,7 @@ export default function ArenaTab({ userId, activeDuels }: ArenaTabProps) {
                         <span className="text-lg">🏆</span>
                         <h3 className="text-sm font-bold text-white uppercase tracking-wider">Challenges</h3>
                     </div>
-                    <button onClick={() => setShowCreate(true)} className="text-xs text-orange-500 hover:text-orange-400 flex items-center gap-1 font-bold">
+                    <button onClick={() => setShowCreate(true)} className="text-xs text-zinc-300 hover:text-white flex items-center gap-1 font-bold">
                         <Plus size={14} /> Create
                     </button>
                 </div>
@@ -162,7 +162,7 @@ export default function ArenaTab({ userId, activeDuels }: ArenaTabProps) {
                     <div className="text-center py-6">
                         <div className="text-4xl mb-3">🏆</div>
                         <p className="text-sm text-zinc-400 mb-3">Create a challenge and share the link!</p>
-                        <button onClick={() => setShowCreate(true)} className="inline-flex items-center gap-1 text-xs text-orange-500 hover:text-orange-400 font-semibold">
+                        <button onClick={() => setShowCreate(true)} className="inline-flex items-center gap-1 text-xs text-zinc-300 hover:text-white font-semibold">
                             <Plus size={14} /> Create Challenge
                         </button>
                     </div>

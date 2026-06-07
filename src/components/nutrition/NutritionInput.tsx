@@ -128,7 +128,7 @@ export default function NutritionInput({ onFoodsFound, onPhotoFoods }: Nutrition
             onChange={e => setQuery(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSubmit()}
             placeholder="What did you eat?"
-            className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 pr-10 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-orange-500 transition"
+            className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 pr-10 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-zinc-500 transition"
           />
           {loading ? (
             <Loader2 size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-orange-400 animate-spin" />
@@ -141,7 +141,7 @@ export default function NutritionInput({ onFoodsFound, onPhotoFoods }: Nutrition
         <button
           onClick={handleCamera}
           disabled={photoLoading}
-          className="bg-zinc-800 border border-zinc-700 rounded-xl px-4 hover:border-orange-500 transition flex items-center justify-center disabled:opacity-50"
+          className="bg-zinc-800 border border-zinc-700 rounded-xl px-4 hover:border-zinc-600 transition flex items-center justify-center disabled:opacity-50"
         >
           {photoLoading ? <Loader2 size={18} className="text-orange-400 animate-spin" /> : <Camera size={18} className="text-zinc-400" />}
         </button>

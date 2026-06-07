@@ -219,7 +219,7 @@ export default function TimerView({ block, blockIndex, onComplete, engineChoice 
             onChange={e => setDistanceInput(e.target.value)}
             placeholder="0.0"
             autoFocus
-            className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-center text-lg text-white font-mono focus:border-orange-500 outline-none"
+            className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-center text-lg text-white font-mono focus:border-zinc-500 outline-none"
           />
         </div>
         <div className="flex gap-3 w-full max-w-[280px]">

@@ -170,7 +170,7 @@ export default function HabitSettings({ isOpen, onClose, userProfile, onUpdate }
                         {/* Macro Calculator */}
                         <div className="mt-3">
                             <button onClick={() => { setShowCalc(!showCalc); setCalcResult(null); }}
-                                className="flex items-center gap-1.5 text-[10px] font-bold text-orange-500 hover:text-orange-400 transition uppercase tracking-wider">
+                                className="flex items-center gap-1.5 text-[10px] font-bold text-zinc-300 hover:text-white transition uppercase tracking-wider">
                                 <Calculator size={12} />
                                 {showCalc ? 'Hide Calculator' : 'Calculate for me'}
                             </button>
@@ -182,7 +182,7 @@ export default function HabitSettings({ isOpen, onClose, userProfile, onUpdate }
                                     <div>
                                         <label className="text-[10px] font-bold text-zinc-400 uppercase mb-1 block">Activity Level</label>
                                         <select value={activityLevel} onChange={e => { setActivityLevel(e.target.value as ActivityLevel); setCalcResult(null); }}
-                                            className="w-full bg-zinc-900 border border-zinc-700 rounded p-2 text-white text-xs outline-none focus:border-orange-500">
+                                            className="w-full bg-zinc-900 border border-zinc-700 rounded p-2 text-white text-xs outline-none focus:border-zinc-500">
                                             {(Object.entries(ACTIVITY_LABELS) as [ActivityLevel, string][]).map(([k, v]) => (
                                                 <option key={k} value={k}>{v}</option>
                                             ))}

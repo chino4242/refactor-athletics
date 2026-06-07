@@ -59,7 +59,7 @@ export default function WeightCalculator({ onUse }: Props) {
               </button>
             ))}
             <input type="text" inputMode="decimal" value={barWeight} onChange={e => setBarWeight(parseFloat(e.target.value) || 0)}
-              className="w-16 bg-zinc-800 text-white border border-zinc-700 rounded-lg px-2 py-1.5 text-xs text-center font-mono focus:border-orange-500 focus:outline-none" />
+              className="w-16 bg-zinc-800 text-white border border-zinc-700 rounded-lg px-2 py-1.5 text-xs text-center font-mono focus:border-zinc-500 focus:outline-none" />
           </div>
         </div>
 
