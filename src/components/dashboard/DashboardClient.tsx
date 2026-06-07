@@ -61,20 +61,51 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             setStats(statsData);
             setActiveDuels(duelsData || []);
             setPrograms(programsData || []);
-            // Update widget with full stats
+            // Update Android widget with full data
             if (statsData) {
-                import('@/services/widgetBridge').then(({ updateWidget }) => {
-                    updateWidget({
-                        streak: 0,
-                        level: statsData.player_level || 1,
-                        xp: 0,
-                        questsDone: 0,
-                        questsTotal: 5,
-                        steps: 0,
-                        sleep: 0,
-                        protein: 0,
-                    });
-                }).catch(() => {});
+                (async () => {
+                    try {
+                        const { updateWidget } = await import('@/services/widgetBridge');
+                        const { getTodayXp } = await import('@/utils/getTodayXp');
+                        const { getHabitProgress } = await import('@/services/api');
+                        const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
+                        const startTs = Math.floor(startOfDay.getTime() / 1000);
+                        const [{ totalXp }, habitData] = await Promise.all([
+                            getTodayXp(userId),
+                            getHabitProgress(userId, startTs),
+                        ]);
+                        const totals = habitData?.totals || {};
+                        // Count quests met (simplified: steps, sleep, protein, workout, water)
+                        const questChecks = [
+                            (totals['habit_steps'] || 0) >= 7500,
+                            (totals['habit_sleep'] || 0) >= 7,
+                            (totals['macro_protein'] || 0) >= 100,
+                            (totals['habit_water'] || 0) >= 64,
+                            totalXp >= 50,
+                        ];
+                        // Streak from habit_logs
+                        const dateStr = startOfDay.toLocaleDateString('en-CA');
+                        const { data: recentDays } = await supabase.from('habit_logs')
+                            .select('date').eq('user_id', userId).lte('date', dateStr)
+                            .order('date', { ascending: false }).limit(90);
+                        let streak = 0;
+                        if (recentDays?.length) {
+                            const activeDates = new Set(recentDays.map((r: any) => r.date));
+                            const d = new Date(startOfDay);
+                            while (activeDates.has(d.toLocaleDateString('en-CA'))) { streak++; d.setDate(d.getDate() - 1); }
+                        }
+                        await updateWidget({
+                            streak,
+                            level: statsData.player_level || 1,
+                            xp: totalXp,
+                            questsDone: questChecks.filter(Boolean).length,
+                            questsTotal: questChecks.length,
+                            steps: totals['habit_steps'] || 0,
+                            sleep: totals['habit_sleep'] || 0,
+                            protein: totals['macro_protein'] || 0,
+                        });
+                    } catch {}
+                })();
             }
         } catch (error) {
             console.error('Failed to load dashboard data:', error);
@@ -118,18 +149,6 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                     localStorage.setItem('last_health_sync', new Date().toISOString());
                     loadData();
                 }
-                // Update Android widget with latest data
-                const { updateWidget } = await import('@/services/widgetBridge');
-                await updateWidget({
-                    streak: 0, // will be updated once loadData completes with stats
-                    level: 1,
-                    xp: 0,
-                    questsDone: 0,
-                    questsTotal: 5,
-                    steps: data.steps || 0,
-                    sleep: data.sleep || 0,
-                    protein: 0,
-                });
                 // Sync exercise sessions via session-authenticated endpoint
                 if (data.exercises?.length) {
                     const lastExSync = localStorage.getItem('last_exercise_sync_ts');
