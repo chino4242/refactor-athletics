@@ -25,6 +25,18 @@ export async function requestPermissions(): Promise<boolean> {
   try { const h = getHealth(); return (await h.requestAuthorization({ read: READ_TYPES as any, write: ['exercise'] })).granted; } catch { return false; }
 }
 
+/** Open device health settings so user can manually grant permissions */
+export async function openHealthSettings(): Promise<void> {
+  if (!isNative) return;
+  try { const h = getHealth(); await h.openHealthConnectSettings?.(); } catch {
+    // Fallback: try opening app settings on Android
+    try {
+      const { App } = await (Function('return import("@capacitor/app")')() as Promise<any>);
+      // No direct API — user must be guided verbally
+    } catch {}
+  }
+}
+
 export async function getSteps(startDate: string, endDate: string): Promise<number> {
   if (!isNative) return 0;
   try { const h = getHealth(); return (await h.queryAggregated({ dataType: 'steps', startDate, endDate })).value || 0; } catch { return 0; }

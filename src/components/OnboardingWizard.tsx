@@ -564,7 +564,20 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                                 try {
                                     const { isHealthAvailable, requestPermissions } = await import('@/services/nativeHealth');
                                     if (await isHealthAvailable()) {
-                                        await requestPermissions();
+                                        const granted = await requestPermissions();
+                                        if (granted) {
+                                            alert('✅ Health data connected! Your steps, sleep, and more will sync automatically.');
+                                        } else {
+                                            const isAndroid = (window as any).Capacitor?.getPlatform?.() === 'android';
+                                            alert(isAndroid
+                                                ? 'Permission not granted. Open Health Connect app → Apps → Refactor Athletics to enable access.'
+                                                : 'Permission not granted. Open Settings → Health → Data Access → Refactor Athletics to enable access.');
+                                        }
+                                    } else {
+                                        const isAndroid = (window as any).Capacitor?.getPlatform?.() === 'android';
+                                        alert(isAndroid
+                                            ? 'Health Connect is not available. Please install Health Connect from the Play Store.'
+                                            : 'Apple Health is not available on this device.');
                                     }
                                 } catch {}
                             }}
