@@ -50,14 +50,14 @@ export default function StarterQuestCard({ quest, onInlineAction }: StarterQuest
           {onInlineAction ? (
             <button
               onClick={onInlineAction}
-              className="w-full py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold rounded-xl text-sm uppercase tracking-wider hover:scale-[1.02] transition-transform flex items-center justify-center gap-2"
+              className="w-full py-3 bg-white text-black font-bold rounded-xl text-sm uppercase tracking-wider hover:bg-zinc-200 transition flex items-center justify-center gap-2"
             >
               {quest.cta} <ChevronRight size={16} />
             </button>
           ) : quest.ctaHref ? (
             <Link
               href={quest.ctaHref}
-              className="w-full py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold rounded-xl text-sm uppercase tracking-wider hover:scale-[1.02] transition-transform flex items-center justify-center gap-2 block text-center"
+              className="w-full py-3 bg-white text-black font-bold rounded-xl text-sm uppercase tracking-wider hover:bg-zinc-200 transition flex items-center justify-center gap-2 block text-center"
             >
               {quest.cta} <ChevronRight size={16} />
             </Link>
