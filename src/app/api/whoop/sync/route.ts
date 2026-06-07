@@ -34,17 +34,22 @@ export async function POST(request: NextRequest) {
       const strain = cycle.score.strain;
       const cals = Math.round(cycle.score.kilojoule / 4.184);
 
+      // Use cycle's actual start date (a scored cycle at 7 AM is yesterday's cycle)
+      const cycleDate = cycle.start
+        ? new Date(cycle.start).toLocaleDateString('en-CA', { timeZone: tz })
+        : today;
+
       // Day strain
-      await upsertHabit(supabase, userId, 'habit_day_strain', today, ts, Math.round(strain * 10) / 10, Math.round(strain * 3));
-      synced.push(`strain: ${strain.toFixed(1)}`);
+      await upsertHabit(supabase, userId, 'habit_day_strain', cycleDate, ts, Math.round(strain * 10) / 10, Math.round(strain * 3));
+      synced.push(`strain: ${strain.toFixed(1)} (${cycleDate})`);
 
       // Calories burned
-      await supabase.from('nutrition_logs').delete().eq('user_id', userId).eq('date', today).eq('macro_type', 'calories_burned');
+      await supabase.from('nutrition_logs').delete().eq('user_id', userId).eq('date', cycleDate).eq('macro_type', 'calories_burned');
       await supabase.from('nutrition_logs').insert({
-        user_id: userId, date: today, timestamp: ts,
+        user_id: userId, date: cycleDate, timestamp: ts,
         macro_type: 'calories_burned', amount: cals, xp: 10, label: 'WHOOP Sync',
       });
-      synced.push(`calories: ${cals}`);
+      synced.push(`calories: ${cals} (${cycleDate})`);
     }
 
     // Fetch recovery (HRV, resting HR, recovery score)
