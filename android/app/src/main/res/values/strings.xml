@@ -4,4 +4,7 @@
     <string name="title_activity_main">Refactor Athletics</string>
     <string name="package_name">com.refactorathletics.app</string>
     <string name="custom_url_scheme">com.refactorathletics.app</string>
+    <string name="widget_description">Daily progress — streak, XP, quests, and habits at a glance.</string>
+    <color name="orange_500">#f97316</color>
+    <color name="zinc_800">#27272a</color>
 </resources>

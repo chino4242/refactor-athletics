@@ -61,6 +61,21 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             setStats(statsData);
             setActiveDuels(duelsData || []);
             setPrograms(programsData || []);
+            // Update widget with full stats
+            if (statsData) {
+                import('@/services/widgetBridge').then(({ updateWidget }) => {
+                    updateWidget({
+                        streak: 0,
+                        level: statsData.player_level || 1,
+                        xp: 0,
+                        questsDone: 0,
+                        questsTotal: 5,
+                        steps: 0,
+                        sleep: 0,
+                        protein: 0,
+                    });
+                }).catch(() => {});
+            }
         } catch (error) {
             console.error('Failed to load dashboard data:', error);
         } finally {
@@ -103,6 +118,18 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                     localStorage.setItem('last_health_sync', new Date().toISOString());
                     loadData();
                 }
+                // Update Android widget with latest data
+                const { updateWidget } = await import('@/services/widgetBridge');
+                await updateWidget({
+                    streak: 0, // will be updated once loadData completes with stats
+                    level: 1,
+                    xp: 0,
+                    questsDone: 0,
+                    questsTotal: 5,
+                    steps: data.steps || 0,
+                    sleep: data.sleep || 0,
+                    protein: 0,
+                });
                 // Sync exercise sessions via session-authenticated endpoint
                 if (data.exercises?.length) {
                     const lastExSync = localStorage.getItem('last_exercise_sync_ts');

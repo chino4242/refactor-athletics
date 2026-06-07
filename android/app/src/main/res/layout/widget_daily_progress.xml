@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/widget_background"
+    android:padding="12dp"
+    android:id="@+id/widget_root">
+
+    <!-- Top row: streak + level + XP -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="8dp">
+
+        <TextView
+            android:id="@+id/streak_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="🔥 Day 1"
+            android:textColor="#f97316"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/level_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Lv 1"
+            android:textColor="#a1a1aa"
+            android:textSize="12sp"
+            android:layout_marginEnd="12dp" />
+
+        <TextView
+            android:id="@+id/xp_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="+0 XP"
+            android:textColor="#f97316"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Quest progress bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="8dp">
+
+        <ProgressBar
+            android:id="@+id/quest_progress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="0dp"
+            android:layout_height="6dp"
+            android:layout_weight="1"
+            android:max="100"
+            android:progress="0"
+            android:progressTintList="@color/orange_500"
+            android:progressBackgroundTintList="@color/zinc_800" />
+
+        <TextView
+            android:id="@+id/quest_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0/5"
+            android:textColor="#71717a"
+            android:textSize="11sp"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+
+    <!-- Habit row: steps, sleep, protein -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/habit_steps"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="👟 0"
+            android:textColor="#d4d4d8"
+            android:textSize="12sp"
+            android:gravity="center" />
+
+        <TextView
+            android:id="@+id/habit_sleep"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="😴 0h"
+            android:textColor="#d4d4d8"
+            android:textSize="12sp"
+            android:gravity="center" />
+
+        <TextView
+            android:id="@+id/habit_protein"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="🥩 0g"
+            android:textColor="#d4d4d8"
+            android:textSize="12sp"
+            android:gravity="center" />
+    </LinearLayout>
+</LinearLayout>
