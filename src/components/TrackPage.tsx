@@ -10,7 +10,7 @@ import { logHabitAction, deleteHistoryItemAction, resetHabitTodayAction } from '
 import { useToast } from '@/context/ToastContext';
 import { Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import LevelUpOverlay from './LevelUpOverlay';
-import NutritionTracker from './NutritionTracker';
+import NutritionSection from './NutritionSection';
 import HabitCard from './HabitCard';
 import ViceToggle from './ViceToggle';
 import HabitSettings from './HabitSettings';
@@ -424,12 +424,11 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
         {/* NUTRITION TAB */}
         {activeTab === 'nutrition' && (
           <div className="animate-fade-in-up">
-            <NutritionTracker
+            <NutritionSection
               userId={userId}
               userProfile={profile!}
               totals={totals}
               onUpdate={fetchProgress}
-              onLogHabit={async (id, val, lbl) => handleLog(id, val, lbl)}
             />
             <div className="mt-3">
               <FoodLog key={JSON.stringify(totals)} userId={userId} onUpdate={fetchProgress} />

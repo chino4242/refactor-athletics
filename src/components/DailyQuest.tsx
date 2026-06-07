@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { getHabitProgress, saveProfile, getHistory, getProfile } from '../services/api';
 import type { UserProfileData, UserStats, HistoryItem, Challenge } from '@/types';
 import HabitHeatmap from './HabitHeatmap';
-import NutritionTracker from './NutritionTracker';
+import NutritionSection from './NutritionSection';
 import { useToast } from '@/context/ToastContext';
 import { SlidersHorizontal, Footprints, Timer, Share2, ChevronDown } from 'lucide-react';
 import HabitSettings from './HabitSettings';
@@ -267,7 +267,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
             <div className="space-y-3 animate-fade-in">
 
           {profile && (
-            <NutritionTracker
+            <NutritionSection
               userId={userId}
               userProfile={profile}
               totals={totals}
@@ -281,7 +281,6 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
                 };
                 loadProfile();
               }}
-              onLogHabit={handleLog}
             />
           )}
             </div>
