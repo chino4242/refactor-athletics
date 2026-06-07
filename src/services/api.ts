@@ -423,6 +423,24 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
         return b.pct - a.pct;
     });
 
+    // Snapshot power level for weekly history (upsert, non-blocking)
+    if (finalExpertise > 0) {
+        const weekStart = new Date();
+        const day = weekStart.getDay();
+        weekStart.setDate(weekStart.getDate() - ((day + 6) % 7)); // Monday
+        weekStart.setHours(0, 0, 0, 0);
+        (async () => {
+            try {
+                await supabase.from('power_level_history').upsert({
+                    user_id: userId,
+                    week_start: weekStart.toLocaleDateString('en-CA'),
+                    power_level: finalExpertise,
+                    exercises_tested: testedCount,
+                }, { onConflict: 'user_id,week_start' });
+            } catch {}
+        })();
+    }
+
     return {
         power_level: finalExpertise,
         max_expertise: keyExerciseIds.size * 5,

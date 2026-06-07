@@ -41,6 +41,13 @@ export default async function PowerPage() {
     const userPath = profile?.selected_path || 'hybrid';
     const pathExerciseIds = PATH_KEY_EXERCISES[userPath] || PATH_KEY_EXERCISES['hybrid'];
 
+    // Fetch power level weekly history for trend chart
+    const { data: powerHistory } = await supabase.from('power_level_history')
+        .select('week_start, power_level')
+        .eq('user_id', user.id)
+        .order('week_start', { ascending: true })
+        .limit(12);
+
     return (
         <div className="min-h-screen bg-black text-white w-full">
             <main className="max-w-lg mx-auto px-4 py-6 pb-32">
@@ -52,6 +59,7 @@ export default async function PowerPage() {
                     stats={stats}
                     pathExerciseIds={pathExerciseIds}
                     percentile={percentile}
+                    powerHistory={powerHistory || []}
                 />
             </main>
         </div>

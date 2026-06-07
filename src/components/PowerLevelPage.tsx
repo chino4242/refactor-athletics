@@ -16,6 +16,7 @@ interface Props {
     stats: UserStats | null;
     pathExerciseIds: string[];
     percentile: number | null;
+    powerHistory: { week_start: string; power_level: number }[];
 }
 
 // Map power level to a tier (0-5) using thresholds
@@ -53,7 +54,7 @@ function getStandardsForExercise(exercise: any, age: number, sex: string): numbe
     return bracket?.levels || null;
 }
 
-export default function PowerLevelPage({ userId, profile, history, catalog, stats, pathExerciseIds, percentile }: Props) {
+export default function PowerLevelPage({ userId, profile, history, catalog, stats, pathExerciseIds, percentile, powerHistory }: Props) {
     const themeKey = profile?.selected_theme || 'athlete';
     const theme = THEMES[themeKey] || THEMES['athlete'];
     const sex = profile?.sex || 'M';
@@ -213,6 +214,39 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                     )}
                 </div>
             </div>
+
+            {/* === POWER LEVEL TREND === */}
+            {powerHistory.length >= 2 && (
+                <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4">
+                    <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Progress Over Time</div>
+                    <div className="flex items-end gap-1 h-16">
+                        {powerHistory.map((entry, i) => {
+                            const maxVal = Math.max(...powerHistory.map(e => e.power_level), 1);
+                            const pct = (entry.power_level / maxVal) * 100;
+                            const isLast = i === powerHistory.length - 1;
+                            return (
+                                <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                                    <div className="w-full rounded-t-sm overflow-hidden" style={{ height: `${Math.max(pct, 5)}%` }}>
+                                        <div className={`w-full h-full ${isLast ? 'bg-orange-500' : 'bg-zinc-600'}`} />
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                    <div className="flex justify-between text-[8px] text-zinc-600 mt-1">
+                        <span>{new Date(powerHistory[0].week_start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                        <span>{new Date(powerHistory[powerHistory.length - 1].week_start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                    </div>
+                    {powerHistory.length >= 2 && (() => {
+                        const delta = powerHistory[powerHistory.length - 1].power_level - powerHistory[0].power_level;
+                        return (
+                            <div className={`text-[10px] font-bold mt-1 ${delta > 0 ? 'text-emerald-400' : delta < 0 ? 'text-rose-400' : 'text-zinc-500'}`}>
+                                {delta > 0 ? '↑' : delta < 0 ? '↓' : '→'} {delta > 0 ? '+' : ''}{delta} since {new Date(powerHistory[0].week_start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            </div>
+                        );
+                    })()}
+                </div>
+            )}
 
             {/* === EASIEST LEVEL-UP === */}
             {easiestLevelUp && (
