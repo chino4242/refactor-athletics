@@ -7,6 +7,7 @@ import Link from 'next/link';
 const APP_METRICS = [
   { id: 'workout_count', label: 'Workouts', unit: 'per day', defaultMin: 1 },
   { id: 'habit_steps', label: 'Steps', unit: 'steps', defaultMin: 10000 },
+  { id: 'active_minutes', label: 'Active Minutes', unit: 'min', defaultMin: 30 },
   { id: 'habit_water', label: 'Water', unit: 'oz', defaultMin: 64 },
   { id: 'macro_protein', label: 'Protein', unit: 'g', defaultMin: 150 },
   { id: 'habit_sleep', label: 'Sleep', unit: 'hrs', defaultMin: 7 },
