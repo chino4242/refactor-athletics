@@ -1,6 +1,8 @@
 /** Native health service — SSR-safe, no-op on web, fires on native iOS/Android */
 
-const isNative = typeof window !== 'undefined' && !!(window as any).Capacitor?.isNativePlatform?.();
+function isNative(): boolean {
+  return typeof window !== 'undefined' && !!(window as any).Capacitor?.isNativePlatform?.();
+}
 
 let healthPlugin: any = null;
 
@@ -16,18 +18,18 @@ function getHealth(): any {
 const READ_TYPES = ['steps', 'calories', 'totalCalories', 'sleep', 'weight', 'heart_rate', 'heart_rate_variability', 'body_fat_percentage', 'lean_body_mass', 'exercise'];
 
 export async function isHealthAvailable(): Promise<boolean> {
-  if (!isNative) return false;
+  if (!isNative()) return false;
   try { const h = getHealth(); return (await h.isAvailable()).available; } catch { return false; }
 }
 
 export async function requestPermissions(): Promise<boolean> {
-  if (!isNative) return false;
+  if (!isNative()) return false;
   try { const h = getHealth(); return (await h.requestAuthorization({ read: READ_TYPES as any, write: ['exercise'] })).granted; } catch { return false; }
 }
 
 /** Open device health settings so user can manually grant permissions */
 export async function openHealthSettings(): Promise<void> {
-  if (!isNative) return;
+  if (!isNative()) return;
   try { const h = getHealth(); await h.openHealthConnectSettings?.(); } catch {
     // Fallback: try opening app settings on Android
     try {
@@ -38,12 +40,12 @@ export async function openHealthSettings(): Promise<void> {
 }
 
 export async function getSteps(startDate: string, endDate: string): Promise<number> {
-  if (!isNative) return 0;
+  if (!isNative()) return 0;
   try { const h = getHealth(); return (await h.queryAggregated({ dataType: 'steps', startDate, endDate })).value || 0; } catch { return 0; }
 }
 
 export async function getCaloriesBurned(startDate: string, endDate: string): Promise<number> {
-  if (!isNative) return 0;
+  if (!isNative()) return 0;
   try {
     const h = getHealth();
     const result = await h.queryAggregated({ dataType: 'totalCalories', startDate, endDate });
@@ -54,27 +56,27 @@ export async function getCaloriesBurned(startDate: string, endDate: string): Pro
 }
 
 export async function getSleep(startDate: string, endDate: string): Promise<number> {
-  if (!isNative) return 0;
+  if (!isNative()) return 0;
   try { const h = getHealth(); return Math.round(((await h.queryAggregated({ dataType: 'sleep', startDate, endDate })).value || 0) / 60); } catch { return 0; }
 }
 
 export async function getWeight(): Promise<number | null> {
-  if (!isNative) return null;
+  if (!isNative()) return null;
   try { const h = getHealth(); const { results } = await h.query({ dataType: 'weight', startDate: new Date(Date.now() - 30 * 86400000).toISOString(), endDate: new Date().toISOString(), limit: 1 }); return results?.[0]?.value || null; } catch { return null; }
 }
 
 export async function getHRV(startDate: string, endDate: string): Promise<number | null> {
-  if (!isNative) return null;
+  if (!isNative()) return null;
   try { const h = getHealth(); const { results } = await h.query({ dataType: 'heart_rate_variability', startDate, endDate, limit: 1 }); return results?.[0]?.value || null; } catch { return null; }
 }
 
 export async function getRestingHR(startDate: string, endDate: string): Promise<number | null> {
-  if (!isNative) return null;
+  if (!isNative()) return null;
   try { const h = getHealth(); const { results } = await h.query({ dataType: 'heart_rate', startDate, endDate, limit: 1 }); return results?.[0]?.value || null; } catch { return null; }
 }
 
 export async function getBodyFat(): Promise<number | null> {
-  if (!isNative) return null;
+  if (!isNative()) return null;
   try { const h = getHealth(); const { results } = await h.query({ dataType: 'body_fat_percentage', startDate: new Date(Date.now() - 30 * 86400000).toISOString(), endDate: new Date().toISOString(), limit: 1 }); return results?.[0]?.value || null; } catch { return null; }
 }
 
@@ -102,7 +104,7 @@ export async function syncTodayHealth() {
 
 /** Query exercise sessions from Health Connect / HealthKit */
 export async function getExerciseSessions(startDate: string, endDate: string): Promise<any[]> {
-  if (!isNative) return [];
+  if (!isNative()) return [];
   try {
     const h = getHealth();
     const { results } = await h.query({ dataType: 'exercise', startDate, endDate, limit: 20 });
