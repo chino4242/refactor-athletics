@@ -52,7 +52,7 @@ async function getMetricValue(supabase: any, userId: string, date: string, metri
       .eq('user_id', userId).eq('date', date);
     return count || 0;
   }
-  if (metricId === 'habit_exercise_minutes' || metricId === 'habit_active_minutes') {
+  if (metricId === 'habit_exercise_minutes' || metricId === 'habit_active_minutes' || metricId === 'active_minutes') {
     const { data } = await supabase.from('habit_logs').select('value')
       .eq('user_id', userId).eq('habit_id', 'habit_exercise_minutes').eq('date', date);
     return (data || []).reduce((s: number, r: any) => s + (r.value || 0), 0);
@@ -60,8 +60,9 @@ async function getMetricValue(supabase: any, userId: string, date: string, metri
   if (metricId.startsWith('macro_')) {
     const macroType = metricId.replace('macro_', '');
     const { data } = await supabase.from('nutrition_logs').select('amount')
-      .eq('user_id', userId).eq('macro_type', macroType).eq('date', date);
-    return (data || []).reduce((s: number, r: any) => s + (r.amount || 0), 0);
+      .eq('user_id', userId).eq('macro_type', macroType).eq('date', date)
+      .order('timestamp', { ascending: false }).limit(1);
+    return data?.[0]?.amount || 0;
   }
   // Habit metrics
   const { data } = await supabase.from('habit_logs').select('value')

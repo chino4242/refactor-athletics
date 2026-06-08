@@ -195,6 +195,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true });
   }
 
+  if (action === 'update_target') {
+    const { metric_db_id, minimum } = body;
+    await service.from('challenge_75_metrics').update({ minimum }).eq('id', metric_db_id);
+    return NextResponse.json({ success: true });
+  }
+
   return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
 }
 

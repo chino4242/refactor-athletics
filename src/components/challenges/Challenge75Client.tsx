@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Plus, RotateCcw, Users, Check, X, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
@@ -353,7 +353,7 @@ function JoinChallenge({ challenge, userId, onDone, onSkip }: { challenge: any; 
         <div className="text-[10px] text-zinc-500 mt-1">Created by a group member · {challenge.challenge_75_members?.length || 1} participant(s)</div>
       </div>
 
-      <p className="text-sm text-zinc-400">Choose your daily requirements. You&apos;ll be evaluated against these targets each day.</p>
+      <p className="text-sm text-zinc-400">Pick YOUR targets — you&apos;ll be evaluated against them each day.{challenge.shared_failure && ' The party succeeds or fails together — if anyone misses their targets, everyone starts over.'}</p>
 
       <div>
         <label className="text-[11px] font-bold text-zinc-500 uppercase mb-2 block">What to Track</label>
@@ -409,7 +409,9 @@ function JoinChallenge({ challenge, userId, onDone, onSkip }: { challenge: any; 
 
 function ChallengeView({ challenge, userId, onBack }: { challenge: Challenge; userId: string; onBack: () => void }) {
   const [days, setDays] = useState(challenge.challenge_75_days || []);
-  const startDate = new Date(challenge.start_date);
+  const [editingTargets, setEditingTargets] = useState(false);
+  const editedTargets = useRef<Record<string, number>>({});
+  const startDate = new Date(challenge.start_date + 'T12:00:00');
   const myDays = days.filter((d: any) => d.user_id === userId);
   const passedCount = myDays.filter((d: any) => d.status === 'passed').length;
   const members = challenge.challenge_75_members || [];
@@ -511,7 +513,15 @@ function ChallengeView({ challenge, userId, onBack }: { challenge: Challenge; us
               className={`w-full aspect-square rounded-sm flex items-center justify-center text-[7px] font-bold ${
                 d.status === 'passed' ? 'bg-emerald-500 text-black' :
                 d.status === 'failed' ? 'bg-red-500 text-black' :
-                d.isToday ? 'bg-orange-500/30 text-orange-400 border border-orange-500' :
+                d.isToday && (() => {
+                  const allMembersPass = members.filter((m: any) => m.status === 'joined').every((m: any) => {
+                    const mDay = days.find((dd: any) => dd.user_id === m.user_id && dd.date === today);
+                    if (!mDay?.metrics_snapshot) return false;
+                    return Object.values(mDay.metrics_snapshot).every((v: any) => v.met === true);
+                  });
+                  return allMembersPass;
+                })() ? 'bg-emerald-500 text-black' :
+                d.isToday ? 'bg-blue-500/30 text-blue-400 border border-blue-500' :
                 d.status === 'future' ? 'bg-zinc-800/30 text-zinc-700' :
                 'bg-zinc-800 text-zinc-500'
               }`}>
@@ -522,81 +532,91 @@ function ChallengeView({ challenge, userId, onBack }: { challenge: Challenge; us
         <div className="flex items-center gap-3 mt-2 text-[9px] text-zinc-500">
           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-emerald-500" /> Passed</span>
           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-red-500" /> Failed</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm border border-blue-500 bg-blue-500/30" /> Today</span>
           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-zinc-800" /> Pending</span>
         </div>
       </div>
 
-      {/* Per-Member Daily Checklist */}
-      {isGroup && members.length > 1 && (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 space-y-3">
-          <span className="text-[10px] font-bold text-zinc-500 uppercase">Today&apos;s Progress</span>
-          {members.filter((m: any) => m.status === 'joined').map((m: any) => {
-            const memberToday = days.find((d: any) => d.user_id === m.user_id && d.date === today);
-            const snapshot = memberToday?.metrics_snapshot || {};
-            const customChecks = memberToday?.custom_checks || {};
-            const memberMetrics = allMetrics.filter((mt: any) => mt.member_id === m.id).length > 0
-              ? allMetrics.filter((mt: any) => mt.member_id === m.id)
-              : allMetrics.filter((mt: any) => !mt.member_id);
-            const metCount = memberMetrics.length;
-            const metPassed = memberMetrics.filter((mt: any) => {
-              if (mt.metric_type === 'custom') return customChecks[mt.metric_id] === true;
-              return snapshot[mt.metric_id]?.met === true;
-            }).length;
-
-            return (
-              <div key={m.user_id} className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-zinc-300">{m.user_id === userId ? 'You' : (m.display_name || m.user_id.slice(0, 8))}</span>
-                  <span className={`text-[10px] font-bold ${metPassed === metCount ? 'text-emerald-400' : 'text-zinc-500'}`}>{metPassed}/{metCount}</span>
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {memberMetrics.map((mt: any) => {
-                    const met = mt.metric_type === 'custom'
-                      ? customChecks[mt.metric_id] === true
-                      : snapshot[mt.metric_id]?.met === true;
-                    return (
-                      <span key={mt.metric_id} className={`text-[9px] px-2 py-0.5 rounded-full border ${met ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400' : 'bg-zinc-800 border-zinc-700 text-zinc-500'}`}>
-                        {met ? '✓' : '○'} {mt.label}
-                      </span>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Solo — Today's Metrics */}
-      {!isGroup && (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 space-y-2">
-          <span className="text-[10px] font-bold text-zinc-500 uppercase">Today&apos;s Metrics</span>
-          <div className="flex flex-wrap gap-1.5">
-            {metrics.map((mt: any) => {
-              const snapshot = todayRecord?.metrics_snapshot || {};
-              const customChecks = todayRecord?.custom_checks || {};
-              const met = mt.metric_type === 'custom'
-                ? customChecks[mt.metric_id] === true
-                : snapshot[mt.metric_id]?.met === true;
-              return (
-                <span key={mt.metric_id || mt.id} className={`text-[10px] px-2.5 py-1 rounded-full border ${met ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400' : 'bg-zinc-800 border-zinc-700 text-zinc-500'}`}>
-                  {met ? '✓' : '○'} {mt.label}
-                </span>
-              );
-            })}
-          </div>
+      {/* Today's Daily Checklist — Table View */}
+      {challenge.status === 'active' && (
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 overflow-x-auto">
+          <span className="text-[10px] font-bold text-zinc-500 uppercase block mb-2">Today&apos;s Progress</span>
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-zinc-800">
+                <th className="text-left text-zinc-500 font-medium py-1.5 pr-3">Metric</th>
+                {members.filter((m: any) => m.status === 'joined').map((m: any) => (
+                  <th key={m.user_id} className="text-center text-zinc-400 font-medium py-1.5 px-2 min-w-[60px]">
+                    {m.user_id === userId ? 'You' : (m.display_name || m.user_id.slice(0, 6))}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {(() => {
+                const firstMember = members.find((m: any) => m.status === 'joined');
+                const displayMetrics = allMetrics.filter((mt: any) => mt.member_id === firstMember?.id).length > 0
+                  ? allMetrics.filter((mt: any) => mt.member_id === firstMember?.id)
+                  : allMetrics.filter((mt: any) => !mt.member_id);
+                return displayMetrics.map((mt: any) => (
+                  <tr key={mt.metric_id} className="border-b border-zinc-800/50">
+                    <td className="text-zinc-300 py-2 pr-3">{mt.label}</td>
+                    {members.filter((m: any) => m.status === 'joined').map((m: any) => {
+                      const memberToday = days.find((d: any) => d.user_id === m.user_id && d.date === today);
+                      const snapshot = memberToday?.metrics_snapshot || {};
+                      const customChecks = memberToday?.custom_checks || {};
+                      const met = mt.metric_type === 'custom'
+                        ? customChecks[mt.metric_id] === true
+                        : snapshot[mt.metric_id]?.met === true;
+                      return (
+                        <td key={m.user_id} className="text-center py-2 px-2">
+                          <span className={`text-sm ${met ? 'text-emerald-400' : 'text-red-400/50'}`}>
+                            {met ? '✓' : '✗'}
+                          </span>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ));
+              })()}
+            </tbody>
+          </table>
         </div>
       )}
 
       {/* Metrics being tracked */}
+      {/* Tracking — editable targets */}
       <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 space-y-1.5">
-        <span className="text-[10px] font-bold text-zinc-500 uppercase">Tracking</span>
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] font-bold text-zinc-500 uppercase">Your Targets</span>
+          {!editingTargets && myMembership?.status === 'joined' && (
+            <button onClick={() => setEditingTargets(true)} className="text-[10px] text-orange-400 font-bold">Edit</button>
+          )}
+        </div>
         {metrics.map((m: any) => (
           <div key={m.id} className="flex items-center justify-between text-xs">
             <span className="text-zinc-300">{m.label}</span>
-            <span className="text-zinc-500">{m.metric_type === 'custom' ? 'Daily ✓' : `≥ ${m.minimum}`}</span>
+            {editingTargets && m.metric_type !== 'custom' ? (
+              <input type="number" defaultValue={m.minimum} className="w-16 bg-zinc-800 border border-zinc-700 rounded px-2 py-0.5 text-xs text-white text-right outline-none focus:border-orange-500"
+                onBlur={e => { editedTargets.current[m.id] = Number(e.target.value); }} />
+            ) : (
+              <span className="text-zinc-500">{m.metric_type === 'custom' ? 'Daily ✓' : `≥ ${m.minimum}`}</span>
+            )}
           </div>
         ))}
+        {editingTargets && (
+          <button onClick={async () => {
+            const updates = editedTargets.current;
+            if (Object.keys(updates).length > 0) {
+              for (const [metricId, min] of Object.entries(updates)) {
+                const metric = metrics.find((m: any) => m.metric_id === metricId);
+                if (metric) await fetch('/api/challenge-75', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'update_target', challenge_id: challenge.id, metric_db_id: metric.id, minimum: min }) });
+              }
+            }
+            setEditingTargets(false);
+            onBack();
+          }} className="w-full mt-2 bg-orange-600 text-white text-xs font-bold py-2 rounded-lg">Save Targets</button>
+        )}
       </div>
     </div>
   );
