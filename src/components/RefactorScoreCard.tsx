@@ -73,16 +73,19 @@ export default function RefactorScoreCard({ userId, profile }: RefactorScoreCard
       }
 
       // Training: this week vs last week volume
-      const weekStart = new Date(today); weekStart.setDate(today.getDate() - 7);
-      const prevWeekStart = new Date(today); prevWeekStart.setDate(today.getDate() - 14);
-      const thisWeekWorkouts = (workouts14d || []).filter(w => new Date(w.date) >= weekStart);
-      const prevWeekWorkouts = (workouts14d || []).filter(w => new Date(w.date) >= prevWeekStart && new Date(w.date) < weekStart);
+      const weekStartDate = new Date(today); weekStartDate.setDate(today.getDate() - 7);
+      const prevWeekStartDate = new Date(today); prevWeekStartDate.setDate(today.getDate() - 14);
+      const weekStartStr = weekStartDate.toLocaleDateString('en-CA');
+      const prevWeekStartStr = prevWeekStartDate.toLocaleDateString('en-CA');
+      const thisWeekWorkouts = (workouts14d || []).filter(w => w.date >= weekStartStr);
+      const prevWeekWorkouts = (workouts14d || []).filter(w => w.date >= prevWeekStartStr && w.date < weekStartStr);
       const weeklyVolume = thisWeekWorkouts.reduce((s, w) => s + (w.weight || 0) * (w.reps || 1), 0);
       const prevWeekVolume = prevWeekWorkouts.reduce((s, w) => s + (w.weight || 0) * (w.reps || 1), 0);
       const workoutDays = new Set(thisWeekWorkouts.map(w => w.date)).size;
 
       // Recovery
-      const last7Sleep = (habits14d || []).filter(h => h.habit_id === 'habit_sleep' && new Date(h.date) >= sevenDaysAgo);
+      const sevenDaysAgoStr = sevenDaysAgo.toLocaleDateString('en-CA');
+      const last7Sleep = (habits14d || []).filter(h => h.habit_id === 'habit_sleep' && h.date >= sevenDaysAgoStr);
       const avgSleep = last7Sleep.length > 0 ? last7Sleep.reduce((s, h) => s + h.value, 0) / last7Sleep.length : 0;
       const hrvEntries = (habits14d || []).filter(h => h.habit_id === 'habit_hrv').sort((a, b) => a.date.localeCompare(b.date));
       let hrvTrend: 'up' | 'down' | 'flat' = 'flat';
