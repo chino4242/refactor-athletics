@@ -45,6 +45,7 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
   const [weekDays, setWeekDays] = useState<DayPlan[]>([]);
   const [selectedDayStr, setSelectedDayStr] = useState('');
   const [showActiveWorkout, setShowActiveWorkout] = useState(false);
+  const [showFullExercises, setShowFullExercises] = useState(false);
   const [sectionFilter, setSectionFilter] = useState<'all' | 'strength' | 'cardio' | 'core' | null>(null);
 
   // Check for active workout after hydration
@@ -62,7 +63,7 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
   const [completedDates, setCompletedDates] = useState<Set<string>>(new Set());
 
   const todayStr = format(new Date(), 'yyyy-MM-dd');
-  const [userPath, setUserPath] = useState('hybrid');
+  const [userPath, setUserPath] = useState<string | null>(null);
 
   // Load user path
   useEffect(() => {
@@ -186,7 +187,7 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
       <FirstVisitTooltip id="train" message="Your scheduled workout for today. Tap Start to begin — you'll earn XP for every set." />
 
       {/* Program Overview */}
-      <ProgramOverview userId={userId} path={userPath} />
+      {userPath && <ProgramOverview userId={userId} path={userPath} />}
 
       {/* Today's Workout — Hero Card */}
       {today && (
@@ -213,17 +214,22 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
                 {today.plan.title}
               </h2>
 
-              {/* Exercise preview */}
+              {/* Exercise preview — tap to expand full list */}
               {today.plan.exercises && today.plan.exercises.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mb-4">
-                  {today.plan.exercises.slice(0, 5).map((ex, i) => (
-                    <span key={i} className="text-[10px] px-2 py-1 rounded-md bg-zinc-800/80 text-zinc-400 border border-zinc-700/50">
-                      {ex}
-                    </span>
-                  ))}
-                  {today.plan.exercises.length > 5 && (
-                    <span className="text-[10px] px-2 py-1 text-zinc-500">+{today.plan.exercises.length - 5} more</span>
-                  )}
+                <div className="mb-4">
+                  <button onClick={() => setShowFullExercises(prev => !prev)} className="flex flex-wrap gap-1.5 text-left">
+                    {today.plan.exercises.slice(0, showFullExercises ? undefined : 5).map((ex, i) => (
+                      <span key={i} className="text-[10px] px-2 py-1 rounded-md bg-zinc-800/80 text-zinc-400 border border-zinc-700/50">
+                        {ex}
+                      </span>
+                    ))}
+                    {!showFullExercises && today.plan.exercises.length > 5 && (
+                      <span className="text-[10px] px-2 py-1 text-zinc-500 underline">+{today.plan.exercises.length - 5} more ▾</span>
+                    )}
+                    {showFullExercises && today.plan.exercises.length > 5 && (
+                      <span className="text-[10px] px-2 py-1 text-zinc-500 underline">show less ▴</span>
+                    )}
+                  </button>
                 </div>
               )}
 

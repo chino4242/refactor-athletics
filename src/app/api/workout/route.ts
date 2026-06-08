@@ -237,11 +237,13 @@ export async function GET(request: Request) {
     if (user) {
         const { data: profile } = await supabase.from('users').select('available_equipment, selected_path').eq('id', user.id).single();
         const userEquipment = new Set<string>(profile?.available_equipment || []);
+        const userPath = profile?.selected_path || 'hybrid';
 
         const { data: programs } = await supabase
             .from('workout_programs')
             .select('id, name, variant')
             .eq('user_id', user.id)
+            .eq('training_path', userPath)
             .ilike('day_of_week', targetDay)
             .order('variant');
 
