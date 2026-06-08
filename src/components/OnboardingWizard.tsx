@@ -305,21 +305,16 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                                     {Object.entries(PATHS).map(([key, path]) => (
                                         <button
                                             key={key}
-                                            onClick={() => { if (key === 'hybrid') setFormData({ ...formData, path: key }); }}
+                                            onClick={() => setFormData({ ...formData, path: key })}
                                             className={`p-4 rounded-lg border-2 transition-all text-left ${
                                                 formData.path === key
                                                     ? 'border-orange-500 bg-orange-500/10'
-                                                    : key === 'hybrid'
-                                                    ? 'border-zinc-700 bg-zinc-800 hover:border-zinc-600'
-                                                    : 'border-zinc-800 bg-zinc-900 opacity-50 cursor-not-allowed'
+                                                    : 'border-zinc-700 bg-zinc-800 hover:border-zinc-600'
                                             }`}
-                                            disabled={key !== 'hybrid'}
                                         >
                                             <div className="text-3xl mb-2">{path.emoji}</div>
                                             <div className="text-sm font-medium text-white">{path.name}</div>
-                                            <div className="text-xs text-zinc-400 mt-1">
-                                                {key === 'hybrid' ? path.description : 'Coming Soon'}
-                                            </div>
+                                            <div className="text-xs text-zinc-400 mt-1">{path.description}</div>
                                         </button>
                                     ))}
                                 </div>

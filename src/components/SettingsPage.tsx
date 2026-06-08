@@ -229,9 +229,9 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                     <div className="grid grid-cols-2 gap-2">
                         {[
                             { key: 'hybrid', emoji: '⚔️', name: 'Hybrid', available: true },
-                            { key: 'strength', emoji: '🛡️', name: 'Strength', available: false },
-                            { key: 'endurance', emoji: '🏹', name: 'Endurance', available: false },
-                            { key: 'mobility', emoji: '🧘', name: 'Mobility', available: false },
+                            { key: 'strength', emoji: '🛡️', name: 'Strength', available: true },
+                            { key: 'endurance', emoji: '🏹', name: 'Endurance', available: true },
+                            { key: 'mobility', emoji: '🧘', name: 'Mobility', available: true },
                         ].map(p => (
                             <button key={p.key} disabled={!p.available}
                                 onClick={async () => {
@@ -246,7 +246,6 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                                 }`}>
                                 <div className="text-lg mb-1">{p.emoji}</div>
                                 <div className="text-xs font-bold text-white">{p.name}</div>
-                                {!p.available && <div className="text-[10px] text-zinc-600">Coming Soon</div>}
                             </button>
                         ))}
                     </div>
