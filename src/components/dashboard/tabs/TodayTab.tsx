@@ -18,6 +18,7 @@ import WeeklyQuestsCard from '../../WeeklyQuestsCard';
 import StarterQuestCard, { LockedFeatureOverlay } from '../../StarterQuestCard';
 import OnboardingChecklist from '../../OnboardingChecklist';
 import RefactorScoreCard from '../../RefactorScoreCard';
+import DailyHabitsQuick from '../../DailyHabitsQuick';
 import { useStarterQuests } from '@/hooks/useStarterQuests';
 
 interface TodayTabProps {
@@ -240,6 +241,9 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
 
             {/* Refactor Score */}
             {profile && <RefactorScoreCard userId={userId} profile={profile} />}
+
+            {/* Daily Habit Quick Toggles */}
+            {profile && <DailyHabitsQuick userId={userId} hiddenHabits={profile.hidden_habits || []} />}
 
             {/* Starter Quest — shows active quest during onboarding phase */}
             {/* Onboarding Checklist */}

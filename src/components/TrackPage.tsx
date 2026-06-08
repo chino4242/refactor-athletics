@@ -84,15 +84,17 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
 
   // Progressive disclosure: show Recovery/Discipline tabs only if user has relevant data or habits visible
   const TABS = useMemo(() => {
-    const hasRecoveryData = totals['habit_cold_plunge'] > 0 || totals['habit_sauna'] > 0 || totals['habit_mobility'] > 0 || totals['habit_meditation'] > 0;
-    const hasDisciplineData = totals['habit_no_alcohol'] > 0 || totals['habit_no_vice'] > 0;
-    const hasUsedBefore = typeof window !== 'undefined' && (localStorage.getItem('track_tab') === 'recovery' || localStorage.getItem('track_tab') === 'discipline');
+    const hiddenHabits = initialProfile?.hidden_habits || [];
+    const recoveryHabits = ['habit_cold_plunge', 'habit_sauna', 'habit_mobility', 'habit_meditation'];
+    const disciplineHabits = ['habit_no_alcohol', 'habit_no_vice', 'habit_no_sugar', 'habit_journaling', 'habit_reading', 'habit_fasting'];
+    const hasVisibleRecovery = recoveryHabits.some(h => !hiddenHabits.includes(h));
+    const hasVisibleDiscipline = disciplineHabits.some(h => !hiddenHabits.includes(h));
     return ALL_TABS.filter(tab => {
-      if (tab.id === 'recovery') return hasRecoveryData || hasUsedBefore;
-      if (tab.id === 'discipline') return hasDisciplineData || hasUsedBefore;
+      if (tab.id === 'recovery') return hasVisibleRecovery;
+      if (tab.id === 'discipline') return hasVisibleDiscipline;
       return true;
     });
-  }, [totals]);
+  }, [initialProfile?.hidden_habits]);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [showTodayLog, setShowTodayLog] = useState(true);
   const [todayLog, setTodayLog] = useState<any[]>([]);
