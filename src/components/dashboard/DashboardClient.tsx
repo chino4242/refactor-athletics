@@ -143,11 +143,11 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                 const { data: userFlags } = await supabaseCheck.from('users').select('whoop_connected_at').eq('id', userId).single();
                 const hasWhoop = !!userFlags?.whoop_connected_at;
                 const promises = [];
-                if (data.steps > 0) promises.push(logHabitAction(userId, 'habit_steps', data.steps, undefined, 'Steps'));
+                if (data.steps > 0) promises.push(logHabitAction(userId, 'habit_steps', data.steps, undefined, 'Steps (Sync)'));
                 if (data.caloriesBurned > 0) promises.push(logHabitAction(userId, 'macro_calories_burned', data.caloriesBurned, undefined, 'Calories Burned'));
-                if (data.sleep > 0 && !hasWhoop) promises.push(logHabitAction(userId, 'habit_sleep', data.sleep, undefined, 'Sleep'));
-                if (data.hrv && !hasWhoop) promises.push(logHabitAction(userId, 'habit_hrv', data.hrv, undefined, 'HRV'));
-                if (data.restingHR && !hasWhoop) promises.push(logHabitAction(userId, 'habit_resting_hr', data.restingHR, undefined, 'Resting HR'));
+                if (data.sleep > 0 && !hasWhoop) promises.push(logHabitAction(userId, 'habit_sleep', data.sleep, undefined, 'Sleep (Sync)'));
+                if (data.hrv && !hasWhoop) promises.push(logHabitAction(userId, 'habit_hrv', data.hrv, undefined, 'HRV (Sync)'));
+                if (data.restingHR && !hasWhoop) promises.push(logHabitAction(userId, 'habit_resting_hr', data.restingHR, undefined, 'Resting HR (Sync)'));
                 if (promises.length > 0) {
                     await Promise.all(promises);
                     localStorage.setItem('last_health_sync', new Date().toISOString());
@@ -199,6 +199,22 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
     const handleTouchEnd = () => {
         if (pullDistance > 60) {
             setRefreshing(true);
+            // Re-sync native health data on pull-to-refresh
+            (async () => {
+                try {
+                    const { isHealthAvailable, syncTodayHealth } = await import('@/services/nativeHealth');
+                    if (await isHealthAvailable()) {
+                        const data = await syncTodayHealth();
+                        const { logHabitAction } = await import('@/app/actions');
+                        const promises = [];
+                        if (data.steps > 0) promises.push(logHabitAction(userId, 'habit_steps', data.steps, undefined, 'Steps (Sync)'));
+                        if (data.caloriesBurned > 0) promises.push(logHabitAction(userId, 'macro_calories_burned', data.caloriesBurned, undefined, 'Calories Burned'));
+                        if (promises.length) await Promise.all(promises);
+                    }
+                } catch {}
+                loadData();
+            })();
+        } else {
             loadData();
         }
         setPullDistance(0);
