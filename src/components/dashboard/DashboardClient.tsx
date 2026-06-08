@@ -144,7 +144,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                 const hasWhoop = !!userFlags?.whoop_connected_at;
                 const promises = [];
                 if (data.steps > 0) promises.push(logHabitAction(userId, 'habit_steps', data.steps, undefined, 'Steps'));
-                if (data.caloriesBurned > 0 && !hasWhoop) promises.push(logHabitAction(userId, 'macro_calories_burned', data.caloriesBurned, undefined, 'Calories Burned'));
+                if (data.caloriesBurned > 0) promises.push(logHabitAction(userId, 'macro_calories_burned', data.caloriesBurned, undefined, 'Calories Burned'));
                 if (data.sleep > 0 && !hasWhoop) promises.push(logHabitAction(userId, 'habit_sleep', data.sleep, undefined, 'Sleep'));
                 if (data.hrv && !hasWhoop) promises.push(logHabitAction(userId, 'habit_hrv', data.hrv, undefined, 'HRV'));
                 if (data.restingHR && !hasWhoop) promises.push(logHabitAction(userId, 'habit_resting_hr', data.restingHR, undefined, 'Resting HR'));

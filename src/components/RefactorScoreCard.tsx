@@ -16,6 +16,7 @@ export default function RefactorScoreCard({ userId, profile }: RefactorScoreCard
 
   useEffect(() => {
     const load = async () => {
+      try {
       const supabase = createClient();
       const today = new Date();
       const todayStr = today.toLocaleDateString('en-CA');
@@ -132,11 +133,17 @@ export default function RefactorScoreCard({ userId, profile }: RefactorScoreCard
       };
 
       setScore(calculateRefactorScore(inputs));
+      } catch (e) { console.error('RefactorScore load error:', e); }
     };
     load();
   }, [userId, profile]);
 
-  if (!score) return null;
+  if (!score) return (
+    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+      <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Refactor Score</div>
+      <div className="text-xs text-zinc-600 mt-1">Loading...</div>
+    </div>
+  );
 
   const TrendIcon = ({ trend }: { trend: string }) => {
     if (trend === 'up') return <TrendingUp size={10} className="text-emerald-400" />;
@@ -158,6 +165,7 @@ export default function RefactorScoreCard({ userId, profile }: RefactorScoreCard
       <div className="flex items-center justify-between">
         <div>
           <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Refactor Score</div>
+          <div className="text-[9px] text-zinc-600 mt-0.5">14-day rolling fitness health</div>
           <div className="text-3xl font-black text-white">{score.total}<span className="text-lg text-zinc-500">/100</span></div>
         </div>
         <div className="w-16 h-16 rounded-full border-4 border-zinc-700 flex items-center justify-center relative">

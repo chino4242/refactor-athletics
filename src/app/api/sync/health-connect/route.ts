@@ -55,8 +55,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Active calories (skip if WHOOP connected — WHOOP tracks continuously)
-    if (body.active_calories?.length && !hasWhoop) {
+    // Active calories (WHOOP writes to Health Connect, so always process)
+    if (body.active_calories?.length) {
       const todayCals = body.active_calories.filter(isToday);
       const total = Math.round(todayCals.reduce((s: number, r: any) => s + (r.calories || 0), 0));
       await supabase.from('nutrition_logs').delete().eq('user_id', user.id).eq('date', today).eq('macro_type', 'calories_burned');

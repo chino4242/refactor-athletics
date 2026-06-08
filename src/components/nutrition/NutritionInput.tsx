@@ -6,6 +6,7 @@ import type { FoodResult } from '@/app/api/food-search/route';
 
 interface NutritionInputProps {
   onFoodsFound: (foods: FoodResult[]) => void;
+  onSearchResults: (foods: FoodResult[]) => void;
   onPhotoFoods: (foods: FoodResult[]) => void;
 }
 
@@ -27,7 +28,7 @@ async function requestCameraPermission(): Promise<boolean> {
   }
 }
 
-export default function NutritionInput({ onFoodsFound, onPhotoFoods }: NutritionInputProps) {
+export default function NutritionInput({ onFoodsFound, onSearchResults, onPhotoFoods }: NutritionInputProps) {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [photoLoading, setPhotoLoading] = useState(false);
@@ -65,11 +66,11 @@ export default function NutritionInput({ onFoodsFound, onPhotoFoods }: Nutrition
           setQuery('');
         }
       } else {
-        // Food search — single item lookup
+        // Food search — single item lookup (show picker)
         const res = await fetch(`/api/food-search?q=${encodeURIComponent(text)}`, { signal: controller.signal });
         const data = await res.json();
         if (data.results?.length) {
-          onFoodsFound(data.results);
+          onSearchResults(data.results);
         }
       }
     } catch (e: any) {
