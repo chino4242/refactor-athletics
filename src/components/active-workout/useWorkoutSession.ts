@@ -349,7 +349,8 @@ export function useWorkoutSession({ userId, onLogComplete, initialDate, sectionF
           if (newCompleted.length === workoutData.length) { setIsComplete(true); localStorage.removeItem(progressKey); }
           return;
         } else if (!isExerciseBlock && targetBlock.xp_value > 0) {
-          await logWorkoutBlockAction(userId, targetBlock.name, distance ? `${distance} mi` : (targetBlock.description || `${targetBlock.sets || 1} Sets`), targetBlock.xp_value, targetBlock.type === 'timer' || targetBlock.type === 'card' || targetBlock.name.includes('Tread') ? 'Cardio' : 'Strength', exercisesData, sessionId);
+          const actType = targetBlock.section === 'Engine' || targetBlock.name.includes('Tread') ? 'Cardio' : targetBlock.section === 'Mobility' ? 'Mobility' : targetBlock.section === 'Core Work' ? 'Core' : 'Strength';
+          await logWorkoutBlockAction(userId, targetBlock.name, distance ? `${distance} mi` : (targetBlock.description || `${targetBlock.sets || 1} Sets`), targetBlock.xp_value, actType, exercisesData, sessionId);
           if (onLogComplete) onLogComplete();
           const displayXp = timerXp || targetBlock.xp_value;
           setBlockResults([{ name: targetBlock.name, xp_earned: displayXp, level: 0, rank_name: null, hasStandards: false, isPR: false, value: distance ? `${distance} mi` : 'Complete' }]);
