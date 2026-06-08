@@ -71,11 +71,12 @@ export async function getTodayXp(userId: string, date?: Date): Promise<TodayXpRe
     deduped.set('Sleep', Math.round(sleep * 2));
   }
   if (workouts?.length && !deduped.has('Workout')) {
-    // Only add aggregate "Workout" if no individual exercise entries exist in ledger
-    const hasExerciseEntries = workouts.some(w => deduped.has(w.exercise_id?.replace(/_/g, ' ')) || [...deduped.keys()].some(k => k.toLowerCase().includes((w.exercise_id || '').replace(/_/g, ' ').toLowerCase().slice(0, 10))));
-    if (!hasExerciseEntries) {
-      const workoutXp = workouts.reduce((s, w) => s + (w.xp || 0), 0);
-      if (workoutXp > 0) deduped.set('Workout', workoutXp);
+    // Add XP from workout blocks that aren't individually in the ledger
+    for (const w of workouts) {
+      const label = (w.exercise_id || '').replace(/_/g, ' ').replace(/^block /, '').replace(/\b\w/g, (c: string) => c.toUpperCase());
+      if (!deduped.has(label) && (w.xp || 0) > 0) {
+        deduped.set(label, w.xp);
+      }
     }
   }
 

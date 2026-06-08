@@ -457,6 +457,10 @@ export async function logWorkoutBlockAction(
 
     if (error) throw error;
 
+    // Write to XP ledger for attribution
+    const { awardXp } = await import('@/utils/xp-service');
+    await awardXp(supabase, userId, { type: 'workout', level: 0, volumeXp: xp } as any, blockName, false);
+
     revalidatePath('/', 'layout');
 
     // Check quest progress (fire-and-forget)
