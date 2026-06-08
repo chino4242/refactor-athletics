@@ -413,7 +413,9 @@ function ChallengeView({ challenge, userId, onBack }: { challenge: Challenge; us
   const editedTargets = useRef<Record<string, number>>({});
   const startDate = new Date(challenge.start_date + 'T12:00:00');
   const myDays = days.filter((d: any) => d.user_id === userId);
-  const passedCount = myDays.filter((d: any) => d.status === 'passed').length;
+  const todayMetSnapshot = myDays.find((d: any) => d.date === today)?.metrics_snapshot;
+  const todayAllMet = todayMetSnapshot && Object.keys(todayMetSnapshot).length > 0 && Object.values(todayMetSnapshot).every((v: any) => v.met === true);
+  const passedCount = myDays.filter((d: any) => d.status === 'passed').length + (todayAllMet ? 1 : 0);
   const members = challenge.challenge_75_members || [];
   const myMembership = members.find((m: any) => m.user_id === userId);
   const allMetrics = challenge.challenge_75_metrics || [];
