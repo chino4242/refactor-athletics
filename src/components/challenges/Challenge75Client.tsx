@@ -526,27 +526,65 @@ function ChallengeView({ challenge, userId, onBack }: { challenge: Challenge; us
         </div>
       </div>
 
-      {/* Group Members Status */}
+      {/* Per-Member Daily Checklist */}
       {isGroup && members.length > 1 && (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 space-y-2">
-          <span className="text-[10px] font-bold text-zinc-500 uppercase">Group Progress</span>
-          {members.map((m: any) => {
-            const memberDays = days.filter((d: any) => d.user_id === m.user_id);
-            const memberPassed = memberDays.filter((d: any) => d.status === 'passed').length;
-            const memberToday = memberDays.find((d: any) => d.date === today);
-            const checkedIn = memberToday?.status === 'passed' || Object.values(memberToday?.custom_checks || {}).some(Boolean);
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 space-y-3">
+          <span className="text-[10px] font-bold text-zinc-500 uppercase">Today&apos;s Progress</span>
+          {members.filter((m: any) => m.status === 'joined').map((m: any) => {
+            const memberToday = days.find((d: any) => d.user_id === m.user_id && d.date === today);
+            const snapshot = memberToday?.metrics_snapshot || {};
+            const customChecks = memberToday?.custom_checks || {};
+            const memberMetrics = allMetrics.filter((mt: any) => mt.member_id === m.id).length > 0
+              ? allMetrics.filter((mt: any) => mt.member_id === m.id)
+              : allMetrics.filter((mt: any) => !mt.member_id);
+            const metCount = memberMetrics.length;
+            const metPassed = memberMetrics.filter((mt: any) => {
+              if (mt.metric_type === 'custom') return customChecks[mt.metric_id] === true;
+              return snapshot[mt.metric_id]?.met === true;
+            }).length;
+
             return (
-              <div key={m.user_id} className="flex items-center justify-between">
-                <span className="text-xs text-zinc-300">{m.user_id === userId ? 'You' : m.user_id.slice(0, 8)}</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-zinc-500">{memberPassed} days</span>
-                  <span className={`text-[10px] font-bold ${checkedIn ? 'text-emerald-400' : 'text-zinc-600'}`}>
-                    {checkedIn ? '✅' : '⏳'}
-                  </span>
+              <div key={m.user_id} className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-zinc-300">{m.user_id === userId ? 'You' : (m.display_name || m.user_id.slice(0, 8))}</span>
+                  <span className={`text-[10px] font-bold ${metPassed === metCount ? 'text-emerald-400' : 'text-zinc-500'}`}>{metPassed}/{metCount}</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {memberMetrics.map((mt: any) => {
+                    const met = mt.metric_type === 'custom'
+                      ? customChecks[mt.metric_id] === true
+                      : snapshot[mt.metric_id]?.met === true;
+                    return (
+                      <span key={mt.metric_id} className={`text-[9px] px-2 py-0.5 rounded-full border ${met ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400' : 'bg-zinc-800 border-zinc-700 text-zinc-500'}`}>
+                        {met ? '✓' : '○'} {mt.label}
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Solo — Today's Metrics */}
+      {!isGroup && (
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 space-y-2">
+          <span className="text-[10px] font-bold text-zinc-500 uppercase">Today&apos;s Metrics</span>
+          <div className="flex flex-wrap gap-1.5">
+            {metrics.map((mt: any) => {
+              const snapshot = todayRecord?.metrics_snapshot || {};
+              const customChecks = todayRecord?.custom_checks || {};
+              const met = mt.metric_type === 'custom'
+                ? customChecks[mt.metric_id] === true
+                : snapshot[mt.metric_id]?.met === true;
+              return (
+                <span key={mt.metric_id || mt.id} className={`text-[10px] px-2.5 py-1 rounded-full border ${met ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400' : 'bg-zinc-800 border-zinc-700 text-zinc-500'}`}>
+                  {met ? '✓' : '○'} {mt.label}
+                </span>
+              );
+            })}
+          </div>
         </div>
       )}
 
