@@ -35,9 +35,10 @@ function applyEquipmentSwaps(blocks: any[], userEquipment: Set<string>): any[] {
     });
 }
 
-function dbBlocksToWorkoutBlocks(blocks: any[], catalog: any[]): any[] {
+function dbBlocksToWorkoutBlocks(blocks: any[], catalog: any[], cardioType: string = 'treadmill'): any[] {
     const catalogMap = new Map(catalog.map((c: any) => [c.id, c]));
     const result: any[] = [];
+    const cardioLabel = cardioType === 'rower' ? 'Row' : cardioType === 'bike' ? 'Bike' : cardioType === 'elliptical' ? 'Elliptical' : 'Tread';
 
     // Group consecutive treadmill blocks into timer blocks
     let treadmillGroup: any[] = [];
@@ -51,13 +52,16 @@ function dbBlocksToWorkoutBlocks(blocks: any[], catalog: any[]): any[] {
             const [zone, color] = intensityToZone(b.intensity);
             const secs = b.duration_seconds || 60;
             const incline = b.incline || 0;
+            const effortNote = incline > 0
+              ? cardioType === 'rower' ? 'push the pace' : cardioType === 'bike' ? 'add resistance' : `${incline}% incline`
+              : null;
             return {
                 type: 'interval',
                 seconds: secs,
                 zone,
                 color,
-                note: incline > 0 ? `${incline}% incline` : null,
-                raw_text: secs % 60 === 0 ? `${secs / 60} min ${zone}${incline > 0 ? ` @ ${incline}%` : ''}` : `${secs}s ${zone}${incline > 0 ? ` @ ${incline}%` : ''}`,
+                note: effortNote,
+                raw_text: secs % 60 === 0 ? `${secs / 60} min ${zone}${effortNote ? ` — ${effortNote}` : ''}` : `${secs}s ${zone}${effortNote ? ` — ${effortNote}` : ''}`,
                 outdoor_alternative: b.outdoor_alternative || null,
             };
         });
@@ -84,7 +88,7 @@ function dbBlocksToWorkoutBlocks(blocks: any[], catalog: any[]): any[] {
         ];
 
         result.push({
-            name: `Tread Block - ${Math.round(finalIntervals.reduce((s, i) => s + (i.seconds || 0), 0) / 60)} min`,
+            name: `${cardioLabel} Block - ${Math.round(finalIntervals.reduce((s, i) => s + (i.seconds || 0), 0) / 60)} min`,
             type: 'timer',
             intervals: finalIntervals,
             section: treadmillSection,
@@ -235,9 +239,10 @@ export async function GET(request: Request) {
 
     // Try DB programs first
     if (user) {
-        const { data: profile } = await supabase.from('users').select('available_equipment, selected_path').eq('id', user.id).single();
+        const { data: profile } = await supabase.from('users').select('available_equipment, selected_path, preferred_cardio').eq('id', user.id).single();
         const userEquipment = new Set<string>(profile?.available_equipment || []);
         const userPath = profile?.selected_path || 'hybrid';
+        const cardioType = profile?.preferred_cardio || 'treadmill';
 
         const { data: programs } = await supabase
             .from('workout_programs')
@@ -262,7 +267,7 @@ export async function GET(request: Request) {
 
                 if (blocks && blocks.length > 0) {
                     const swappedBlocks = applyEquipmentSwaps(blocks, userEquipment);
-                    return NextResponse.json(dbBlocksToWorkoutBlocks(swappedBlocks, catalog || []));
+                    return NextResponse.json(dbBlocksToWorkoutBlocks(swappedBlocks, catalog || [], cardioType));
                 }
             }
             // All variants empty — fall through to defaults
@@ -272,10 +277,12 @@ export async function GET(request: Request) {
     // Fallback: check default programs in DB for user's training path
     let userPath = 'hybrid';
     let fallbackEquipment = new Set<string>();
+    let fallbackCardio = 'treadmill';
     if (user) {
-        const { data: profile } = await supabase.from('users').select('selected_path, available_equipment').eq('id', user.id).single();
+        const { data: profile } = await supabase.from('users').select('selected_path, available_equipment, preferred_cardio').eq('id', user.id).single();
         userPath = profile?.selected_path || 'hybrid';
         fallbackEquipment = new Set<string>(profile?.available_equipment || []);
+        fallbackCardio = profile?.preferred_cardio || 'treadmill';
     }
 
     // Pick variant based on week number (A/B/C rotation)
@@ -301,7 +308,7 @@ export async function GET(request: Request) {
 
         if (blocks && blocks.length > 0) {
             const swapped = applyEquipmentSwaps(blocks, fallbackEquipment);
-            return NextResponse.json(dbBlocksToWorkoutBlocks(swapped, catalog || []));
+            return NextResponse.json(dbBlocksToWorkoutBlocks(swapped, catalog || [], fallbackCardio));
         }
     }
 

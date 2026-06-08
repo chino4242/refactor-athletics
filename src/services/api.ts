@@ -63,6 +63,7 @@ export const saveProfile = async (profile: UserProfileData): Promise<any> => {
     if (profile.habit_targets !== undefined) payload.habit_targets = profile.habit_targets;
     if (profile.body_composition_goals !== undefined) payload.body_composition_goals = profile.body_composition_goals;
     if (profile.available_equipment !== undefined) payload.available_equipment = profile.available_equipment;
+    if (profile.preferred_cardio !== undefined) payload.preferred_cardio = profile.preferred_cardio;
     if (profile.measurement_mode !== undefined) payload.measurement_mode = profile.measurement_mode;
 
     const { error } = await supabase

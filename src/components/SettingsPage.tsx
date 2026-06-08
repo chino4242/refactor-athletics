@@ -251,6 +251,32 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                     </div>
                 </div>
 
+                {/* Cardio Equipment */}
+                <div className="mt-4">
+                    <label className="text-[10px] font-bold text-zinc-500 uppercase mb-2 block">Preferred Cardio</label>
+                    <div className="grid grid-cols-4 gap-2">
+                        {[
+                            { key: 'treadmill', emoji: '🏃', name: 'Treadmill' },
+                            { key: 'rower', emoji: '🚣', name: 'Rower' },
+                            { key: 'bike', emoji: '🚴', name: 'Bike' },
+                            { key: 'elliptical', emoji: '🦿', name: 'Elliptical' },
+                        ].map(c => (
+                            <button key={c.key}
+                                onClick={async () => {
+                                    await saveProfile({ user_id: userId, preferred_cardio: c.key } as any);
+                                    toast.success(`Cardio set to ${c.name}`);
+                                }}
+                                className={`p-2 rounded-xl border-2 text-center transition ${
+                                    initialProfile?.preferred_cardio === c.key ? 'border-orange-500 bg-orange-500/10' :
+                                    'border-zinc-700 bg-zinc-800 hover:border-zinc-600'
+                                }`}>
+                                <div className="text-lg">{c.emoji}</div>
+                                <div className="text-[9px] font-bold text-white">{c.name}</div>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
                 {/* Profile Section */}
                 <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
                     <div className="flex items-center gap-2 mb-5">
