@@ -155,26 +155,53 @@ export default function NutritionSection({ userId, userProfile, totals, onUpdate
       <RecentFoods onInstantLog={handleInstantLog} />
 
       {/* Water quick-log */}
-      <div className="flex items-center justify-between bg-zinc-800/50 border border-zinc-700/50 rounded-xl px-3 py-2">
-        <div className="flex items-center gap-2">
-          <span className="text-sm">💧</span>
-          <span className="text-xs text-zinc-300 font-medium">{Math.round(totals['habit_water'] || 0)} / {targets.water || 100} oz</span>
+      <div className="bg-zinc-800/50 border border-zinc-700/50 rounded-xl px-3 py-2 space-y-1.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm">💧</span>
+            <span className="text-xs text-zinc-300 font-medium">{Math.round(totals['habit_water'] || 0)} / {targets.water || 100} oz</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            {[8, 16, 32].map(oz => (
+              <button
+                key={oz}
+                onClick={async () => {
+                  const current = totals['habit_water'] || 0;
+                  await logHabitAction(userId, 'habit_water', current + oz, undefined, 'Water');
+                  onUpdate();
+                }}
+                className="bg-cyan-600/20 border border-cyan-500/30 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-lg hover:bg-cyan-600/30 transition"
+              >
+                +{oz}
+              </button>
+            ))}
+            {(totals['habit_water'] || 0) > 0 && (
+              <button
+                onClick={async () => {
+                  const current = totals['habit_water'] || 0;
+                  await logHabitAction(userId, 'habit_water', Math.max(0, current - 8), undefined, 'Water');
+                  onUpdate();
+                }}
+                className="bg-zinc-700/50 border border-zinc-600/50 text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-lg hover:text-red-400 transition"
+              >
+                −8
+              </button>
+            )}
+          </div>
         </div>
-        <div className="flex gap-1.5">
-          {[8, 16, 32].map(oz => (
-            <button
-              key={oz}
-              onClick={async () => {
-                const current = totals['habit_water'] || 0;
-                await logHabitAction(userId, 'habit_water', current + oz, undefined, 'Water');
-                onUpdate();
-              }}
-              className="bg-cyan-600/20 border border-cyan-500/30 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-lg hover:bg-cyan-600/30 transition"
-            >
-              +{oz}oz
-            </button>
-          ))}
-        </div>
+        <form className="flex gap-1.5" onSubmit={async (e) => {
+          e.preventDefault();
+          const input = (e.target as HTMLFormElement).elements.namedItem('water_amt') as HTMLInputElement;
+          const val = parseFloat(input.value);
+          if (!val || val <= 0) return;
+          const current = totals['habit_water'] || 0;
+          await logHabitAction(userId, 'habit_water', current + val, undefined, 'Water');
+          input.value = '';
+          onUpdate();
+        }}>
+          <input name="water_amt" type="number" placeholder="Custom oz" className="flex-1 bg-zinc-700/50 border border-zinc-600/50 rounded-lg px-2 py-1 text-[10px] text-white placeholder:text-zinc-500 outline-none focus:border-cyan-500/50 w-20" />
+          <button type="submit" className="bg-cyan-600/20 border border-cyan-500/30 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-lg">Add</button>
+        </form>
       </div>
 
       {/* Progress — collapsed by default */}
