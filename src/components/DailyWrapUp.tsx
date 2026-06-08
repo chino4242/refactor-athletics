@@ -23,7 +23,8 @@ interface WrapUpData {
   macros: { protein: number; carbs: number; fat: number; calories: number; caloriesBurned: number };
   workout: { name: string; exercises: number; xp: number } | null;
   streak: number;
-  targets: { steps: number; sleep: number; protein: number };
+  targets: { steps: number; sleep: number; protein: number; water: number; exercise_minutes: number };
+  hiddenHabits: string[];
 }
 
 function getHeroStat(data: WrapUpData): { emoji: string; value: string; label: string } | null {
@@ -88,9 +89,10 @@ function generateReflection(data: WrapUpData): string {
 
 function generateNudge(data: WrapUpData): string | null {
   const { steps, sleep, protein } = data.targets;
-  if (data.steps > 0 && data.steps < steps) return `${data.steps.toLocaleString()} of ${steps.toLocaleString()} steps. A short walk gets you there.`;
-  if (data.macros.protein > 0 && data.macros.protein < protein) return `${data.macros.protein}g of ${protein}g protein — try a shake or extra serving today.`;
-  if (data.sleep > 0 && data.sleep < sleep) return `${data.sleep}h of ${sleep}h sleep. Wind down 30 min earlier tonight.`;
+  const hidden = data.hiddenHabits;
+  if (!hidden.includes('habit_steps') && data.steps > 0 && data.steps < steps) return `${data.steps.toLocaleString()} of ${steps.toLocaleString()} steps. A short walk gets you there.`;
+  if (!hidden.includes('macro_protein') && data.macros.protein > 0 && data.macros.protein < protein) return `${data.macros.protein}g of ${protein}g protein — try a shake or extra serving today.`;
+  if (!hidden.includes('habit_sleep') && data.sleep > 0 && data.sleep < sleep) return `${data.sleep}h of ${sleep}h sleep. Wind down 30 min earlier tonight.`;
   if (!data.workout) return 'No workout logged. Even 20 minutes counts.';
   return null;
 }
@@ -118,7 +120,7 @@ export default function DailyWrapUp({ userId, mode, onDismiss, stats }: DailyWra
         .eq('user_id', userId).eq('date', dateStr);
 
       const { data: userProfile } = await supabase
-        .from('users').select('habit_targets')
+        .from('users').select('habit_targets, nutrition_targets, hidden_habits')
         .eq('id', userId).single();
 
       const { data: nutrition } = await supabase
@@ -181,10 +183,13 @@ export default function DailyWrapUp({ userId, mode, onDismiss, stats }: DailyWra
       const targets = {
         steps: userProfile?.habit_targets?.habit_steps || 10000,
         sleep: userProfile?.habit_targets?.habit_sleep || 7,
-        protein: userProfile?.habit_targets?.macro_protein || 150,
+        protein: userProfile?.nutrition_targets?.protein || 150,
+        water: userProfile?.nutrition_targets?.water || userProfile?.habit_targets?.habit_water || 100,
+        exercise_minutes: userProfile?.habit_targets?.habit_exercise_minutes || 30,
       };
+      const hiddenHabits: string[] = userProfile?.hidden_habits || [];
 
-      setData({ date: dateStr, xpItems, totalXp, steps, sleep, macros, workout, streak, targets });
+      setData({ date: dateStr, xpItems, totalXp, steps, sleep, macros, workout, streak, targets, hiddenHabits });
       setLoading(false);
     };
     load();
@@ -211,13 +216,14 @@ export default function DailyWrapUp({ userId, mode, onDismiss, stats }: DailyWra
     xpToLevel(totalCareerXp - data.totalXp).level < xpToLevel(totalCareerXp).level;
   const bestDay = stats?.highest_daily_xp ?? 0;
 
-  // Habit checkmarks
+  // Habit checkmarks — dynamic based on user's visible habits with targets
   const checks: { emoji: string; label: string; met: boolean }[] = [];
-  if (data.sleep > 0) checks.push({ emoji: '😴', label: `${data.sleep}h`, met: data.sleep >= data.targets.sleep });
-  if (data.steps > 0) checks.push({ emoji: '👟', label: `${(data.steps / 1000).toFixed(1)}k`, met: data.steps >= data.targets.steps });
-  if (data.macros.protein > 0) checks.push({ emoji: '🥩', label: `${data.macros.protein}g`, met: data.macros.protein >= data.targets.protein });
+  const hidden = data.hiddenHabits;
+  if (data.sleep > 0 && !hidden.includes('habit_sleep')) checks.push({ emoji: '😴', label: `${data.sleep}h`, met: data.sleep >= data.targets.sleep });
+  if (data.steps > 0 && !hidden.includes('habit_steps')) checks.push({ emoji: '👟', label: `${(data.steps / 1000).toFixed(1)}k`, met: data.steps >= data.targets.steps });
+  if (data.macros.protein > 0 && !hidden.includes('macro_protein')) checks.push({ emoji: '🥩', label: `${data.macros.protein}g`, met: data.macros.protein >= data.targets.protein });
   if (data.workout) checks.push({ emoji: '🏋️', label: 'Trained', met: true });
-  if (data.macros.calories > 0) checks.push({ emoji: '🥗', label: 'Logged', met: true });
+  if (data.macros.calories > 0 && !hidden.includes('macro_calories')) checks.push({ emoji: '🥗', label: 'Logged', met: true });
 
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
