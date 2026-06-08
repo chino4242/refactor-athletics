@@ -7,6 +7,7 @@ export async function checkQuestProgress(supabase: any, userId: string) {
     const diff = (day + 6) % 7;
     const monday = new Date(now);
     monday.setDate(now.getDate() - diff);
+    monday.setHours(0, 0, 0, 0);
     const weekStart = monday.toLocaleDateString('en-CA');
 
     const { data: quests } = await supabase.from('quest_slate')
