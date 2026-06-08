@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createClient } from '@/utils/supabase/client';
 
 export interface StarterQuest {
@@ -44,6 +44,11 @@ const UNLOCK_MAP: Record<string, string> = {
 
 export function useStarterQuests(userId: string, initialProgress: QuestProgress[] = []) {
   const [progress, setProgress] = useState<QuestProgress[]>(initialProgress);
+
+  // Update progress when profile loads (initialProgress changes from [] to actual data)
+  useEffect(() => {
+    if (initialProgress.length > 0) setProgress(initialProgress);
+  }, [initialProgress.length]);
 
   const completedIds = useMemo(() => new Set(progress.map(p => p.id)), [progress]);
 

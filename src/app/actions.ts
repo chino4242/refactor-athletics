@@ -403,6 +403,15 @@ export async function logTrainingAction(
     // Check quest progress (fire-and-forget)
     import('@/utils/questProgress').then(m => m.checkQuestProgress(supabase, userId)).catch(() => {});
 
+    // Complete 'first_strike' starter quest if not already done
+    supabase.from('users').select('starter_quest_progress').eq('id', userId).single().then(({ data }) => {
+      const progress = data?.starter_quest_progress || [];
+      if (!progress.some((p: any) => p.id === 'first_strike')) {
+        const updated = [...progress, { id: 'first_strike', completed_at: new Date().toISOString() }];
+        supabase.from('users').update({ starter_quest_progress: updated }).eq('id', userId).then(() => {});
+      }
+    });
+
     return { 
         xp_earned: totalXp,
         level: userLevel,
