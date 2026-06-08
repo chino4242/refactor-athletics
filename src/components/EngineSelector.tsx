@@ -6,13 +6,22 @@ import { Flame, Heart, Timer, ChevronRight } from 'lucide-react';
 interface Props {
     onSelect: (choice: 'hiit' | 'zone2', durationMinutes?: number) => void;
     recommendation?: 'hiit' | 'zone2';
+    preferredCardio?: string;
+    onCardioChange?: (cardio: string) => void;
 }
 
 const DURATION_OPTIONS = [20, 30, 45, 60];
+const CARDIO_OPTIONS = [
+    { key: 'treadmill', emoji: '🏃', label: 'Tread' },
+    { key: 'rower', emoji: '🚣', label: 'Row' },
+    { key: 'bike', emoji: '🚴', label: 'Bike' },
+    { key: 'elliptical', emoji: '🦿', label: 'Elliptical' },
+];
 
-export default function EngineSelector({ onSelect, recommendation }: Props) {
+export default function EngineSelector({ onSelect, recommendation, preferredCardio = 'treadmill', onCardioChange }: Props) {
     const [mode, setMode] = useState<'choose' | 'duration'>('choose');
     const [duration, setDuration] = useState(30);
+    const [selectedCardio, setSelectedCardio] = useState(preferredCardio);
 
     if (mode === 'duration') {
         return (
@@ -21,7 +30,7 @@ export default function EngineSelector({ onSelect, recommendation }: Props) {
                     <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
                         <Heart size={32} className="text-emerald-500" />
                     </div>
-                    <h2 className="text-xl font-black italic text-white uppercase">Zone 2 Run</h2>
+                    <h2 className="text-xl font-black italic text-white uppercase">Zone 2 {selectedCardio === 'rower' ? 'Row' : selectedCardio === 'bike' ? 'Ride' : selectedCardio === 'elliptical' ? 'Session' : 'Run'}</h2>
                     <p className="text-zinc-500 text-sm mt-1">How long do you want to go?</p>
                 </div>
 
@@ -73,6 +82,17 @@ export default function EngineSelector({ onSelect, recommendation }: Props) {
             <div className="text-center mb-2">
                 <h2 className="text-xs font-bold text-orange-500 uppercase tracking-widest">Pick Your Engine</h2>
                 <p className="text-zinc-500 text-sm mt-1">What kind of cardio today?</p>
+            </div>
+
+            {/* Equipment selector */}
+            <div className="flex justify-center gap-2 mb-2">
+                {CARDIO_OPTIONS.map(c => (
+                    <button key={c.key} onClick={() => { setSelectedCardio(c.key); onCardioChange?.(c.key); }}
+                        className={`flex flex-col items-center px-3 py-1.5 rounded-lg border transition ${selectedCardio === c.key ? 'border-orange-500 bg-orange-500/10' : 'border-zinc-700 bg-zinc-800 hover:border-zinc-600'}`}>
+                        <span className="text-sm">{c.emoji}</span>
+                        <span className="text-[8px] font-bold text-zinc-400">{c.label}</span>
+                    </button>
+                ))}
             </div>
 
             <button
