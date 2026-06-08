@@ -412,6 +412,7 @@ function ChallengeView({ challenge, userId, onBack }: { challenge: Challenge; us
   const [editingTargets, setEditingTargets] = useState(false);
   const editedTargets = useRef<Record<string, number>>({});
   const startDate = new Date(challenge.start_date + 'T12:00:00');
+  const today = new Date().toLocaleDateString('en-CA');
   const myDays = days.filter((d: any) => d.user_id === userId);
   const todayMetSnapshot = myDays.find((d: any) => d.date === today)?.metrics_snapshot;
   const todayAllMet = todayMetSnapshot && Object.keys(todayMetSnapshot).length > 0 && Object.values(todayMetSnapshot).every((v: any) => v.met === true);
@@ -425,7 +426,6 @@ function ChallengeView({ challenge, userId, onBack }: { challenge: Challenge; us
     : allMetrics.filter((m: any) => !m.member_id);
   const isGroup = !!challenge.group_id;
 
-  const today = new Date().toLocaleDateString('en-CA');
   const todayRecord = myDays.find((d: any) => d.date === today);
   const customMetrics = metrics.filter((m: any) => m.metric_type === 'custom');
 
