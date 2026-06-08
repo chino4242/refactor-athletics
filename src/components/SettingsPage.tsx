@@ -383,6 +383,7 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                         <Link2 size={16} className="text-blue-400" />
                         <h2 className="text-sm font-black uppercase tracking-widest">Integrations</h2>
                     </div>
+                    <p className="text-[10px] text-zinc-500 mb-4">Wearables sync to Health Connect every 15–30 min. For the latest reading, open your wearable&apos;s app then pull to refresh.</p>
 
                     {/* WHOOP */}
                     <div className="mb-4">
