@@ -204,6 +204,26 @@ export default function NutritionSection({ userId, userProfile, totals, onUpdate
         </form>
       </div>
 
+      {/* Calories Burned — manual input */}
+      <div className="bg-zinc-800/50 border border-zinc-700/50 rounded-xl px-3 py-2">
+        <form className="flex items-center gap-2" onSubmit={async (e) => {
+          e.preventDefault();
+          const input = (e.target as HTMLFormElement).elements.namedItem('cal_amt') as HTMLInputElement;
+          const val = parseFloat(input.value);
+          if (!val || val <= 0) return;
+          await logHabitAction(userId, 'macro_calories_burned', val, undefined, 'Manual');
+          input.value = '';
+          onUpdate();
+        }}>
+          <div className="flex items-center gap-2">
+            <span className="text-sm">🔥</span>
+            <span className="text-xs text-zinc-300 font-medium">{Math.round(totals['macro_calories_burned'] || 0)} burned</span>
+          </div>
+          <input name="cal_amt" type="number" placeholder="kcal" className="ml-auto w-20 bg-zinc-700/50 border border-zinc-600/50 rounded-lg px-2 py-1 text-[10px] text-white placeholder:text-zinc-500 outline-none focus:border-orange-500/50" />
+          <button type="submit" className="bg-orange-600/20 border border-orange-500/30 text-orange-400 text-[10px] font-bold px-2 py-1 rounded-lg">Set</button>
+        </form>
+      </div>
+
       {/* Progress — collapsed by default */}
       <NutritionProgress totals={totals} targets={targets} userId={userId} />
     </div>
