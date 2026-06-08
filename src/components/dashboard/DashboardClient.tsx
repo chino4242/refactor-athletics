@@ -244,7 +244,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             {/* Pull to refresh indicator */}
             {pullDistance > 0 && (
                 <div 
-                    className="fixed top-0 left-0 right-0 flex items-center justify-center z-50 transition-opacity"
+                    className="fixed top-0 left-0 right-0 flex items-center justify-center z-50 pt-safe transition-opacity"
                     style={{ 
                         height: `${pullDistance}px`,
                         opacity: pullDistance / 100 

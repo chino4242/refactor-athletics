@@ -18,7 +18,7 @@ export default function OfflineBanner() {
   if (!offline) return null;
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-[100] bg-red-600 px-4 py-2 flex items-center justify-center gap-2 animate-in slide-in-from-top">
+    <div className="fixed top-0 left-0 right-0 z-[100] pt-safe bg-red-600 px-4 py-2 flex items-center justify-center gap-2 animate-in slide-in-from-top">
       <WifiOff size={14} className="text-white" />
       <span className="text-xs font-bold text-white">No internet connection</span>
     </div>

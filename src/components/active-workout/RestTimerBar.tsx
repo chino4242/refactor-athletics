@@ -16,7 +16,7 @@ export default function RestTimerBar({ restTime, totalRest, onSkip }: RestTimerB
   if (restTime <= 0) return null;
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 animate-in slide-in-from-top-2">
+    <div className="fixed top-0 left-0 right-0 z-50 pt-safe animate-in slide-in-from-top-2">
       <div className="bg-blue-600 px-4 py-3 flex items-center justify-between shadow-lg shadow-blue-900/40">
         <div className="flex items-center gap-2">
           <Timer size={16} className="text-white animate-pulse" />
