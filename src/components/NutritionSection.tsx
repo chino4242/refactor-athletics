@@ -154,6 +154,29 @@ export default function NutritionSection({ userId, userProfile, totals, onUpdate
       {/* Recents — one-tap logging */}
       <RecentFoods onInstantLog={handleInstantLog} />
 
+      {/* Water quick-log */}
+      <div className="flex items-center justify-between bg-zinc-800/50 border border-zinc-700/50 rounded-xl px-3 py-2">
+        <div className="flex items-center gap-2">
+          <span className="text-sm">💧</span>
+          <span className="text-xs text-zinc-300 font-medium">{Math.round(totals['habit_water'] || 0)} / {targets.water || 100} oz</span>
+        </div>
+        <div className="flex gap-1.5">
+          {[8, 16, 32].map(oz => (
+            <button
+              key={oz}
+              onClick={async () => {
+                const current = totals['habit_water'] || 0;
+                await logHabitAction(userId, 'habit_water', current + oz, undefined, 'Water');
+                onUpdate();
+              }}
+              className="bg-cyan-600/20 border border-cyan-500/30 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-lg hover:bg-cyan-600/30 transition"
+            >
+              +{oz}oz
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Progress — collapsed by default */}
       <NutritionProgress totals={totals} targets={targets} userId={userId} />
     </div>
