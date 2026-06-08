@@ -13,7 +13,7 @@ function getHealth(): any {
   return healthPlugin;
 }
 
-const READ_TYPES = ['steps', 'calories', 'sleep', 'weight', 'heart_rate', 'heart_rate_variability', 'body_fat_percentage', 'lean_body_mass', 'exercise'];
+const READ_TYPES = ['steps', 'calories', 'totalCalories', 'sleep', 'weight', 'heart_rate', 'heart_rate_variability', 'body_fat_percentage', 'lean_body_mass', 'exercise'];
 
 export async function isHealthAvailable(): Promise<boolean> {
   if (!isNative) return false;
@@ -44,7 +44,13 @@ export async function getSteps(startDate: string, endDate: string): Promise<numb
 
 export async function getCaloriesBurned(startDate: string, endDate: string): Promise<number> {
   if (!isNative) return 0;
-  try { const h = getHealth(); return Math.round((await h.queryAggregated({ dataType: 'calories', startDate, endDate })).value || 0); } catch { return 0; }
+  try {
+    const h = getHealth();
+    const result = await h.queryAggregated({ dataType: 'totalCalories', startDate, endDate });
+    // Handle both shapes: {value} (legacy) or {samples: [{value}]}
+    const val = result.value ?? (result.samples || []).reduce((s: number, sample: any) => s + (sample.value || 0), 0);
+    return Math.round(val || 0);
+  } catch { return 0; }
 }
 
 export async function getSleep(startDate: string, endDate: string): Promise<number> {
