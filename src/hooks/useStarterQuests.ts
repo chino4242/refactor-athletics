@@ -91,12 +91,12 @@ export function useStarterQuests(userId: string, initialProgress: QuestProgress[
       group_joined: 'join_the_arena',
     };
     const questId = map[trigger];
-    if (questId && !completedIds.has(questId) && activeQuest?.id === questId) {
+    if (questId && !completedIds.has(questId)) {
       await completeQuest(questId);
       return questId;
     }
     return null;
-  }, [completedIds, activeQuest, completeQuest]);
+  }, [completedIds, completeQuest]);
 
   const quests = useMemo(() => {
     return QUEST_DEFINITIONS.map(q => ({

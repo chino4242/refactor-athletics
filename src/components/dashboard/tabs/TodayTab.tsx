@@ -16,6 +16,7 @@ import DailyWrapUp from '../../DailyWrapUp';
 import TomorrowPreview from '../../TomorrowPreview';
 import WeeklyQuestsCard from '../../WeeklyQuestsCard';
 import StarterQuestCard, { LockedFeatureOverlay } from '../../StarterQuestCard';
+import OnboardingChecklist from '../../OnboardingChecklist';
 import RefactorScoreCard from '../../RefactorScoreCard';
 import { useStarterQuests } from '@/hooks/useStarterQuests';
 
@@ -241,14 +242,8 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
             {profile && <RefactorScoreCard userId={userId} profile={profile} />}
 
             {/* Starter Quest — shows active quest during onboarding phase */}
-            {!allComplete && activeQuest && (
-                <div className="space-y-2">
-                    {quests.filter(q => q.isComplete).map(q => (
-                        <StarterQuestCard key={q.id} quest={q} />
-                    ))}
-                    <StarterQuestCard quest={{ ...activeQuest, isComplete: false, isActive: true }} />
-                </div>
-            )}
+            {/* Onboarding Checklist */}
+            <OnboardingChecklist quests={quests} allComplete={allComplete} />
 
             {/* Smart CTA — Primary Action */}
             {profile && allComplete && (() => {
