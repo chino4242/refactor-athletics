@@ -11,7 +11,7 @@ const DAY_ORDER: Record<string, number> = {
 
 function inferType(blocks: any[]): string {
     const hasTreadmill = blocks.some(b => b.block_type === 'treadmill');
-    const hasExercise = blocks.some(b => b.block_type === 'exercise' && b.section === 'main');
+    const hasExercise = blocks.some(b => (b.block_type === 'exercise' || b.block_type === 'superset') && b.section !== 'warmup' && b.section !== 'cooldown');
     if (hasTreadmill && hasExercise) return 'Hybrid';
     if (hasTreadmill && !hasExercise) return 'Cardio';
     if (!hasTreadmill && hasExercise) return 'Strength';
@@ -19,7 +19,7 @@ function inferType(blocks: any[]): string {
 }
 
 function generateTitle(blocks: any[], catalogMap: Map<string, any>): string {
-    const mainBlocks = blocks.filter(b => b.block_type === 'exercise' && b.section === 'main');
+    const mainBlocks = blocks.filter(b => (b.block_type === 'exercise' || b.block_type === 'superset') && b.section !== 'warmup' && b.section !== 'cooldown');
     const hasTreadmill = blocks.some(b => b.block_type === 'treadmill');
 
     if (mainBlocks.length === 0 && !hasTreadmill) return 'Active Recovery';

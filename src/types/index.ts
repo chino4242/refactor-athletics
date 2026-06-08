@@ -109,6 +109,7 @@ export interface WorkoutBlock {
     intensity?: 'zone2' | 'base' | 'push' | 'all_out';
 
     notes?: string;
+    section?: string;
     created_at: string;
 }
 

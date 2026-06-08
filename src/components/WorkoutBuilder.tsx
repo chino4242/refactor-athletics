@@ -273,6 +273,7 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
                 target_reps: defaultReps,
                 duration_seconds: defaultDurationSeconds,
                 intensity: defaultIntensity,
+                section: isTreadmill ? 'cardio' : 'main',
             };
             await addWorkoutBlock(newBlock);
             const blocks = await getWorkoutBlocks(selectedWorkout.id);
