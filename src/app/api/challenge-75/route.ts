@@ -318,20 +318,24 @@ async function evaluateDay(service: any, challengeId: string, userId: string, da
 }
 
 async function getMetricValue(service: any, userId: string, date: string, metricId: string): Promise<number> {
-  const startTs = Math.floor(new Date(date + 'T00:00:00').getTime() / 1000);
-  const endTs = startTs + 86400;
-
   if (metricId === 'workout_count') {
     const { count } = await service.from('workouts').select('id', { count: 'exact', head: true })
       .eq('user_id', userId).eq('date', date);
     return count || 0;
   }
 
+  if (metricId === 'habit_exercise_minutes' || metricId === 'habit_active_minutes' || metricId === 'active_minutes') {
+    const { data } = await service.from('habit_logs').select('value')
+      .eq('user_id', userId).eq('habit_id', 'habit_exercise_minutes').eq('date', date);
+    return (data || []).reduce((s: number, r: any) => s + (r.value || 0), 0);
+  }
+
   if (metricId.startsWith('macro_')) {
     const macroType = metricId.replace('macro_', '');
     const { data } = await service.from('nutrition_logs').select('amount')
-      .eq('user_id', userId).eq('macro_type', macroType).gte('timestamp', startTs).lt('timestamp', endTs);
-    return (data || []).reduce((s: number, r: any) => s + (r.amount || 0), 0);
+      .eq('user_id', userId).eq('macro_type', macroType).eq('date', date)
+      .order('timestamp', { ascending: false }).limit(1);
+    return data?.[0]?.amount || 0;
   }
 
   // Habit metrics
