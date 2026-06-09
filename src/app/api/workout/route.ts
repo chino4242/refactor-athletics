@@ -295,20 +295,19 @@ export async function GET(request: Request) {
         .ilike('day_of_week', targetDay)
         .order('variant');
 
-    const variant = variants?.length
-        ? variants[weekNum % variants.length]
-        : null;
+    if (variants?.length) {
+        for (let i = 0; i < variants.length; i++) {
+            const variant = variants[(weekNum + i) % variants.length];
+            const { data: blocks } = await supabase
+                .from('program_blocks')
+                .select('*')
+                .eq('workout_id', variant.id)
+                .order('block_order');
 
-    if (variant) {
-        const { data: blocks } = await supabase
-            .from('program_blocks')
-            .select('*')
-            .eq('workout_id', variant.id)
-            .order('block_order');
-
-        if (blocks && blocks.length > 0) {
-            const swapped = applyEquipmentSwaps(blocks, fallbackEquipment);
-            return NextResponse.json(dbBlocksToWorkoutBlocks(swapped, catalog || [], fallbackCardio));
+            if (blocks && blocks.length > 0) {
+                const swapped = applyEquipmentSwaps(blocks, fallbackEquipment);
+                return NextResponse.json(dbBlocksToWorkoutBlocks(swapped, catalog || [], fallbackCardio));
+            }
         }
     }
 
