@@ -1,8 +1,15 @@
-# Current State (June 7, 2026)
+# Current State (June 9, 2026)
 
 ## Project Location
 - Active project: /Users/ryancontino/Documents/projects/refactor-athletics
 - Branch: main
+
+## Working Agreement
+- Chino wants to understand and code more, AI guides and assists
+- AI asks clarifying questions before building (see skills.md Section 0)
+- Don't push to prod without Chino confirming locally first
+- Prefer plan mode for multi-file changes; just code for simple fixes
+- No duplicate utility functions — always check existing before creating new
 
 ## TestFlight Status
 - Build 2 uploaded, compliance resolved, ready to add to test group

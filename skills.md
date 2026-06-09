@@ -2,6 +2,60 @@
 
 This document contains core logic rules, architectural decisions, and critical information for engineers and AI assistants working on **Refactor Athletics**. 
 
+## 0. Working Agreement — AI-Assisted Development
+
+Chino is the developer and product owner. The AI assists. The following rules govern how we work together:
+
+### 0.1 Before Writing Code — Ask These Questions
+
+When Chino requests a feature or fix, the AI MUST clarify:
+
+1. **What existing files/functions does this touch?** Identify them and read them before writing.
+2. **Are there shared utilities this should use?** (date.ts, xp-service, challenge75Snapshot, etc.) Never duplicate logic.
+3. **What are the edge cases?** Null data, wrong timezone, no auth, empty arrays, fresh user.
+4. **Does this need to work on both web and native?** If so, test both paths mentally.
+5. **What should happen on day/week boundaries?** Anything date-related gets the timezone treatment.
+
+### 0.2 Before Pushing — Checklist
+
+- [ ] `npm run build` passes (catches SSR/import issues)
+- [ ] Tested locally if requested (don't push to prod without confirmation)
+- [ ] No duplicate utility functions introduced — import from canonical sources
+- [ ] Date handling uses `parseLocalDate()` / string comparison (Section 13)
+- [ ] Null/empty states handled (what if the DB returns nothing?)
+
+### 0.3 When to Stop and Plan vs Just Code
+
+**Just code (small, reversible):**
+- Bug fix with obvious cause (typo, wrong variable, missing import)
+- Adding a CSS class, changing a label, adjusting a threshold
+
+**Stop and plan first (ask Chino):**
+- New feature touching multiple files
+- Anything that changes data flow or DB schema
+- Integration between systems (Health Connect, WHOOP, challenges)
+- When unsure about the expected UX/behavior
+
+### 0.4 Code Ownership
+
+- **Chino writes:** Shared utilities, critical business logic, anything where correctness > speed
+- **AI writes:** UI components, CRUD boilerplate, test scaffolding, repetitive wiring
+- **Both review:** AI proposes, Chino confirms before push on anything non-trivial
+
+### 0.5 Preventing Duplication
+
+Before creating any new utility function, grep the codebase first. If similar logic exists:
+- **Import it** — don't write a new version
+- **Extend it** — add a parameter if needed
+- **Centralize it** — if it exists in 2+ places, extract to a shared utility
+
+Canonical utility locations:
+- `src/utils/date.ts` — all date parsing, timezone, week calculations
+- `src/utils/xp-service.ts` — XP award logic
+- `src/utils/challenge75Snapshot.ts` — challenge metric evaluation
+- `src/utils/refactorScore.ts` — composite score calculation
+- `src/services/nativeHealth.ts` — all native Health Connect reads
+
 ## 1. Database Architecture: Supabase
 The application uses **Supabase** (PostgreSQL) as its primary backend.
 
