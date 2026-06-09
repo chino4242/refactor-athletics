@@ -17,7 +17,7 @@ export default function ActiveChallengeCard({ challenge, userId, onUpdate }: Act
     const [checking, setChecking] = useState(false);
 
     // 1. Precise Day Calculation (Midnight to Midnight)
-    const start = new Date(challenge.start_date + 'T00:00:00'); // Ensure local midnight or consistent Parse
+    const start = new Date(challenge.start_date + 'T12:00:00');
     const now = new Date();
 
     // Reset to start of day for accurate day diff

@@ -234,14 +234,14 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                         })}
                     </div>
                     <div className="flex justify-between text-[8px] text-zinc-600 mt-1">
-                        <span>{new Date(powerHistory[0].week_start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                        <span>{new Date(powerHistory[powerHistory.length - 1].week_start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                        <span>{new Date(powerHistory[0].week_start + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                        <span>{new Date(powerHistory[powerHistory.length - 1].week_start + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                     </div>
                     {powerHistory.length >= 2 && (() => {
                         const delta = powerHistory[powerHistory.length - 1].power_level - powerHistory[0].power_level;
                         return (
                             <div className={`text-[10px] font-bold mt-1 ${delta > 0 ? 'text-emerald-400' : delta < 0 ? 'text-rose-400' : 'text-zinc-500'}`}>
-                                {delta > 0 ? '↑' : delta < 0 ? '↓' : '→'} {delta > 0 ? '+' : ''}{delta} since {new Date(powerHistory[0].week_start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                {delta > 0 ? '↑' : delta < 0 ? '↓' : '→'} {delta > 0 ? '+' : ''}{delta} since {new Date(powerHistory[0].week_start + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                             </div>
                         );
                     })()}

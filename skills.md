@@ -398,3 +398,49 @@ A comprehensive RPG-style character creation and customization system is planned
 - Asset requirements and design guidelines
 
 This feature will allow users to build visual avatars that evolve with their fitness journey, unlock cosmetic gear through achievements, and display their character throughout the app.
+
+## 13. Date Handling — MANDATORY
+
+All `date` columns store `YYYY-MM-DD` strings in the user's local timezone. These are **calendar labels**, not timestamps.
+
+### 13.1 Rules
+
+1. **Compare date strings directly:** `row.date >= weekStartStr` ✅
+2. **Never parse bare:** `new Date(row.date)` ❌ — this creates UTC midnight which shifts to the previous day in US timezones
+3. **Need a Date object?** Use `parseLocalDate(str)` from `@/utils/date` → appends `T12:00:00` ✅
+4. **Server-side "today"?** Use `getServerToday(user.timezone)` ✅ — NOT `new Date()` (which is UTC on Vercel)
+5. **Server-side "this week"?** Use `getServerWeekStart(user.timezone)` ✅
+6. **Sort dates?** Use `a.date.localeCompare(b.date)` or `a.date >= b.date` ✅
+
+### 13.2 Why Noon?
+
+`parseLocalDate()` appends `T12:00:00` (noon). No timezone on Earth (max UTC±14) can shift noon into a different calendar day. Midnight (`T00:00:00`) fails for UTC+ timezones.
+
+### 13.3 Anti-patterns (BANNED)
+
+```typescript
+new Date(row.date)                    // ❌ UTC midnight = wrong day
+new Date(challenge.start_date)        // ❌ same problem
+new Date(dateStr + 'T00:00:00')       // ❌ fails in UTC+ timezones
+```
+
+### 13.4 Correct Patterns
+
+```typescript
+import { parseLocalDate, getServerToday, getServerWeekStart } from '@/utils/date';
+
+// Filtering (preferred — no Date object needed)
+const thisWeek = workouts.filter(w => w.date >= weekStartStr);
+
+// When you need a Date object for display/arithmetic
+const d = parseLocalDate(row.start_date);
+const dayName = d.toLocaleDateString('en-US', { weekday: 'long' });
+
+// Server-side today (API routes, server actions)
+const today = getServerToday(user.timezone || 'America/New_York');
+```
+
+### 13.5 Enforcement
+
+- ESLint `no-restricted-syntax` rule warns on `new Date(.date/.start_date/.end_date/.week_start)`
+- Code review: any `new Date()` with a date-only string argument must use `parseLocalDate()`

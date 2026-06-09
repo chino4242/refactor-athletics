@@ -205,8 +205,8 @@ export async function POST(request: NextRequest) {
 }
 
 async function evaluateChallenge(service: any, challenge: any, userId: string, today: string) {
-  const startDate = new Date(challenge.start_date);
-  const todayDate = new Date(today);
+  const startDate = new Date(challenge.start_date + 'T12:00:00');
+  const todayDate = new Date(today + 'T12:00:00');
 
   // Only evaluate days that have passed (not today)
   const yesterday = new Date(todayDate);

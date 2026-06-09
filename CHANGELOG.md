@@ -2,6 +2,55 @@
 
 All notable changes to Refactor Athletics.
 
+## [Unreleased] - 2026-06-08/09
+
+### Added
+- Refactor Score card on Today tab (14-day composite fitness score with 5 sub-scores)
+- Daily Rites quick-toggles on Today tab (alcohol, vice, sugar, supplements, journaling)
+- Water quick-log with +8/+16/+32oz buttons, undo (−8), and custom input
+- Manual calories burned input as fallback for native sync
+- Nutrition search picker (food search shows selectable list instead of auto-adding all to cart)
+- MealCart: editable gram field, ½×/1×/2× multipliers, meal type selector, coach mark
+- AI food-parse: returns estimated grams per item, normalizes to per100g
+- OnboardingChecklist: non-sequential quest checklist (replaces old sequential flow)
+- 75-Day Challenge: live per-member daily checklist table (✓/✗ per metric)
+- 75-Day Challenge: editable targets after joining
+- Preferred cardio equipment setting (rower/bike/elliptical/treadmill)
+- Equipment selector on Engine Selector (HIIT/Zone 2 picker)
+- All training paths unlocked (Strength, Endurance, Mobility)
+- Safe area insets for fixed-top elements (RestTimerBar, OfflineBanner)
+- Wearable sync delay disclaimer in Settings
+
+### Fixed
+- Calories burned not updating: removed !hasWhoop guard (WHOOP writes to HC)
+- Native calories: use `totalCalories` data type (was `calories` = active only)
+- Steps duplicating: native sync now uses (Sync) label for set-mode delete+insert
+- Pull-to-refresh re-reads Health Connect
+- `isNative` converted from module-level const to function (SSR caching fix)
+- Workouts not switching when path changes (filter by selected_path + defaults fallback)
+- Schedule API: added default programs fallback for non-hybrid paths
+- Schedule inferType: count exercises with any section (not just 'main')
+- WorkoutBuilder: defaults section to 'main' for exercises
+- Treadmill blocks tagged as 'Cardio' not 'Strength' (uses block section)
+- Weekly quests: weekStart timestamp used midnight Monday (not current time)
+- Starter quests: useStarterQuests syncs when profile loads + server-side first_strike completion
+- DailyWrapUp: protein reads nutrition_targets.protein (was habit_targets.macro_protein)
+- DailyWrapUp: respects hidden_habits in checks and nudges
+- FoodLog: meal_type 'meal' not rendering (NutritionSection now uses proper meal types)
+- RefactorScore training=0: UTC date parsing bug in week comparison
+- 75-Day Challenge: start_date UTC parse shifted Day 1 to previous day
+- 75-Day Challenge: today indicator changed from orange to blue (avoids confusion with fail)
+- Today XP: run/cardio blocks not counting (logWorkoutBlockAction now writes to xp_ledger)
+- getTodayXp: adds workout block XP from workouts table when not in ledger
+
+### Architecture
+- **Date Handling Convention (MANDATORY)**: parseLocalDate(), getServerToday(), getServerWeekStart() utilities
+- ESLint rule bans new Date(.date/.start_date/.end_date/.week_start)
+- skills.md Section 13 documents the date handling convention
+- Track page: Recovery/Discipline tabs show based on hidden_habits (not data presence)
+- 75-Day snapshot evaluator: updates metrics on every log action
+- Default programs re-seeded for all 4 paths (hybrid/strength/endurance/mobility)
+
 ## [Unreleased] - 2026-05-27 — Beta Launch Prep
 
 ### Added
