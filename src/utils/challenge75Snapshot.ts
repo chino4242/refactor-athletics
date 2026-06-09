@@ -36,13 +36,18 @@ export async function updateChallenge75Snapshot(supabase: any, userId: string) {
       }
     }
 
-    // Upsert today's snapshot (status stays 'pending' — final eval happens next day)
-    await supabase.from('challenge_75_days').upsert({
-      challenge_id: membership.challenge_id, user_id: userId, date: today,
-      status: 'pending',
-      metrics_snapshot: snapshot,
-      custom_checks: customChecks,
-    }, { onConflict: 'challenge_id,user_id,date' });
+    // Only update if row doesn't exist or is still pending (never overwrite passed/failed)
+    const { data: existingDay } = await supabase.from('challenge_75_days')
+      .select('status').eq('challenge_id', membership.challenge_id).eq('user_id', userId).eq('date', today).single();
+
+    if (!existingDay || existingDay.status === 'pending') {
+      await supabase.from('challenge_75_days').upsert({
+        challenge_id: membership.challenge_id, user_id: userId, date: today,
+        status: 'pending',
+        metrics_snapshot: snapshot,
+        custom_checks: customChecks,
+      }, { onConflict: 'challenge_id,user_id,date' });
+    }
   }
 }
 
