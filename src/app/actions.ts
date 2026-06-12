@@ -118,8 +118,23 @@ export async function logHabitAction(
         const today = new Date().toLocaleDateString('en-CA');
         if (habitId === getDailyPowerUp(today) && xp > 0) xp *= 2;
 
-        // If this is a "Set" (sync) operation, delete existing entries for this habit today first
+        // If this is a "Set" (sync) operation, only overwrite if new value is higher
         if (label?.includes('(Sync)')) {
+            const { data: existing } = await supabase
+                .from('habit_logs')
+                .select('value')
+                .eq('user_id', userId)
+                .eq('habit_id', habitId)
+                .eq('date', dateStr)
+                .order('value', { ascending: false })
+                .limit(1)
+                .single();
+
+            // Keep higher value — don't overwrite manual entries or better syncs
+            if (existing && existing.value >= value) {
+                return { xp_earned: 0, timestamp: ts };
+            }
+
             await supabase
                 .from('habit_logs')
                 .delete()

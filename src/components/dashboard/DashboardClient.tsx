@@ -117,6 +117,23 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
 
     useEffect(() => {
         loadData();
+
+        // Store auth credentials in native Preferences for background WorkManager sync
+        (async () => {
+            try {
+                const { Preferences } = await import('@capacitor/preferences');
+                const { createClient } = await import('@/utils/supabase/client');
+                const supabase = createClient();
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session?.access_token) {
+                    await Preferences.set({ key: 'auth_token', value: session.access_token });
+                    await Preferences.set({ key: 'user_id', value: userId });
+                    await Preferences.set({ key: 'supabase_url', value: process.env.NEXT_PUBLIC_SUPABASE_URL || '' });
+                    await Preferences.set({ key: 'supabase_anon_key', value: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '' });
+                }
+            } catch {}
+        })();
+
         // Background sync WHOOP/Google data if connected, then refresh
         fetch('/api/whoop/sync', { method: 'POST' })
             .then(r => r.json())
@@ -125,29 +142,59 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
 
         // Native HealthKit/Health Connect sync (iOS/Android via Capacitor)
         (async () => {
+            // Drain any pending syncs from previous failed attempts
+            try {
+                const { drainPendingSyncs } = await import('@/utils/pendingSyncs');
+                const { logHabitAction: retryAction } = await import('@/app/actions');
+                await drainPendingSyncs(retryAction);
+            } catch {}
+
+            // Mutex: prevent concurrent syncs from racing
+            if (localStorage.getItem('health_sync_in_progress') === 'true') return;
+            localStorage.setItem('health_sync_in_progress', 'true');
             try {
                 const { isHealthAvailable, requestPermissions, syncTodayHealth } = await import('@/services/nativeHealth');
-                if (!(await isHealthAvailable())) return;
+                if (!(await isHealthAvailable())) { localStorage.removeItem('health_sync_in_progress'); return; }
                 // Request permissions if not yet granted
                 const granted = await requestPermissions();
                 if (!granted) {
                     // Store denial so onboarding/settings can show guidance
                     localStorage.setItem('health_permission_denied', 'true');
+                    localStorage.removeItem('health_sync_in_progress');
                     return;
                 }
                 localStorage.removeItem('health_permission_denied');
                 const data = await syncTodayHealth();
                 const { logHabitAction } = await import('@/app/actions');
+                const { addPendingSync } = await import('@/utils/pendingSyncs');
+
+                // Queue-on-failure wrapper
+                const safeLog = async (habitId: string, value: number, label?: string, timestamp?: number) => {
+                    try {
+                        await logHabitAction(userId, habitId, value, undefined, label, timestamp);
+                    } catch {
+                        addPendingSync({ userId, habitId, value, label, timestamp });
+                    }
+                };
+
                 // Check if WHOOP is connected (skip calories/sleep/HRV if so — WHOOP handles those)
                 const supabaseCheck = (await import('@/utils/supabase/client')).createClient();
                 const { data: userFlags } = await supabaseCheck.from('users').select('whoop_connected_at').eq('id', userId).single();
                 const hasWhoop = !!userFlags?.whoop_connected_at;
                 const promises = [];
-                if (data.steps > 0) promises.push(logHabitAction(userId, 'habit_steps', data.steps, undefined, 'Steps (Sync)'));
-                if (data.caloriesBurned > 0) promises.push(logHabitAction(userId, 'macro_calories_burned', data.caloriesBurned, undefined, 'Calories Burned'));
-                if (data.sleep > 0 && !hasWhoop) promises.push(logHabitAction(userId, 'habit_sleep', data.sleep, undefined, 'Sleep (Sync)'));
-                if (data.hrv && !hasWhoop) promises.push(logHabitAction(userId, 'habit_hrv', data.hrv, undefined, 'HRV (Sync)'));
-                if (data.restingHR && !hasWhoop) promises.push(logHabitAction(userId, 'habit_resting_hr', data.restingHR, undefined, 'Resting HR (Sync)'));
+                if (data.steps > 0) promises.push(safeLog('habit_steps', data.steps, 'Steps (Sync)'));
+                if (data.stepsYesterday > 0) {
+                    const yesterdayNoon = Math.floor(new Date(data.yesterdayDate + 'T12:00:00').getTime() / 1000);
+                    promises.push(safeLog('habit_steps', data.stepsYesterday, 'Steps (Sync)', yesterdayNoon));
+                }
+                if (data.caloriesBurned > 0) promises.push(safeLog('macro_calories_burned', data.caloriesBurned, 'Calories Burned'));
+                if (data.caloriesYesterday > 0) {
+                    const yesterdayNoon = Math.floor(new Date(data.yesterdayDate + 'T12:00:00').getTime() / 1000);
+                    promises.push(safeLog('macro_calories_burned', data.caloriesYesterday, 'Calories Burned', yesterdayNoon));
+                }
+                if (data.sleep > 0 && !hasWhoop) promises.push(safeLog('habit_sleep', data.sleep, 'Sleep (Sync)'));
+                if (data.hrv && !hasWhoop) promises.push(safeLog('habit_hrv', data.hrv, 'HRV (Sync)'));
+                if (data.restingHR && !hasWhoop) promises.push(safeLog('habit_resting_hr', data.restingHR, 'Resting HR (Sync)'));
                 if (promises.length > 0) {
                     await Promise.all(promises);
                     localStorage.setItem('last_health_sync', new Date().toISOString());
@@ -170,6 +217,27 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                         localStorage.setItem('last_exercise_sync_ts', String(Date.now()));
                     }
                 }
+            } catch {} finally { localStorage.removeItem('health_sync_in_progress'); }
+        })();
+
+        // Multi-day catch-up: on first open of the day, backfill last 7 days of steps + calories
+        (async () => {
+            const today = new Date().toLocaleDateString('en-CA');
+            if (localStorage.getItem('last_catchup_date') === today) return;
+            try {
+                const { isHealthAvailable, getCatchUpData } = await import('@/services/nativeHealth');
+                if (!(await isHealthAvailable())) return;
+                const days = await getCatchUpData();
+                if (!days.length) return;
+                const { logHabitAction } = await import('@/app/actions');
+                const promises = [];
+                for (const day of days) {
+                    const noon = Math.floor(new Date(day.date + 'T12:00:00').getTime() / 1000);
+                    if (day.steps > 0) promises.push(logHabitAction(userId, 'habit_steps', day.steps, undefined, 'Steps (Sync)', noon));
+                    if (day.calories > 0) promises.push(logHabitAction(userId, 'macro_calories_burned', day.calories, undefined, 'Calories Burned', noon));
+                }
+                if (promises.length) await Promise.all(promises);
+                localStorage.setItem('last_catchup_date', today);
             } catch {}
         })();
     }, [userId]);
@@ -201,6 +269,8 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             setRefreshing(true);
             // Re-sync native health data on pull-to-refresh
             (async () => {
+                if (localStorage.getItem('health_sync_in_progress') === 'true') { loadData(); return; }
+                localStorage.setItem('health_sync_in_progress', 'true');
                 try {
                     const { isHealthAvailable, syncTodayHealth } = await import('@/services/nativeHealth');
                     if (await isHealthAvailable()) {
@@ -208,10 +278,18 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                         const { logHabitAction } = await import('@/app/actions');
                         const promises = [];
                         if (data.steps > 0) promises.push(logHabitAction(userId, 'habit_steps', data.steps, undefined, 'Steps (Sync)'));
+                        if (data.stepsYesterday > 0) {
+                            const yesterdayNoon = Math.floor(new Date(data.yesterdayDate + 'T12:00:00').getTime() / 1000);
+                            promises.push(logHabitAction(userId, 'habit_steps', data.stepsYesterday, undefined, 'Steps (Sync)', yesterdayNoon));
+                        }
                         if (data.caloriesBurned > 0) promises.push(logHabitAction(userId, 'macro_calories_burned', data.caloriesBurned, undefined, 'Calories Burned'));
+                        if (data.caloriesYesterday > 0) {
+                            const yesterdayNoon = Math.floor(new Date(data.yesterdayDate + 'T12:00:00').getTime() / 1000);
+                            promises.push(logHabitAction(userId, 'macro_calories_burned', data.caloriesYesterday, undefined, 'Calories Burned', yesterdayNoon));
+                        }
                         if (promises.length) await Promise.all(promises);
                     }
-                } catch {}
+                } catch {} finally { localStorage.removeItem('health_sync_in_progress'); }
                 loadData();
             })();
         } else {
