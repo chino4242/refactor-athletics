@@ -1,4 +1,4 @@
-# Current State (June 11, 2026)
+# Current State (June 12, 2026)
 
 ## Project Location
 - Active project: /Users/ryancontino/Documents/projects/refactor-athletics
@@ -11,14 +11,58 @@
 - Prefer plan mode for multi-file changes; just code for simple fixes
 - No duplicate utility functions — always check existing before creating new
 
-## Key Decisions (June 8-11)
-- Training paths unlocked: Strength, Endurance, Mobility all available
+## v2 Direction — "The Focused Product"
+- **North Star Document:** `docs/GAME_DESIGN_V2.md`
+- v1 had feature sprawl; v2 strips to 3 screens (Power Level, Arena, Train)
+- Radical simplification: cut habits, streaks, heatmaps, Refactor Score, Daily Rites, complex nutrition
+- Power Level is the home screen hero metric
+- Arena is the social/retention engine
+- Train is the daily action screen
+
+## Key Decisions (June 12 — v2 Game Design Session)
+
+### Game Economy
+- Power Level decays: validity windows (L1-2: 90 days, L3-4: 60 days, L5: 45 days)
+- Best within window counts (not most recent) — prevents "afraid to log" perverse incentive
+- Window refreshes on any log of that exercise
+- Player Level = engagement badge on profile, gates cosmetic unlocks, never decays
+- XP from: workouts, cardio (8/min), rank-ups (200, re-earnable), steps (1/1000, excluded during workouts), nutrition (50/day binary), bounties, duels, challenges
+- No XP from: sleep, water, HRV, recovery, strain, passive existence
+
+### Weekly Bounties
+- 3 per week, 1 from each pillar (Training, Consistency, Social/Meta)
+- 8 bounty types rotating through the 3 pillars
+- Targets personalized: trailing 4-week average × difficulty modifier
+- Difficulty selector (Easy −25%/100XP, Normal/150XP, Hard +25%/225XP) locked after first progress
+- Sweep bonus (25/50/100 XP)
+- Monday–Sunday cadence, user's local timezone
+
+### Challenge System (Arena Cohesion)
+- Custom Challenges: daily boolean checklist, configurable duration (default 75 days), strict all-metrics-daily, shared fate or individual failure mode
+- Habit tracking ONLY exists inside custom challenges (not in main UI)
+- Group Challenges: weekly, leader-set, collaborative or competitive
+- Duels: 1v1, time-boxed (24h/7d/30d) or race-to-target, accept or ignore
+- Limits: 1 custom challenge, 1 group challenge/group, 3 duels, bounties always present
+- Visibility: passive (check the board), active notifications only on completions
+
+### Ranked Exercises (Simplified)
+- 12 per path (8 universal core + 4 specialty) — down from 12-16 ad-hoc
+- Max Power Level = 60 (12 × Level 5) — balanced across all paths
+- Universal core: Back Squat, Deadlift, Bench Press, Pull-up, Overhead Press, Run 1 Mile, Plank, Push-ups
+- Path renamed: Mobility → "Mobility & Calisthenics"
+- Removed from ranked: barbell_bicep_curl, calf_raises, wall_slide, shoulder_dislocate, kettlebell_halo/windmill/turkish_get_up, body_weight_squat, goblet_squat, active_hang, burpees
+- New exercise needed: L-Sit Hold (standards TBD)
+
+### Visual Direction — "Polished Retro"
+- Two layers: modern data UI + pixel art identity layer
+- Theme = app-wide color palette (Draconic: red/gold, Samurai: indigo/pink, Viking: blue/ice, Apex: green/amber, Athlete: navy/white)
+- Typography: pixel font for Power Level number + headers (24px+), Inter for body
+- Classic mode = Athlete theme (same system, neutral flavor)
+- Assets: AI-generated pixel art + open-source sprite packs
+- Power Level visual tiers (Bronze → Diamond) with evolving frames
+
+## Previous Decisions (June 8-11, still valid)
 - Preferred cardio equipment: user picks treadmill/rower/bike/elliptical in Settings
-- 75-day challenge: per-member customizable metrics, live table checklist, shared fate
-- Nutrition: search picker (not auto-add), meal type selector, AI returns grams estimate
-- Onboarding quests: non-sequential checklist (all visible at once)
-- Daily Rites: quick-toggle habits on Today tab
-- Refactor Score: 14-day composite on Today tab
 - Date handling: parseLocalDate() / string comparison mandatory (skills.md Section 13)
 
 ## Known Resolved Issues

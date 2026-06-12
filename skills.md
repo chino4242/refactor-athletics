@@ -164,10 +164,65 @@ This allows users to log their actual weight on any equipment variant and get a 
 
 ### 2.2 Power Level & Player Stats (`src/services/api.ts`)
 There are two distinct progression metrics for a user:
-1. **Player Level**: Driven purely by raw participation. Uses exponential scaling: each level requires `1000 * 1.08^level` XP (fibonacci-ish curve). Early levels come fast, later levels require sustained commitment. Every time a user logs *any* exercise (or habit), they gain XP.
-2. **Power Level (Aggregate Score)**: Driven by *performance*. Calculated by querying ONLY the `workouts` table (not habits/macros), finding the **highest rank level achieved** for *each unique ranked exercise*, and summing `max_level` across all of them.
+1. **Player Level**: Driven purely by raw participation. Uses exponential scaling: each level requires `1000 * 1.08^level` XP (fibonacci-ish curve). Early levels come fast, later levels require sustained commitment. Displayed on profile badge, gates cosmetic unlocks. Never decays.
+2. **Power Level (Aggregate Score)**: Driven by *performance*. Calculated by querying ONLY the `workouts` table, finding the **highest rank level achieved within the validity window** for each ranked exercise, and summing those levels. Max Power Level = 60 (12 exercises × Level 5).
 
-**Important**: Power Level only counts ranked exercises from the `workouts` table. Habits and nutrition do not contribute to Power Level, only to Player Level (XP).
+**Important**: Power Level only counts the 12 ranked exercises per path from the `workouts` table. Habits and nutrition do not contribute to Power Level, only to Player Level (XP).
+
+### 2.2.1 Power Level Decay (v2)
+Power Level reflects *current* capability, not lifetime PRs. Each ranked exercise has a validity window:
+
+| Rank Level | Window |
+|---|---|
+| Level 1–2 | 90 days |
+| Level 3–4 | 60 days |
+| Level 5 | 45 days |
+
+**Rules:**
+- Window refreshes every time you log that exercise (any performance)
+- **Best within window** counts (not most recent) — prevents "afraid to log" incentive
+- Expired exercises stop contributing to Power Level, dim on screen
+- PR history preserved forever — decay only affects Power Level contribution
+- Higher ranks decay faster (harder to maintain peak performance)
+
+### 2.2.2 Ranked Exercises (v2 — 12 per path)
+
+**Universal Core (all paths):** Back Squat (xBW), Deadlift (xBW), Bench Press (xBW), Pull-up (Reps), Overhead Press (xBW), Run 1 Mile (Sec), Plank (Sec), Push-ups (Reps)
+
+**Specialty (4 per path):**
+- **Strength:** Barbell Row, Incline Bench, RDL, Dip
+- **Endurance:** Run 400m, Run 5K, Row 6min, Dead Hang
+- **Mobility & Calisthenics:** Deep Squat Hold, Dead Hang, Cossack Squat, L-Sit Hold
+- **Hybrid:** Run 400m, Dead Hang, Barbell Row, Run 5K
+
+Only these 12 contribute to Power Level. Everything else in the catalog is loggable for XP but unranked. See `docs/GAME_DESIGN_V2.md` for full specifications.
+
+### 2.2.3 Power Level Tiers (Visual)
+
+| Range | Name | Visual |
+|---|---|---|
+| 0–12 | Bronze | Dim badge |
+| 13–24 | Silver | Glowing edges |
+| 25–36 | Gold | Animated particles |
+| 37–48 | Platinum | Full pixel art frame |
+| 49–60 | Diamond | Legendary animated border |
+
+### 2.2.4 XP Economy (v2)
+
+| Source | XP | Rule |
+|---|---|---|
+| Workout set (ranked) | `rank_level × 50` | Level 0 = 10 XP |
+| Cardio block | 8 XP/min | Logged workout only |
+| Rank-up | 200 XP | Per exercise per level, re-earnable after decay |
+| Steps | 1 XP per 1,000 | Passive — excluded during logged workouts |
+| Nutrition tracking | 50 XP/day | Binary: tracked 3+ meals = 50, else 0 |
+| Weekly bounty | 100–225 XP | Scales with difficulty |
+| Bounty sweep | 25–100 XP bonus | All 3 completed |
+| Duel win | 200 XP | |
+| Custom challenge complete | 2,500 XP | |
+| Weekly group challenge | 100 XP | |
+
+**No XP from:** sleep, water, HRV, recovery, strain, passive existence.
 
 ### 2.3 Data Architecture Patterns
 - **Server Actions** (`src/app/actions.ts`): All write operations (logging workouts, habits, macros)
@@ -335,7 +390,32 @@ npm run build && npm start   # Production build required
 ## 7. UI Guidelines & Component Guardrails
 - **Mobile First**: All layouts must be responsive, defaulting to stacked views on mobile (`flex-col`) before applying `md:` modifiers.
 - **Z-Index Stacking Contexts**: Be careful with sibling `relative z-10` containers. If a dropdown menu (e.g., App Settings on the Profile Card) is placed inside a `z-10` container, the sibling container must have a lower z-index (or the parent must be elevated to `z-20`) so floating elements can escape the bounding box and remain clickable on mobile.
-- **Styling**: Tailwind CSS is used globally. Favor dark, premium gradients (`bg-zinc-900`, `from-orange-600 to-red-600`) and glowing accents (`drop-shadow-[0_0_30px_rgba(249,115,22,0.4)]`).
+- **Styling**: Tailwind CSS is used globally. Dark base (zinc-900/950), theme-driven accents.
+
+### 7.1 Visual Direction — "Polished Retro" (v2)
+
+**Two layers:**
+| Layer | Style | Where |
+|---|---|---|
+| Data Layer | Modern, minimal, high-contrast | Numbers, progress bars, lists, workout UI, nutrition input |
+| Identity Layer | Pixel art, 16-bit inspired | Rank badges, theme banners, Power Level frame, celebrations, bounty board |
+
+**Rule:** If you're reading it to make a decision → modern. If it's making you feel something → pixel art.
+
+**Theme = app-wide color palette:**
+| Theme | Primary | Accent |
+|---|---|---|
+| Draconic | Deep red (#991B1B) | Gold (#F59E0B) |
+| Samurai | Indigo (#312E81) | Cherry blossom (#EC4899) |
+| Viking | Steel blue (#1E3A5F) | Ice white (#E0F2FE) |
+| Apex Predator | Forest green (#14532D) | Amber (#D97706) |
+| Athlete | Navy (#1E293B) | Clean white (#F8FAFC) |
+
+**Typography:**
+- Power Level number + section headers: Pixel font (Press Start 2P / Silkscreen / Pixelify Sans) — **24px+ only**
+- Body / data: Inter (system fallback) — never sacrifice readability
+
+**Classic mode = Athlete theme.** Same design system, neutral flavor.
 
 ## 8. Experience Modes
 
@@ -364,22 +444,60 @@ All mode-aware labels are driven by `ExperienceModeContext` (`src/context/Experi
 ### 8.3 Context Hydration
 `ExperienceModeProvider` checks localStorage first for instant render, then falls back to a database query. `DashboardClient` also fetches `experience_mode` from the users table and syncs it to the context on load.
 
-## 9. Groups & Weekly Challenges
+## 9. Arena & Challenge System (v2)
 
-### 9.1 Group System
-- **Groups** (`src/services/groupApi.ts`): Create/join/leave groups via invite codes
-- **Group Card** (`src/components/GroupCard.tsx`): Full UI for group management and challenge tracking
-- Leaders can set weekly challenges from 4 presets: Steps, Active Minutes, Workouts, Hydration Days
-- Progress is aggregated from `habit_logs` and `workouts` tables across all group members
-- RPG and Classic users can be in the same group — only labels differ
+> Full specification: `docs/GAME_DESIGN_V2.md`
 
-### 9.2 Challenge Presets
-| Metric | Default Target | Data Source |
-|---|---|---|
-| Steps | 500,000 | `habit_logs` (habit_steps) |
-| Active Minutes | 600 | `workouts` count × 30 |
-| Workouts | 20 | `workouts` count |
-| Hydration Days | 35 | `habit_logs` (habit_water) unique days |
+### 9.1 System Overview
+
+| Type | Cadence | Scope | Limit |
+|---|---|---|---|
+| Weekly Bounties | Mon–Sun | Solo | 3/week (always present) |
+| Group Challenges | Weekly | Party | Max 1 per group |
+| Duels | Flexible | 1v1 | Max 3 active |
+| Custom Challenges | Flexible (default 75 days) | Solo or group | Max 1 active |
+
+**Core principle:** A single action advances all active challenges simultaneously.
+
+### 9.2 Weekly Bounties
+- 8 bounty types across 3 pillars (Training, Consistency, Social/Meta)
+- 3 per week (1 from each pillar, rotating)
+- Targets = trailing 4-week average × difficulty modifier (fallback defaults for new users)
+- Difficulty: Easy (−25%, 100 XP) / Normal (baseline, 150 XP) / Hard (+25%, 225 XP)
+- Sweep bonus: 25 / 50 / 100 XP for all 3
+- Difficulty locked after first progress toward that bounty
+- Monday 00:00 → Sunday 23:59 (user's local timezone)
+
+### 9.3 Custom Challenges
+- Daily boolean checklist (plain text metrics)
+- Some auto-check from data (workouts logged, step count from wearable)
+- Others manual honor-system (water, no alcohol, etc.)
+- Pass condition: ALL metrics every day (strict)
+- Failure mode: shared fate (group dies) or individual (your failure is yours)
+- Duration configurable (default 75 days)
+- **Habit tracking only exists inside custom challenges** (not in main UI)
+- Reward: 2,500 XP + cosmetic badge
+
+### 9.4 Group Challenges
+- Leader-set weekly metric + target
+- Collaborative (shared goal) or competitive (leaderboard)
+- Any metric: steps, XP, workouts, volume, etc.
+- Reward: 100 XP
+
+### 9.5 Duels
+- 1v1 challenges: time-boxed (24h/7d/30d) or race-to-target
+- Any metric: steps, XP, specific exercise, volume, etc.
+- Challenger sends → recipient accepts or ignores
+- Reward: 200 XP for winner, win/loss record on profile
+
+### 9.6 Social Visibility
+- Group members see progress + completion (passive, check the board)
+- Notifications only on completions/milestones (never push failures)
+- Failures visible if you look, never broadcasted
+
+### 9.7 Groups (unchanged from v1)
+- **Groups** (`src/services/groupApi.ts`): Create/join/leave via invite codes
+- RPG and Classic users in same group — only labels differ
 
 ## 10. Health Sync & Integrations
 

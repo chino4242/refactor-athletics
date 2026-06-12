@@ -44,28 +44,51 @@ The scoreboard. Your fitness identity.
 - Theme banner (user's chosen identity)
 
 **Data sources:**
-- `workouts` table (max level per exercise → Power Level)
-- `catalog` table (rank thresholds)
+- `workouts` table (max level per exercise *within validity window* → Power Level)
+- `catalog` table (rank thresholds — 12 exercises per path)
 - Wearable sync (steps, calories, sleep)
 - `xp_ledger` (today's XP)
 
+**Power Level Decay:** Exercises must be retested within their validity window (L1-2: 90 days, L3-4: 60 days, L5: 45 days). Best within window counts. See `GAME_DESIGN_V2.md` for full decay rules.
+
+**Power Level Tiers:** Bronze (0-12), Silver (13-24), Gold (25-36), Platinum (37-48), Diamond (49-60). Visual frame evolves with tier.
+
 ### 2. Arena
 
-The social engine. Why people stay.
+The social engine. Why people stay. Ordered by priority on screen:
 
-**What it shows:**
-- Active challenges (75-day, weekly, duels) — prominent cards with live progress per member
-- Group/party members with their Power Levels and today's activity status
-- "Challenge Someone" CTA
-- Past results (collapsed)
+**2.1 Custom Challenges (top card)**
+- Daily boolean checklist, configurable duration (default 75 days)
+- Metrics: plain text checkboxes (some auto-check from data, others manual honor-system)
+- Pass condition: all metrics every day (strict)
+- Failure mode: shared fate or individual (creator configures)
+- Limit: max 1 active per user
+- Habit tracking (water, alcohol, etc.) ONLY exists inside custom challenges
+- Reward: 2,500 XP + cosmetic badge
 
-**Challenge types supported:**
-- 75-day challenge (custom metrics per member, shared fate option)
-- Weekly metric challenges (steps, XP, workouts, weight lifted)
-- 1v1 duels (specific exercise or total XP over duration)
-- Group challenges (collaborative or competitive)
+**2.2 Group Challenges**
+- Weekly, leader-set metric + target
+- Collaborative (shared goal) or competitive (leaderboard within group)
+- Limit: max 1 per group
+- Reward: 100 XP
 
-**Key behavior:** Challenges can use ANY metric — XP earned, steps, workouts completed, weight lost, exercises ranked up. The system is flexible.
+**2.3 Duels**
+- 1v1: time-boxed (24h/7d/30d) or race-to-target (first to X wins)
+- Any metric (steps, XP, exercise volume, etc.)
+- Challenger sends → recipient accepts or ignores
+- Limit: max 3 active per user
+- Reward: 200 XP for winner, win/loss record on profile
+
+**2.4 Weekly Bounties (bottom)**
+- 3 per week (1 Training, 1 Consistency, 1 Social/Meta)
+- Targets personalized (trailing 4-week avg × difficulty modifier)
+- Difficulty: Easy (−25%, 100 XP) / Normal (150 XP) / Hard (+25%, 225 XP)
+- Sweep bonus: 25/50/100 XP for all 3
+- Monday–Sunday, user's local timezone
+
+**Social visibility:** Group sees progress + completions (passive). Notifications only on milestones. Failures visible but never pushed.
+
+**Key behavior:** A single action (run, lift, log) advances all active challenges simultaneously. One action, multiple progress.
 
 ### 3. Train
 
@@ -111,11 +134,36 @@ The daily action.
 
 ### XP System (With Teeth)
 
-- XP earned from: workouts (volume + rank milestones), nutrition logging, challenge completions
-- XP is visible on Power Level screen as a level bar
-- **XP unlocks:** themes, challenge types, cosmetic badges
-- **XP as currency:** used in Arena for challenge comparisons (most XP in a day/week)
-- Specific unlock tiers defined post-v2 launch
+| Source | XP | Rule |
+|---|---|---|
+| Workout set (ranked) | `rank_level × 50` | Level 0 = 10 XP |
+| Cardio block | 8 XP/min | Logged workout only |
+| Rank-up | 200 XP | Per exercise per level, re-earnable after decay |
+| Steps | 1 XP per 1,000 | Passive — excluded during logged workouts |
+| Nutrition tracking | 50 XP/day | Binary: tracked 3+ meals = 50, else 0 |
+| Weekly bounty | 100–225 XP | Scales with difficulty |
+| Bounty sweep | 25–100 XP bonus | All 3 completed |
+| Duel win | 200 XP | |
+| Custom challenge complete | 2,500 XP | |
+| Weekly group challenge | 100 XP | |
+
+**No XP from:** sleep, water, HRV, recovery, strain, opening the app.
+
+XP visible on Power Level screen as a level bar. **XP unlocks:** themes, challenge types, cosmetic badges (specific tiers TBD post-launch).
+
+### Ranked Exercises (12 per path)
+
+**Universal Core (all paths):** Back Squat (xBW), Deadlift (xBW), Bench Press (xBW), Pull-up (Reps), Overhead Press (xBW), Run 1 Mile (Sec), Plank (Sec), Push-ups (Reps)
+
+**Specialty (4 per path):**
+| Strength | Endurance | Mobility & Calisthenics | Hybrid |
+|---|---|---|---|
+| Barbell Row | Run 400m | Deep Squat Hold | Run 400m |
+| Incline Bench | Run 5K | Dead Hang | Dead Hang |
+| RDL | Row 6min | Cossack Squat | Barbell Row |
+| Dip | Dead Hang | L-Sit Hold | Run 5K |
+
+Max Power Level = 60 (12 × Level 5). Balanced across all paths. Everything else in catalog is loggable for XP but unranked.
 
 ### Profile (Public + Private)
 
@@ -140,7 +188,7 @@ The daily action.
 4 steps:
 1. Sign up + liability waiver
 2. Pick a theme (Athlete, Draconic, Samurai, Apex Predator, Viking)
-3. Pick a training path (Hybrid, Strength, Endurance, Mobility)
+3. Pick a training path (Hybrid, Strength, Endurance, Mobility & Calisthenics)
 4. Connect wearable (HealthKit / Health Connect / WHOOP)
 
 Then land on Power Level screen (empty state with CTA: "Complete your first workout to discover your rank").
