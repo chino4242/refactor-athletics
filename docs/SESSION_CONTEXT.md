@@ -1,4 +1,4 @@
-# Current State (June 9, 2026)
+# Current State (June 11, 2026)
 
 ## Project Location
 - Active project: /Users/ryancontino/Documents/projects/refactor-athletics
@@ -11,9 +11,37 @@
 - Prefer plan mode for multi-file changes; just code for simple fixes
 - No duplicate utility functions — always check existing before creating new
 
+## Key Decisions (June 8-11)
+- Training paths unlocked: Strength, Endurance, Mobility all available
+- Preferred cardio equipment: user picks treadmill/rower/bike/elliptical in Settings
+- 75-day challenge: per-member customizable metrics, live table checklist, shared fate
+- Nutrition: search picker (not auto-add), meal type selector, AI returns grams estimate
+- Onboarding quests: non-sequential checklist (all visible at once)
+- Daily Rites: quick-toggle habits on Today tab
+- Refactor Score: 14-day composite on Today tab
+- Date handling: parseLocalDate() / string comparison mandatory (skills.md Section 13)
+
+## Known Resolved Issues
+- UTC date bugs: systematic fix with utilities + ESLint rule + skills.md convention
+- 75-day challenge false failure: getMetricValue had wrong metric IDs + snapshot updater was overwriting passed days
+- Native health sync: isNative() function (not const), totalCalories data type, (Sync) labels for set-mode
+- Workout path switching: schedule API has default programs fallback, filters by selected_path
+- Empty program variants: workout API tries all variants, old empties cleaned from DB
+- Steps duplicating: fixed with set-mode (Sync) label
+
+## Active 75-Day Challenge
+- Challenge ID: fb5cfcdd-65df-4b8b-9cbb-d9980f8fbafc
+- Members: ryanj.contino (joined), apujol (not yet joined)
+- Metrics: Active Minutes ≥30, Steps ≥7500, Workouts ≥1, Protein ≥100, Water ≥100
+- Start: June 8, 2026
+
+## User Accounts
+- ryanj.contino@gmail.com (main dev) — Draconic theme, Mobility path
+- apujol@outlook.com (beta tester) — TestFlight Build 1
+
 ## TestFlight Status
 - Build 2 uploaded, compliance resolved, ready to add to test group
-- Build 1 still active for beta tester (apujol@outlook.com)
+- Build 1 still active for beta tester
 
 ## Changes Made (June 7 Session)
 
