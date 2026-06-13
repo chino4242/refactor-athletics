@@ -554,6 +554,11 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
           40% { transform: scale(1.3); opacity: 0.9; }
           100% { transform: scale(1.0); opacity: 0; }
         }
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-3px); }
+          75% { transform: translateX(3px); }
+        }
       `}</style>
       {/* Arena backdrop */}
       <img
@@ -598,10 +603,11 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
             className={`snap-center shrink-0 w-[calc(100vw-3rem)] max-w-sm transition-all duration-300 relative ${card.poofing ? 'opacity-0 scale-75' : 'opacity-100 scale-100'}`}
             style={idx === activeIndex && !card.poofing ? { boxShadow: colors.glow } : undefined}
           >
-            {/* Defeat emoji burst */}
+            {/* Defeat burst */}
             {card.poofing && (
-              <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+              <div className="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none bg-black/40">
                 <span className="text-4xl" style={{ animation: 'defeatBurst 600ms ease-out forwards' }}>{getThemeIdentity(currentTheme).emoji}</span>
+                <span className="text-[12px] text-white mt-2 tracking-widest" style={{ fontFamily: "var(--font-pixel), monospace", animation: 'defeatBurst 600ms ease-out 100ms forwards', opacity: 0 }}>DEFEATED</span>
               </div>
             )}
             {card.type === 'duration' ? (
@@ -724,14 +730,14 @@ function LiftingCard({ card, isActive, colors, currentTheme, weight, reps, onWei
               <p className="text-xs text-white font-medium truncate max-w-[200px]">{displayName}</p>
             </div>
             <span className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-              SET {card.completedSets + 1}/{card.totalSets}
+              {card.completedSets + 1 === card.totalSets ? '⚡ FINAL STRIKE' : `STRIKE ${card.completedSets + 1}/${card.totalSets}`}
             </span>
           </div>
         )}
       </div>
 
-      {/* HP Bar */}
-      <PixelBar current={card.completedSets} max={card.totalSets} />
+      {/* HP Bar (enemy health drains as you attack) */}
+      <PixelBar current={card.completedSets} max={card.totalSets} inverted />
 
       {/* Rank nudge */}
       {card.catalogItem?.standards && (card.lastWeight || 0) > 0 && (() => {
@@ -798,11 +804,11 @@ function LiftingCard({ card, isActive, colors, currentTheme, weight, reps, onWei
         </div>
       ) : (
         <button
-          onClick={onLogAttack}
-          className={`w-full py-4 border-2 ${colors.primary} bg-zinc-800 text-center transition-colors hover:bg-zinc-700`}
+          onClick={(e) => { (e.currentTarget as HTMLElement).style.animation = 'shake 200ms'; setTimeout(() => { (e.currentTarget as HTMLElement).style.animation = ''; }, 200); onLogAttack(); }}
+          className={`w-full py-4 border-2 ${card.completedSets + 1 === card.totalSets ? 'border-red-500 animate-pulse' : colors.primary} bg-zinc-800 text-center transition-colors hover:bg-zinc-700`}
         >
-          <span className={`text-[10px] ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-            ⚔ LOG ATTACK
+          <span className={`text-[10px] ${card.completedSets + 1 === card.totalSets ? 'text-red-400' : colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            {card.completedSets + 1 === card.totalSets ? '💀 FINISH' : card.completedSets === 0 ? '⚔ ATTACK' : card.completedSets === 1 ? '⚔⚔ STRIKE' : '⚔⚔⚔ CRUSH'}
           </span>
         </button>
       )}

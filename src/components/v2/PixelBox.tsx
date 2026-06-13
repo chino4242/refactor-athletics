@@ -25,17 +25,27 @@ export default function PixelBox({ children, className = '', highlight = false }
   );
 }
 
-export function PixelBar({ current, max }: { current: number; max: number }) {
+export function PixelBar({ current, max, inverted }: { current: number; max: number; inverted?: boolean }) {
   const { currentTheme } = useTheme();
   const colors = getV2Theme(currentTheme);
-  const pct = Math.min((current / max) * 100, 100);
+  const pct = inverted
+    ? Math.max(((max - current) / max) * 100, 0) // HP remaining (drains as current increases)
+    : Math.min((current / max) * 100, 100);
+
+  // Color stages for inverted (enemy HP)
+  let fillClass = colors.barFill;
+  if (inverted) {
+    if (pct <= 25) fillClass = 'bg-red-500 animate-pulse';
+    else if (pct <= 50) fillClass = 'bg-orange-500';
+    else if (pct <= 75) fillClass = 'bg-yellow-500';
+  }
 
   return (
     <div className="h-3 bg-zinc-800 border border-zinc-700 flex">
       {Array.from({ length: 20 }).map((_, i) => (
         <div
           key={i}
-          className={`flex-1 border-r border-zinc-900 ${i < Math.round(pct / 5) ? colors.barFill : ''}`}
+          className={`flex-1 border-r border-zinc-900 ${i < Math.round(pct / 5) ? fillClass : ''}`}
         />
       ))}
     </div>
