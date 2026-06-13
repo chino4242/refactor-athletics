@@ -53,138 +53,53 @@ export async function GET() {
     const { data: { user } } = await supabase.auth.getUser();
     const { data: catalog } = await supabase.from('catalog').select('*');
 
-    // Try DB programs first (user's assigned programs matching their selected path)
+    // Try DB programs using shared resolver
     if (user) {
-        const { data: userProfile } = await supabase.from('users').select('selected_path').eq('id', user.id).single();
-        const selectedPath = userProfile?.selected_path || 'hybrid';
+        const { resolveProgramBlocks } = await import('@/services/programResolver');
+        const { data: catalogData } = await supabase.from('catalog').select('*');
+        const catalogMap = new Map((catalogData || catalog || []).map((c: any) => [c.id, c]));
+        const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
-        const { data: dbPrograms } = await supabase
-            .from('workout_programs')
-            .select('id, name, description, day_of_week, training_path')
-            .eq('user_id', user.id)
-            .eq('training_path', selectedPath)
-            .not('day_of_week', 'is', null);
+        const schedule: any[] = [];
+        for (const day of days) {
+            const resolved = await resolveProgramBlocks(supabase, user.id, day);
+            if (!resolved) continue;
 
-        if (dbPrograms && dbPrograms.length > 0) {
-            // Fetch all blocks for these programs in one query
-            const programIds = dbPrograms.map(p => p.id);
-            const { data: allBlocks } = await supabase
-                .from('program_blocks')
-                .select('*, workout_id')
-                .in('workout_id', programIds)
-                .order('block_order');
+            const blocks = resolved.blocks;
+            const exerciseNames = blocks
+                .filter((b: any) => b.block_type === 'exercise' && b.exercise_id)
+                .map((b: any) => {
+                    const cat = catalogMap.get(b.exercise_id);
+                    return cat?.name || b.exercise_id.replace(/_/g, ' ');
+                })
+                .filter((n: string) => !n.toLowerCase().includes('stretching') && !n.toLowerCase().includes('foam'));
+            const treadmillCount = blocks.filter((b: any) => b.block_type === 'treadmill').length;
 
-            const blocksByProgram = new Map<string, any[]>();
-            (allBlocks || []).forEach(b => {
-                const list = blocksByProgram.get(b.workout_id) || [];
-                list.push(b);
-                blocksByProgram.set(b.workout_id, list);
-            });
-
-            const catalogMap = new Map((catalog || []).map((c: any) => [c.id, c]));
-
-            const schedule = dbPrograms.map(prog => {
-                const blocks = blocksByProgram.get(prog.id) || [];
-                const exerciseNames = blocks
-                    .filter(b => b.block_type === 'exercise' && b.exercise_id)
-                    .map(b => {
-                        const cat = catalogMap.get(b.exercise_id);
-                        return cat?.name || b.exercise_id.replace(/_/g, ' ');
-                    })
-                    .filter(n => !n.toLowerCase().includes('stretching') && !n.toLowerCase().includes('foam'));
-                const treadmillCount = blocks.filter(b => b.block_type === 'treadmill').length;
-
-                // Estimate XP
-                let xp = 0;
-                for (const b of blocks) {
-                    if (b.block_type === 'treadmill') {
-                        const secs = b.duration_seconds || 0;
-                        const factor = b.intensity === 'all_out' ? 0.4 : b.intensity === 'push' ? 0.2 : 0.1;
-                        xp += Math.floor(secs * factor);
-                    } else if (b.block_type === 'exercise' && b.exercise_id) {
-                        const cat = catalogMap.get(b.exercise_id);
-                        const xpFactor = cat?.xp_factor || 1;
-                        xp += Math.floor((b.target_sets || 3) * (b.target_reps || 10) * xpFactor);
-                    }
+            let xp = 0;
+            for (const b of blocks) {
+                if (b.block_type === 'treadmill') {
+                    const secs = b.duration_seconds || 0;
+                    const factor = b.intensity === 'all_out' ? 0.4 : b.intensity === 'push' ? 0.2 : 0.1;
+                    xp += Math.floor(secs * factor);
+                } else if (b.block_type === 'exercise' && b.exercise_id) {
+                    const cat = catalogMap.get(b.exercise_id);
+                    const xpFactor = cat?.xp_factor || 1;
+                    xp += Math.floor((b.target_sets || 3) * (b.target_reps || 10) * xpFactor);
                 }
+            }
 
-                const dayLower = (prog.day_of_week || '').toLowerCase();
-                return {
-                    day: dayLower,
-                    title: generateTitle(blocks, catalogMap),
-                    order: DAY_ORDER[dayLower] ?? 99,
-                    xp,
-                    type: blocks.length === 0 ? 'Recovery' : inferType(blocks),
-                    exercises: exerciseNames,
-                    treadmillBlocks: treadmillCount,
-                };
+            schedule.push({
+                day,
+                title: generateTitle(blocks, catalogMap),
+                order: DAY_ORDER[day] ?? 99,
+                xp,
+                type: blocks.length === 0 ? 'Recovery' : inferType(blocks),
+                exercises: exerciseNames,
+                treadmillBlocks: treadmillCount,
             });
-
-            schedule.sort((a, b) => a.order - b.order);
-            return NextResponse.json(schedule);
         }
 
-        // Fallback: check default programs for user's selected path
-        const { data: defaultPrograms } = await supabase
-            .from('workout_programs')
-            .select('id, name, description, day_of_week, training_path')
-            .eq('is_default', true)
-            .eq('training_path', selectedPath)
-            .not('day_of_week', 'is', null);
-
-        if (defaultPrograms && defaultPrograms.length > 0) {
-            const programIds = defaultPrograms.map(p => p.id);
-            const { data: allBlocks } = await supabase
-                .from('program_blocks')
-                .select('*, workout_id')
-                .in('workout_id', programIds)
-                .order('block_order');
-
-            const blocksByProgram = new Map<string, any[]>();
-            (allBlocks || []).forEach(b => {
-                const list = blocksByProgram.get(b.workout_id) || [];
-                list.push(b);
-                blocksByProgram.set(b.workout_id, list);
-            });
-
-            const catalogMap = new Map((catalog || []).map((c: any) => [c.id, c]));
-
-            const schedule = defaultPrograms.map(prog => {
-                const blocks = blocksByProgram.get(prog.id) || [];
-                const exerciseNames = blocks
-                    .filter(b => b.block_type === 'exercise' && b.exercise_id)
-                    .map(b => {
-                        const cat = catalogMap.get(b.exercise_id);
-                        return cat?.name || b.exercise_id.replace(/_/g, ' ');
-                    })
-                    .filter(n => !n.toLowerCase().includes('stretching') && !n.toLowerCase().includes('foam'));
-                const treadmillCount = blocks.filter(b => b.block_type === 'treadmill').length;
-
-                let xp = 0;
-                for (const b of blocks) {
-                    if (b.block_type === 'treadmill') {
-                        const secs = b.duration_seconds || 0;
-                        const factor = b.intensity === 'all_out' ? 0.4 : b.intensity === 'push' ? 0.2 : 0.1;
-                        xp += Math.floor(secs * factor);
-                    } else if (b.block_type === 'exercise' && b.exercise_id) {
-                        const cat = catalogMap.get(b.exercise_id);
-                        const xpFactor = cat?.xp_factor || 1;
-                        xp += Math.floor((b.target_sets || 3) * (b.target_reps || 10) * xpFactor);
-                    }
-                }
-
-                const dayLower = (prog.day_of_week || '').toLowerCase();
-                return {
-                    day: dayLower,
-                    title: generateTitle(blocks, catalogMap),
-                    order: DAY_ORDER[dayLower] ?? 99,
-                    xp,
-                    type: blocks.length === 0 ? 'Recovery' : selectedPath.charAt(0).toUpperCase() + selectedPath.slice(1),
-                    exercises: exerciseNames,
-                    treadmillBlocks: treadmillCount,
-                };
-            });
-
+        if (schedule.length > 0) {
             schedule.sort((a, b) => a.order - b.order);
             return NextResponse.json(schedule);
         }

@@ -2,17 +2,19 @@
 
 import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { Timer, X } from 'lucide-react';
+import { useTheme } from '@/context/ThemeContext';
+import { getV2Theme } from '@/data/v2themes';
 
 export default function ActiveWorkoutBanner() {
     const [active, setActive] = useState<{ path: string; date: string } | null>(null);
     const pathname = usePathname();
     const router = useRouter();
+    const { currentTheme } = useTheme();
+    const colors = getV2Theme(currentTheme);
 
     useEffect(() => {
         const check = () => {
             try {
-                // Don't show on auth/login pages
                 if (pathname.includes('/login') || pathname.includes('/register') || pathname.includes('/beta') || pathname.includes('/reset-password')) {
                     setActive(null);
                     return;
@@ -20,14 +22,12 @@ export default function ActiveWorkoutBanner() {
                 const saved = localStorage.getItem('active_workout');
                 if (saved) {
                     const data = JSON.parse(saved);
-                    // Auto-clear stale entries from a different day
                     const today = new Date().toLocaleDateString('en-CA');
                     if (data.date && data.date !== today) {
                         localStorage.removeItem('active_workout');
                         setActive(null);
                         return;
                     }
-                    // Only show on pages that aren't the workout page itself
                     if (data.path && !pathname.includes('/train') && !pathname.includes('/workouts')) {
                         setActive(data);
                     } else {
@@ -46,23 +46,25 @@ export default function ActiveWorkoutBanner() {
     if (!active) return null;
 
     return (
-        <div className="fixed bottom-20 left-4 right-4 z-40 flex items-stretch gap-0 shadow-lg shadow-orange-900/30 animate-in slide-in-from-bottom-4">
+        <div className="fixed bottom-20 left-3 right-3 z-40 flex items-stretch gap-0 animate-in slide-in-from-bottom-4">
             <button
-                onClick={() => router.push('/train')}
-                className="flex-1 bg-orange-600 hover:bg-orange-500 text-white rounded-l-xl px-4 py-3 flex items-center justify-between transition-colors"
+                onClick={() => router.push('/train/active')}
+                className={`flex-1 border-2 ${colors.primary} bg-zinc-900 px-4 py-3 flex items-center justify-between transition-colors hover:bg-zinc-800`}
             >
                 <div className="flex items-center gap-2">
-                    <Timer size={18} className="animate-pulse" />
-                    <span className="text-sm font-bold">Workout in progress</span>
+                    <span className="text-sm animate-pulse">⚔</span>
+                    <span className={`text-[9px] ${colors.secondary} uppercase tracking-wider`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                        BATTLE IN PROGRESS
+                    </span>
                 </div>
-                <span className="text-xs font-medium opacity-80">Tap to return →</span>
+                <span className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>TAP TO RETURN ▸</span>
             </button>
             <button
                 onClick={() => { localStorage.removeItem('active_workout'); setActive(null); }}
-                className="bg-orange-800 hover:bg-orange-700 text-white/70 hover:text-white rounded-r-xl px-3 flex items-center transition-colors border-l border-orange-900/50"
+                className={`border-2 border-l-0 ${colors.border} bg-zinc-900 px-3 flex items-center transition-colors hover:bg-zinc-800`}
                 aria-label="Dismiss workout banner"
             >
-                <X size={16} />
+                <span className="text-zinc-600 text-xs">✕</span>
             </button>
         </div>
     );

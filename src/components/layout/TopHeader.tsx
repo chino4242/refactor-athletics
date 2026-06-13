@@ -2,66 +2,72 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTheme } from '@/context/ThemeContext';
+import { getV2Theme, getThemeIdentity } from '@/data/v2themes';
 import { signout } from '@/app/login/actions';
-import { useExperienceMode } from '@/context/ExperienceModeContext';
 
 export default function TopHeader() {
     const pathname = usePathname();
-    const { isClassic } = useExperienceMode();
-    const isTrainingPage = pathname === '/train';
+    const { currentTheme } = useTheme();
+    const colors = getV2Theme(currentTheme);
+
+    // Hide on login/onboarding pages
+    if (pathname?.startsWith('/login') || pathname?.startsWith('/signup')) return null;
+
+    const { emoji: themeEmoji } = getThemeIdentity(currentTheme);
 
     return (
-        <header className={`flex flex-col md:flex-row items-center justify-between gap-4 mb-8 bg-zinc-900/50 backdrop-blur-md p-4 rounded-2xl border border-zinc-800 shadow-xl z-50 transition-all ${isTrainingPage ? 'relative' : 'sticky top-4'}`}>
-
-            {/* 1. DESKTOP NAV */}
-            <div className="hidden md:flex flex-1 justify-start">
-                <nav className="flex items-center gap-1 bg-zinc-950/50 p-1 rounded-xl border border-zinc-800">
-                    <Link href="/dashboard">
-                        <button className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-300 ${pathname === '/dashboard' || pathname === '/' ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-white hover:bg-zinc-800'}`}>
-                            Home
-                        </button>
-                    </Link>
-                    <Link href="/track">
-                        <button className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-300 ${pathname === '/track' ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-white hover:bg-zinc-800'}`}>
-                            Track
-                        </button>
-                    </Link>
-                    <Link href="/train">
-                        <button className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-300 ${pathname === '/train' ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-white hover:bg-zinc-800'}`}>
-                            Train
-                        </button>
-                    </Link>
-                    <Link href="/arena">
-                        <button className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-300 ${pathname === '/arena' ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-white hover:bg-zinc-800'}`}>
-                            {isClassic ? 'Social' : 'Arena'}
-                        </button>
-                    </Link>
-                    <Link href="/profile">
-                        <button className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-300 ${pathname === '/profile' ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-white hover:bg-zinc-800'}`}>
-                            Profile
-                        </button>
-                    </Link>
-                </nav>
-            </div>
-
-            {/* 2. TITLE */}
-            <h1 className="text-2xl font-black italic tracking-tighter text-white flex items-center gap-2 shrink-0">
-                REFACTOR <span className="text-orange-500">ATHLETICS</span>
-            </h1>
-
-            {/* 3. SETTINGS */}
-            <div className="hidden md:flex flex-1 justify-end items-center gap-2">
-                <Link href="/settings">
-                    <button className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 hover:text-orange-500 transition-colors border border-zinc-800 hover:border-orange-900/30 px-3 py-3 rounded-lg">
-                        Settings
-                    </button>
+        <>
+            {/* Mobile HUD — themed banner */}
+            <header className={`md:hidden flex items-center justify-between px-3 py-2 border-b-2 ${colors.border} bg-gradient-to-r from-zinc-900 via-zinc-900/80 to-zinc-900`}>
+                <div className="flex items-center gap-2">
+                    <span className={`text-base`}>{themeEmoji}</span>
+                    <span className={`text-[9px] ${colors.secondary} tracking-widest font-bold`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                        REFACTOR ATHLETICS
+                    </span>
+                </div>
+                <Link href="/profile">
+                    <div className={`w-7 h-7 border-2 ${colors.primary} bg-zinc-900 flex items-center justify-center`}>
+                        <span className="text-[10px]">👤</span>
+                    </div>
                 </Link>
-                <form action={signout}>
-                    <button className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 hover:text-red-500 transition-colors border border-zinc-800 hover:border-red-900/30 px-3 py-3 rounded-lg">
-                        Sign Out
-                    </button>
-                </form>
-            </div>
-        </header>
+            </header>
+
+            {/* Desktop nav */}
+            <header className={`hidden md:flex items-center justify-between px-4 py-3 border-b-2 ${colors.border}`}>
+                <nav className="flex items-center gap-1">
+                    {[
+                        { href: '/', label: 'POWER' },
+                        { href: '/arena', label: 'ARENA' },
+                        { href: '/train', label: 'TRAIN' },
+                    ].map((tab) => (
+                        <Link key={tab.href} href={tab.href}>
+                            <button className={`px-3 py-2 text-[9px] uppercase tracking-wider transition-colors ${
+                                (tab.href === '/' && (pathname === '/' || pathname === '/dashboard')) || (tab.href !== '/' && pathname?.startsWith(tab.href))
+                                    ? `${colors.secondary} ${colors.navActive}`
+                                    : 'text-zinc-600 hover:text-zinc-300'
+                            }`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                                {tab.label}
+                            </button>
+                        </Link>
+                    ))}
+                </nav>
+                <h1 className={`text-[10px] ${colors.secondary} tracking-widest`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                    REFACTOR ATHLETICS
+                </h1>
+                <div className="flex items-center gap-2">
+                    <Link href="/profile">
+                        <button className={`text-[8px] text-zinc-600 hover:text-zinc-300 transition-colors px-2 py-1 border ${colors.border}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                            PROFILE
+                        </button>
+                    </Link>
+                    <form action={signout}>
+                        <button className="text-[8px] text-zinc-600 hover:text-red-400 transition-colors px-2 py-1 border border-zinc-800" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                            OUT
+                        </button>
+                    </form>
+                </div>
+            </header>
+        </>
     );
 }

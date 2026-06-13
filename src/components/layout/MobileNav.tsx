@@ -2,40 +2,47 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useExperienceMode } from '@/context/ExperienceModeContext';
+import { useTheme } from '@/context/ThemeContext';
+import { getV2Theme } from '@/data/v2themes';
 
 export default function MobileNav() {
     const pathname = usePathname();
-    const { isClassic } = useExperienceMode();
+    const { currentTheme } = useTheme();
+    const colors = getV2Theme(currentTheme);
 
     const isActive = (path: string) => {
-        if (path === '/dashboard' && (pathname === '/' || pathname === '/dashboard')) return 'text-white bg-zinc-800';
-        return pathname === path ? 'text-white bg-zinc-800' : 'text-zinc-500 hover:text-zinc-300';
-    }
+        if (path === '/' && (pathname === '/' || pathname === '/dashboard')) return true;
+        return pathname?.startsWith(path) && path !== '/';
+    };
+
+    const tabs = [
+        { href: '/', icon: '⚡', label: 'POWER' },
+        { href: '/arena', icon: '⚔', label: 'ARENA' },
+        { href: '/train', icon: '◆', label: 'TRAIN' },
+    ];
 
     return (
-        <nav className="md:hidden fixed bottom-0 left-0 w-full bg-zinc-950/90 backdrop-blur-xl border-t border-zinc-800 z-50 pb-safe">
-            <div className="grid grid-cols-5 h-16">
-                <Link href="/dashboard" className={`flex flex-col items-center justify-center gap-1 transition-colors ${isActive('/dashboard')}`}>
-                    <span className="text-xl">🏠</span>
-                    <span className="text-xs font-bold uppercase tracking-wider">Home</span>
-                </Link>
-                <Link href="/track" className={`flex flex-col items-center justify-center gap-1 transition-colors ${isActive('/track')}`}>
-                    <span className="text-xl">📝</span>
-                    <span className="text-xs font-bold uppercase tracking-wider">Track</span>
-                </Link>
-                <Link href="/train" className={`flex flex-col items-center justify-center gap-1 transition-colors ${isActive('/train')}`}>
-                    <span className="text-xl">🏋️</span>
-                    <span className="text-xs font-bold uppercase tracking-wider">Train</span>
-                </Link>
-                <Link href="/arena" className={`flex flex-col items-center justify-center gap-1 transition-colors ${isActive('/arena')}`}>
-                    <span className="text-xl">{isClassic ? '👥' : '⚔️'}</span>
-                    <span className="text-xs font-bold uppercase tracking-wider">{isClassic ? 'Social' : 'Arena'}</span>
-                </Link>
-                <Link href="/profile" className={`flex flex-col items-center justify-center gap-1 transition-colors ${isActive('/profile')}`}>
-                    <span className="text-xl">🏆</span>
-                    <span className="text-xs font-bold uppercase tracking-wider">Profile</span>
-                </Link>
+        <nav className={`md:hidden fixed bottom-0 left-0 w-full ${colors.bgTint} border-t-2 ${colors.border} z-50 pb-safe`}>
+            <div className="grid grid-cols-3 h-14">
+                {tabs.map((tab) => (
+                    <Link
+                        key={tab.href}
+                        href={tab.href}
+                        className={`flex flex-col items-center justify-center gap-0.5 transition-colors ${
+                            isActive(tab.href)
+                                ? `${colors.secondary} ${colors.navActive}`
+                                : 'text-zinc-600 hover:text-zinc-400'
+                        }`}
+                    >
+                        <span className="text-base">{tab.icon}</span>
+                        <span
+                            className="text-[8px] uppercase tracking-wider"
+                            style={{ fontFamily: "var(--font-pixel), monospace" }}
+                        >
+                            {tab.label}
+                        </span>
+                    </Link>
+                ))}
             </div>
         </nav>
     );

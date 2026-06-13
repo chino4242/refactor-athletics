@@ -1,24 +1,14 @@
-import Arena from '@/components/Arena';
-import PremiumGate from '@/components/PremiumGate';
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
+import ArenaScreen from '@/components/v2/ArenaScreen';
 
 export default async function ArenaPage() {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) {
-        return redirect('/login');
-    }
+  if (!user) {
+    return redirect('/login');
+  }
 
-    return (
-        <div className="min-h-screen bg-black text-white w-full">
-            <main className="w-full h-full">
-                <PremiumGate feature="Arena">
-                    <Arena userId={user.id} />
-                </PremiumGate>
-            </main>
-        </div>
-    );
+  return <ArenaScreen userId={user.id} />;
 }
-

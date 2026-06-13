@@ -460,7 +460,7 @@ All mode-aware labels are driven by `ExperienceModeContext` (`src/context/Experi
 **Core principle:** A single action advances all active challenges simultaneously.
 
 ### 9.2 Weekly Bounties
-- 8 bounty types across 3 pillars (Training, Consistency, Social/Meta)
+- 7 bounty types across 3 pillars (Training, Consistency, Social/Meta)
 - 3 per week (1 from each pillar, rotating)
 - Targets = trailing 4-week average × difficulty modifier (fallback defaults for new users)
 - Difficulty: Easy (−25%, 100 XP) / Normal (baseline, 150 XP) / Hard (+25%, 225 XP)

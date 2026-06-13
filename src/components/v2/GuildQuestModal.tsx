@@ -1,0 +1,172 @@
+"use client";
+
+import { useState, useEffect } from 'react';
+import { useTheme } from '@/context/ThemeContext';
+import { getV2Theme } from '@/data/v2themes';
+import { proposeChallenge, type ChallengeMetric } from '@/services/groupChallengeService';
+
+interface Props {
+  isOpen: boolean;
+  groupId: string;
+  userId: string;
+  onClose: () => void;
+  onCreated: () => void;
+}
+
+const METRICS: { key: ChallengeMetric; label: string; icon: string; unit: string; defaultTarget: number }[] = [
+  { key: 'volume', label: 'WEIGHT LIFTED', icon: '🏋️', unit: 'lbs', defaultTarget: 20000 },
+  { key: 'sessions', label: 'WORKOUTS', icon: '⚔', unit: 'workouts', defaultTarget: 12 },
+  { key: 'steps', label: 'STEPS', icon: '👟', unit: 'steps', defaultTarget: 100000 },
+  { key: 'active_minutes', label: 'ACTIVE MIN', icon: '⏱', unit: 'min', defaultTarget: 300 },
+];
+
+const DURATIONS = [
+  { label: '7 DAYS', days: 7 },
+  { label: '5 DAYS', days: 5 },
+  { label: '14 DAYS', days: 14 },
+];
+
+export default function GuildQuestModal({ isOpen, groupId, userId, onClose, onCreated }: Props) {
+  const { currentTheme } = useTheme();
+  const colors = getV2Theme(currentTheme);
+  const [metric, setMetric] = useState<ChallengeMetric>('volume');
+  const [target, setTarget] = useState('20000');
+  const [durationDays, setDurationDays] = useState(7);
+  const [memberCount, setMemberCount] = useState(1);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    (async () => {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { count } = await supabase.from('group_members').select('*', { count: 'exact', head: true }).eq('group_id', groupId);
+      setMemberCount(count || 1);
+    })();
+  }, [isOpen, groupId]);
+
+  if (!isOpen) return null;
+
+  const metricInfo = METRICS.find(m => m.key === metric)!;
+  const perMember = Math.round(Number(target) / memberCount);
+
+  const handleMetricChange = (m: ChallengeMetric) => {
+    setMetric(m);
+    setTarget(String(METRICS.find(x => x.key === m)!.defaultTarget));
+  };
+
+  const handleCreate = async () => {
+    const targetNum = Number(target);
+    if (!targetNum || targetNum <= 0) return;
+
+    setLoading(true);
+    const today = new Date();
+    const startDate = today.toLocaleDateString('en-CA');
+    const end = new Date(today.getTime() + (durationDays - 1) * 24 * 60 * 60 * 1000);
+    const endDate = end.toLocaleDateString('en-CA');
+
+    const result = await proposeChallenge({
+      groupId,
+      createdBy: userId,
+      name: `${metricInfo.icon} ${metricInfo.label} Quest`,
+      metric,
+      target: targetNum,
+      startDate,
+      endDate,
+    });
+
+    setLoading(false);
+    if (result) {
+      onCreated();
+      onClose();
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90">
+      <div className={`w-full max-w-sm border-2 ${colors.primary} bg-zinc-900 shadow-[inset_0_0_0_2px_#18181b,inset_0_0_0_4px_#27272a] relative`}>
+        {/* Corner dots */}
+        <div className={`absolute -top-[3px] -left-[3px] w-[6px] h-[6px] ${colors.corner}`} />
+        <div className={`absolute -top-[3px] -right-[3px] w-[6px] h-[6px] ${colors.corner}`} />
+        <div className={`absolute -bottom-[3px] -left-[3px] w-[6px] h-[6px] ${colors.corner}`} />
+        <div className={`absolute -bottom-[3px] -right-[3px] w-[6px] h-[6px] ${colors.corner}`} />
+
+        {/* Header */}
+        <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
+          <p className={`text-[10px] ${colors.headerText} uppercase tracking-wider`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            ⚔ RALLY YOUR PARTY
+          </p>
+          <button onClick={onClose} className="text-zinc-500 hover:text-white text-xs">✕</button>
+        </div>
+
+        {/* Content */}
+        <div className="p-4 space-y-4">
+          {/* Metric */}
+          <div>
+            <p className="text-[8px] text-zinc-500 uppercase mb-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>METRIC</p>
+            <div className="grid grid-cols-2 gap-2">
+              {METRICS.map((m) => (
+                <button
+                  key={m.key}
+                  onClick={() => handleMetricChange(m.key)}
+                  className={`p-2 border text-left transition-colors ${metric === m.key ? `${colors.primary} bg-zinc-800` : 'border-zinc-700 bg-zinc-900 hover:bg-zinc-800'}`}
+                >
+                  <span className="text-sm">{m.icon}</span>
+                  <p className={`text-[8px] mt-1 ${metric === m.key ? colors.secondary : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                    {m.label}
+                  </p>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Target */}
+          <div>
+            <p className="text-[8px] text-zinc-500 uppercase mb-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>TARGET ({metricInfo.unit})</p>
+            <input
+              type="number"
+              inputMode="numeric"
+              value={target}
+              onChange={e => setTarget(e.target.value)}
+              className={`w-full bg-zinc-800 border ${colors.border} px-3 py-2 text-white text-sm`}
+              style={{ fontFamily: "var(--font-pixel), monospace" }}
+            />
+            <p className="text-[8px] text-zinc-500 mt-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              ~{perMember.toLocaleString()} {metricInfo.unit} per member ({memberCount} {memberCount === 1 ? 'member' : 'members'})
+            </p>
+          </div>
+
+          {/* Duration */}
+          <div>
+            <p className="text-[8px] text-zinc-500 uppercase mb-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>DURATION</p>
+            <div className="flex gap-2">
+              {DURATIONS.map((d) => (
+                <button
+                  key={d.days}
+                  onClick={() => setDurationDays(d.days)}
+                  className={`flex-1 py-2 border text-center transition-colors ${durationDays === d.days ? `${colors.primary} bg-zinc-800` : 'border-zinc-700 bg-zinc-900 hover:bg-zinc-800'}`}
+                >
+                  <p className={`text-[8px] ${durationDays === d.days ? colors.secondary : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                    {d.label}
+                  </p>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="p-4 border-t border-zinc-800">
+          <button
+            onClick={handleCreate}
+            disabled={loading || !Number(target)}
+            className={`w-full py-3 border-2 ${colors.primary} bg-zinc-800 text-white hover:bg-zinc-700 transition-colors disabled:opacity-50`}
+            style={{ fontFamily: "var(--font-pixel), monospace" }}
+          >
+            <span className="text-[10px] uppercase">{loading ? 'PROPOSING...' : '▸ PROPOSE QUEST'}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

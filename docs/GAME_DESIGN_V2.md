@@ -182,13 +182,13 @@ These are removed from Power Level contribution (still in catalog for logging):
 
 #### Rotation
 
-8 bounty types across 3 pillars. Each week: 1 from each pillar.
+7 bounty types across 3 pillars. Each week: 1 from each pillar.
 
 | Pillar | Bounty Types |
 |---|---|
 | Training | Volume, Distance, Sessions, Rank Chase |
 | Consistency | Consistency, Nutrition |
-| Social/Meta | XP, Arena |
+| Social/Meta | Arena |
 
 **Bounty definitions:**
 
@@ -200,7 +200,6 @@ These are removed from Power Level contribution (still in catalog for logging):
 | Rank Chase | Rank up any exercise | 1 rank-up |
 | Consistency | Log workouts on X different days | 4 days |
 | Nutrition | Track meals every day | 5/7 days |
-| XP | Earn X total XP | 800 XP |
 | Arena | Complete a challenge or duel | 1 |
 
 #### Target Personalization

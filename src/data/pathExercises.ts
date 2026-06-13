@@ -1,24 +1,21 @@
-// Key exercises per training path — only these contribute to Power Level
+// v2: 12 ranked exercises per path (8 universal core + 4 specialty)
+// Only these contribute to Power Level. Max PL = 60.
 export const PATH_KEY_EXERCISES: Record<string, string[]> = {
+  // Universal core (all paths): back_squat, deadlift, bench_press, pull_up, overhead_press, run_1_mile, plank, push_ups
   strength: [
-    'bench_press', 'back_squat', 'deadlift', 'overhead_press', 'barbell_row',
-    'pull_up', 'dip', 'rdl', 'incline_bench', 'bulgarian_split_squat',
-    'barbell_bicep_curl', 'plank',
+    'back_squat', 'deadlift', 'bench_press', 'pull_up', 'overhead_press', 'run_1_mile', 'plank', 'push_ups',
+    'barbell_row', 'incline_bench', 'rdl', 'dip',
   ],
   endurance: [
-    'run_1_mile', 'run_400m', 'run_5k', 'run_2_mile', 'row_6min', 'dead_hang', 'plank',
-    'burpees', 'back_squat', 'deadlift', 'push_ups', 'pull_up',
-    'bulgarian_split_squat', 'calf_raises',
+    'back_squat', 'deadlift', 'bench_press', 'pull_up', 'overhead_press', 'run_1_mile', 'plank', 'push_ups',
+    'run_400m', 'run_5k', 'row_6min', 'dead_hang',
   ],
   mobility: [
-    'deep_squat_hold', 'active_hang', 'overhead_squat_hold', 'cossack_squat',
-    'wall_slide', 'shoulder_dislocate', 'plank', 'push_ups',
-    'body_weight_squat', 'pull_up', 'goblet_squat', 'rdl',
-    'turkish_get_up', 'kettlebell_swing', 'kettlebell_windmill', 'kettlebell_halo',
+    'back_squat', 'deadlift', 'bench_press', 'pull_up', 'overhead_press', 'run_1_mile', 'plank', 'push_ups',
+    'deep_squat_hold', 'dead_hang', 'cossack_squat', 'l_sit_hold',
   ],
   hybrid: [
-    'bench_press', 'back_squat', 'deadlift', 'pull_up', 'run_1_mile',
-    'plank', 'overhead_press', 'run_400m', 'run_5k', 'deep_squat_hold',
-    'barbell_row', 'push_ups', 'dead_hang',
+    'back_squat', 'deadlift', 'bench_press', 'pull_up', 'overhead_press', 'run_1_mile', 'plank', 'push_ups',
+    'run_400m', 'dead_hang', 'barbell_row', 'run_5k',
   ],
 };

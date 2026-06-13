@@ -237,77 +237,13 @@ export async function GET(request: Request) {
     const { data: { user } } = await supabase.auth.getUser();
     const { data: catalog } = await supabase.from('catalog').select('*');
 
-    // Try DB programs first
+    // Use shared resolver for program lookup
     if (user) {
-        const { data: profile } = await supabase.from('users').select('available_equipment, selected_path, preferred_cardio').eq('id', user.id).single();
-        const userEquipment = new Set<string>(profile?.available_equipment || []);
-        const userPath = profile?.selected_path || 'hybrid';
-        const cardioType = profile?.preferred_cardio || 'treadmill';
+        const { resolveProgramBlocks } = await import('@/services/programResolver');
+        const resolved = await resolveProgramBlocks(supabase, user.id, targetDay);
 
-        const { data: programs } = await supabase
-            .from('workout_programs')
-            .select('id, name, variant')
-            .eq('user_id', user.id)
-            .eq('training_path', userPath)
-            .ilike('day_of_week', targetDay)
-            .order('variant');
-
-        if (programs && programs.length > 0) {
-            // Pick variant based on week rotation (A/B/C), try others if selected has no blocks
-            const weekNum = Math.floor((Date.now() - new Date('2026-01-05').getTime()) / (7 * 24 * 60 * 60 * 1000));
-            const startIdx = weekNum % programs.length;
-
-            for (let i = 0; i < programs.length; i++) {
-                const program = programs[(startIdx + i) % programs.length];
-                const { data: blocks } = await supabase
-                    .from('program_blocks')
-                    .select('*')
-                    .eq('workout_id', program.id)
-                    .order('block_order');
-
-                if (blocks && blocks.length > 0) {
-                    const swappedBlocks = applyEquipmentSwaps(blocks, userEquipment);
-                    return NextResponse.json(dbBlocksToWorkoutBlocks(swappedBlocks, catalog || [], cardioType));
-                }
-            }
-            // All variants empty — fall through to defaults
-        }
-    }
-
-    // Fallback: check default programs in DB for user's training path
-    let userPath = 'hybrid';
-    let fallbackEquipment = new Set<string>();
-    let fallbackCardio = 'treadmill';
-    if (user) {
-        const { data: profile } = await supabase.from('users').select('selected_path, available_equipment, preferred_cardio').eq('id', user.id).single();
-        userPath = profile?.selected_path || 'hybrid';
-        fallbackEquipment = new Set<string>(profile?.available_equipment || []);
-        fallbackCardio = profile?.preferred_cardio || 'treadmill';
-    }
-
-    // Pick variant based on week number (A/B/C rotation)
-    const weekNum = Math.floor((Date.now() - new Date('2026-01-05').getTime()) / (7 * 24 * 60 * 60 * 1000));
-    const { data: variants } = await supabase
-        .from('workout_programs')
-        .select('id, variant')
-        .eq('is_default', true)
-        .eq('training_path', userPath)
-        .ilike('day_of_week', targetDay)
-        .order('variant');
-
-    if (variants?.length) {
-        for (let i = 0; i < variants.length; i++) {
-            const variant = variants[(weekNum + i) % variants.length];
-            const { data: blocks } = await supabase
-                .from('program_blocks')
-                .select('*')
-                .eq('workout_id', variant.id)
-                .order('block_order');
-
-            if (blocks && blocks.length > 0) {
-                const swapped = applyEquipmentSwaps(blocks, fallbackEquipment);
-                return NextResponse.json(dbBlocksToWorkoutBlocks(swapped, catalog || [], fallbackCardio));
-            }
+        if (resolved) {
+            return NextResponse.json(dbBlocksToWorkoutBlocks(resolved.blocks, catalog || [], resolved.cardioType));
         }
     }
 
