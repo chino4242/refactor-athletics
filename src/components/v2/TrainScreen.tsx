@@ -75,10 +75,10 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
     (async () => {
       try {
         // Fetch today's scheduled workout
+        const localDay = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
         const schedRes = await fetch('/api/workouts/schedule');
         const schedule = await schedRes.json();
-        const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-        const todayProgram = (schedule || []).find((p: any) => (p.day || '').toLowerCase() === today);
+        const todayProgram = (schedule || []).find((p: any) => (p.day || '').toLowerCase() === localDay);
 
         if (todayProgram) {
           setWorkout({

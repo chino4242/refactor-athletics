@@ -92,8 +92,9 @@ export default function BattleView({ userId, onComplete }: BattleViewProps) {
   useEffect(() => {
     (async () => {
       try {
+        const localDay = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
         const [workout, catalog, profile, history] = await Promise.all([
-          getActiveWorkout(),
+          getActiveWorkout(localDay),
           getTrainingCatalog(),
           getProfile(userId),
           getHistory(userId),
