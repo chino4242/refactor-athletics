@@ -223,7 +223,7 @@ export default function OnboardingFlow({ userId }: Props) {
             </p>
             <p className="text-xs text-zinc-500 text-center">Sync steps, sleep, and activity automatically</p>
             <div className="space-y-2">
-              <button className="w-full p-3 border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-left transition-colors">
+              <button onClick={async () => { const { requestPermissions } = await import('@/services/nativeHealth'); await requestPermissions(); }} className="w-full p-3 border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-left transition-colors">
                 <div className="flex items-center gap-3">
                   <span className="text-xl">⌚</span>
                   <div>
@@ -232,7 +232,7 @@ export default function OnboardingFlow({ userId }: Props) {
                   </div>
                 </div>
               </button>
-              <button className="w-full p-3 border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-left transition-colors">
+              <button onClick={async () => { const { requestPermissions } = await import('@/services/nativeHealth'); await requestPermissions(); }} className="w-full p-3 border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-left transition-colors">
                 <div className="flex items-center gap-3">
                   <span className="text-xl">💚</span>
                   <div>
@@ -241,7 +241,7 @@ export default function OnboardingFlow({ userId }: Props) {
                   </div>
                 </div>
               </button>
-              <button className="w-full p-3 border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-left transition-colors">
+              <button onClick={() => { window.location.href = '/api/whoop/authorize'; }} className="w-full p-3 border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-left transition-colors">
                 <div className="flex items-center gap-3">
                   <span className="text-xl">🟢</span>
                   <div>
