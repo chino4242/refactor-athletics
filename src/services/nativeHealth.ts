@@ -62,7 +62,10 @@ export async function getCaloriesBurned(startDate: string, endDate: string): Pro
   if (!isNative()) return 0;
   try {
     const h = getHealth();
-    const result = await h.queryAggregated({ dataType: 'totalCalories', startDate, endDate });
+    // Try 'totalCaloriesBurned' first (matches Health Connect record name), fall back to 'totalCalories'
+    let result = await h.queryAggregated({ dataType: 'totalCaloriesBurned', startDate, endDate }).catch(() => null);
+    if (!result) result = await h.queryAggregated({ dataType: 'totalCalories', startDate, endDate }).catch(() => null);
+    if (!result) result = await h.queryAggregated({ dataType: 'activeCaloriesBurned', startDate, endDate }).catch(() => null);
     return Math.round(sumAggregated(result));
   } catch { return 0; }
 }
