@@ -88,6 +88,22 @@ export default function BattleView({ userId, onComplete }: BattleViewProps) {
     if (victory) localStorage.removeItem(BATTLE_STATE_KEY);
   }, [victory]);
 
+  // Drain any pending sets from failed network attempts
+  useEffect(() => {
+    (async () => {
+      const pending = JSON.parse(localStorage.getItem('pending_sets') || '[]');
+      if (!pending.length) return;
+      const remaining: any[] = [];
+      for (const p of pending) {
+        try {
+          await logTrainingAction(p.userId, p.exerciseId, p.bodyweight, p.sex, p.sets, p.sessionId);
+        } catch { remaining.push(p); }
+      }
+      if (remaining.length) localStorage.setItem('pending_sets', JSON.stringify(remaining));
+      else localStorage.removeItem('pending_sets');
+    })();
+  }, []);
+
   // Load workout data
   useEffect(() => {
     (async () => {
@@ -322,15 +338,22 @@ export default function BattleView({ userId, onComplete }: BattleViewProps) {
       ? card.exercises![subExerciseIdx % card.exercises!.length].exerciseId
       : card.exerciseId;
 
-    // Log to database
-    await logTrainingAction(
-      userId,
-      exerciseId,
-      userBodyweight,
-      userSex,
-      [{ weight: w, reps: r }],
-      sessionId.current,
-    );
+    // Log to database (with retry on failure)
+    try {
+      await logTrainingAction(
+        userId,
+        exerciseId,
+        userBodyweight,
+        userSex,
+        [{ weight: w, reps: r }],
+        sessionId.current,
+      );
+    } catch {
+      // Queue for retry on next open
+      const pending = JSON.parse(localStorage.getItem('pending_sets') || '[]');
+      pending.push({ userId, exerciseId, bodyweight: userBodyweight, sex: userSex, sets: [{ weight: w, reps: r }], sessionId: sessionId.current, ts: Date.now() });
+      localStorage.setItem('pending_sets', JSON.stringify(pending));
+    }
 
     // Superset: advance to next sub-exercise, only count a "set" when all exercises in the superset are done
     if (isSuperset) {
@@ -399,14 +422,20 @@ export default function BattleView({ userId, onComplete }: BattleViewProps) {
     const card = aliveCards[activeIndex];
     if (!card) return;
 
-    await logTrainingAction(
-      userId,
-      card.exerciseId,
-      userBodyweight,
-      userSex,
-      [{ weight: 0, reps: 0, duration: seconds }],
-      sessionId.current,
-    );
+    try {
+      await logTrainingAction(
+        userId,
+        card.exerciseId,
+        userBodyweight,
+        userSex,
+        [{ weight: 0, reps: 0, duration: seconds }],
+        sessionId.current,
+      );
+    } catch {
+      const pending = JSON.parse(localStorage.getItem('pending_sets') || '[]');
+      pending.push({ userId, exerciseId: card.exerciseId, bodyweight: userBodyweight, sex: userSex, sets: [{ weight: 0, reps: 0, duration: seconds }], sessionId: sessionId.current, ts: Date.now() });
+      localStorage.setItem('pending_sets', JSON.stringify(pending));
+    }
 
     setCards(prev => prev.map(c => {
       if (c.id !== card.id) return c;
