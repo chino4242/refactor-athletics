@@ -13,11 +13,11 @@ interface Props {
 }
 
 const THEMES_LIST = [
-  { key: 'athlete', emoji: '🏟️', name: 'Athlete', desc: 'Clean and competitive' },
-  { key: 'dragon', emoji: '🐉', name: 'Draconic', desc: 'Mythic fire and gold' },
-  { key: 'samurai', emoji: '⛩️', name: 'Samurai', desc: 'Indigo discipline' },
-  { key: 'dinosaur', emoji: '🦖', name: 'Apex Predator', desc: 'Primal power' },
-  { key: 'viking', emoji: '⚡', name: 'Viking', desc: 'Ice and thunder' },
+  { key: 'athlete', emoji: '🏟️', name: 'Athlete', desc: 'Clean and straightforward' },
+  { key: 'dragon', emoji: '🐉', name: 'Draconic', desc: 'RPG elements throughout' },
+  { key: 'samurai', emoji: '⛩️', name: 'Samurai', desc: 'RPG elements throughout' },
+  { key: 'dinosaur', emoji: '🦖', name: 'Apex Predator', desc: 'RPG elements throughout' },
+  { key: 'viking', emoji: '⚡', name: 'Viking', desc: 'RPG elements throughout' },
 ];
 
 const PATHS_LIST = Object.entries(PATHS).map(([key, p]) => ({ key, ...p }));
@@ -107,6 +107,7 @@ export default function OnboardingFlow({ userId }: Props) {
             <p className="text-[10px] text-zinc-400 uppercase tracking-widest text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>
               CHOOSE YOUR THEME
             </p>
+            <p className="text-[8px] text-zinc-600 text-center">Athlete is straightforward. Others add RPG flavor to your workouts.</p>
             <div className="space-y-2">
               {THEMES_LIST.map(t => (
                 <button
