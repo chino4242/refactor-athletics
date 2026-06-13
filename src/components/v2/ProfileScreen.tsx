@@ -111,6 +111,18 @@ export default function ProfileScreen({ userId, displayName, age, sex, currentWe
       <PixelBox className="p-4 mb-4">
         <p className={`text-[9px] ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>SETTINGS</p>
         <div className="space-y-1">
+          <button
+            onClick={async () => {
+              localStorage.removeItem('health_permission_denied');
+              localStorage.removeItem('last_health_sync');
+              const { requestPermissions } = await import('@/services/nativeHealth');
+              await requestPermissions();
+            }}
+            className={`w-full flex items-center justify-between px-2 py-2 border ${colors.border} bg-zinc-800/50 hover:bg-zinc-800 transition-colors`}
+          >
+            <span className="text-[8px] text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>RECONNECT HEALTH SYNC</span>
+            <span className="text-zinc-600 text-xs">⟲</span>
+          </button>
           <Link href="/settings" className={`flex items-center justify-between px-2 py-2 border ${colors.border} bg-zinc-800/50 hover:bg-zinc-800 transition-colors`}>
             <span className="text-[8px] text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>INTEGRATIONS & EQUIPMENT</span>
             <span className="text-zinc-600 text-xs">▸</span>
