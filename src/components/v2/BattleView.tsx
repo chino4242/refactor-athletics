@@ -572,7 +572,7 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
       <div className="px-4 pt-4 pb-2 flex items-center justify-between">
         <button onClick={() => setShowEndConfirm(true)} className="text-zinc-600 text-xs">✕</button>
         <p className={`text-[8px] ${colors.headerText} uppercase tracking-wider`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-          {cards.filter(c => c.defeated).length}/{cards.length} DEFEATED
+          {cards.filter(c => c.defeated).length}/{cards.length} {currentTheme !== 'athlete' ? 'DEFEATED' : 'COMPLETE'}
         </p>
         <div className="w-4" />
       </div>
@@ -607,7 +607,7 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
             {card.poofing && (
               <div className="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none bg-black/40">
                 <span className="text-4xl" style={{ animation: 'defeatBurst 600ms ease-out forwards' }}>{getThemeIdentity(currentTheme).emoji}</span>
-                <span className="text-[12px] text-white mt-2 tracking-widest" style={{ fontFamily: "var(--font-pixel), monospace", animation: 'defeatBurst 600ms ease-out 100ms forwards', opacity: 0 }}>DEFEATED</span>
+                <span className="text-[12px] text-white mt-2 tracking-widest" style={{ fontFamily: "var(--font-pixel), monospace", animation: 'defeatBurst 600ms ease-out 100ms forwards', opacity: 0 }}>{currentTheme !== 'athlete' ? 'DEFEATED' : '✓ DONE'}</span>
               </div>
             )}
             {card.type === 'duration' ? (
@@ -689,6 +689,7 @@ function LiftingCard({ card, isActive, colors, currentTheme, weight, reps, onWei
   const isSuperset = card.exercises && card.exercises.length > 1;
   const [showPlate, setShowPlate] = useState(false);
   const [showSwap, setShowSwap] = useState(false);
+  const combat = currentTheme !== 'athlete';
 
   // For supersets: current sub-exercise
   const currentExercise = isSuperset ? card.exercises![subExerciseIdx % card.exercises!.length] : null;
@@ -730,14 +731,14 @@ function LiftingCard({ card, isActive, colors, currentTheme, weight, reps, onWei
               <p className="text-xs text-white font-medium truncate max-w-[200px]">{displayName}</p>
             </div>
             <span className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-              {card.completedSets + 1 === card.totalSets ? '⚡ FINAL STRIKE' : `STRIKE ${card.completedSets + 1}/${card.totalSets}`}
+              {card.completedSets + 1 === card.totalSets ? (combat ? '⚡ FINAL STRIKE' : '⚡ LAST SET') : combat ? `STRIKE ${card.completedSets + 1}/${card.totalSets}` : `SET ${card.completedSets + 1}/${card.totalSets}`}
             </span>
           </div>
         )}
       </div>
 
       {/* HP Bar (enemy health drains as you attack) */}
-      <PixelBar current={card.completedSets} max={card.totalSets} inverted />
+      <PixelBar current={card.completedSets} max={card.totalSets} inverted={combat} />
 
       {/* Rank nudge */}
       {card.catalogItem?.standards && (card.lastWeight || 0) > 0 && (() => {
@@ -805,10 +806,13 @@ function LiftingCard({ card, isActive, colors, currentTheme, weight, reps, onWei
       ) : (
         <button
           onClick={(e) => { (e.currentTarget as HTMLElement).style.animation = 'shake 200ms'; setTimeout(() => { (e.currentTarget as HTMLElement).style.animation = ''; }, 200); onLogAttack(); }}
-          className={`w-full py-4 border-2 ${card.completedSets + 1 === card.totalSets ? 'border-red-500 animate-pulse' : colors.primary} bg-zinc-800 text-center transition-colors hover:bg-zinc-700`}
+          className={`w-full py-4 border-2 ${card.completedSets + 1 === card.totalSets && combat ? 'border-red-500 animate-pulse' : colors.primary} bg-zinc-800 text-center transition-colors hover:bg-zinc-700`}
         >
-          <span className={`text-[10px] ${card.completedSets + 1 === card.totalSets ? 'text-red-400' : colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-            {card.completedSets + 1 === card.totalSets ? '💀 FINISH' : card.completedSets === 0 ? '⚔ ATTACK' : card.completedSets === 1 ? '⚔⚔ STRIKE' : '⚔⚔⚔ CRUSH'}
+          <span className={`text-[10px] ${card.completedSets + 1 === card.totalSets && combat ? 'text-red-400' : colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            {combat
+              ? (card.completedSets + 1 === card.totalSets ? '💀 FINISH' : card.completedSets === 0 ? '⚔ ATTACK' : card.completedSets === 1 ? '⚔⚔ STRIKE' : '⚔⚔⚔ CRUSH')
+              : (card.completedSets + 1 === card.totalSets ? '✓ COMPLETE' : '▸ LOG SET')
+            }
           </span>
         </button>
       )}
