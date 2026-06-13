@@ -10,12 +10,16 @@ interface Props {
 
 export default function HealthSync({ userId }: Props) {
   useEffect(() => {
-    // Only sync once per hour
+    // Only sync once per hour — shared key with DashboardClient to prevent double-sync
     const lastSync = localStorage.getItem('last_health_sync');
     if (lastSync && Date.now() - new Date(lastSync).getTime() < 3600000) return;
 
+    // Check if another sync is already in progress (DashboardClient uses this mutex)
+    if (localStorage.getItem('health_sync_in_progress')) return;
+
     (async () => {
       try {
+        localStorage.setItem('health_sync_in_progress', '1');
         const { syncTodayHealth } = await import('@/services/nativeHealth');
         const data = await syncTodayHealth();
         if (!data || (data.steps === 0 && data.caloriesBurned === 0)) return;
@@ -92,6 +96,7 @@ export default function HealthSync({ userId }: Props) {
           }
         }
       } catch { /* silent — not native or plugin unavailable */ }
+      localStorage.removeItem('health_sync_in_progress');
     })();
   }, [userId]);
 
