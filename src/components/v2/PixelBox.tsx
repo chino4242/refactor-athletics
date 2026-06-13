@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useRef } from 'react';
 import { useTheme } from '@/context/ThemeContext';
 import { getV2Theme } from '@/data/v2themes';
 
@@ -41,12 +42,45 @@ export function PixelBar({ current, max }: { current: number; max: number }) {
   );
 }
 
-export function ScreenWrapper({ children }: { children: React.ReactNode }) {
+export function ScreenWrapper({ children, onRefresh }: { children: React.ReactNode; onRefresh?: () => Promise<void> }) {
   const { currentTheme } = useTheme();
   const colors = getV2Theme(currentTheme);
+  const [pulling, setPulling] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const startY = useRef(0);
+
+  const handleTouchStart = (e: React.TouchEvent) => { startY.current = e.touches[0].clientY; };
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!onRefresh || refreshing) return;
+    const dy = e.touches[0].clientY - startY.current;
+    if (dy > 60 && window.scrollY === 0) setPulling(true);
+    else setPulling(false);
+  };
+  const handleTouchEnd = async () => {
+    if (pulling && onRefresh && !refreshing) {
+      setPulling(false);
+      setRefreshing(true);
+      await onRefresh();
+      setRefreshing(false);
+    }
+    setPulling(false);
+  };
 
   return (
-    <div className={`min-h-screen ${colors.bgTint} pb-24 px-3 pt-4`}>
+    <div
+      className={`min-h-screen ${colors.bgTint} pb-24 px-3 pt-4`}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* Pull indicator */}
+      {(pulling || refreshing) && (
+        <div className="flex justify-center py-2 -mt-2 mb-2">
+          <span className={`text-[8px] ${colors.secondary} ${refreshing ? 'animate-pulse' : ''}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            {refreshing ? 'SYNCING...' : '↓ RELEASE TO REFRESH'}
+          </span>
+        </div>
+      )}
       {/* Scanline overlay */}
       <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-40" style={{
         backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 2px, ${colors.scanline} 2px, ${colors.scanline} 4px)`

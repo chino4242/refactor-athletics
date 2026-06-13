@@ -88,6 +88,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
   const colors = getV2Theme(currentTheme);
   const [data, setData] = useState<PowerLevelData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -110,7 +111,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
       }
       setLoading(false);
     })();
-  }, [userId]);
+  }, [userId, refreshKey]);
 
   if (loading) {
     return <PowerLevelSkeleton />;
@@ -121,7 +122,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
   const tier = getTier(data.powerLevel);
 
   return (
-    <ScreenWrapper>
+    <ScreenWrapper onRefresh={async () => { setRefreshKey(k => k + 1); }}>
       <HealthSync userId={userId} />
       {/* Weekly Recap (shows Sun-Tue) */}
       <WeeklyRecapCard userId={userId} />
