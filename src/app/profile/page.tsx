@@ -1,6 +1,6 @@
-import UserProfile from '@/components/UserProfile';
+import ProfileScreen from '@/components/v2/ProfileScreen';
 import { createClient } from '@/utils/supabase/server';
-import { getProfile, getTrainingCatalog } from '@/services/api';
+import { getProfile } from '@/services/api';
 import { redirect } from 'next/navigation';
 
 export default async function ProfilePage() {
@@ -12,24 +12,15 @@ export default async function ProfilePage() {
     }
 
     const profile = await getProfile(user.id);
-    const catalog = await getTrainingCatalog();
-    const goalWeight = profile?.body_composition_goals?.target_weight 
-        ? parseFloat(profile.body_composition_goals.target_weight) 
-        : 0;
 
     return (
-        <div className="min-h-screen bg-black text-white w-full">
-            <main className="w-full h-full">
-                <UserProfile
-                    userId={user.id}
-                    displayName={profile?.display_name || 'Warrior'}
-                    age={profile?.age || 30}
-                    sex={profile?.sex || 'M'}
-                    currentWeight={profile?.bodyweight || 180}
-                    exercises={catalog}
-                    currentTheme={profile?.selected_theme || 'dragon'}
-                />
-            </main>
-        </div>
+        <ProfileScreen
+            userId={user.id}
+            displayName={profile?.display_name || 'Warrior'}
+            age={profile?.age || 30}
+            sex={profile?.sex || 'M'}
+            currentWeight={profile?.bodyweight || 180}
+            currentTheme={profile?.selected_theme || 'dragon'}
+        />
     );
 }
