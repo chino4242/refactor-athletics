@@ -142,7 +142,10 @@ export async function getBodyFat(): Promise<number | null> {
       limit: 1,
       ascending: false,
     });
-    return samples?.[0]?.value || null;
+    const val = samples?.[0]?.value || null;
+    if (!val) return null;
+    // HealthKit returns fraction (0.0-1.0); convert to percentage if needed
+    return val <= 1 ? Math.round(val * 1000) / 10 : Math.round(val * 10) / 10;
   } catch { return null; }
 }
 
