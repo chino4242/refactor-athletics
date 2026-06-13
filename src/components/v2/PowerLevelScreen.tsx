@@ -8,6 +8,7 @@ import { PowerLevelSkeleton } from './Skeletons';
 import PartyLeaderboard from './PartyLeaderboard';
 import WeeklyRecapCard from './WeeklyRecapCard';
 import HealthSync from './HealthSync';
+import PushRegistration from './PushRegistration';
 
 interface PowerLevelScreenProps {
   userId: string;
@@ -124,6 +125,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
   return (
     <ScreenWrapper onRefresh={async () => { setRefreshKey(k => k + 1); }}>
       <HealthSync userId={userId} />
+      <PushRegistration userId={userId} />
       {/* Weekly Recap (shows Sun-Tue) */}
       <WeeklyRecapCard userId={userId} />
 
