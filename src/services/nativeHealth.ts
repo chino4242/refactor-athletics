@@ -27,9 +27,12 @@ export async function requestPermissions(): Promise<boolean> {
   if (!isNative()) return false;
   try {
     const h = getHealth();
-    const result = await h.requestAuthorization({ read: READ_TYPES as any, write: ['workouts'] });
-    // v8 returns AuthorizationStatus with readAuthorized array — treat as granted if any types authorized
-    return (result.readAuthorized?.length > 0) || result.granted === true;
+    await h.requestAuthorization({ read: READ_TYPES as any, write: [] });
+    // On iOS, Apple NEVER reveals read authorization status (always returns empty/notDetermined).
+    // We must always return true after requesting and attempt reads — HealthKit will return
+    // empty data for denied types but real data for granted types. Gating on the return
+    // value would block ALL iOS health syncing.
+    return true;
   } catch { return false; }
 }
 
