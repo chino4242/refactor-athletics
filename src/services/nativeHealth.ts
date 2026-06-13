@@ -95,7 +95,9 @@ export async function getWeight(): Promise<number | null> {
       limit: 1,
       ascending: false,
     });
-    return samples?.[0]?.value || null;
+    // Plugin returns kg; app uses lbs
+    const kg = samples?.[0]?.value || null;
+    return kg ? Math.round(kg * 2.20462 * 10) / 10 : null;
   } catch { return null; }
 }
 
