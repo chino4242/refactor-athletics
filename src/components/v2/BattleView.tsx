@@ -114,7 +114,7 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
       try {
         const localDay = overrideDay || new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
         const [workout, catalog, profile, history] = await Promise.all([
-          getActiveWorkout(localDay),
+          singleExercise ? Promise.resolve([]) : getActiveWorkout(localDay),
           getTrainingCatalog(),
           getProfile(userId),
           getHistory(userId),
