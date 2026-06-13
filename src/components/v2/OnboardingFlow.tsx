@@ -27,12 +27,18 @@ export default function OnboardingFlow({ userId }: Props) {
   const [waiverAccepted, setWaiverAccepted] = useState(false);
   const [theme, setTheme] = useState('athlete');
   const [path, setPath] = useState<PathKey>('hybrid');
+  const [age, setAge] = useState('');
+  const [sex, setSex] = useState('');
+  const [bodyweight, setBodyweight] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleComplete = async () => {
     setLoading(true);
     await saveProfile({
       user_id: userId,
+      age: parseInt(age) || 25,
+      sex: sex || 'male',
+      bodyweight: parseFloat(bodyweight) || 180,
       selected_theme: theme,
       selected_path: path,
       experience_mode: 'rpg',
@@ -47,7 +53,7 @@ export default function OnboardingFlow({ userId }: Props) {
     <div className="min-h-screen bg-[#0a0a12] flex flex-col items-center justify-center px-4">
       {/* Step indicator */}
       <div className="flex gap-2 mb-6">
-        {[1, 2, 3, 4].map(s => (
+        {[1, 2, 3, 4, 5].map(s => (
           <div key={s} className={`w-3 h-3 border ${s === step ? 'border-red-500 bg-red-500' : s < step ? 'border-green-600 bg-green-600' : 'border-zinc-700 bg-zinc-800'}`} />
         ))}
       </div>
@@ -119,8 +125,44 @@ export default function OnboardingFlow({ userId }: Props) {
           </div>
         )}
 
-        {/* Step 3: Path */}
+        {/* Step 3: Personal Info */}
         {step === 3 && (
+          <div className="border-2 border-zinc-700 bg-zinc-900 p-5 space-y-4">
+            <p className="text-[10px] text-zinc-400 uppercase tracking-widest text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              ABOUT YOU
+            </p>
+            <div>
+              <p className="text-[8px] text-zinc-500 uppercase mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>AGE</p>
+              <input type="number" inputMode="numeric" value={age} onChange={e => setAge(e.target.value)} placeholder="25" className="w-full bg-zinc-800 border border-zinc-700 px-3 py-2 text-white text-sm" />
+            </div>
+            <div>
+              <p className="text-[8px] text-zinc-500 uppercase mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>SEX</p>
+              <div className="flex gap-2">
+                {['male', 'female'].map(s => (
+                  <button key={s} onClick={() => setSex(s)} className={`flex-1 py-2 border text-center ${sex === s ? 'border-red-700 bg-zinc-800' : 'border-zinc-700 bg-zinc-900'}`}>
+                    <span className={`text-[9px] ${sex === s ? 'text-red-400' : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>{s.toUpperCase()}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-[8px] text-zinc-500 uppercase mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>BODYWEIGHT (LBS)</p>
+              <input type="number" inputMode="numeric" value={bodyweight} onChange={e => setBodyweight(e.target.value)} placeholder="180" className="w-full bg-zinc-800 border border-zinc-700 px-3 py-2 text-white text-sm" />
+            </div>
+            <p className="text-[7px] text-zinc-600 text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>Used for rank calculation (xBW exercises)</p>
+            <div className="flex gap-2 mt-4">
+              <button onClick={() => setStep(2)} className="flex-1 py-3 border border-zinc-700 bg-zinc-800 text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                <span className="text-[9px]">◂ BACK</span>
+              </button>
+              <button onClick={() => setStep(4)} disabled={!age || !sex || !bodyweight} className="flex-1 py-3 border-2 border-red-800 bg-zinc-800 text-white disabled:opacity-30" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                <span className="text-[10px] text-red-400">NEXT ▸</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 4: Path */}
+        {step === 4 && (
           <div className="border-2 border-zinc-700 bg-zinc-900 p-5 space-y-4">
             <p className="text-[10px] text-zinc-400 uppercase tracking-widest text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>
               CHOOSE YOUR PATH
@@ -143,18 +185,18 @@ export default function OnboardingFlow({ userId }: Props) {
               ))}
             </div>
             <div className="flex gap-2 mt-4">
-              <button onClick={() => setStep(2)} className="flex-1 py-3 border border-zinc-700 bg-zinc-800 text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              <button onClick={() => setStep(3)} className="flex-1 py-3 border border-zinc-700 bg-zinc-800 text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>
                 <span className="text-[9px]">◂ BACK</span>
               </button>
-              <button onClick={() => setStep(4)} className="flex-1 py-3 border-2 border-red-800 bg-zinc-800 text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              <button onClick={() => setStep(5)} className="flex-1 py-3 border-2 border-red-800 bg-zinc-800 text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>
                 <span className="text-[10px] text-red-400">NEXT ▸</span>
               </button>
             </div>
           </div>
         )}
 
-        {/* Step 4: Connect Wearable */}
-        {step === 4 && (
+        {/* Step 5: Connect Wearable */}
+        {step === 5 && (
           <div className="border-2 border-zinc-700 bg-zinc-900 p-5 space-y-4">
             <p className="text-[10px] text-zinc-400 uppercase tracking-widest text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>
               CONNECT WEARABLE
@@ -190,7 +232,7 @@ export default function OnboardingFlow({ userId }: Props) {
               </button>
             </div>
             <div className="flex gap-2 mt-4">
-              <button onClick={() => setStep(3)} className="flex-1 py-3 border border-zinc-700 bg-zinc-800 text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              <button onClick={() => setStep(4)} className="flex-1 py-3 border border-zinc-700 bg-zinc-800 text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>
                 <span className="text-[9px]">◂ BACK</span>
               </button>
               <button onClick={handleComplete} disabled={loading} className="flex-1 py-3 border-2 border-red-800 bg-zinc-800 text-white disabled:opacity-40" style={{ fontFamily: "var(--font-pixel), monospace" }}>
