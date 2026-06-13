@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     if (!token) return NextResponse.json({ error: 'Missing token' }, { status: 401 });
 
     const supabase = createServiceClient();
-    const { data: user } = await supabase.from('users').select('id, bodyweight, whoop_connected_at, timezone').eq('sync_token', token).single();
+    const { data: user } = await supabase.from('users').select('id, bodyweight, sex, whoop_connected_at, timezone').eq('sync_token', token).single();
     if (!user) return NextResponse.json({ error: 'Invalid sync token' }, { status: 401 });
 
     const hasWhoop = !!user.whoop_connected_at;
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
     // Exercise sessions — via shared service
     if (body.exercise?.length) {
       const { processExerciseSessions } = await import('@/services/exerciseSyncService');
-      const result = await processExerciseSessions(supabase, user.id, user.bodyweight || 180, tz, body.exercise);
+      const result = await processExerciseSessions(supabase, user.id, user.bodyweight || 180, user.sex || 'male', tz, body.exercise);
       if (result.totalMinutes > 0) {
         await upsertHabit(supabase, user.id, 'habit_exercise_minutes', today, ts, result.totalMinutes, 0);
       }

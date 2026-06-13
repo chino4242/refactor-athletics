@@ -93,9 +93,9 @@ export async function getWeeklyBounties(userId: string): Promise<BountyWithProgr
       difficulty: 'normal' as Difficulty,
     }));
 
-    const { data: inserted } = await supabase
+    const { data: inserted, error } = await supabase
       .from('weekly_bounties')
-      .insert(rows)
+      .upsert(rows, { onConflict: 'user_id,week_start,pillar', ignoreDuplicates: true })
       .select();
 
     existing = inserted || [];

@@ -70,6 +70,7 @@ export default function CampaignModal({ isOpen, userId, groupId, onClose, onCrea
       body: JSON.stringify({
         action: 'create',
         title: name,
+        duration_days: duration,
         start_date: new Date().toLocaleDateString('en-CA'),
         group_id: scope === 'group' ? groupId : null,
         shared_failure: sharedFate,

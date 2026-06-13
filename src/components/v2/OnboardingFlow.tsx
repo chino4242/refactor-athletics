@@ -6,6 +6,7 @@ import { saveProfile } from '@/services/api';
 import { assignDefaultProgram } from '@/app/actions';
 import { PATHS, type PathKey } from '@/data/paths';
 import { THEME_IDENTITY } from '@/data/v2themes';
+import { calculateMacros, type MacroGoal } from '@/utils/macroCalculator';
 
 interface Props {
   userId: string;
@@ -30,10 +31,18 @@ export default function OnboardingFlow({ userId }: Props) {
   const [age, setAge] = useState('');
   const [sex, setSex] = useState('');
   const [bodyweight, setBodyweight] = useState('');
+  const [goal, setGoal] = useState<MacroGoal>('maintain');
   const [loading, setLoading] = useState(false);
 
   const handleComplete = async () => {
     setLoading(true);
+    const macros = calculateMacros({
+      weightLbs: parseFloat(bodyweight) || 180,
+      age: parseInt(age) || 25,
+      sex: sex || 'male',
+      activityLevel: 'moderate',
+      goal,
+    });
     await saveProfile({
       user_id: userId,
       age: parseInt(age) || 25,
@@ -44,6 +53,7 @@ export default function OnboardingFlow({ userId }: Props) {
       experience_mode: 'rpg',
       is_onboarded: true,
       waiver_accepted_at: new Date().toISOString(),
+      nutrition_targets: { protein: macros.protein, carbs: macros.carbs, fat: macros.fat, calories: macros.calories },
     } as any);
     await assignDefaultProgram(userId, path, []);
     router.refresh();
@@ -149,7 +159,17 @@ export default function OnboardingFlow({ userId }: Props) {
               <p className="text-[8px] text-zinc-500 uppercase mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>BODYWEIGHT (LBS)</p>
               <input type="number" inputMode="numeric" value={bodyweight} onChange={e => setBodyweight(e.target.value)} placeholder="180" className="w-full bg-zinc-800 border border-zinc-700 px-3 py-2 text-white text-sm" />
             </div>
-            <p className="text-[7px] text-zinc-600 text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>Used for rank calculation (xBW exercises)</p>
+            <div>
+              <p className="text-[8px] text-zinc-500 uppercase mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>GOAL</p>
+              <div className="flex gap-2">
+                {([['lose', 'CUT'], ['maintain', 'MAINTAIN'], ['gain', 'GAIN']] as [MacroGoal, string][]).map(([g, label]) => (
+                  <button key={g} onClick={() => setGoal(g)} className={`flex-1 py-2 border text-center ${goal === g ? 'border-red-700 bg-zinc-800' : 'border-zinc-700 bg-zinc-900'}`}>
+                    <span className={`text-[9px] ${goal === g ? 'text-red-400' : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>{label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <p className="text-[7px] text-zinc-600 text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>Used for rank calculation + nutrition targets</p>
             <div className="flex gap-2 mt-4">
               <button onClick={() => setStep(2)} className="flex-1 py-3 border border-zinc-700 bg-zinc-800 text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>
                 <span className="text-[9px]">◂ BACK</span>

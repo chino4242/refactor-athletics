@@ -21,6 +21,7 @@ export default function ProfileScreen({ userId, displayName, age, sex, currentWe
   const colors = getV2Theme(currentTheme);
   const identity = getThemeIdentity(currentTheme);
   const [stats, setStats] = useState<any>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -136,17 +137,27 @@ export default function ProfileScreen({ userId, displayName, age, sex, currentWe
             <span className="text-[8px] text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>SIGN OUT</span>
           </button>
           <button
-            onClick={async () => {
-              if (!confirm('This will permanently delete your account and all data. This cannot be undone.')) return;
-              const res = await fetch('/api/account/delete', { method: 'DELETE' });
-              if (res.ok) signout();
-            }}
+            onClick={() => setShowDeleteConfirm(true)}
             className="w-full px-2 py-2 border border-red-900/50 bg-zinc-800/50 text-left hover:bg-red-950/30 transition-colors"
           >
             <span className="text-[8px] text-red-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>DELETE ACCOUNT</span>
           </button>
         </div>
       </PixelBox>
+
+      {/* Delete confirmation */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-6">
+          <div className={`border-2 border-red-800 bg-zinc-900 p-6 max-w-xs w-full text-center`}>
+            <p className="text-[10px] text-red-400 mb-4" style={{ fontFamily: "var(--font-pixel), monospace" }}>DELETE ACCOUNT?</p>
+            <p className="text-xs text-zinc-500 mb-4">This permanently removes all your data. This cannot be undone.</p>
+            <div className="flex gap-3">
+              <button onClick={() => setShowDeleteConfirm(false)} className={`flex-1 py-3 border ${colors.border} bg-zinc-800 text-zinc-300 text-[9px]`} style={{ fontFamily: "var(--font-pixel), monospace" }}>CANCEL</button>
+              <button onClick={async () => { await fetch('/api/account/delete', { method: 'DELETE' }); signout(); }} className="flex-1 py-3 border border-red-800 bg-zinc-800 text-red-400 text-[9px]" style={{ fontFamily: "var(--font-pixel), monospace" }}>DELETE</button>
+            </div>
+          </div>
+        </div>
+      )}
     </ScreenWrapper>
   );
 }

@@ -29,9 +29,10 @@ export interface PowerLevelV2Data {
 
 export async function getPowerLevelV2(userId: string): Promise<PowerLevelV2Data> {
   const supabase = createClient();
+  const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toLocaleDateString('en-CA');
 
   const [{ data: workouts }, { data: catalog }, { data: profile }] = await Promise.all([
-    supabase.from('workouts').select('exercise_id, level, raw_value, date, timestamp').eq('user_id', userId),
+    supabase.from('workouts').select('exercise_id, level, raw_value, date, timestamp').eq('user_id', userId).gte('date', ninetyDaysAgo),
     supabase.from('catalog').select('id, name, standards').not('standards', 'is', null),
     supabase.from('users').select('selected_path, age, sex, bodyweight').eq('id', userId).single(),
   ]);

@@ -4,6 +4,10 @@ import { useEffect, useState } from 'react';
 import { useTheme } from '@/context/ThemeContext';
 import { getV2Theme } from '@/data/v2themes';
 import PixelBox, { PixelBar, ScreenWrapper } from './PixelBox';
+import { PowerLevelSkeleton } from './Skeletons';
+import PartyLeaderboard from './PartyLeaderboard';
+import WeeklyRecapCard from './WeeklyRecapCard';
+import HealthSync from './HealthSync';
 
 interface PowerLevelScreenProps {
   userId: string;
@@ -57,16 +61,24 @@ function NutritionBar({ userId, colors }: { userId: string; colors: any }) {
   const net = data.calsIn - data.burned;
 
   return (
-    <div className={`border ${colors.border} bg-zinc-900/80 px-3 py-2 mb-4 flex items-center justify-between`}>
-      <div className="flex items-center gap-3 text-[8px]" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-        <span className="text-blue-400">P:{data.protein}</span>
-        <span className="text-orange-400">C:{data.carbs}</span>
-        <span className="text-yellow-400">F:{data.fat}</span>
-        {data.steps > 0 && <span className="text-emerald-400">👟{data.steps.toLocaleString()}</span>}
+    <div className={`border ${colors.border} bg-zinc-900/80 px-3 py-2 mb-4`}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3 text-[8px]" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          <span className="text-blue-400">P:{data.protein}</span>
+          <span className="text-orange-400">C:{data.carbs}</span>
+          <span className="text-yellow-400">F:{data.fat}</span>
+          {data.steps > 0 && <span className="text-emerald-400">👟{data.steps.toLocaleString()}</span>}
+        </div>
+        <span className={`text-[8px] ${net <= 0 ? 'text-green-400' : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          NET:{net > 0 ? '+' : ''}{net}
+        </span>
       </div>
-      <span className={`text-[8px] ${net <= 0 ? 'text-green-400' : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-        NET:{net > 0 ? '+' : ''}{net}
-      </span>
+      {(data.calsIn > 0 || data.burned > 0) && (
+        <div className="flex items-center justify-between mt-1 text-[7px] text-zinc-600" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          <span>IN:{data.calsIn.toLocaleString()}</span>
+          <span>BURNED:{data.burned.toLocaleString()}</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -101,13 +113,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
   }, [userId]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#0a0a12] flex items-center justify-center">
-        <p className="text-zinc-500 text-xs animate-pulse" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-          LOADING...
-        </p>
-      </div>
-    );
+    return <PowerLevelSkeleton />;
   }
 
   if (!data) return null;
@@ -116,6 +122,10 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
 
   return (
     <ScreenWrapper>
+      <HealthSync userId={userId} />
+      {/* Weekly Recap (shows Sun-Tue) */}
+      <WeeklyRecapCard userId={userId} />
+
       {/* Theme Banner */}
       <div className="mb-4 overflow-hidden border-2 border-zinc-800 rounded-sm">
         <img
@@ -150,6 +160,9 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
           <PixelBar current={data.powerLevel} max={data.maxPossible} />
         </div>
       </PixelBox>
+
+      {/* Party Leaderboard */}
+      <PartyLeaderboard userId={userId} />
 
       {/* Expiring exercises */}
       {data.expiringExercises.length > 0 && (
@@ -210,17 +223,25 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
 
       {/* Empty state */}
       {data.powerLevel === 0 && (
-        <PixelBox className="p-6 text-center">
-          <p className={`text-[10px] ${colors.headerText} mb-3`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-            NO DATA FOUND
+        <PixelBox highlight className="p-5 text-center">
+          <p className={`text-[10px] ${colors.secondary} mb-2`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            YOUR JOURNEY BEGINS
           </p>
-          <p className="text-xs text-zinc-500 mb-4">Complete your first workout to discover your rank</p>
+          <p className="text-xs text-zinc-400 mb-1">12 ranked exercises determine your Power Level.</p>
+          <p className="text-xs text-zinc-500 mb-4">Test one to discover your first rank.</p>
           <a
-            href="/train"
-            className={`inline-block text-[10px] px-4 py-2 border ${colors.primary} bg-zinc-800 text-white hover:bg-zinc-700 transition-colors`}
+            href="/train/active?mode=flexible&filter=strength"
+            className={`inline-block text-[10px] px-5 py-3 border-2 ${colors.primary} bg-zinc-800 text-white hover:bg-zinc-700 transition-colors`}
             style={{ fontFamily: "var(--font-pixel), monospace" }}
           >
-            ▸ START TRAINING
+            ⚔ TEST YOUR STRENGTH
+          </a>
+          <a
+            href="/train"
+            className="block mt-3 text-[8px] text-zinc-600 hover:text-zinc-400"
+            style={{ fontFamily: "var(--font-pixel), monospace" }}
+          >
+            or start today&apos;s workout ▸
           </a>
         </PixelBox>
       )}

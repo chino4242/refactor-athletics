@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { data: profile } = await supabase.from('users')
-    .select('bodyweight, timezone').eq('id', user.id).single();
+    .select('bodyweight, sex, timezone').eq('id', user.id).single();
 
   const { exercises } = await request.json();
   if (!exercises?.length) return NextResponse.json({ synced: [] });
@@ -16,6 +16,7 @@ export async function POST(request: NextRequest) {
   const result = await processExerciseSessions(
     supabase, user.id,
     profile?.bodyweight || 180,
+    profile?.sex || 'male',
     profile?.timezone || 'America/New_York',
     exercises
   );

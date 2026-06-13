@@ -14,6 +14,10 @@ import type { CatalogItem, HistoryItem } from '@/types';
 interface BattleViewProps {
   userId: string;
   onComplete: () => void;
+  flexibleMode?: boolean;
+  filter?: string;
+  singleExercise?: string;
+  overrideDay?: string;
 }
 
 interface BattleCard {
@@ -47,7 +51,7 @@ interface VictoryData {
   rankUps: { name: string; from: number; to: number }[];
 }
 
-export default function BattleView({ userId, onComplete }: BattleViewProps) {
+export default function BattleView({ userId, onComplete, flexibleMode, filter, singleExercise, overrideDay }: BattleViewProps) {
   const { currentTheme } = useTheme();
   const colors = getV2Theme(currentTheme);
   const carouselRef = useRef<HTMLDivElement>(null);
@@ -96,7 +100,7 @@ export default function BattleView({ userId, onComplete }: BattleViewProps) {
       const remaining: any[] = [];
       for (const p of pending) {
         try {
-          await logTrainingAction(p.userId, p.exerciseId, p.bodyweight, p.sex, p.sets, p.sessionId);
+          await logTrainingAction(p.userId, p.exerciseId, p.bodyweight, p.sex, p.sets, p.sessionId, Math.floor(p.ts / 1000));
         } catch { remaining.push(p); }
       }
       if (remaining.length) localStorage.setItem('pending_sets', JSON.stringify(remaining));
@@ -108,7 +112,7 @@ export default function BattleView({ userId, onComplete }: BattleViewProps) {
   useEffect(() => {
     (async () => {
       try {
-        const localDay = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+        const localDay = overrideDay || new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
         const [workout, catalog, profile, history] = await Promise.all([
           getActiveWorkout(localDay),
           getTrainingCatalog(),
@@ -271,6 +275,34 @@ export default function BattleView({ userId, onComplete }: BattleViewProps) {
           setWeight(String(battleCards[0].lastWeight));
           setReps(String(battleCards[0].targetReps));
         }
+
+        // Flexible mode: if no scheduled workout, create cards from catalog
+        if (battleCards.length === 0 && (flexibleMode || singleExercise) && catalog?.length) {
+          let items = catalog;
+          if (singleExercise) {
+            items = catalog.filter((c: CatalogItem) => c.id === singleExercise);
+          } else if (filter === 'cardio') {
+            items = catalog.filter((c: CatalogItem) => (c.category || '').toLowerCase().includes('cardio') || (c.category || '').toLowerCase().includes('endurance')).slice(0, 8);
+          } else if (filter === 'strength') {
+            items = catalog.filter((c: CatalogItem) => !((c.category || '').toLowerCase().includes('cardio'))).slice(0, 8);
+          } else {
+            items = catalog.slice(0, 8);
+          }
+          const flexCards: BattleCard[] = items.map((c: CatalogItem) => ({
+            id: uuidv4(),
+            name: c.name,
+            exerciseId: c.id,
+            type: 'lifting' as const,
+            totalSets: 3,
+            completedSets: 0,
+            targetReps: 8,
+            defeated: false,
+            poofing: false,
+            catalogItem: c,
+            lastWeight: 0,
+          }));
+          setCards(flexCards);
+        }
       } catch {
         setCards([]);
       }
@@ -395,12 +427,22 @@ export default function BattleView({ userId, onComplete }: BattleViewProps) {
             const elapsed = Math.floor((Date.now() - startTime.current) / 1000);
             const min = Math.floor(elapsed / 60);
             const sec = elapsed % 60;
-            setVictory({
-              totalXp: updated.reduce((sum, c) => sum + c.completedSets * 50, 0),
-              exercisesDefeated: updated.length,
-              duration: `${min}:${String(sec).padStart(2, '0')}`,
-              rankUps: [],
-            });
+            // Query actual XP from this session
+            (async () => {
+              try {
+                const { createClient } = await import('@/utils/supabase/client');
+                const supabase = createClient();
+                const { data: sessionWorkouts } = await supabase.from('workouts').select('xp, level, exercise_id').eq('user_id', userId).eq('session_id', sessionId.current);
+                const totalXp = (sessionWorkouts || []).reduce((sum: number, w: any) => sum + (w.xp || 0), 0);
+                const rankUps = (sessionWorkouts || []).filter((w: any) => w.level > 0).reduce((acc: any[], w: any) => {
+                  if (!acc.find((a: any) => a.name === w.exercise_id)) acc.push({ name: w.exercise_id.replace(/_/g, ' '), from: 0, to: w.level });
+                  return acc;
+                }, []);
+                setVictory({ totalXp, exercisesDefeated: updated.length, duration: `${min}:${String(sec).padStart(2, '0')}`, rankUps });
+              } catch {
+                setVictory({ totalXp: updated.reduce((sum, c) => sum + c.completedSets * 50, 0), exercisesDefeated: updated.length, duration: `${min}:${String(sec).padStart(2, '0')}`, rankUps: [] });
+              }
+            })();
           } else {
             // Move to next alive card
             const newIdx = Math.min(activeIndex, remaining.length - 1);
@@ -889,20 +931,21 @@ function CardioCard({ card, isActive, colors, onComplete }: {
   const totalElapsed = intervals.slice(0, currentIdx).reduce((s, i) => s + i.seconds, 0) + elapsed;
   const totalDuration = card.targetSeconds || intervals.reduce((s, i) => s + i.seconds, 0);
 
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
+
   useEffect(() => {
     if (!running || !current) return;
     const t = setInterval(() => {
       setElapsed(prev => {
         if (prev + 1 >= current.seconds) {
-          // Advance to next interval
           if (currentIdx + 1 < intervals.length) {
             setCurrentIdx(i => i + 1);
             return 0;
           } else {
-            // All intervals done
             setRunning(false);
             setFinished(true);
-            onComplete(totalDuration);
+            onCompleteRef.current(totalDuration);
             return prev + 1;
           }
         }
@@ -910,7 +953,7 @@ function CardioCard({ card, isActive, colors, onComplete }: {
       });
     }, 1000);
     return () => clearInterval(t);
-  }, [running, currentIdx, current]);
+  }, [running, currentIdx, current, intervals.length, totalDuration]);
 
   if (finished) {
     return (

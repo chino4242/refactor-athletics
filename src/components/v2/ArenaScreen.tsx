@@ -4,11 +4,14 @@ import { useEffect, useState } from 'react';
 import { useTheme } from '@/context/ThemeContext';
 import { getV2Theme } from '@/data/v2themes';
 import PixelBox, { ScreenWrapper } from './PixelBox';
+import { ArenaSkeleton } from './Skeletons';
 import { getWeeklyBounties, setDifficulty, type BountyWithProgress, type Difficulty } from '@/services/bountyService';
 import { getGroupChallengeWithProgress, getMetricLabel, type GroupChallengeWithProgress } from '@/services/groupChallengeService';
 import GuildQuestModal from './GuildQuestModal';
 import CampaignModal from './CampaignModal';
 import DuelModal from './DuelModal';
+import PartyStatusStrip from './PartyStatusStrip';
+import GuildEventTicker from './GuildEventTicker';
 
 interface ArenaScreenProps {
   userId: string;
@@ -72,6 +75,49 @@ function CampaignCard({ campaign, userId, colors, onUpdate }: { campaign: any; u
   const duration = campaign.duration_days || 75;
   const metrics = campaign.challenge_75_metrics || [];
   const days = campaign.challenge_75_days || [];
+  const members = campaign.challenge_75_members || [];
+  const myMembership = members.find((m: any) => m.user_id === userId);
+
+  // Completed state
+  if (campaign.status === 'completed' || myMembership?.status === 'completed') {
+    return (
+      <div className="text-center space-y-2">
+        <p className={`text-[10px] ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>⚔ CAMPAIGN COMPLETE ⚔</p>
+        <p className="text-xs text-white">{campaign.title}</p>
+        <p className="text-[8px] text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>{duration} DAYS · +2,500 XP EARNED</p>
+      </div>
+    );
+  }
+
+  // Failed state
+  if (campaign.status === 'failed' || myMembership?.status === 'failed') {
+    const failedDay = myMembership?.failed_on || campaign.failed_on;
+    const failedMetric = myMembership?.failed_metric || campaign.failed_metric || 'Unknown';
+    return (
+      <div className="space-y-3">
+        <div className="text-center">
+          <p className="text-[10px] text-red-400 mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>☠ CAMPAIGN FALLEN</p>
+          <p className="text-xs text-zinc-400">{campaign.title}</p>
+          <p className="text-[8px] text-zinc-500 mt-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            FAILED {failedDay ? `DAY ${Math.floor((new Date(failedDay + 'T12:00:00').getTime() - startDate.getTime()) / 86400000) + 1}` : ''} — {failedMetric}
+          </p>
+        </div>
+        <button
+          onClick={async () => {
+            await fetch('/api/challenge-75', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'restart', challenge_id: campaign.id }) });
+            const data = await fetch('/api/challenge-75').then(r => r.json());
+            const active = (data?.challenges || []).find((c: any) => c.status === 'active');
+            onUpdate(active || null);
+          }}
+          className={`w-full text-[8px] py-2 border ${colors.border} bg-zinc-800 text-zinc-400 hover:text-white transition-colors`}
+          style={{ fontFamily: "var(--font-pixel), monospace" }}
+        >
+          ▸ FORGE ANEW
+        </button>
+      </div>
+    );
+  }
+
   const todayDay = days.find((d: any) => d.date === today && d.user_id === userId);
   const customChecks = todayDay?.custom_checks || {};
   const metricsSnapshot = todayDay?.metrics_snapshot || {};
@@ -186,7 +232,9 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
         setBounties(bountyData);
         setGuildQuest(questResult?.quest || null);
         setGroupId(questResult?.groupId || null);
-        const active = (campaignData?.challenges || []).find((c: any) => c.status === 'active');
+        const active = (campaignData?.challenges || []).find((c: any) => c.status === 'active')
+          || (campaignData?.challenges || []).find((c: any) => c.status === 'completed')
+          || (campaignData?.challenges || []).find((c: any) => c.status === 'failed');
         setCampaign(active || null);
 
         // Fetch duels
@@ -204,13 +252,7 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#0a0a12] flex items-center justify-center">
-        <p className="text-zinc-500 text-xs animate-pulse" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-          LOADING...
-        </p>
-      </div>
-    );
+    return <ArenaSkeleton />;
   }
 
   return (
@@ -222,6 +264,12 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
         </p>
       </div>
 
+      {/* Party Status */}
+      <PartyStatusStrip userId={userId} />
+
+      {/* Guild Event Ticker */}
+      <GuildEventTicker userId={userId} />
+
       {/* Active Campaign / CTA */}
       <PixelBox highlight={!!campaign} className="p-4 mb-4">
         <p className={`text-[9px] ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
@@ -230,8 +278,9 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
         {campaign ? (
           <CampaignCard campaign={campaign} userId={userId} colors={colors} onUpdate={setCampaign} />
         ) : (
-          <div className="text-center py-4">
-            <p className="text-xs text-zinc-600 mb-3">No active campaign</p>
+          <div className="text-center py-3">
+            <p className="text-[9px] text-zinc-500 mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>NO ACTIVE CAMPAIGN</p>
+            <p className="text-[8px] text-zinc-600 mb-3">Set daily goals for 30-75 days. All or nothing.</p>
             <button
               onClick={() => setShowCampaignModal(true)}
               className={`text-[8px] px-3 py-2 border ${colors.border} bg-zinc-800 text-zinc-400 hover:text-white transition-colors`}
@@ -281,15 +330,17 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
             </div>
             {guildQuest.members.length > 0 && (
               <div className="space-y-1">
-                {guildQuest.members.slice(0, 3).map((m) => (
+                {guildQuest.members.map((m) => (
                   <div key={m.userId} className="flex items-center justify-between">
-                    <span className="text-[8px] text-zinc-400">{m.displayName}</span>
-                    <span className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>{m.contribution.toLocaleString()}</span>
+                    <div className="flex items-center gap-2">
+                      <span className={`w-2 h-2 rounded-full ${m.contribution > 0 ? 'bg-green-500' : 'bg-zinc-700'}`} />
+                      <span className={`text-[8px] ${m.contribution > 0 ? 'text-zinc-300' : 'text-zinc-600'}`}>{m.displayName}</span>
+                    </div>
+                    <span className={`text-[8px] ${m.contribution > 0 ? colors.secondary : 'text-zinc-700'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                      {m.contribution > 0 ? m.contribution.toLocaleString() : '—'}
+                    </span>
                   </div>
                 ))}
-                {guildQuest.members.length > 3 && (
-                  <p className="text-[8px] text-zinc-600">+{guildQuest.members.length - 3} more</p>
-                )}
               </div>
             )}
           </>
@@ -299,8 +350,9 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
             <p className="text-[8px] text-zinc-500">{guildQuest.name}</p>
           </div>
         ) : (
-          <div className="text-center py-4">
-            <p className="text-xs text-zinc-600 mb-3">No active quest</p>
+          <div className="text-center py-3">
+            <p className="text-[9px] text-zinc-500 mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>NO ACTIVE QUEST</p>
+            <p className="text-[8px] text-zinc-600 mb-3">Rally your party to hit a shared goal this week.</p>
             <button
               onClick={() => setShowQuestModal(true)}
               disabled={!groupId}
@@ -309,7 +361,7 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
             >
               ▸ RALLY YOUR PARTY
             </button>
-            {!groupId && <p className="text-[8px] text-zinc-600 mt-2">Join a party first</p>}
+            {!groupId && <p className="text-[7px] text-zinc-600 mt-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>JOIN A PARTY FIRST</p>}
           </div>
         )}
       </PixelBox>
@@ -347,7 +399,10 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
             })}
           </div>
         ) : (
-          <p className="text-xs text-zinc-600 text-center py-4">No active duels</p>
+          <>
+            <p className="text-[9px] text-zinc-500 text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>NO ACTIVE DUELS</p>
+            <p className="text-[8px] text-zinc-600 text-center py-2">Challenge a friend to a 1v1 XP race.</p>
+          </>
         )}
         <div className="flex justify-center mt-3">
           <button
@@ -380,9 +435,11 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
         userId={userId}
         groupId={groupId}
         onClose={() => setShowCampaignModal(false)}
-        onCreated={() => {
+        onCreated={async () => {
           setShowCampaignModal(false);
-          // TODO: refresh campaign state
+          const campaignData = await fetch('/api/challenge-75').then(r => r.json());
+          const active = (campaignData?.challenges || []).find((c: any) => c.status === 'active');
+          setCampaign(active || null);
         }}
       />
 

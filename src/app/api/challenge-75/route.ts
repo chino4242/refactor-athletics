@@ -39,7 +39,9 @@ export async function GET(request: NextRequest) {
   }
 
   // Evaluate yesterday for each active challenge (on-demand)
-  const today = new Date().toLocaleDateString('en-CA');
+  const { data: userTz } = await service.from('users').select('timezone').eq('id', user.id).single();
+  const tz = userTz?.timezone || 'America/New_York';
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: tz });
   for (const c of (challenges || []).filter(c => c.status === 'active')) {
     await evaluateChallenge(service, c, user.id, today);
   }
@@ -67,7 +69,15 @@ export async function POST(request: NextRequest) {
   const service = createServiceClient();
 
   if (action === 'create') {
-    const { title, metrics, start_date, group_id, shared_failure } = body;
+    const { title, metrics, start_date, group_id, shared_failure, duration_days } = body;
+
+    // Max 1 active campaign per user
+    const { data: existing } = await service.from('challenge_75_members')
+      .select('challenge_id, challenges_75(status)')
+      .eq('user_id', user.id);
+    const hasActive = (existing || []).some((m: any) => m.challenges_75?.status === 'active');
+    if (hasActive) return NextResponse.json({ error: 'You already have an active campaign' }, { status: 400 });
+
     // Create challenge
     const { data: challenge, error } = await service.from('challenges_75').insert({
       creator_id: user.id,
@@ -75,13 +85,14 @@ export async function POST(request: NextRequest) {
       start_date: start_date || new Date().toLocaleDateString('en-CA'),
       group_id: group_id || null,
       shared_failure: shared_failure || false,
+      duration_days: duration_days || 75,
     }).select().single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
     // Creator auto-joins
     const { data: membership } = await service.from('challenge_75_members').insert({
-      challenge_id: challenge.id, user_id: user.id,
+      challenge_id: challenge.id, user_id: user.id, start_date: challenge.start_date,
     }).select().single();
 
     // Insert metrics linked to creator's membership
@@ -104,8 +115,9 @@ export async function POST(request: NextRequest) {
 
   if (action === 'join') {
     const { challenge_id, metrics } = body;
+    const joinDate = new Date().toLocaleDateString('en-CA');
     const { data: membership } = await service.from('challenge_75_members').upsert({
-      challenge_id, user_id: user.id, status: 'joined',
+      challenge_id, user_id: user.id, status: 'joined', start_date: joinDate,
     }, { onConflict: 'challenge_id,user_id' }).select().single();
 
     if (membership) {
@@ -150,7 +162,11 @@ export async function POST(request: NextRequest) {
 
   if (action === 'check_custom') {
     const { challenge_id, metric_id, checked } = body;
-    const today = new Date().toLocaleDateString('en-CA');
+
+    // Use user's timezone for correct day boundary
+    const { data: userProfile } = await service.from('users').select('timezone').eq('id', user.id).single();
+    const tz = userProfile?.timezone || 'America/New_York';
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: tz });
 
     // Upsert today's day record with custom check
     const { data: existing } = await service.from('challenge_75_days')
@@ -172,7 +188,8 @@ export async function POST(request: NextRequest) {
 
   if (action === 'restart') {
     const { challenge_id } = body;
-    const today = new Date().toLocaleDateString('en-CA');
+    const { data: uTz } = await service.from('users').select('timezone').eq('id', user.id).single();
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: uTz?.timezone || 'America/New_York' });
 
     // Reset only this user's membership status
     await service.from('challenge_75_members').update({
@@ -205,14 +222,23 @@ export async function POST(request: NextRequest) {
 }
 
 async function evaluateChallenge(service: any, challenge: any, userId: string, today: string) {
-  const startDate = new Date(challenge.start_date + 'T12:00:00');
   const todayDate = new Date(today + 'T12:00:00');
 
   // Only evaluate days that have passed (not today)
   const yesterday = new Date(todayDate);
   yesterday.setDate(yesterday.getDate() - 1);
 
-  if (yesterday < startDate) return; // Challenge hasn't started yet or just started today
+  // Get this member's info (use per-member start_date if available, else challenge start)
+  const { data: membership } = await service.from('challenge_75_members')
+    .select('id, status, failed_on, start_date')
+    .eq('challenge_id', challenge.id).eq('user_id', userId).single();
+
+  if (!membership || membership.status === 'failed') return;
+
+  const memberStart = membership.start_date || challenge.start_date;
+  const startDate = new Date(memberStart + 'T12:00:00');
+
+  if (yesterday < startDate) return; // Challenge hasn't started yet for this member
 
   // Check each day from start to yesterday that hasn't been evaluated
   const { data: existingDays } = await service.from('challenge_75_days')
@@ -221,12 +247,12 @@ async function evaluateChallenge(service: any, challenge: any, userId: string, t
 
   const evaluatedDates = new Set((existingDays || []).filter((d: any) => d.status !== 'pending').map((d: any) => d.date));
 
-  // Get this member's metrics (per-member first, fall back to shared/challenge-level)
-  const { data: membership } = await service.from('challenge_75_members')
-    .select('id, status, failed_on')
-    .eq('challenge_id', challenge.id).eq('user_id', userId).single();
-
-  if (!membership || membership.status === 'failed') return;
+  // Allow re-evaluation of yesterday (health data may have synced late)
+  const yesterdayStr = yesterday.toLocaleDateString('en-CA');
+  const yesterdayDay = (existingDays || []).find((d: any) => d.date === yesterdayStr);
+  if (yesterdayDay?.status === 'failed') {
+    evaluatedDates.delete(yesterdayStr);
+  }
 
   let metrics = [];
   if (membership) {
@@ -250,7 +276,14 @@ async function evaluateChallenge(service: any, challenge: any, userId: string, t
     const dateStr = d.toLocaleDateString('en-CA');
     if (!evaluatedDates.has(dateStr)) {
       const result = await evaluateDay(service, challenge.id, userId, dateStr, metrics);
-      if (!result.passed) {
+      if (result.passed) {
+        // If this was a re-evaluation of yesterday that previously failed, un-fail the member
+        if (dateStr === yesterdayStr && membership.status === 'failed' && membership.failed_on === yesterdayStr) {
+          await service.from('challenge_75_members').update({
+            status: 'joined', failed_on: null, failed_metric: null,
+          }).eq('id', membership.id);
+        }
+      } else if (!result.passed) {
         // Mark this member as failed
         await service.from('challenge_75_members').update({
           status: 'failed', failed_on: dateStr, failed_metric: result.failedMetric,
@@ -271,12 +304,27 @@ async function evaluateChallenge(service: any, challenge: any, userId: string, t
     d.setDate(d.getDate() + 1);
   }
 
-  // Check if 75 days completed for this member
+  // Check if campaign duration completed for this member
+  const durationDays = challenge.duration_days || 75;
   const dayCount = Math.floor((todayDate.getTime() - startDate.getTime()) / 86400000);
-  if (dayCount >= 75) {
+  if (dayCount >= durationDays) {
     await service.from('challenge_75_members').update({
       status: 'completed',
     }).eq('id', membership.id);
+
+    // Award 2,500 XP
+    await service.from('nutrition_logs').insert({
+      user_id: userId, date: today, timestamp: Math.floor(Date.now() / 1000),
+      macro_type: 'xp_award', amount: 2500, xp: 2500, label: `Campaign Complete: ${challenge.title}`,
+    });
+
+    // Mark challenge completed if all members done
+    const { data: allMembers } = await service.from('challenge_75_members')
+      .select('status').eq('challenge_id', challenge.id);
+    const allDone = (allMembers || []).every((m: any) => m.status === 'completed' || m.status === 'failed');
+    if (allDone) {
+      await service.from('challenges_75').update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', challenge.id);
+    }
   }
 }
 

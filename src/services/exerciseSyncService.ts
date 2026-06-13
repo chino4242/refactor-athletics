@@ -39,6 +39,7 @@ export async function processExerciseSessions(
   supabase: any,
   userId: string,
   bodyweight: number,
+  sex: string,
   timezone: string,
   exercises: RawExercise[]
 ): Promise<ExerciseSyncResult> {
@@ -80,7 +81,7 @@ export async function processExerciseSessions(
 
     // Known running types (46=running, 47=running_treadmill)
     if (typeCode === 46 || typeCode === 47) {
-      const ranked = await tryRankRun(supabase, userId, bodyweight, dur, distMeters);
+      const ranked = await tryRankRun(supabase, userId, bodyweight, sex, dur, distMeters);
       if (ranked) {
         synced.push(`${ranked.exerciseId}: Lv.${ranked.level}`);
         continue;
@@ -114,7 +115,7 @@ function getDuration(ex: RawExercise): number {
   return 0;
 }
 
-async function tryRankRun(supabase: any, userId: string, bodyweight: number, dur: number, distMeters: number): Promise<{ exerciseId: string; level: number } | null> {
+async function tryRankRun(supabase: any, userId: string, bodyweight: number, sex: string, dur: number, distMeters: number): Promise<{ exerciseId: string; level: number } | null> {
   const distMiles = distMeters / 1609.34;
   let rankedExerciseId: string | null = null;
   if (distMiles >= 0.9 && distMiles <= 1.1) rankedExerciseId = 'run_1_mile';
@@ -127,7 +128,7 @@ async function tryRankRun(supabase: any, userId: string, bodyweight: number, dur
 
   try {
     const { logTrainingAction } = await import('@/app/actions');
-    const result = await logTrainingAction(userId, rankedExerciseId, bodyweight, 'male', [{ duration: dur, weight: 0 }]);
+    const result = await logTrainingAction(userId, rankedExerciseId, bodyweight, sex, [{ duration: dur, weight: 0 }]);
     return { exerciseId: rankedExerciseId, level: result.level };
   } catch (e: any) {
     console.error('Ranked exercise failed:', e.message);

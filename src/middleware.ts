@@ -1,7 +1,21 @@
-import { type NextRequest } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 import { updateSession } from '@/utils/supabase/middleware'
 
+const V1_REDIRECTS: Record<string, string> = {
+    '/dashboard': '/',
+    '/track': '/train',
+    '/history': '/',
+    '/character': '/profile',
+    '/progress': '/',
+    '/workouts': '/train',
+};
+
 export async function middleware(request: NextRequest) {
+    const path = request.nextUrl.pathname;
+    const redirect = V1_REDIRECTS[path];
+    if (redirect) {
+        return NextResponse.redirect(new URL(redirect, request.url));
+    }
     return await updateSession(request)
 }
 

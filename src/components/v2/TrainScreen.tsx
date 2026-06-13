@@ -5,6 +5,7 @@ import { useTheme } from '@/context/ThemeContext';
 import { getV2Theme } from '@/data/v2themes';
 import PixelBox, { ScreenWrapper } from './PixelBox';
 import NutritionInputV2 from './NutritionInputV2';
+import { TrainSkeleton } from './Skeletons';
 
 interface TrainScreenProps {
   userId: string;
@@ -57,6 +58,8 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
   const [weekDays, setWeekDays] = useState<WeekDay[]>(getWeekDays());
   const [loading, setLoading] = useState(true);
   const [hasBattleSession, setHasBattleSession] = useState(false);
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  const [fullSchedule, setFullSchedule] = useState<any[]>([]);
 
   useEffect(() => {
     // Check for in-progress battle
@@ -78,6 +81,7 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
         const localDay = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
         const schedRes = await fetch('/api/workouts/schedule');
         const schedule = await schedRes.json();
+        setFullSchedule(schedule || []);
         const todayProgram = (schedule || []).find((p: any) => (p.day || '').toLowerCase() === localDay);
 
         if (todayProgram) {
@@ -109,13 +113,7 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
   }, [userId]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#0a0a12] flex items-center justify-center">
-        <p className="text-zinc-500 text-xs animate-pulse" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-          LOADING...
-        </p>
-      </div>
-    );
+    return <TrainSkeleton />;
   }
 
   return (
@@ -133,21 +131,31 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
           THIS WEEK
         </p>
         <div className="grid grid-cols-7 gap-1">
-          {weekDays.map((day) => (
-            <div key={day.date} className="flex flex-col items-center gap-1">
-              <span className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-                {day.label}
-              </span>
-              <div className={`w-6 h-6 flex items-center justify-center border ${
-                day.isToday ? `${colors.primary} bg-zinc-800` :
-                day.completed ? 'border-green-500 bg-green-900/30' :
-                'border-zinc-700 bg-zinc-900'
-              }`}>
-                {day.completed && <span className="text-[8px] text-green-400">✓</span>}
-                {day.isToday && !day.completed && <span className={`text-[8px] ${colors.secondary}`}>▸</span>}
-              </div>
-            </div>
-          ))}
+          {weekDays.map((day, i) => {
+            const dayNames = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+            const dayName = dayNames[i];
+            const isSelected = selectedDay === dayName;
+            return (
+              <button key={day.date} onClick={() => {
+                if (isSelected || day.isToday) { setSelectedDay(null); const localDay = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase(); const prog = fullSchedule.find((p: any) => (p.day || '').toLowerCase() === localDay); setWorkout(prog ? { name: prog.title || prog.name || 'Workout', exercises: (prog.exercises || []).slice(0, 5), estimatedXp: prog.xp || 50 } : null); }
+                else { setSelectedDay(dayName); const prog = fullSchedule.find((p: any) => (p.day || '').toLowerCase() === dayName); setWorkout(prog ? { name: prog.title || prog.name || 'Workout', exercises: (prog.exercises || []).slice(0, 5), estimatedXp: prog.xp || 50 } : null); }
+              }} className="flex flex-col items-center gap-1">
+                <span className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                  {day.label}
+                </span>
+                <div className={`w-6 h-6 flex items-center justify-center border ${
+                  isSelected ? `${colors.primary} bg-zinc-700` :
+                  day.isToday && !selectedDay ? `${colors.primary} bg-zinc-800` :
+                  day.completed ? 'border-green-500 bg-green-900/30' :
+                  'border-zinc-700 bg-zinc-900'
+                }`}>
+                  {day.completed && !isSelected && <span className="text-[8px] text-green-400">✓</span>}
+                  {day.isToday && !day.completed && !isSelected && !selectedDay && <span className={`text-[8px] ${colors.secondary}`}>▸</span>}
+                  {isSelected && <span className={`text-[8px] ${colors.secondary}`}>▸</span>}
+                </div>
+              </button>
+            );
+          })}
         </div>
       </PixelBox>
 
@@ -156,7 +164,7 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
         {workout ? (
           <>
             <p className={`text-[9px] ${colors.headerText} mb-2 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-              TODAY&apos;S WORKOUT
+              {selectedDay ? `${selectedDay.toUpperCase()}'S WORKOUT` : "TODAY\u0027S WORKOUT"}
             </p>
             <p className="text-sm text-white font-medium mb-2">{workout.name}</p>
             <div className="space-y-1 mb-3">
@@ -169,7 +177,7 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
                 +{workout.estimatedXp} XP
               </span>
               <a
-                href="/train/active"
+                href={`/train/active${selectedDay ? `?day=${selectedDay}` : ''}`}
                 className={`text-[10px] px-4 py-2 border ${colors.primary} bg-zinc-800 ${colors.secondary} hover:bg-zinc-700 transition-colors`}
                 style={{ fontFamily: "var(--font-pixel), monospace" }}
               >

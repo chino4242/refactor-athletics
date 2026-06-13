@@ -218,7 +218,8 @@ export async function logTrainingAction(
     bodyweight: number,
     sex: string,
     sets: any[],
-    sessionId?: string
+    sessionId?: string,
+    overrideTimestamp?: number
 ) {
     const supabase = await createClient();
     
@@ -355,7 +356,7 @@ export async function logTrainingAction(
     }
     totalXp += xpEarned; // Add rank XP
 
-    const ts = Math.floor(Date.now() / 1000);
+    const ts = overrideTimestamp || Math.floor(Date.now() / 1000);
     const dateStr = await getLocalDate(ts);
 
     // For 5RM exercises, show lbs instead of xBW
@@ -441,6 +442,38 @@ export async function logTrainingAction(
         next_threshold_lbs: nextThresholdLbs,
         next_rank_name: nextRankName,
     };
+}
+
+
+export async function logSyncedCardioAction(
+    userId: string, type: string, durationSec: number, date: string
+) {
+    'use server';
+    const supabase = await createClient();
+    const durMin = Math.round(durationSec / 60);
+    const syncId = `synced_${type.toLowerCase()}_${date}_${durationSec}`;
+
+    // Dedup
+    const { data: existing } = await supabase.from('workouts')
+        .select('id').eq('user_id', userId).eq('exercise_id', syncId).limit(1);
+    if (existing?.length) return { status: 'skipped' };
+
+    const xp = durMin * 8;
+    const ts = Math.floor(Date.now() / 1000);
+    await supabase.from('workouts').insert({
+        user_id: userId,
+        exercise_id: syncId,
+        timestamp: ts,
+        date,
+        value: `${durMin}min ${type}`,
+        raw_value: durationSec,
+        sets: [],
+        level: 0,
+        xp,
+        rank_name: 'Cardio',
+    });
+
+    return { status: 'logged', xp };
 }
 
 export async function logWorkoutBlockAction(

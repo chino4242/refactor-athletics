@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import BattleView from '@/components/v2/BattleView';
 
 interface Props {
@@ -12,11 +12,20 @@ interface Props {
 
 export default function ActiveWorkoutPage({ userId }: Props) {
   const router = useRouter();
+  const params = useSearchParams();
+  const mode = params.get('mode');
+  const filter = params.get('filter');
+  const exercise = params.get('exercise');
+  const day = params.get('day');
 
   return (
     <BattleView
       userId={userId}
       onComplete={() => router.push('/train')}
+      flexibleMode={mode === 'flexible'}
+      filter={filter || undefined}
+      singleExercise={exercise || undefined}
+      overrideDay={day || undefined}
     />
   );
 }
