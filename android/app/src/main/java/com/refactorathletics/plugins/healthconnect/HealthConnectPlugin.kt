@@ -243,6 +243,43 @@ class HealthConnectPlugin : Plugin() {
         }
     }
 
+    @PluginMethod
+    fun queryWorkouts(call: PluginCall) {
+        val hc = client ?: run {
+            call.resolve(JSObject().put("workouts", JSArray()))
+            return
+        }
+        val startDate = call.getString("startDate") ?: ""
+        val endDate = call.getString("endDate") ?: ""
+        val limit = call.getInt("limit") ?: 20
+
+        scope.launch {
+            try {
+                val start = Instant.parse(startDate)
+                val end = Instant.parse(endDate)
+                val timeRange = TimeRangeFilter.between(start, end)
+                val records = hc.readRecords(
+                    ReadRecordsRequest(ExerciseSessionRecord::class, timeRange)
+                )
+                val workouts = JSONArray()
+                records.records.takeLast(limit).forEach { r ->
+                    val dur = java.time.Duration.between(r.startTime, r.endTime).seconds
+                    workouts.put(JSONObject().apply {
+                        put("type", r.exerciseType.toString())
+                        put("exerciseType", r.exerciseType.toString())
+                        put("duration", dur)
+                        put("duration_seconds", dur)
+                        put("start_time", r.startTime.toString())
+                        put("end_time", r.endTime.toString())
+                    })
+                }
+                call.resolve(JSObject().put("workouts", workouts))
+            } catch (e: Exception) {
+                call.resolve(JSObject().put("workouts", JSArray()))
+            }
+        }
+    }
+
     private fun mapToRecordClass(type: String): kotlin.reflect.KClass<out Record>? {
         return when (type) {
             "steps" -> StepsRecord::class
@@ -255,6 +292,7 @@ class HealthConnectPlugin : Plugin() {
             "body_fat_percentage" -> BodyFatRecord::class
             "lean_body_mass" -> LeanBodyMassRecord::class
             "exercise" -> ExerciseSessionRecord::class
+            "workouts" -> ExerciseSessionRecord::class
             else -> null
         }
     }
