@@ -60,6 +60,8 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
   const [hasBattleSession, setHasBattleSession] = useState(false);
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [fullSchedule, setFullSchedule] = useState<any[]>([]);
+  const [yesterday, setYesterday] = useState<string | null>(null);
+  const [tomorrow, setTomorrow] = useState<string | null>(null);
 
   useEffect(() => {
     // Check for in-progress battle
@@ -107,6 +109,19 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
 
         const completedDates = new Set((workouts || []).map((w: any) => w.date));
         setWeekDays(prev => prev.map(d => ({ ...d, completed: completedDates.has(d.date) })));
+
+        // Tomorrow preview (from schedule)
+        const tomorrowDay = new Date(Date.now() + 86400000).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+        const tomorrowProg = (schedule || []).find((p: any) => (p.day || '').toLowerCase() === tomorrowDay);
+        setTomorrow(tomorrowProg ? tomorrowProg.title || tomorrowProg.name : null);
+
+        // Yesterday summary (from DB)
+        const yesterdayDate = new Date(Date.now() - 86400000).toLocaleDateString('en-CA');
+        const { data: yesterdayWorkouts } = await supabase.from('workouts').select('exercise_id, level').eq('user_id', userId).eq('date', yesterdayDate).gt('level', 0);
+        if (yesterdayWorkouts?.length) {
+          const rankUps = yesterdayWorkouts.filter((w: any) => w.level >= 2).length;
+          setYesterday(`${yesterdayWorkouts.length} exercises${rankUps > 0 ? ` · ${rankUps} rank-up${rankUps > 1 ? 's' : ''} 🏆` : ''}`);
+        }
       } catch {}
       setLoading(false);
     })();
@@ -210,6 +225,14 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
           </>
         )}
       </PixelBox>
+
+      {/* Yesterday + Tomorrow context */}
+      {(yesterday || tomorrow) && (
+        <div className="mb-4 px-1 space-y-1">
+          {yesterday && <p className="text-[11px] text-zinc-500">Yesterday: {yesterday}</p>}
+          {tomorrow && <p className="text-[11px] text-zinc-600">Tomorrow: {tomorrow}</p>}
+        </div>
+      )}
 
       {/* Quick Log */}
       <PixelBox className="p-4 mb-4">
