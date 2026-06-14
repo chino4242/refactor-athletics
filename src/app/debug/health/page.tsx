@@ -57,6 +57,15 @@ export default function DebugHealthPage() {
         log(`weight → ${JSON.stringify(w)}`);
       } catch (e: any) { log(`weight THREW: ${e.message}`); }
 
+      // Test via exported functions (what the app actually uses)
+      try {
+        const { getCaloriesBurned, getSteps } = await import('@/services/nativeHealth');
+        const burned = await getCaloriesBurned(startOfToday, endOfDay);
+        log(`getCaloriesBurned() → ${burned}`);
+        const steps = await getSteps(startOfToday, endOfDay);
+        log(`getSteps() → ${steps}`);
+      } catch (e: any) { log(`Function tests THREW: ${e.message}`); }
+
     } catch (e: any) { log(`FATAL: ${e.message}`); }
   };
 

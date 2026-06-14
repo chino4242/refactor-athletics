@@ -44,17 +44,21 @@ function NutritionBar({ userId, colors, refreshKey }: { userId: string; colors: 
 
       const totals: Record<string, number> = {};
       for (const l of logs || []) totals[l.macro_type] = (totals[l.macro_type] || 0) + (l.amount || 0);
-      const steps = (habits || []).reduce((s, h) => s + (h.value || 0), 0);
+      let steps = (habits || []).reduce((s, h) => s + (h.value || 0), 0);
 
-      // Read calories burned directly from native plugin (bypasses DB race conditions)
+      // Read calories burned + steps directly from native plugin (bypasses DB race conditions)
       let burned = Math.round(totals['calories_burned'] || 0);
       try {
-        const { getCaloriesBurned } = await import('@/services/nativeHealth');
+        const { getCaloriesBurned, getSteps } = await import('@/services/nativeHealth');
         const now = new Date();
         const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
         const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).toISOString();
-        const native = await getCaloriesBurned(startOfToday, endOfToday);
-        if (native > burned) burned = native;
+        const [nativeBurned, nativeSteps] = await Promise.all([
+          getCaloriesBurned(startOfToday, endOfToday),
+          getSteps(startOfToday, endOfToday),
+        ]);
+        if (nativeBurned > burned) burned = nativeBurned;
+        if (nativeSteps > steps) steps = nativeSteps;
       } catch {}
 
       setData({
