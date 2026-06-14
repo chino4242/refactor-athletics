@@ -373,9 +373,24 @@ async function getMetricValue(service: any, userId: string, date: string, metric
   }
 
   if (metricId === 'habit_exercise_minutes' || metricId === 'habit_active_minutes' || metricId === 'active_minutes') {
-    const { data } = await service.from('habit_logs').select('value')
+    // Sum workout durations from workouts table (where Battle Mode + auto-synced cardio log)
+    const { data } = await service.from('workouts').select('raw_value, exercise_id')
+      .eq('user_id', userId).eq('date', date);
+    // Synced cardio has exercise_id like 'synced_*' with raw_value = duration in seconds
+    // Regular workouts don't track duration this way, so count them as ~30 min each
+    let totalMin = 0;
+    for (const w of data || []) {
+      if ((w.exercise_id || '').startsWith('synced_')) {
+        totalMin += Math.round((w.raw_value || 0) / 60);
+      } else {
+        totalMin += 30; // Estimate 30 min per manual workout entry
+      }
+    }
+    // Also check habit_logs as fallback
+    const { data: habits } = await service.from('habit_logs').select('value')
       .eq('user_id', userId).eq('habit_id', 'habit_exercise_minutes').eq('date', date);
-    return (data || []).reduce((s: number, r: any) => s + (r.value || 0), 0);
+    const habitMin = (habits || []).reduce((s: number, r: any) => s + (r.value || 0), 0);
+    return Math.max(totalMin, habitMin);
   }
 
   if (metricId.startsWith('macro_')) {

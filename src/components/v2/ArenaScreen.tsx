@@ -238,6 +238,11 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
           || (campaignData?.challenges || []).find((c: any) => c.status === 'failed');
         setCampaign(active || null);
 
+        // Check for joinable campaigns from group
+        if (!active && campaignData?.joinable?.length > 0) {
+          setCampaign({ _joinable: true, ...campaignData.joinable[0] });
+        }
+
         // Fetch duels
         const { getActiveDuels } = await import('@/services/duelApi');
         setActiveDuels(await getActiveDuels(userId));
@@ -280,7 +285,21 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
           ★ CAMPAIGN
         </p>
         {campaign ? (
-          <CampaignCard campaign={campaign} userId={userId} colors={colors} onUpdate={setCampaign} />
+          campaign._joinable ? (
+            <div className="text-center py-3">
+              <p className={`text-[9px] ${colors.secondary} mb-1`} style={{ fontFamily: "var(--font-pixel), monospace" }}>CAMPAIGN AVAILABLE</p>
+              <p className="text-xs text-zinc-400 mb-3">{campaign.title}</p>
+              <a
+                href="/challenge-75"
+                className={`text-[8px] px-3 py-2 border ${colors.primary} bg-zinc-800 text-white hover:bg-zinc-700 transition-colors`}
+                style={{ fontFamily: "var(--font-pixel), monospace" }}
+              >
+                ▸ VIEW & JOIN
+              </a>
+            </div>
+          ) : (
+            <CampaignCard campaign={campaign} userId={userId} colors={colors} onUpdate={setCampaign} />
+          )
         ) : (
           <div className="text-center py-3">
             <p className="text-[9px] text-zinc-500 mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>NO ACTIVE CAMPAIGN</p>
