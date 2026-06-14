@@ -43,6 +43,7 @@ export default function HealthSync({ userId, refreshKey, onSyncComplete }: Props
           promises.push(logHabitAction(userId, 'macro_calories_burned', data.caloriesYesterday, undefined, 'Calories Burned', noon));
         }
         if (data.sleep > 0 && !hasWhoop) promises.push(logHabitAction(userId, 'habit_sleep', data.sleep, undefined, 'Sleep (Sync)'));
+        if (data.exerciseMinutes > 0) promises.push(logHabitAction(userId, 'habit_exercise_minutes', data.exerciseMinutes, undefined, 'Exercise Minutes (Sync)'));
 
         if (promises.length > 0) await Promise.all(promises);
         onSyncComplete?.();

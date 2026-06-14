@@ -188,6 +188,7 @@ export async function syncTodayHealth() {
     restingHR,
     bodyFat,
     exercises,
+    exerciseMinutes: Math.round(exercises.reduce((s: number, ex: any) => s + ((ex.duration || ex.duration_seconds || 0) / 60), 0)),
   };
 }
 
