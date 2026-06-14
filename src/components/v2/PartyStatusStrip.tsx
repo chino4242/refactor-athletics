@@ -71,7 +71,7 @@ export default function PartyStatusStrip({ userId }: Props) {
     <div className="mb-3">
       {/* Avatar row */}
       <div className="flex items-center gap-2 px-1">
-        <p className="text-[7px] text-zinc-600 mr-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>PARTY</p>
+        <p className="text-[10px] text-zinc-600 mr-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>PARTY</p>
         {members.map(m => (
           <button
             key={m.userId}
@@ -91,8 +91,8 @@ export default function PartyStatusStrip({ userId }: Props) {
       {selected && (
         <div className={`mt-2 border ${colors.border} bg-zinc-800/50 px-3 py-2 flex items-center justify-between`}>
           <div>
-            <p className="text-[9px] text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>{selected.displayName}</p>
-            <p className="text-[7px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <p className="text-xs text-white font-medium">{selected.displayName}</p>
+            <p className="text-[10px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
               {selected.trainedToday ? '✓ TRAINED TODAY' : 'NOT YET TODAY'}
             </p>
           </div>
@@ -102,7 +102,7 @@ export default function PartyStatusStrip({ userId }: Props) {
                 await fetch('/api/challenge-75', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'nudge', target_user_id: selected.userId }) });
                 setSelected(null);
               }}
-              className={`text-[8px] px-2 py-1 border ${colors.border} bg-zinc-900 text-zinc-400 hover:text-white transition-colors`}
+              className={`text-[10px] px-2 py-1 border ${colors.border} bg-zinc-900 text-zinc-400 hover:text-white transition-colors`}
               style={{ fontFamily: "var(--font-pixel), monospace" }}
             >
               👊 NUDGE

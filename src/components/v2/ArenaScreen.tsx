@@ -32,7 +32,7 @@ function BountyCard({ bounty, colors, onDifficultyChange }: { bounty: BountyWith
         )}
       </div>
       <div className="flex items-center justify-between mb-1">
-        <span className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+        <span className="text-[11px] text-zinc-500">
           {bounty.current.toLocaleString()}/{bounty.target.toLocaleString()}
         </span>
         {!bounty.difficultyLocked ? (
@@ -61,7 +61,7 @@ function BountyCard({ bounty, colors, onDifficultyChange }: { bounty: BountyWith
         ))}
       </div>
       <div className="mt-1 text-right">
-        <span className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+        <span className="text-[11px] text-zinc-500">
           +{bounty.xp} XP
         </span>
       </div>
@@ -85,7 +85,7 @@ function CampaignCard({ campaign, userId, colors, onUpdate }: { campaign: any; u
       <div className="text-center space-y-2">
         <p className={`text-[10px] ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>⚔ CAMPAIGN COMPLETE ⚔</p>
         <p className="text-xs text-white">{campaign.title}</p>
-        <p className="text-[8px] text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>{duration} DAYS · +2,500 XP EARNED</p>
+        <p className="text-[11px] text-zinc-400">{duration} DAYS · +2,500 XP EARNED</p>
       </div>
     );
   }
@@ -158,7 +158,7 @@ function CampaignCard({ campaign, userId, colors, onUpdate }: { campaign: any; u
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-xs text-white">{campaign.title}</p>
-        <span className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>DAY {dayNum}/{duration}</span>
+        <span className="text-[11px] text-zinc-500">DAY {dayNum}/{duration}</span>
       </div>
 
       {/* Progress bar */}
@@ -169,8 +169,8 @@ function CampaignCard({ campaign, userId, colors, onUpdate }: { campaign: any; u
       </div>
 
       <div className="flex items-center justify-between">
-        <span className="text-[8px] text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>🔥 {streak} DAY STREAK</span>
-        <span className="text-[8px] text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>✓ {checkedCount}/{metrics.length} TODAY</span>
+        <span className="text-[11px] text-zinc-400">🔥 {streak} DAY STREAK</span>
+        <span className="text-[11px] text-zinc-400">✓ {checkedCount}/{metrics.length} TODAY</span>
       </div>
 
       {/* Today's checklist */}
@@ -281,7 +281,7 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
 
       {/* Active Campaign / CTA */}
       <PixelBox highlight={!!campaign} className="p-4 mb-4">
-        <p className={`text-[9px] ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+        <p className={`text-[10px] ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
           ★ CAMPAIGN
         </p>
         {campaign ? (
@@ -291,7 +291,7 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
               <p className="text-xs text-zinc-400 mb-3">{campaign.title}</p>
               <a
                 href="/challenge-75"
-                className={`text-[8px] px-3 py-2 border ${colors.primary} bg-zinc-800 text-white hover:bg-zinc-700 transition-colors`}
+                className={`text-[10px] px-3 py-2 border ${colors.primary} bg-zinc-800 text-white hover:bg-zinc-700 transition-colors`}
                 style={{ fontFamily: "var(--font-pixel), monospace" }}
               >
                 ▸ VIEW & JOIN
@@ -306,7 +306,7 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
             <p className="text-[8px] text-zinc-600 mb-3">Set daily goals for 30-75 days. All or nothing.</p>
             <button
               onClick={() => setShowCampaignModal(true)}
-              className={`text-[8px] px-3 py-2 border ${colors.border} bg-zinc-800 text-zinc-400 hover:text-white transition-colors`}
+              className={`text-[10px] px-3 py-2 border ${colors.border} bg-zinc-800 text-zinc-400 hover:text-white transition-colors`}
               style={{ fontFamily: "var(--font-pixel), monospace" }}
             >
               ▸ FORGE A CAMPAIGN
@@ -318,10 +318,10 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
       {/* Weekly Bounties */}
       <PixelBox highlight className="p-4 mb-4">
         <div className="flex items-center justify-between mb-3">
-          <p className={`text-[9px] ${colors.secondary} uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          <p className={`text-[10px] ${colors.secondary} uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
             ★ WEEKLY BOUNTIES
           </p>
-          <span className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          <span className="text-[11px] text-zinc-500">
             {bounties.filter(b => b.completed).length}/{bounties.length}
           </span>
         </div>
@@ -332,17 +332,17 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
 
       {/* Guild Quest */}
       <PixelBox className="p-4 mb-4">
-        <p className={`text-[9px] ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+        <p className={`text-[10px] ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
           ⚔ GUILD QUEST
         </p>
         {guildQuest && guildQuest.status === 'active' ? (
           <>
             <p className="text-xs text-zinc-200 mb-1">{guildQuest.name}</p>
             <div className="flex items-center justify-between mb-1">
-              <span className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              <span className="text-[11px] text-zinc-500">
                 {guildQuest.current.toLocaleString()}/{guildQuest.target.toLocaleString()} {getMetricLabel(guildQuest.metric)}
               </span>
-              <span className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              <span className="text-[11px] text-zinc-500">
                 {guildQuest.daysLeft}D LEFT
               </span>
             </div>
@@ -379,7 +379,7 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
             <button
               onClick={() => setShowQuestModal(true)}
               disabled={!groupId}
-              className={`text-[8px] px-3 py-2 border ${colors.border} bg-zinc-800 text-zinc-400 hover:text-white transition-colors disabled:opacity-50`}
+              className={`text-[10px] px-3 py-2 border ${colors.border} bg-zinc-800 text-zinc-400 hover:text-white transition-colors disabled:opacity-50`}
               style={{ fontFamily: "var(--font-pixel), monospace" }}
             >
               ▸ RALLY YOUR PARTY
@@ -391,7 +391,7 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
 
       {/* Duels */}
       <PixelBox className="p-4">
-        <p className={`text-[9px] ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+        <p className={`text-[10px] ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
           ⚡ DUELS
         </p>
         {activeDuels.length > 0 ? (
@@ -409,7 +409,7 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
                     <span className="text-[8px] text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>
                       {isPending ? '⏳ AWAITING OPPONENT' : `YOU ${myScore} - ${theirScore} THEM`}
                     </span>
-                    <span className="text-[7px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>{daysLeft}D LEFT</span>
+                    <span className="text-[10px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>{daysLeft}D LEFT</span>
                   </div>
                   {!isPending && (
                     <div className="h-1.5 bg-zinc-900 flex">
@@ -430,7 +430,7 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
         <div className="flex justify-center mt-3">
           <button
             onClick={() => setShowDuelModal(true)}
-            className={`text-[8px] px-3 py-2 border ${colors.border} bg-zinc-800 text-zinc-400 hover:text-white transition-colors`}
+            className={`text-[10px] px-3 py-2 border ${colors.border} bg-zinc-800 text-zinc-400 hover:text-white transition-colors`}
             style={{ fontFamily: "var(--font-pixel), monospace" }}
           >
             ▸ CHALLENGE SOMEONE

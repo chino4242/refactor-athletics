@@ -94,12 +94,12 @@ export default function PartyLeaderboard({ userId }: Props) {
 
   return (
     <div className={`border ${colors.border} bg-zinc-900/50 p-3 mb-4`}>
-      <p className="text-[7px] text-zinc-500 uppercase mb-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>PARTY POWER</p>
+      <p className="text-[10px] text-zinc-500 uppercase mb-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>PARTY POWER</p>
       <div className="space-y-1.5">
         {members.map((m, i) => (
           <div key={m.userId} className={`flex items-center justify-between px-2 py-1 ${m.isYou ? `border ${colors.border} bg-zinc-800/50` : ''}`}>
             <div className="flex items-center gap-2">
-              <span className="text-[8px] text-zinc-600 w-3" style={{ fontFamily: "var(--font-pixel), monospace" }}>{i + 1}.</span>
+              <span className="text-[11px] text-zinc-600 w-3">{i + 1}.</span>
               <span className={`text-[8px] ${m.isYou ? 'text-white' : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>{m.name}{m.isYou ? ' (YOU)' : ''}</span>
             </div>
             <div className="flex items-center gap-2">

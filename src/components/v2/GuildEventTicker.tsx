@@ -103,9 +103,9 @@ export default function GuildEventTicker({ userId }: Props) {
   return (
     <div className={`border ${colors.border} bg-zinc-900/50 p-3 mb-4`}>
       <div className="flex items-center justify-between mb-2">
-        <p className="text-[7px] text-zinc-500 uppercase" style={{ fontFamily: "var(--font-pixel), monospace" }}>GUILD LOG</p>
+        <p className="text-[10px] text-zinc-500 uppercase" style={{ fontFamily: "var(--font-pixel), monospace" }}>GUILD LOG</p>
         {events.length > 3 && (
-          <button onClick={() => setExpanded(!expanded)} className="text-[7px] text-zinc-600" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          <button onClick={() => setExpanded(!expanded)} className="text-[10px] text-zinc-600" style={{ fontFamily: "var(--font-pixel), monospace" }}>
             {expanded ? '▴ LESS' : `▾ ${events.length} EVENTS`}
           </button>
         )}
@@ -116,10 +116,10 @@ export default function GuildEventTicker({ userId }: Props) {
             <span className="text-[8px]">
               {evt.type === 'rankup' ? '⚔' : evt.type === 'bounty' ? '★' : '◆'}
             </span>
-            <p className="text-[8px] text-zinc-400 flex-1 truncate" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <p className="text-[11px] text-zinc-400 flex-1 truncate">
               {evt.text}
             </p>
-            <span className="text-[7px] text-zinc-600">{timeAgo(evt.timestamp)}</span>
+            <span className="text-[11px] text-zinc-500">{timeAgo(evt.timestamp)}</span>
           </div>
         ))}
       </div>
