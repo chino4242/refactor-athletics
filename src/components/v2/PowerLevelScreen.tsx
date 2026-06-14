@@ -5,7 +5,6 @@ import { useTheme } from '@/context/ThemeContext';
 import { getV2Theme } from '@/data/v2themes';
 import PixelBox, { PixelBar, ScreenWrapper } from './PixelBox';
 import { PowerLevelSkeleton } from './Skeletons';
-import PartyLeaderboard from './PartyLeaderboard';
 import WeeklyRecapCard from './WeeklyRecapCard';
 import HealthSync from './HealthSync';
 import PushRegistration from './PushRegistration';
@@ -163,9 +162,6 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
           <PixelBar current={data.powerLevel} max={data.maxPossible} />
         </div>
       </PixelBox>
-
-      {/* Party Leaderboard */}
-      <PartyLeaderboard userId={userId} />
 
       {/* Expiring exercises */}
       {data.expiringExercises.length > 0 && (

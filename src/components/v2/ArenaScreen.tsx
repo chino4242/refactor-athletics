@@ -12,6 +12,7 @@ import CampaignModal from './CampaignModal';
 import DuelModal from './DuelModal';
 import PartyStatusStrip from './PartyStatusStrip';
 import GuildEventTicker from './GuildEventTicker';
+import PartyLeaderboard from './PartyLeaderboard';
 
 interface ArenaScreenProps {
   userId: string;
@@ -269,6 +270,9 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
 
       {/* Guild Event Ticker */}
       <GuildEventTicker userId={userId} />
+
+      {/* Party Power Leaderboard */}
+      <PartyLeaderboard userId={userId} />
 
       {/* Active Campaign / CTA */}
       <PixelBox highlight={!!campaign} className="p-4 mb-4">
