@@ -29,7 +29,7 @@ function getTier(pl: number): { name: string; color: string } {
   return { name: 'BRONZE', color: 'text-amber-600' };
 }
 
-function NutritionBar({ userId, colors }: { userId: string; colors: any }) {
+function NutritionBar({ userId, colors, refreshKey }: { userId: string; colors: any; refreshKey: number }) {
   const [data, setData] = useState<{ protein: number; carbs: number; fat: number; calsIn: number; burned: number; steps: number } | null>(null);
 
   useEffect(() => {
@@ -54,7 +54,7 @@ function NutritionBar({ userId, colors }: { userId: string; colors: any }) {
         steps,
       });
     })();
-  }, [userId]);
+  }, [userId, refreshKey]);
 
   if (!data || (data.calsIn === 0 && data.protein === 0 && data.steps === 0)) return null;
 
@@ -123,7 +123,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
 
   return (
     <ScreenWrapper onRefresh={async () => { setRefreshKey(k => k + 1); }}>
-      <HealthSync userId={userId} />
+      <HealthSync userId={userId} onSyncComplete={() => setRefreshKey(k => k + 1)} />
       <PushRegistration userId={userId} />
       {/* Weekly Recap (shows Sun-Tue) */}
       <WeeklyRecapCard userId={userId} />
@@ -139,7 +139,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
       </div>
 
       {/* Nutrition summary */}
-      <NutritionBar userId={userId} colors={colors} />
+      <NutritionBar userId={userId} colors={colors} refreshKey={refreshKey} />
 
       {/* Hero Power Level */}
       <PixelBox highlight className="p-5 mb-4">

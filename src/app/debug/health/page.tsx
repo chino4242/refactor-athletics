@@ -37,6 +37,13 @@ export default function DebugHealthPage() {
         } catch (e: any) { log(`${dt} THREW: ${e.message}`); }
       }
 
+      // Test the FULL getCaloriesBurned() function (confirms deployed code path)
+      try {
+        const { getCaloriesBurned } = await import('@/services/nativeHealth');
+        const cals = await getCaloriesBurned(startOfToday, endOfDay);
+        log(`getCaloriesBurned() → ${cals}`);
+      } catch (e: any) { log(`getCaloriesBurned() THREW: ${e.message}`); }
+
       // Test sleep
       try {
         const sleep = await h.queryAggregated({ dataType: 'sleep', startDate: startOfToday, endDate: endOfDay });

@@ -6,9 +6,10 @@ import { logSyncedCardioAction } from '@/app/actions';
 
 interface Props {
   userId: string;
+  onSyncComplete?: () => void;
 }
 
-export default function HealthSync({ userId }: Props) {
+export default function HealthSync({ userId, onSyncComplete }: Props) {
   useEffect(() => {
     // Only sync once per hour — shared key with DashboardClient to prevent double-sync
     const lastSync = localStorage.getItem('last_health_sync');
@@ -45,6 +46,7 @@ export default function HealthSync({ userId }: Props) {
 
         if (promises.length > 0) await Promise.all(promises);
         localStorage.setItem('last_health_sync', new Date().toISOString());
+        onSyncComplete?.();
 
         // Exercise session auto-sync
         if (data.exercises?.length > 0) {
