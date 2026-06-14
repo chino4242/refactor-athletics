@@ -1,7 +1,4 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-import { processWorkoutText } from '@/utils/workoutParser';
 import { createClient } from '@/utils/supabase/server';
 
 function dateToDayName(dateStr: string): string {
@@ -247,17 +244,6 @@ export async function GET(request: Request) {
         }
     }
 
-    // Fallback: text file system
-    const publicWorkoutsDir = path.join(process.cwd(), 'public', 'workouts', 'weekly');
-    const templatePath = path.join(publicWorkoutsDir, `${targetDay}.txt`);
-
-    if (!fs.existsSync(templatePath)) return NextResponse.json([]);
-
-    try {
-        const rawText = fs.readFileSync(templatePath, 'utf8');
-        return NextResponse.json(processWorkoutText(rawText, catalog || []));
-    } catch (e: any) {
-        console.error(`Error parsing workout: ${e.message}`);
-        return NextResponse.json([]);
-    }
+    // No program found for this day — rest day
+    return NextResponse.json([]);
 }
