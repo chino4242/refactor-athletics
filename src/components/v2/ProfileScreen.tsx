@@ -131,6 +131,10 @@ export default function ProfileScreen({ userId, displayName, age, sex, currentWe
             <span className="text-[8px] text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>PRIVACY POLICY</span>
             <span className="text-zinc-600 text-xs">▸</span>
           </Link>
+          <Link href="/debug/health" className={`flex items-center justify-between px-2 py-2 border ${colors.border} bg-zinc-800/50 hover:bg-zinc-800 transition-colors`}>
+            <span className="text-[8px] text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>🔧 HEALTH DEBUG</span>
+            <span className="text-zinc-600 text-xs">▸</span>
+          </Link>
           <Link href="/terms" className={`flex items-center justify-between px-2 py-2 border ${colors.border} bg-zinc-800/50 hover:bg-zinc-800 transition-colors`}>
             <span className="text-[8px] text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>TERMS OF SERVICE</span>
             <span className="text-zinc-600 text-xs">▸</span>
