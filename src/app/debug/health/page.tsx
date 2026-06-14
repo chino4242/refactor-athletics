@@ -59,14 +59,40 @@ export default function DebugHealthPage() {
     } catch (e: any) { log(`FATAL: ${e.message}`); }
   };
 
+  const runSyncTest = async () => {
+    setLogs(prev => [...prev, '--- FULL SYNC TEST ---']);
+    try {
+      const { syncTodayHealth } = await import('@/services/nativeHealth');
+      const data = await syncTodayHealth();
+      setLogs(prev => [...prev, `syncTodayHealth result: ${JSON.stringify(data, null, 2)}`]);
+    } catch (e: any) {
+      setLogs(prev => [...prev, `syncTodayHealth THREW: ${e.message}`]);
+    }
+  };
+
+  const checkDB = async () => {
+    setLogs(prev => [...prev, '--- DB CHECK ---']);
+    try {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const today = new Date().toLocaleDateString('en-CA');
+      const { data, error } = await supabase.from('nutrition_logs').select('macro_type, amount, label').eq('date', today).eq('macro_type', 'calories_burned');
+      setLogs(prev => [...prev, `calories_burned rows today: ${JSON.stringify(data)}`, `error: ${error?.message || 'none'}`]);
+    } catch (e: any) {
+      setLogs(prev => [...prev, `DB check THREW: ${e.message}`]);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-black text-white p-4 font-mono text-xs">
       <h1 className="text-lg font-bold mb-4">🔧 Health Debug</h1>
-      <button onClick={runTests} className="bg-zinc-800 border border-zinc-600 px-4 py-2 mb-4 hover:bg-zinc-700">
-        RUN ALL TESTS
-      </button>
+      <div className="flex gap-2 mb-4 flex-wrap">
+        <button onClick={runTests} className="bg-zinc-800 border border-zinc-600 px-4 py-2 hover:bg-zinc-700">PLUGIN TESTS</button>
+        <button onClick={runSyncTest} className="bg-zinc-800 border border-zinc-600 px-4 py-2 hover:bg-zinc-700">FULL SYNC</button>
+        <button onClick={checkDB} className="bg-zinc-800 border border-zinc-600 px-4 py-2 hover:bg-zinc-700">CHECK DB</button>
+      </div>
       <div className="space-y-1 bg-zinc-900 p-3 border border-zinc-700 max-h-[70vh] overflow-y-auto">
-        {logs.length === 0 && <p className="text-zinc-600">Tap RUN to test health plugin calls</p>}
+        {logs.length === 0 && <p className="text-zinc-600">Tap a button to test</p>}
         {logs.map((l, i) => (
           <p key={i} className={l.includes('THREW') || l.includes('FATAL') ? 'text-red-400' : l.includes('→') ? 'text-green-400' : 'text-zinc-400'}>
             {l}
