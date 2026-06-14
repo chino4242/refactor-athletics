@@ -65,9 +65,13 @@ export async function getCaloriesBurned(startDate: string, endDate: string): Pro
   if (!isNative()) return 0;
   try {
     const h = getHealth();
-    // Our custom Kotlin plugin maps 'calories' to ActiveCaloriesBurnedRecord
-    const result = await h.queryAggregated({ dataType: 'calories', startDate, endDate });
-    return Math.round(sumAggregated(result));
+    // Try total calories (BMR + active) first, fall back to active-only
+    const result = await h.queryAggregated({ dataType: 'totalCalories', startDate, endDate });
+    const total = sumAggregated(result);
+    if (total > 0) return Math.round(total);
+    // Fallback: active calories only
+    const active = await h.queryAggregated({ dataType: 'calories', startDate, endDate });
+    return Math.round(sumAggregated(active));
   } catch { return 0; }
 }
 

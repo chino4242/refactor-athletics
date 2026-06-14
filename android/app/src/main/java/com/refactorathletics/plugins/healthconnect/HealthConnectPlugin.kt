@@ -101,6 +101,7 @@ class HealthConnectPlugin : Plugin() {
                 val metric = when (dataType) {
                     "steps" -> StepsRecord.COUNT_TOTAL
                     "calories" -> ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL
+                    "totalCalories" -> TotalCaloriesBurnedRecord.ENERGY_TOTAL
                     "sleep" -> SleepSessionRecord.SLEEP_DURATION_TOTAL
                     else -> null
                 }
@@ -117,6 +118,7 @@ class HealthConnectPlugin : Plugin() {
                 val value: Any? = when (dataType) {
                     "steps" -> response[StepsRecord.COUNT_TOTAL]
                     "calories" -> response[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]?.inKilocalories
+                    "totalCalories" -> response[TotalCaloriesBurnedRecord.ENERGY_TOTAL]?.inKilocalories
                     "sleep" -> response[SleepSessionRecord.SLEEP_DURATION_TOTAL]?.toMinutes()
                     else -> 0
                 }
@@ -124,6 +126,60 @@ class HealthConnectPlugin : Plugin() {
                 call.resolve(JSObject().put("value", value ?: 0))
             } catch (e: Exception) {
                 call.resolve(JSObject().put("value", 0))
+            }
+        }
+    }
+
+    @PluginMethod
+    fun readSamples(call: PluginCall) {
+        // Delegate to query — same implementation, different JS method name
+        val hc = client ?: run {
+            call.resolve(JSObject().put("samples", JSArray()))
+            return
+        }
+        val dataType = call.getString("dataType") ?: ""
+        val startDate = call.getString("startDate") ?: ""
+        val endDate = call.getString("endDate") ?: ""
+        val limit = call.getInt("limit") ?: 10
+
+        scope.launch {
+            try {
+                val start = Instant.parse(startDate)
+                val end = Instant.parse(endDate)
+                val timeRange = TimeRangeFilter.between(start, end)
+                val samples = JSONArray()
+
+                when (dataType) {
+                    "weight" -> {
+                        val records = hc.readRecords(ReadRecordsRequest(WeightRecord::class, timeRange))
+                        records.records.takeLast(limit).forEach { r ->
+                            samples.put(JSONObject().put("value", r.weight.inKilograms))
+                        }
+                    }
+                    "heartRateVariability" -> {
+                        val records = hc.readRecords(ReadRecordsRequest(HeartRateVariabilityRmssdRecord::class, timeRange))
+                        records.records.takeLast(limit).forEach { r ->
+                            samples.put(JSONObject().put("value", r.heartRateVariabilityMillis))
+                        }
+                    }
+                    "heartRate" -> {
+                        val records = hc.readRecords(ReadRecordsRequest(HeartRateRecord::class, timeRange))
+                        records.records.takeLast(limit).forEach { r ->
+                            val avg = r.samples.map { it.beatsPerMinute }.average()
+                            samples.put(JSONObject().put("value", avg))
+                        }
+                    }
+                    "bodyFat" -> {
+                        val records = hc.readRecords(ReadRecordsRequest(BodyFatRecord::class, timeRange))
+                        records.records.takeLast(limit).forEach { r ->
+                            samples.put(JSONObject().put("value", r.percentage.value))
+                        }
+                    }
+                }
+
+                call.resolve(JSObject().put("samples", samples))
+            } catch (e: Exception) {
+                call.resolve(JSObject().put("samples", JSArray()))
             }
         }
     }
@@ -191,6 +247,7 @@ class HealthConnectPlugin : Plugin() {
         return when (type) {
             "steps" -> StepsRecord::class
             "calories" -> ActiveCaloriesBurnedRecord::class
+            "totalCalories" -> TotalCaloriesBurnedRecord::class
             "sleep" -> SleepSessionRecord::class
             "weight" -> WeightRecord::class
             "heart_rate" -> HeartRateRecord::class
