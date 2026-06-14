@@ -91,7 +91,7 @@ export default function HealthSync({ userId, refreshKey, onSyncComplete }: Props
                 body: JSON.stringify({ exercises: [ex] }),
               });
             } else {
-              const type = isRun ? 'Run' : typeCode === 8 ? 'Bike' : 'Cardio';
+              const type = isRun ? 'Run' : typeCode === 8 ? 'Bike' : typeCode === 74 ? 'Swim' : typeCode === 53 ? 'Row' : typeCode === 27 ? 'Hike' : typeCode === 79 ? 'Strength' : 'Cardio';
               await logSyncedCardioAction(userId, type, dur, exDate);
             }
           }
