@@ -12,11 +12,7 @@ interface Props {
 
 export default function HealthSync({ userId, refreshKey, onSyncComplete }: Props) {
   useEffect(() => {
-    // Only sync once per hour — shared key with DashboardClient to prevent double-sync
-    const lastSync = localStorage.getItem('last_health_sync');
-    if (lastSync && Date.now() - new Date(lastSync).getTime() < 3600000) return;
-
-    // Check if another sync is already in progress (DashboardClient uses this mutex)
+    // Mutex to prevent concurrent runs
     if (localStorage.getItem('health_sync_in_progress')) return;
 
     (async () => {
@@ -24,7 +20,10 @@ export default function HealthSync({ userId, refreshKey, onSyncComplete }: Props
         localStorage.setItem('health_sync_in_progress', '1');
         const { syncTodayHealth } = await import('@/services/nativeHealth');
         const data = await syncTodayHealth();
-        if (!data || (data.steps === 0 && data.caloriesBurned === 0)) return;
+        if (!data || (data.steps === 0 && data.caloriesBurned === 0)) {
+          localStorage.removeItem('health_sync_in_progress');
+          return;
+        }
 
         // Check if WHOOP handles calories
         const { createClient } = await import('@/utils/supabase/client');
@@ -46,7 +45,6 @@ export default function HealthSync({ userId, refreshKey, onSyncComplete }: Props
         if (data.sleep > 0 && !hasWhoop) promises.push(logHabitAction(userId, 'habit_sleep', data.sleep, undefined, 'Sleep (Sync)'));
 
         if (promises.length > 0) await Promise.all(promises);
-        localStorage.setItem('last_health_sync', new Date().toISOString());
         onSyncComplete?.();
 
         // Exercise session auto-sync
@@ -98,8 +96,10 @@ export default function HealthSync({ userId, refreshKey, onSyncComplete }: Props
             }
           }
         }
-      } catch { /* silent — not native or plugin unavailable */ }
-      localStorage.removeItem('health_sync_in_progress');
+      } catch { /* silent — not native or plugin unavailable */ 
+      } finally {
+        localStorage.removeItem('health_sync_in_progress');
+      }
     })();
   }, [userId, refreshKey]);
 
