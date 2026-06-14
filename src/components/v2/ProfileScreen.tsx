@@ -115,8 +115,10 @@ export default function ProfileScreen({ userId, displayName, age, sex, currentWe
             onClick={async () => {
               localStorage.removeItem('health_permission_denied');
               localStorage.removeItem('last_health_sync');
+              localStorage.removeItem('health_sync_in_progress');
               const { requestPermissions } = await import('@/services/nativeHealth');
               await requestPermissions();
+              alert('✓ Health sync reset. Return to home to sync.');
             }}
             className={`w-full flex items-center justify-between px-2 py-2 border ${colors.border} bg-zinc-800/50 hover:bg-zinc-800 transition-colors`}
           >
