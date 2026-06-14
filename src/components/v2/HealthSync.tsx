@@ -6,10 +6,11 @@ import { logSyncedCardioAction } from '@/app/actions';
 
 interface Props {
   userId: string;
+  refreshKey?: number;
   onSyncComplete?: () => void;
 }
 
-export default function HealthSync({ userId, onSyncComplete }: Props) {
+export default function HealthSync({ userId, refreshKey, onSyncComplete }: Props) {
   useEffect(() => {
     // Only sync once per hour — shared key with DashboardClient to prevent double-sync
     const lastSync = localStorage.getItem('last_health_sync');
@@ -100,7 +101,7 @@ export default function HealthSync({ userId, onSyncComplete }: Props) {
       } catch { /* silent — not native or plugin unavailable */ }
       localStorage.removeItem('health_sync_in_progress');
     })();
-  }, [userId]);
+  }, [userId, refreshKey]);
 
   return null; // Invisible sync trigger
 }

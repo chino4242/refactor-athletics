@@ -123,7 +123,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
 
   return (
     <ScreenWrapper onRefresh={async () => { setRefreshKey(k => k + 1); }}>
-      <HealthSync userId={userId} onSyncComplete={() => setRefreshKey(k => k + 1)} />
+      <HealthSync userId={userId} refreshKey={refreshKey} onSyncComplete={() => setRefreshKey(k => k + 1)} />
       <PushRegistration userId={userId} />
       {/* Weekly Recap (shows Sun-Tue) */}
       <WeeklyRecapCard userId={userId} />
