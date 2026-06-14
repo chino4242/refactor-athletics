@@ -127,7 +127,7 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
 
       {/* Weekly View */}
       <PixelBox className="p-3 mb-4">
-        <p className={`text-[8px] ${colors.headerText} mb-2 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+        <p className={`text-[10px] ${colors.headerText} mb-2 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
           THIS WEEK
         </p>
         <div className="grid grid-cols-7 gap-1">
@@ -140,41 +140,46 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
                 if (isSelected || day.isToday) { setSelectedDay(null); const localDay = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase(); const prog = fullSchedule.find((p: any) => (p.day || '').toLowerCase() === localDay); setWorkout(prog ? { name: prog.title || prog.name || 'Workout', exercises: (prog.exercises || []).slice(0, 5), estimatedXp: prog.xp || 50 } : null); }
                 else { setSelectedDay(dayName); const prog = fullSchedule.find((p: any) => (p.day || '').toLowerCase() === dayName); setWorkout(prog ? { name: prog.title || prog.name || 'Workout', exercises: (prog.exercises || []).slice(0, 5), estimatedXp: prog.xp || 50 } : null); }
               }} className="flex flex-col items-center gap-1">
-                <span className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                <span className="text-[10px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
                   {day.label}
                 </span>
-                <div className={`w-6 h-6 flex items-center justify-center border ${
+                <div className={`w-7 h-7 flex items-center justify-center border ${
                   isSelected ? `${colors.primary} bg-zinc-700` :
                   day.isToday && !selectedDay ? `${colors.primary} bg-zinc-800` :
                   day.completed ? 'border-green-500 bg-green-900/30' :
                   'border-zinc-700 bg-zinc-900'
                 }`}>
-                  {day.completed && !isSelected && <span className="text-[8px] text-green-400">✓</span>}
-                  {day.isToday && !day.completed && !isSelected && !selectedDay && <span className={`text-[8px] ${colors.secondary}`}>▸</span>}
-                  {isSelected && <span className={`text-[8px] ${colors.secondary}`}>▸</span>}
+                  {day.completed && !isSelected && <span className="text-[9px] text-green-400">✓</span>}
+                  {day.isToday && !day.completed && !isSelected && !selectedDay && <span className={`text-[9px] ${colors.secondary}`}>▸</span>}
+                  {isSelected && <span className={`text-[9px] ${colors.secondary}`}>▸</span>}
                 </div>
               </button>
             );
           })}
         </div>
+        {weekDays.filter(d => d.completed).length >= 3 && (
+          <p className="text-[10px] text-amber-400 mt-2 text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            🔥 {weekDays.filter(d => d.completed).length} DAY STREAK
+          </p>
+        )}
       </PixelBox>
 
       {/* Today's Workout */}
       <PixelBox highlight className="p-4 mb-4">
         {workout ? (
           <>
-            <p className={`text-[9px] ${colors.headerText} mb-2 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <p className={`text-[10px] ${colors.headerText} mb-2 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
               {selectedDay ? `${selectedDay.toUpperCase()}'S WORKOUT` : "TODAY\u0027S WORKOUT"}
             </p>
-            <p className="text-sm text-white font-medium mb-2">{workout.name}</p>
+            <p className="text-sm text-white font-medium mb-1">{workout.name}</p>
             <div className="space-y-1 mb-3">
               {workout.exercises.map((ex, i) => (
                 <p key={i} className="text-xs text-zinc-400">• {ex}</p>
               ))}
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-                +{workout.estimatedXp} XP
+              <span className="text-[11px] text-zinc-500">
+                ~{Math.round((workout.exercises.length * 4 + 10))} min • +{workout.estimatedXp} XP
               </span>
               <a
                 href={`/train/active${selectedDay ? `?day=${selectedDay}` : ''}`}
@@ -187,18 +192,18 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
           </>
         ) : (
           <>
-            <p className={`text-[9px] ${colors.headerText} mb-2 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <p className={`text-[10px] ${colors.headerText} mb-2 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
               {currentTheme !== 'athlete' ? '🔥 RECOVERY DAY' : 'REST DAY'}
             </p>
             <p className="text-xs text-zinc-300 mb-2">Rest fuels progress. Your muscles grow today.</p>
-            <p className="text-[8px] text-zinc-500 mb-3" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <p className="text-[11px] text-zinc-500 mb-3">
               {['Walk 10-20 min for blood flow', 'Foam roll tight areas (5 min)', 'Deep breathing + stretch (10 min)', 'Light mobility work — no intensity'][new Date().getDay() % 4]}
             </p>
             <div className="flex gap-2">
-              <a href="/train/active?mode=flexible&filter=cardio" className={`text-[8px] px-3 py-1.5 border ${colors.border} bg-zinc-800/50 text-zinc-400 hover:text-white transition-colors`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              <a href="/train/active?mode=flexible&filter=cardio" className={`text-[10px] px-3 py-1.5 border ${colors.border} bg-zinc-800/50 text-zinc-400 hover:text-white transition-colors`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                 🚶 WALK
               </a>
-              <a href="/train/active?mode=flexible" className={`text-[8px] px-3 py-1.5 border ${colors.border} bg-zinc-800/50 text-zinc-400 hover:text-white transition-colors`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              <a href="/train/active?mode=flexible" className={`text-[10px] px-3 py-1.5 border ${colors.border} bg-zinc-800/50 text-zinc-400 hover:text-white transition-colors`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                 🧘 MOBILITY
               </a>
             </div>
@@ -206,20 +211,12 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
         )}
       </PixelBox>
 
-      {/* Nutrition */}
-      <PixelBox className="p-4 mb-4">
-        <p className={`text-[8px] ${colors.headerText} mb-2 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-          FUEL
-        </p>
-        <NutritionInputV2 userId={userId} />
-      </PixelBox>
-
       {/* Quick Log */}
-      <PixelBox className="p-4">
-        <p className={`text-[9px] ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+      <PixelBox className="p-4 mb-4">
+        <p className={`text-[10px] ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
           QUICK LOG
         </p>
-        <p className="text-[8px] text-zinc-500 mb-2">Manual entry when sync fails</p>
+        <p className="text-[11px] text-zinc-500 mb-2">Manual entry when sync fails</p>
         <div className="grid grid-cols-3 gap-2">
           {[
             { label: '🏃 RUN', href: '/train/active?mode=flexible&filter=cardio' },
@@ -229,13 +226,21 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
             <a
               key={item.label}
               href={item.href}
-              className={`text-[8px] px-2 py-3 border ${colors.border} bg-zinc-800/50 text-zinc-300 hover:bg-zinc-700 transition-colors text-center`}
+              className={`text-[10px] px-2 py-3 border ${colors.border} bg-zinc-800/50 text-zinc-300 hover:bg-zinc-700 transition-colors text-center`}
               style={{ fontFamily: "var(--font-pixel), monospace" }}
             >
               {item.label}
             </a>
           ))}
         </div>
+      </PixelBox>
+
+      {/* Nutrition */}
+      <PixelBox className="p-4">
+        <p className={`text-[10px] ${colors.headerText} mb-2 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          FUEL
+        </p>
+        <NutritionInputV2 userId={userId} />
       </PixelBox>
     </ScreenWrapper>
   );
