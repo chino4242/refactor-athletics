@@ -188,16 +188,20 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
         ) : (
           <>
             <p className={`text-[9px] ${colors.headerText} mb-2 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-              TODAY
+              {currentTheme !== 'athlete' ? '🔥 RECOVERY DAY' : 'REST DAY'}
             </p>
-            <p className="text-xs text-zinc-400 mb-3">No workout scheduled</p>
-            <a
-              href="/train/active"
-              className={`inline-block text-[10px] px-4 py-2 border ${colors.primary} bg-zinc-800 text-white hover:bg-zinc-700 transition-colors`}
-              style={{ fontFamily: "var(--font-pixel), monospace" }}
-            >
-              {hasBattleSession ? '▸ RESUME BATTLE' : '▸ QUICK LOG'}
-            </a>
+            <p className="text-xs text-zinc-300 mb-2">Rest fuels progress. Your muscles grow today.</p>
+            <p className="text-[8px] text-zinc-500 mb-3" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              {['Walk 10-20 min for blood flow', 'Foam roll tight areas (5 min)', 'Deep breathing + stretch (10 min)', 'Light mobility work — no intensity'][new Date().getDay() % 4]}
+            </p>
+            <div className="flex gap-2">
+              <a href="/train/active?mode=flexible&filter=cardio" className={`text-[8px] px-3 py-1.5 border ${colors.border} bg-zinc-800/50 text-zinc-400 hover:text-white transition-colors`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                🚶 WALK
+              </a>
+              <a href="/train/active?mode=flexible" className={`text-[8px] px-3 py-1.5 border ${colors.border} bg-zinc-800/50 text-zinc-400 hover:text-white transition-colors`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                🧘 MOBILITY
+              </a>
+            </div>
           </>
         )}
       </PixelBox>
