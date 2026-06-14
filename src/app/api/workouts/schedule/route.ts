@@ -90,12 +90,13 @@ export async function GET() {
 
             schedule.push({
                 day,
-                title: generateTitle(blocks, catalogMap),
+                title: resolved.programName,
                 order: DAY_ORDER[day] ?? 99,
                 xp,
-                type: blocks.length === 0 ? 'Recovery' : inferType(blocks),
+                type: resolved.dayType || 'training',
                 exercises: exerciseNames,
                 treadmillBlocks: treadmillCount,
+                dayType: resolved.dayType,
             });
         }
 

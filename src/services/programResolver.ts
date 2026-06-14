@@ -3,6 +3,7 @@ import { SupabaseClient } from '@supabase/supabase-js';
 export interface ResolvedProgram {
   programId: string;
   programName: string;
+  dayType: string;
   blocks: any[];
   userEquipment: Set<string>;
   cardioType: string;
@@ -44,12 +45,11 @@ export async function resolveProgramBlocks(
   const cardioType = profile?.preferred_cardio || 'treadmill';
   const weekNum = getWeekNum();
 
-  // 1. User-owned programs for this path + day
+  // 1. User-owned programs for this day (path-independent for user programs)
   const { data: userPrograms } = await supabase
     .from('workout_programs')
-    .select('id, name, variant')
+    .select('id, name, variant, day_type')
     .eq('user_id', userId)
-    .eq('training_path', userPath)
     .ilike('day_of_week', day)
     .order('variant');
 
@@ -67,6 +67,7 @@ export async function resolveProgramBlocks(
         return {
           programId: program.id,
           programName: program.name || 'Workout',
+          dayType: program.day_type || 'training',
           blocks: applyEquipmentSwaps(blocks, userEquipment),
           userEquipment,
           cardioType,
@@ -78,7 +79,7 @@ export async function resolveProgramBlocks(
   // 2. Default programs for this path + day
   const { data: defaultPrograms } = await supabase
     .from('workout_programs')
-    .select('id, name, variant')
+    .select('id, name, variant, day_type')
     .eq('is_default', true)
     .eq('training_path', userPath)
     .ilike('day_of_week', day)
@@ -98,6 +99,7 @@ export async function resolveProgramBlocks(
         return {
           programId: program.id,
           programName: program.name || 'Workout',
+          dayType: program.day_type || 'training',
           blocks: applyEquipmentSwaps(blocks, userEquipment),
           userEquipment,
           cardioType,
