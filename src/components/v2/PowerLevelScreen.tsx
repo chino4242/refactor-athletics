@@ -77,22 +77,23 @@ function NutritionBar({ userId, colors, refreshKey }: { userId: string; colors: 
   const net = data.calsIn - data.burned;
 
   return (
-    <div className={`border ${colors.border} bg-zinc-900/80 px-3 py-2 mb-4`}>
+    <div className={`border ${colors.border} border-l-2 ${colors.primary} bg-zinc-900/80 px-3 py-2.5 mb-4`}>
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3 text-[8px]" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-          <span className="text-blue-400">P:{data.protein}</span>
-          <span className="text-orange-400">C:{data.carbs}</span>
-          <span className="text-yellow-400">F:{data.fat}</span>
-          {data.steps > 0 && <span className="text-emerald-400">👟{data.steps.toLocaleString()}</span>}
+        <div className="flex items-center gap-3 text-xs">
+          <span className="text-blue-400 font-medium">P {data.protein}g</span>
+          <span className="text-orange-400 font-medium">C {data.carbs}g</span>
+          <span className="text-yellow-400 font-medium">F {data.fat}g</span>
+          {data.steps > 0 && <span className="text-emerald-400">👟 {data.steps.toLocaleString()}</span>}
         </div>
-        <span className={`text-[8px] ${net <= 0 ? 'text-green-400' : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-          NET:{net > 0 ? '+' : ''}{net}
+        <span className={`text-xs font-bold ${net <= 0 ? 'text-green-400' : 'text-zinc-400'}`}>
+          NET {net > 0 ? '+' : ''}{net}
         </span>
       </div>
       {(data.calsIn > 0 || data.burned > 0) && (
-        <div className="flex items-center justify-between mt-1 text-[7px] text-zinc-600" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-          <span>IN:{data.calsIn.toLocaleString()}</span>
-          <span>BURNED:{data.burned.toLocaleString()}</span>
+        <div className="flex items-center gap-2 mt-1.5 text-[11px] text-zinc-500">
+          <span>IN {data.calsIn.toLocaleString()}</span>
+          <span className="text-zinc-700">•</span>
+          <span>BURNED {data.burned.toLocaleString()}</span>
         </div>
       )}
     </div>
@@ -145,11 +146,11 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
       <WeeklyRecapCard userId={userId} />
 
       {/* Theme Banner */}
-      <div className="mb-4 overflow-hidden border-2 border-zinc-800 rounded-sm">
+      <div className="mb-4 overflow-hidden border-2 border-zinc-800 rounded-sm max-h-[120px]">
         <img
           src={`/themes/${currentTheme}/v2/banner.png`}
           alt=""
-          className="w-full h-auto"
+          className="w-full h-full object-cover"
           style={{ imageRendering: 'pixelated' }}
         />
       </div>
@@ -182,7 +183,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
       {/* Expiring exercises */}
       {data.expiringExercises.length > 0 && (
         <PixelBox className="p-4 mb-4">
-          <p className="text-[9px] text-amber-400 mb-3 uppercase" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          <p className="text-[10px] text-amber-400 mb-3 uppercase" style={{ fontFamily: "var(--font-pixel), monospace" }}>
             ⚠ EXPIRING
           </p>
           <div className="space-y-2">
@@ -192,7 +193,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
                   <img src={`/themes/${currentTheme}/v2/level${ex.level}.png`} alt={`Level ${ex.level}`} className="w-6 h-6" style={{ imageRendering: 'pixelated' }} />
                   <span className="text-xs text-zinc-200">{ex.name}</span>
                 </div>
-                <span className="text-[8px] text-amber-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>{ex.daysLeft}D</span>
+                <span className={`text-[8px] ${ex.daysLeft <= 3 ? 'text-red-400' : ex.daysLeft <= 7 ? 'text-amber-400' : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>{ex.daysLeft}D</span>
               </div>
             ))}
           </div>
@@ -202,7 +203,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
       {/* Closest rank-ups */}
       {data.closestRankUps.length > 0 && (
         <PixelBox className="p-4 mb-4">
-          <p className={`text-[9px] ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          <p className={`text-[10px] ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
             ▲ RANK UP
           </p>
           <div className="space-y-2">
@@ -222,7 +223,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
       {/* Recent PRs */}
       {data.recentPRs.length > 0 && (
         <PixelBox className="p-4 mb-4">
-          <p className={`text-[9px] ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          <p className={`text-[10px] ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
             ★ NEW RECORDS
           </p>
           <div className="space-y-2">
