@@ -3,7 +3,10 @@
  * Called fire-and-forget after habit/workout/nutrition logs.
  */
 export async function updateChallenge75Snapshot(supabase: any, userId: string) {
-  const today = new Date().toLocaleDateString('en-CA');
+  // Use user's timezone for correct day boundary (runs on Vercel = UTC)
+  const { data: userTz } = await supabase.from('users').select('timezone').eq('id', userId).single();
+  const tz = userTz?.timezone || 'America/New_York';
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: tz });
 
   // Find active challenge memberships for this user
   const { data: memberships } = await supabase.from('challenge_75_members')
