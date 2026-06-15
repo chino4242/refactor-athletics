@@ -143,6 +143,7 @@ export default function NutritionInputV2({ userId }: Props) {
 
   const confirmLog = async () => {
     if (!pending) return;
+    import('@/utils/haptics').then(m => m.haptic('success'));
     await Promise.all([
       logHabitAction(userId, 'macro_protein', pending.protein, undefined, mealTag),
       logHabitAction(userId, 'macro_carbs', pending.carbs, undefined, mealTag),
@@ -161,8 +162,16 @@ export default function NutritionInputV2({ userId }: Props) {
 
   return (
     <div className="space-y-2">
+      {/* Loading state */}
+      {loading && (
+        <div className={`border ${colors.border} bg-zinc-800 p-3 animate-pulse flex items-center gap-3`}>
+          <span className="text-lg">🧠</span>
+          <span className="text-[11px] text-zinc-400">ANALYZING MEAL...</span>
+        </div>
+      )}
+
       {/* Input row */}
-      {!pending && (
+      {!pending && !loading && (
         <div className="flex gap-2">
           <div className={`flex-1 border ${colors.border} bg-zinc-800 flex items-center px-3`}>
             <span className="text-sm mr-2">🍽️</span>
@@ -174,7 +183,6 @@ export default function NutritionInputV2({ userId }: Props) {
               placeholder="What did you eat?"
               className="flex-1 bg-transparent text-sm text-white placeholder:text-zinc-600 outline-none py-2.5"
             />
-            {loading && <span className="text-[8px] text-zinc-500 animate-pulse" style={{ fontFamily: "var(--font-pixel), monospace" }}>...</span>}
           </div>
           <button onClick={() => fileRef.current?.click()} disabled={loading} className={`border ${colors.border} bg-zinc-800 px-3 hover:bg-zinc-700 transition-colors disabled:opacity-50`}>
             <span className="text-sm">📷</span>

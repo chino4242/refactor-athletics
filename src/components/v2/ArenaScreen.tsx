@@ -221,6 +221,7 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
   const [showDuelModal, setShowDuelModal] = useState(false);
   const [activeDuels, setActiveDuels] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -249,7 +250,7 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
       } catch { /* empty state */ }
       setLoading(false);
     })();
-  }, [userId]);
+  }, [userId, refreshKey]);
 
   const handleDifficultyChange = async (bountyId: string, difficulty: Difficulty) => {
     await setDifficulty(bountyId, difficulty);
@@ -262,7 +263,7 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
   }
 
   return (
-    <ScreenWrapper>
+    <ScreenWrapper onRefresh={async () => { setRefreshKey(k => k + 1); }}>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <p className={`text-[10px] ${colors.headerText} uppercase tracking-widest`} style={{ fontFamily: "var(--font-pixel), monospace" }}>

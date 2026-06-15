@@ -62,6 +62,14 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
   const [fullSchedule, setFullSchedule] = useState<any[]>([]);
   const [yesterday, setYesterday] = useState<string | null>(null);
   const [tomorrow, setTomorrow] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Refresh when app returns to foreground
+  useEffect(() => {
+    const handleVisibility = () => { if (document.visibilityState === 'visible') setRefreshKey(k => k + 1); };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
 
   useEffect(() => {
     // Check for in-progress battle
@@ -125,14 +133,14 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
       } catch {}
       setLoading(false);
     })();
-  }, [userId]);
+  }, [userId, refreshKey]);
 
   if (loading) {
     return <TrainSkeleton />;
   }
 
   return (
-    <ScreenWrapper>
+    <ScreenWrapper onRefresh={async () => { setRefreshKey(k => k + 1); }}>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <p className={`text-[10px] ${colors.headerText} uppercase tracking-widest`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
