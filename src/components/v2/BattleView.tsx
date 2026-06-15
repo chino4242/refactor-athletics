@@ -110,6 +110,11 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
 
   // Load workout data
   useEffect(() => {
+    // Clear stale battle session when entering single-exercise mode
+    if (singleExercise) {
+      localStorage.removeItem(BATTLE_STATE_KEY);
+    }
+
     (async () => {
       try {
         const localDay = overrideDay || new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
@@ -245,9 +250,9 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
 
         setCards(battleCards);
         
-        // Restore saved session (resume battle)
+        // Restore saved session (resume battle) — skip for single exercise mode
         try {
-          const saved = localStorage.getItem('battle_session');
+          const saved = !singleExercise ? localStorage.getItem('battle_session') : null;
           if (saved) {
             const state = JSON.parse(saved);
             if (state.date === new Date().toLocaleDateString('en-CA') && state.cards?.length) {
@@ -281,6 +286,10 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
           let items = catalog;
           if (singleExercise) {
             items = catalog.filter((c: CatalogItem) => c.id === singleExercise);
+            // Fallback: try partial match on ID or name
+            if (!items.length) items = catalog.filter((c: CatalogItem) => c.id.includes(singleExercise) || c.name?.toLowerCase().includes(singleExercise.replace(/_/g, ' ')));
+            // Last resort: create a card from the exercise ID itself
+            if (!items.length) items = [{ id: singleExercise, name: singleExercise.replace(/_/g, ' '), category: '', standards: null } as any];
           } else if (filter === 'cardio') {
             items = catalog.filter((c: CatalogItem) => (c.category || '').toLowerCase().includes('cardio') || (c.category || '').toLowerCase().includes('endurance')).slice(0, 8);
           } else if (filter === 'strength') {
@@ -290,7 +299,7 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
           }
           const flexCards: BattleCard[] = items.map((c: CatalogItem) => ({
             id: uuidv4(),
-            name: c.name,
+            name: c.name || c.id.replace(/_/g, ' '),
             exerciseId: c.id,
             type: 'lifting' as const,
             totalSets: 3,
