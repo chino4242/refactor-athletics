@@ -1064,8 +1064,14 @@ function CardioCard({ card, isActive, colors, onComplete }: {
       {/* Current zone */}
       {current && (
         <div className="text-center py-4">
-          <p className={`text-[8px] uppercase mb-2 ${current.color.includes('red') ? 'text-red-400' : current.color.includes('orange') ? 'text-orange-400' : 'text-green-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          <p className={`text-[10px] uppercase mb-1 font-bold ${current.color.includes('red') ? 'text-red-400' : current.color.includes('orange') ? 'text-orange-400' : 'text-green-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
             {current.zone}
+          </p>
+          <p className="text-[11px] text-zinc-400 mb-3">
+            {current.zone === 'Comfortable' ? 'Easy pace — can hold a conversation' :
+             current.zone === 'Challenging' ? 'Push it — breathing hard, can still talk in short phrases' :
+             current.zone === 'Full Send' ? 'All out — max effort, sprint' :
+             'Steady effort'}
           </p>
           <span className="text-4xl text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>
             {running ? (current.seconds - elapsed) : current.seconds}
@@ -1073,6 +1079,11 @@ function CardioCard({ card, isActive, colors, onComplete }: {
           <p className="text-[8px] text-zinc-600 mt-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>
             INTERVAL {currentIdx + 1}/{intervals.length}
           </p>
+          {currentIdx + 1 < intervals.length && (
+            <p className="text-[10px] text-zinc-600 mt-1">
+              Next: {intervals[currentIdx + 1].zone} ({intervals[currentIdx + 1].seconds}s)
+            </p>
+          )}
         </div>
       )}
 
