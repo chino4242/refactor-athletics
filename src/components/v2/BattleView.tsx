@@ -860,19 +860,20 @@ function LiftingCard({ card, isActive, colors, currentTheme, weight, reps, onWei
 
       {/* LOG ATTACK / REST button */}
       {isResting ? (
-        <div>
-          <button
-            onClick={onSkipRest}
-            className={`w-full py-4 border-2 ${colors.border} bg-zinc-800 text-center transition-colors hover:bg-zinc-700`}
-          >
-            <span className="text-[10px] text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-              ◷ REST {restSeconds}s — TAP TO SKIP
+        <button
+          onClick={onSkipRest}
+          className="w-full py-3 border-2 border-cyan-500/60 bg-cyan-950/40 text-center relative overflow-hidden"
+        >
+          <div className="absolute inset-0 bg-cyan-500/20 transition-all duration-1000 ease-linear" style={{ width: `${(restSeconds / restMax) * 100}%` }} />
+          <div className="relative z-10 flex flex-col items-center gap-0.5">
+            <span className="text-3xl font-bold text-cyan-300 tabular-nums">
+              {restSeconds}s
             </span>
-          </button>
-          <div className="h-1 bg-zinc-800 border border-zinc-700 mt-1">
-            <div className={`h-full ${colors.barFill} transition-all duration-1000`} style={{ width: `${((restMax - restSeconds) / restMax) * 100}%` }} />
+            <span className="text-[10px] text-cyan-400/80 tracking-wider" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              ◷ RESTING — TAP TO SKIP
+            </span>
           </div>
-        </div>
+        </button>
       ) : (
         <button
           onClick={(e) => { (e.currentTarget as HTMLElement).style.animation = 'shake 200ms'; setTimeout(() => { (e.currentTarget as HTMLElement).style.animation = ''; }, 200); onLogAttack(); }}
