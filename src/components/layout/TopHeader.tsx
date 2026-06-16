@@ -1,10 +1,27 @@
 "use client";
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTheme } from '@/context/ThemeContext';
 import { getV2Theme, getThemeIdentity } from '@/data/v2themes';
 import { signout } from '@/app/login/actions';
+
+function DailyXpPill({ colors }: { colors: any }) {
+  const [xp, setXp] = useState(0);
+  useEffect(() => {
+    (async () => {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const today = new Date().toLocaleDateString('en-CA');
+      const { data } = await supabase.from('workouts').select('xp').eq('date', today);
+      const total = (data || []).reduce((s: number, w: any) => s + (w.xp || 0), 0);
+      setXp(total);
+    })();
+  }, []);
+  if (xp === 0) return null;
+  return <span className={`text-[9px] ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>⚡{xp}</span>;
+}
 
 export default function TopHeader() {
     const pathname = usePathname();
@@ -26,11 +43,14 @@ export default function TopHeader() {
                         REFACTOR ATHLETICS
                     </span>
                 </div>
-                <Link href="/profile">
-                    <div className={`w-7 h-7 border-2 ${colors.primary} bg-zinc-900 flex items-center justify-center`}>
-                        <span className="text-[10px]">👤</span>
-                    </div>
-                </Link>
+                <div className="flex items-center gap-2">
+                    <DailyXpPill colors={colors} />
+                    <Link href="/profile">
+                        <div className={`w-7 h-7 border-2 ${colors.primary} bg-zinc-900 flex items-center justify-center`}>
+                            <span className="text-[10px]">👤</span>
+                        </div>
+                    </Link>
+                </div>
             </header>
 
             {/* Desktop nav */}

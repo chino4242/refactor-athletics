@@ -39,6 +39,8 @@ export default function NutritionInputV2({ userId }: Props) {
   const [pending, setPending] = useState<ParsedMeal | null>(null);
   const [mealTag, setMealTag] = useState(getAutoMealTag());
   const [expanded, setExpanded] = useState(false);
+  const [mealCount, setMealCount] = useState(0);
+  const [xpPop, setXpPop] = useState<number | null>(null);
   const [dailyTotals, setDailyTotals] = useState<{ protein: number; carbs: number; fat: number; calsIn: number; burned: number; meals: { tag: string; cals: number }[] }>({ protein: 0, carbs: 0, fat: 0, calsIn: 0, burned: 0, meals: [] });
   const [weeklyDots, setWeeklyDots] = useState<boolean[]>([]);
   const [targets, setTargets] = useState({ protein: 170, carbs: 250, fat: 65, calories: 2000 });
@@ -152,6 +154,11 @@ export default function NutritionInputV2({ userId }: Props) {
     ]);
     setPending(null);
     setText('');
+    setMealCount(prev => {
+      const newCount = prev + 1;
+      if (newCount >= 3) { setXpPop(50); setTimeout(() => setXpPop(null), 2000); }
+      return newCount;
+    });
     fetchProgress();
   };
 
@@ -208,6 +215,13 @@ export default function NutritionInputV2({ userId }: Props) {
               <button onClick={confirmLog} className={`w-8 h-7 border ${colors.primary} bg-zinc-900 text-green-400 text-xs flex items-center justify-center`}>✓</button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* XP pop */}
+      {xpPop && (
+        <div className="flex justify-center py-1">
+          <span className={`text-[11px] font-bold ${colors.secondary} animate-bounce`}>+{xpPop} XP 🎉</span>
         </div>
       )}
 
