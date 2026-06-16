@@ -133,16 +133,20 @@ export async function getPowerLevelV2(userId: string): Promise<PowerLevelV2Data>
     if (unit === 'xbw') {
       const targetLbs = Math.round(nextThreshold * userBw);
       const diff = targetLbs - Math.round(ex.bestValue || 0);
-      gap = diff > 0 ? `${diff} lbs` : 'Ready!';
+      gap = diff > 0 ? `${diff} lbs to ${targetLbs}` : 'Ready!';
     } else if (unit === 'sec' && catItem.standards.scoring === 'lower_is_better') {
       const diff = Math.round((ex.bestValue || 9999) - nextThreshold);
-      gap = diff > 0 ? `−${diff}s needed` : 'Ready!';
+      const targetSec = Math.round(nextThreshold);
+      const min = Math.floor(targetSec / 60);
+      const sec = targetSec % 60;
+      const targetStr = min > 0 ? `${min}:${String(sec).padStart(2, '0')}` : `${targetSec}s`;
+      gap = diff > 0 ? `need ${targetStr}` : 'Ready!';
     } else if (unit === 'sec') {
       const diff = Math.round(nextThreshold - (ex.bestValue || 0));
-      gap = diff > 0 ? `${diff}s more` : 'Ready!';
+      gap = diff > 0 ? `need ${Math.round(nextThreshold)}s` : 'Ready!';
     } else {
       const diff = Math.round(nextThreshold - (ex.bestValue || 0));
-      gap = diff > 0 ? `${diff} more` : 'Ready!';
+      gap = diff > 0 ? `need ${Math.round(nextThreshold)} reps` : 'Ready!';
     }
 
     closestRankUps.push({ name: ex.name, exerciseId: ex.exerciseId, currentLevel: ex.level, gap });
