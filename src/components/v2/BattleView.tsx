@@ -920,6 +920,25 @@ function LiftingCard({ card, isActive, colors, currentTheme, weight, reps, onWei
       {/* HP Bar (enemy health drains as you attack) */}
       <PixelBar current={card.completedSets} max={card.totalSets} inverted={combat} />
 
+      {/* Equipment variants */}
+      {(() => {
+        const baseId = card.catalogItem?.normalizes_to || card.exerciseId;
+        const variants = catalog.filter(c => (c.id === baseId || c.normalizes_to === baseId) && c.id !== card.exerciseId);
+        if (variants.length === 0) return null;
+        return (
+          <div className="flex gap-1 flex-wrap">
+            <span className={`text-[8px] px-1.5 py-0.5 border ${colors.primary} bg-zinc-800 text-zinc-200`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              {card.catalogItem?.required_equipment?.[0]?.toUpperCase()?.slice(0, 2) || 'BB'}
+            </span>
+            {variants.slice(0, 3).map(v => (
+              <button key={v.id} onClick={() => onSwap(v.id, v.name)} className="text-[8px] px-1.5 py-0.5 border border-zinc-700 bg-zinc-900 text-zinc-500 hover:text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                {v.required_equipment?.[0]?.toUpperCase()?.slice(0, 2) || 'DB'}
+              </button>
+            ))}
+          </div>
+        );
+      })()}
+
       {/* Rank nudge */}
       {card.catalogItem?.standards && (card.lastWeight || 0) > 0 && (() => {
         const standards = card.catalogItem.standards;
