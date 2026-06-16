@@ -4,6 +4,10 @@ function isNative(): boolean {
   return typeof window !== 'undefined' && !!(window as any).Capacitor?.isNativePlatform?.();
 }
 
+function isIOS(): boolean {
+  return typeof window !== 'undefined' && (window as any).Capacitor?.getPlatform?.() === 'ios';
+}
+
 let healthPlugin: any = null;
 
 function getHealth(): any {
@@ -16,7 +20,8 @@ function getHealth(): any {
 }
 
 // v8 data type strings (camelCase per definitions.ts)
-const READ_TYPES = ['steps', 'totalCalories', 'sleep', 'weight', 'heartRate', 'heartRateVariability', 'bodyFat', 'workouts'];
+const ANDROID_READ_TYPES = ['steps', 'totalCalories', 'sleep', 'weight', 'heartRate', 'heartRateVariability', 'bodyFat', 'workouts'];
+const IOS_READ_TYPES = ['steps', 'activeEnergyBurned', 'basalEnergyBurned', 'sleepAnalysis', 'weight', 'heartRate', 'heartRateVariability', 'bodyFatPercentage', 'workouts', 'restingHeartRate'];
 
 export async function isHealthAvailable(): Promise<boolean> {
   if (!isNative()) return false;
@@ -27,7 +32,8 @@ export async function requestPermissions(): Promise<boolean> {
   if (!isNative()) return false;
   try {
     const h = getHealth();
-    await h.requestAuthorization({ read: READ_TYPES as any, write: [] });
+    const types = isIOS() ? IOS_READ_TYPES : ANDROID_READ_TYPES;
+    await h.requestAuthorization({ read: types as any, write: [] });
     // On iOS, Apple NEVER reveals read authorization status (always returns empty/notDetermined).
     // We must always return true after requesting and attempt reads — HealthKit will return
     // empty data for denied types but real data for granted types. Gating on the return
@@ -65,11 +71,19 @@ export async function getCaloriesBurned(startDate: string, endDate: string): Pro
   if (!isNative()) return 0;
   try {
     const h = getHealth();
-    // Try total calories (BMR + active) first, fall back to active-only
+    if (isIOS()) {
+      // iOS: sum basal + active energy for total calories burned
+      const [basal, active] = await Promise.all([
+        h.queryAggregated({ dataType: 'basalEnergyBurned', startDate, endDate }).catch(() => ({ samples: [] })),
+        h.queryAggregated({ dataType: 'activeEnergyBurned', startDate, endDate }).catch(() => ({ samples: [] })),
+      ]);
+      const total = sumAggregated(basal) + sumAggregated(active);
+      return Math.round(total);
+    }
+    // Android: try total calories first, fall back to active-only
     const result = await h.queryAggregated({ dataType: 'totalCalories', startDate, endDate });
     const total = sumAggregated(result);
     if (total > 0) return Math.round(total);
-    // Fallback: active calories only
     const active = await h.queryAggregated({ dataType: 'calories', startDate, endDate });
     return Math.round(sumAggregated(active));
   } catch { return 0; }
@@ -79,9 +93,16 @@ export async function getSleep(startDate: string, endDate: string): Promise<numb
   if (!isNative()) return 0;
   try {
     const h = getHealth();
+    if (isIOS()) {
+      // iOS: HealthKit doesn't support aggregated sleep queries; use readSamples
+      const { samples } = await h.readSamples({ dataType: 'sleepAnalysis', startDate, endDate, limit: 100 });
+      if (!samples?.length) return 0;
+      // Sum duration of all sleep samples (value is minutes in Capgo plugin)
+      return Math.round(samples.reduce((s: number, sample: any) => s + (sample.value || 0), 0));
+    }
+    // Android: aggregated query works
     const result = await h.queryAggregated({ dataType: 'sleep', startDate, endDate });
     const val = sumAggregated(result);
-    // Plugin returns minutes on both platforms for sleep aggregation
     return Math.round(val);
   } catch { return 0; }
 }

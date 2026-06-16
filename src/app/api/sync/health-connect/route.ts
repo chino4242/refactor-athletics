@@ -59,12 +59,14 @@ export async function POST(request: NextRequest) {
     if (body.active_calories?.length) {
       const todayCals = body.active_calories.filter(isToday);
       const total = Math.round(todayCals.reduce((s: number, r: any) => s + (r.calories || 0), 0));
-      await supabase.from('nutrition_logs').delete().eq('user_id', user.id).eq('date', today).eq('macro_type', 'calories_burned');
-      await supabase.from('nutrition_logs').insert({
-        user_id: user.id, date: today, timestamp: ts,
-        macro_type: 'calories_burned', amount: total, xp: 10, label: 'Health Connect',
-      });
-      synced.push(`calories: ${total}`);
+      if (total > 0) {
+        await supabase.from('nutrition_logs').delete().eq('user_id', user.id).eq('date', today).eq('macro_type', 'calories_burned');
+        await supabase.from('nutrition_logs').insert({
+          user_id: user.id, date: today, timestamp: ts,
+          macro_type: 'calories_burned', amount: total, xp: 10, label: 'Health Connect',
+        });
+        synced.push(`calories: ${total}`);
+      }
     }
 
     // Hydration — liters to oz

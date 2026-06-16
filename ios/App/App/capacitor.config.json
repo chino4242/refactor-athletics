@@ -35,6 +35,9 @@
 		}
 	},
 	"packageClassList": [
+		"HapticsPlugin",
+		"PreferencesPlugin",
+		"PushNotificationsPlugin",
 		"SplashScreenPlugin",
 		"HealthPlugin"
 	]
