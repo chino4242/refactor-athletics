@@ -364,6 +364,7 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
   const [rankUpToast, setRankUpToast] = useState<string | null>(null);
   const [sessionXp, setSessionXp] = useState(0);
   const [xpPop, setXpPop] = useState<number | null>(null);
+  const [comboCount, setComboCount] = useState(0);
 
   const logAttack = async () => {
     const aliveCards = cards.filter(c => !c.defeated);
@@ -432,14 +433,14 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
       return { ...c, completedSets: newCompleted, defeated, poofing: defeated };
     }));
 
-    // Start rest (if not final set)
+    // Start rest (if not final set) — 500ms reward delay first
     const newCompleted = card.completedSets + 1;
+    setComboCount(prev => prev + 1);
     if (newCompleted < card.totalSets) {
       const isCompound = ['squat', 'bench', 'deadlift', 'press', 'row'].some(n => card.name.toLowerCase().includes(n));
       const duration = isCompound ? 90 : 60;
       setRestMax(duration);
-      setRestSeconds(duration);
-      setIsResting(true);
+      setTimeout(() => { setRestSeconds(duration); setIsResting(true); }, 500);
     } else {
       // Card defeated — check if all done
       setTimeout(() => {
@@ -595,17 +596,22 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
         style={{ imageRendering: 'pixelated', maskImage: 'linear-gradient(transparent 0%, black 30%, black 70%, transparent 100%)' }}
       />
 
-      {/* Top bar: XP counter + encounter counter */}
+      {/* Top bar: XP counter + combo + encounter counter */}
       <div className="px-4 pt-4 pb-2 flex items-center justify-between">
         <button onClick={() => setShowEndConfirm(true)} className="text-zinc-600 text-xs">✕</button>
         <div className="flex items-center gap-3">
           {sessionXp > 0 && (
             <span className={`text-[10px] ${colors.secondary} font-bold`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-              ⚡{sessionXp} XP
+              ⚡{sessionXp}
             </span>
           )}
-          <span className={`text-[8px] text-zinc-500 uppercase tracking-wider`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-            {cards.filter(c => c.defeated).length}/{cards.length} {currentTheme !== 'athlete' ? 'DEFEATED' : 'DONE'}
+          {comboCount >= 3 && (
+            <span className={`text-[9px] ${comboCount >= 10 ? 'text-red-400' : comboCount >= 5 ? 'text-amber-400' : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              🔥{comboCount}x
+            </span>
+          )}
+          <span className={`text-[8px] text-zinc-500 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            {aliveCards.length === 1 && cards.filter(c => c.defeated).length > 0 ? (currentTheme !== 'athlete' ? '⚔ FINAL' : 'LAST') : `${cards.filter(c => c.defeated).length}/${cards.length}`}
           </span>
         </div>
         <div className="w-4" />
@@ -635,7 +641,7 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
           <div
             key={card.id}
             className={`snap-center shrink-0 w-[calc(100vw-3rem)] max-w-sm transition-all duration-300 relative ${card.poofing ? 'opacity-0 scale-75' : 'opacity-100 scale-100'}`}
-            style={idx === activeIndex && !card.poofing ? { boxShadow: colors.glow } : undefined}
+            style={idx === activeIndex && !card.poofing ? { boxShadow: aliveCards.length === 1 && cards.filter(c => c.defeated).length > 0 ? colors.glow.replace('0.15', '0.3').replace('0.05', '0.1') : colors.glow } : undefined}
           >
             {/* Defeat burst */}
             {card.poofing && (
@@ -693,14 +699,25 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
         ))}
       </div>
 
-      {/* Dot indicators */}
-      <div className="flex justify-center gap-1.5 pb-6">
-        {aliveCards.map((_, idx) => (
-          <div
-            key={idx}
-            className={`w-2 h-2 border ${idx === activeIndex ? `${colors.primary} ${colors.barFill}` : 'border-zinc-700 bg-zinc-800'}`}
-          />
-        ))}
+      {/* Progress trail + dot indicators */}
+      <div className="pb-6 px-4">
+        {cards.filter(c => c.defeated).length > 0 && (
+          <div className="flex items-center gap-1 justify-center mb-2">
+            {cards.filter(c => c.defeated).map(c => (
+              <div key={c.id} className="w-5 h-5 border border-zinc-700 bg-zinc-800/50 flex items-center justify-center opacity-50">
+                <span className="text-[7px] text-green-500">✓</span>
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="flex justify-center gap-1.5">
+          {aliveCards.map((_, idx) => (
+            <div
+              key={idx}
+              className={`w-2 h-2 border ${idx === activeIndex ? `${colors.primary} ${colors.barFill}` : 'border-zinc-700 bg-zinc-800'} ${aliveCards.length === 1 ? 'animate-pulse' : ''}`}
+            />
+          ))}
+        </div>
       </div>
 
       {/* End confirmation */}
