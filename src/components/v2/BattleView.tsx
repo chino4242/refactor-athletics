@@ -362,6 +362,8 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
   const [subExerciseIdx, setSubExerciseIdx] = useState(0);
   const [showEndConfirm, setShowEndConfirm] = useState(false);
   const [rankUpToast, setRankUpToast] = useState<string | null>(null);
+  const [sessionXp, setSessionXp] = useState(0);
+  const [xpPop, setXpPop] = useState<number | null>(null);
 
   const logAttack = async () => {
     const aliveCards = cards.filter(c => !c.defeated);
@@ -394,6 +396,12 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
       if (result?.level > 0 && result?.level > (result?.previous_level || 0)) {
         setRankUpToast(`${card.name} → LV${result.level} ${result.rank_name || ''}`);
         setTimeout(() => setRankUpToast(null), 3000);
+      }
+      // Track session XP + floating number
+      if (result?.xp_earned > 0) {
+        setSessionXp(prev => prev + result.xp_earned);
+        setXpPop(result.xp_earned);
+        setTimeout(() => setXpPop(null), 900);
       }
     } catch {
       // Queue for retry on next open
@@ -574,6 +582,10 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
           25% { transform: translateX(-3px); }
           75% { transform: translateX(3px); }
         }
+        @keyframes xpFloat {
+          0% { transform: translateY(0); opacity: 1; }
+          100% { transform: translateY(-30px); opacity: 0; }
+        }
       `}</style>
       {/* Arena backdrop */}
       <img
@@ -583,12 +595,19 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
         style={{ imageRendering: 'pixelated', maskImage: 'linear-gradient(transparent 0%, black 30%, black 70%, transparent 100%)' }}
       />
 
-      {/* Top bar: encounter counter */}
+      {/* Top bar: XP counter + encounter counter */}
       <div className="px-4 pt-4 pb-2 flex items-center justify-between">
         <button onClick={() => setShowEndConfirm(true)} className="text-zinc-600 text-xs">✕</button>
-        <p className={`text-[8px] ${colors.headerText} uppercase tracking-wider`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-          {cards.filter(c => c.defeated).length}/{cards.length} {currentTheme !== 'athlete' ? 'DEFEATED' : 'COMPLETE'}
-        </p>
+        <div className="flex items-center gap-3">
+          {sessionXp > 0 && (
+            <span className={`text-[10px] ${colors.secondary} font-bold`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              ⚡{sessionXp} XP
+            </span>
+          )}
+          <span className={`text-[8px] text-zinc-500 uppercase tracking-wider`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            {cards.filter(c => c.defeated).length}/{cards.length} {currentTheme !== 'athlete' ? 'DEFEATED' : 'DONE'}
+          </span>
+        </div>
         <div className="w-4" />
       </div>
 
@@ -623,6 +642,14 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
               <div className="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none bg-black/40">
                 <span className="text-4xl" style={{ animation: 'defeatBurst 600ms ease-out forwards' }}>{getThemeIdentity(currentTheme).emoji}</span>
                 <span className="text-[12px] text-white mt-2 tracking-widest" style={{ fontFamily: "var(--font-pixel), monospace", animation: 'defeatBurst 600ms ease-out 100ms forwards', opacity: 0 }}>{currentTheme !== 'athlete' ? 'DEFEATED' : '✓ DONE'}</span>
+              </div>
+            )}
+            {/* Floating XP pop */}
+            {idx === activeIndex && xpPop && (
+              <div className="absolute top-2 right-3 z-10 pointer-events-none">
+                <span className={`text-sm font-bold ${colors.secondary}`} style={{ animation: 'xpFloat 800ms ease-out forwards', fontFamily: "var(--font-pixel), monospace" }}>
+                  +{xpPop}
+                </span>
               </div>
             )}
             {card.type === 'duration' ? (
