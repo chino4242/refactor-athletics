@@ -54,6 +54,7 @@ export default function OnboardingFlow({ userId }: Props) {
       is_onboarded: true,
       waiver_accepted_at: new Date().toISOString(),
       nutrition_targets: { protein: macros.protein, carbs: macros.carbs, fat: macros.fat, calories: macros.calories },
+      available_equipment: ['barbell', 'dumbbells', 'smith_machine', 'kettlebells', 'cable_machine'],
     } as any);
     await assignDefaultProgram(userId, path, []);
     router.refresh();
