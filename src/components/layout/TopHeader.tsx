@@ -23,6 +23,34 @@ function DailyXpPill({ colors }: { colors: any }) {
   return <span className={`text-[9px] ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>⚡{xp}</span>;
 }
 
+function LevelUpToast({ colors }: { colors: any }) {
+  const [levelUp, setLevelUp] = useState<{ from: number; to: number } | null>(null);
+  useEffect(() => {
+    (async () => {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.from('users').select('pending_level_up').eq('id', user.id).single();
+      if (data?.pending_level_up) {
+        setLevelUp(data.pending_level_up);
+        // Clear it
+        await supabase.from('users').update({ pending_level_up: null }).eq('id', user.id);
+      }
+    })();
+  }, []);
+  if (!levelUp) return null;
+  return (
+    <div className="fixed top-12 left-4 right-4 z-[60] flex justify-center animate-in slide-in-from-top-4">
+      <div className={`border-2 ${colors.primary} bg-zinc-900 px-5 py-3 text-center`} style={{ boxShadow: colors.glow }}>
+        <p className={`text-[12px] ${colors.secondary} font-bold`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          ⚡ LEVEL UP! LV{levelUp.from} → LV{levelUp.to}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function TopHeader() {
     const pathname = usePathname();
     const { currentTheme } = useTheme();
@@ -35,6 +63,7 @@ export default function TopHeader() {
 
     return (
         <>
+            <LevelUpToast colors={colors} />
             {/* Mobile HUD — themed banner */}
             <header className={`md:hidden flex items-center justify-between px-3 py-2 border-b-2 ${colors.border} bg-gradient-to-r from-zinc-900 via-zinc-900/80 to-zinc-900`}>
                 <div className="flex items-center gap-2">
