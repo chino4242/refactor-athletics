@@ -1071,7 +1071,11 @@ function DurationCard({ card, isActive, colors, currentTheme, onComplete }: {
 function CardioCard({ card, isActive, colors, onComplete }: {
   card: BattleCard; isActive: boolean; colors: any; onComplete: (seconds: number) => void;
 }) {
-  const intervals = card.intervals || [];
+  const [engineChoice, setEngineChoice] = useState<'hiit' | 'zone2' | null>(null);
+  const [zone2Duration, setZone2Duration] = useState(30);
+  const intervals = engineChoice === 'zone2'
+    ? [{ zone: 'Comfortable', seconds: zone2Duration * 60, color: 'bg-green-500', note: null }]
+    : (card.intervals || []);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const [running, setRunning] = useState(false);
@@ -1111,6 +1115,36 @@ function CardioCard({ card, isActive, colors, onComplete }: {
     }, 1000);
     return () => clearInterval(t);
   }, [running, currentIdx, current, intervals.length, totalDuration]);
+
+  // Engine choice: HIIT vs Zone 2
+  if (!engineChoice) {
+    return (
+      <div className={`border-2 ${isActive ? colors.primary : colors.border} bg-zinc-900 p-4 space-y-3`}>
+        <p className={`text-[10px] ${colors.headerText} text-center uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          PICK YOUR ENGINE
+        </p>
+        <button onClick={() => setEngineChoice('hiit')} className={`w-full p-3 border ${colors.border} bg-zinc-800 text-left hover:bg-zinc-700 transition-colors`}>
+          <span className="text-sm">🔥</span>
+          <span className="text-xs text-white ml-2 font-medium">HIIT Intervals</span>
+          <p className="text-[10px] text-zinc-500 ml-6">Programmed tread block</p>
+        </button>
+        <button onClick={() => setEngineChoice('zone2')} className={`w-full p-3 border ${colors.border} bg-zinc-800 text-left hover:bg-zinc-700 transition-colors`}>
+          <span className="text-sm">💚</span>
+          <span className="text-xs text-white ml-2 font-medium">Zone 2 Steady State</span>
+          <p className="text-[10px] text-zinc-500 ml-6">Easy pace — pick your duration</p>
+        </button>
+        {engineChoice === null && (
+          <div className="flex gap-2 justify-center">
+            {[20, 30, 45].map(m => (
+              <button key={m} onClick={() => { setZone2Duration(m); setEngineChoice('zone2'); }} className={`text-[9px] px-2 py-1 border border-zinc-700 bg-zinc-900 text-zinc-400`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                {m}min Z2
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   if (finished) {
     return (
