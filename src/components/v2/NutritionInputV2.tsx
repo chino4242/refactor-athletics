@@ -106,12 +106,16 @@ export default function NutritionInputV2({ userId }: Props) {
       });
       const data = await res.json();
       if (data.foods?.length) {
-        const totals = data.foods.reduce((acc: ParsedMeal, f: any) => ({
-          protein: acc.protein + (f.per100g?.protein * ((parseInt(f.servingSize) || 100) / 100) || 0),
-          carbs: acc.carbs + (f.per100g?.carbs * ((parseInt(f.servingSize) || 100) / 100) || 0),
-          fat: acc.fat + (f.per100g?.fat * ((parseInt(f.servingSize) || 100) / 100) || 0),
-          calories: acc.calories + (f.per100g?.calories * ((parseInt(f.servingSize) || 100) / 100) || 0),
-        }), { protein: 0, carbs: 0, fat: 0, calories: 0 });
+        const totals = data.foods.reduce((acc: ParsedMeal, f: any) => {
+          const servingGrams = parseInt(f.servingSize) || 100;
+          const factor = servingGrams / 100;
+          return {
+            protein: acc.protein + ((f.per100g?.protein || 0) * factor),
+            carbs: acc.carbs + ((f.per100g?.carbs || 0) * factor),
+            fat: acc.fat + ((f.per100g?.fat || 0) * factor),
+            calories: acc.calories + ((f.per100g?.calories || 0) * factor),
+          };
+        }, { protein: 0, carbs: 0, fat: 0, calories: 0 });
         setPending({ protein: Math.round(totals.protein), carbs: Math.round(totals.carbs), fat: Math.round(totals.fat), calories: Math.round(totals.calories) });
         setMealTag(getAutoMealTag());
       }

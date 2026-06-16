@@ -22,20 +22,24 @@ Return format: [{"name":"...","grams":0,"protein":0,"carbs":0,"fat":0,"calories"
     const match = content.match(/\[[\s\S]*\]/);
     if (!match) return NextResponse.json({ foods: [] });
     const parsed = JSON.parse(match[0]);
-    const foods = parsed.map((item: any) => ({
-      id: `ai_${item.name?.replace(/\s+/g, '_').toLowerCase()}`,
-      name: item.name,
-      source: 'usda' as const,
-      servingSize: item.grams ? `${item.grams}g` : '100g',
-      per100g: {
-        calories: Math.round((item.calories || 0) / ((item.grams || 100) / 100)),
-        protein: Math.round((item.protein || 0) / ((item.grams || 100) / 100) * 10) / 10,
-        carbs: Math.round((item.carbs || 0) / ((item.grams || 100) / 100) * 10) / 10,
-        fat: Math.round((item.fat || 0) / ((item.grams || 100) / 100) * 10) / 10,
-      },
-    }));
+    const foods = parsed.map((item: any) => {
+      const grams = Math.max(item.grams || 100, 1); // Floor at 1 to prevent division by zero
+      return {
+        id: `ai_${item.name?.replace(/\s+/g, '_').toLowerCase()}`,
+        name: item.name,
+        source: 'usda' as const,
+        servingSize: `${grams}g`,
+        per100g: {
+          calories: Math.round((item.calories || 0) / (grams / 100)),
+          protein: Math.round((item.protein || 0) / (grams / 100) * 10) / 10,
+          carbs: Math.round((item.carbs || 0) / (grams / 100) * 10) / 10,
+          fat: Math.round((item.fat || 0) / (grams / 100) * 10) / 10,
+        },
+      };
+    });
     return NextResponse.json({ foods });
-  } catch {
+  } catch (e) {
+    console.error('Food parse error:', e);
     return NextResponse.json({ foods: [] });
   }
 }
