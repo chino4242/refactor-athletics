@@ -9,6 +9,8 @@ import { signout } from '@/app/login/actions';
 
 function DailyXpPill({ colors }: { colors: any }) {
   const [xp, setXp] = useState(0);
+  const [showSheet, setShowSheet] = useState(false);
+  const [SheetComponent, setSheetComponent] = useState<any>(null);
   useEffect(() => {
     (async () => {
       const { createClient } = await import('@/utils/supabase/client');
@@ -19,8 +21,20 @@ function DailyXpPill({ colors }: { colors: any }) {
       setXp(total);
     })();
   }, []);
+  const handleOpen = async () => {
+    if (!SheetComponent) {
+      const mod = await import('@/components/v2/DailyXpSheet');
+      setSheetComponent(() => mod.default);
+    }
+    setShowSheet(true);
+  };
   if (xp === 0) return null;
-  return <span className={`text-[9px] ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>⚡{xp}</span>;
+  return (
+    <>
+      <button onClick={handleOpen} className={`text-[9px] ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>⚡{xp}</button>
+      {showSheet && SheetComponent && <SheetComponent isOpen={showSheet} onClose={() => setShowSheet(false)} />}
+    </>
+  );
 }
 
 function LevelUpToast({ colors }: { colors: any }) {
