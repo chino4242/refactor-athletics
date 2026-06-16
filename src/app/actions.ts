@@ -458,7 +458,17 @@ export async function logSyncedCardioAction(
         .select('id').eq('user_id', userId).eq('exercise_id', syncId).limit(1);
     if (existing?.length) return { status: 'skipped' };
 
-    const xp = durMin * 8;
+    // Tiered XP rate by activity type
+    const typeLower = type.toLowerCase();
+    const xpPerMin = typeLower === 'walk' ? 0
+        : ['run', 'row', 'bike', 'swim'].includes(typeLower) ? 8
+        : typeLower === 'strength' ? 6
+        : ['hike', 'cardio'].includes(typeLower) ? 5
+        : ['yoga', 'stretch', 'pilates'].includes(typeLower) ? 3
+        : 5; // default moderate
+    const xp = durMin * xpPerMin;
+    if (xp === 0) return { status: 'skipped' };
+
     const ts = Math.floor(Date.now() / 1000);
     await supabase.from('workouts').insert({
         user_id: userId,

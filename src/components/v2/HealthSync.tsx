@@ -92,7 +92,7 @@ export default function HealthSync({ userId, refreshKey, onSyncComplete }: Props
                 body: JSON.stringify({ exercises: [ex] }),
               });
             } else {
-              const type = isRun ? 'Run' : typeCode === 8 ? 'Bike' : typeCode === 74 ? 'Swim' : typeCode === 53 ? 'Row' : typeCode === 27 ? 'Hike' : typeCode === 79 ? 'Strength' : 'Cardio';
+              const type = isRun ? 'Run' : typeCode === 8 ? 'Bike' : typeCode === 74 ? 'Swim' : typeCode === 53 ? 'Row' : typeCode === 27 ? 'Hike' : typeCode === 79 ? 'Strength' : typeCode === 9 || typeCode === 64 ? 'Yoga' : typeCode === 37 || typeCode === 91 ? 'Walk' : 'Cardio';
               await logSyncedCardioAction(userId, type, dur, exDate);
             }
           }
