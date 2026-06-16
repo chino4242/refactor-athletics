@@ -36,6 +36,7 @@ interface BattleCard {
   section?: string;
   catalogItem?: CatalogItem;
   lastWeight?: number;
+  threatLevel?: 'guardian' | 'trickster' | 'titan' | 'spark';
 }
 
 interface SetLog {
@@ -248,7 +249,27 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
             }];
           });
 
-        setCards(battleCards);
+        // Assign threat levels (combat mode only)
+        const threats: ('guardian' | 'trickster' | 'titan' | 'spark')[] = ['guardian', 'trickster', 'titan', 'spark'];
+        const cardsWithThreats = battleCards.map(c => ({
+          ...c,
+          threatLevel: currentTheme !== 'athlete' ? threats[Math.floor(Math.random() * threats.length)] : undefined,
+        }));
+        setCards(cardsWithThreats);
+
+        // Generate session bounties (3 random micro-achievements)
+        if (currentTheme !== 'athlete' && battleCards.length > 0) {
+          const bountyPool = [
+            { id: 'combo5', label: '🔥 Reach a 5x combo' },
+            { id: 'combo10', label: '🔥 Reach a 10x combo' },
+            { id: 'perfect', label: '⚡ Land a Perfect Strike' },
+            { id: 'noskip', label: '⏱ Complete without skipping rest' },
+            { id: 'allsets', label: '💪 Finish every exercise' },
+            { id: 'fast', label: '⚡ Defeat an enemy in under 3 min' },
+          ];
+          const shuffled = bountyPool.sort(() => Math.random() - 0.5).slice(0, 3);
+          setBounties(shuffled.map(b => ({ ...b, done: false })));
+        }
         
         // Restore saved session (resume battle) — skip for single exercise mode
         try {
@@ -365,6 +386,10 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
   const [sessionXp, setSessionXp] = useState(0);
   const [xpPop, setXpPop] = useState<number | null>(null);
   const [comboCount, setComboCount] = useState(0);
+  const [perfectStrike, setPerfectStrike] = useState(false);
+  const [restEvent, setRestEvent] = useState<string | null>(null);
+  const [bounties, setBounties] = useState<{ id: string; label: string; done: boolean }[]>([]);
+  const [bountyPop, setBountyPop] = useState<string | null>(null);
 
   const logAttack = async () => {
     const aliveCards = cards.filter(c => !c.defeated);
@@ -404,6 +429,17 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
         setXpPop(result.xp_earned);
         setTimeout(() => setXpPop(null), 900);
       }
+      // Perfect Strike (15% chance, 30% if beat last weight)
+      if (currentTheme !== 'athlete') {
+        const beatLastWeight = w > (card.lastWeight || 0);
+        const critChance = beatLastWeight ? 0.3 : 0.15;
+        if (Math.random() < critChance) {
+          setPerfectStrike(true);
+          setTimeout(() => setPerfectStrike(false), 1500);
+          // Check bounty
+          setBounties(prev => prev.map(b => b.id === 'perfect' && !b.done ? { ...b, done: true } : b));
+        }
+      }
     } catch {
       // Queue for retry on next open
       const pending = JSON.parse(localStorage.getItem('pending_sets') || '[]');
@@ -435,12 +471,31 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
 
     // Start rest (if not final set) — 500ms reward delay first
     const newCompleted = card.completedSets + 1;
-    setComboCount(prev => prev + 1);
+    setComboCount(prev => {
+      const next = prev + 1;
+      if (next === 5) setBounties(b => b.map(x => x.id === 'combo5' && !x.done ? { ...x, done: true } : x));
+      if (next === 10) setBounties(b => b.map(x => x.id === 'combo10' && !x.done ? { ...x, done: true } : x));
+      return next;
+    });
     if (newCompleted < card.totalSets) {
       const isCompound = ['squat', 'bench', 'deadlift', 'press', 'row'].some(n => card.name.toLowerCase().includes(n));
       const duration = isCompound ? 90 : 60;
       setRestMax(duration);
-      setTimeout(() => { setRestSeconds(duration); setIsResting(true); }, 500);
+      setTimeout(() => {
+        setRestSeconds(duration); setIsResting(true);
+        // Rest mini-event (30% chance, combat mode only)
+        if (currentTheme !== 'athlete' && Math.random() < 0.3) {
+          const events = [
+            `Think you can do that again?`,
+            `Your best today: ${w} lbs × ${r} reps`,
+            `${comboCount}x combo — keep it going`,
+            `⚡ ${aliveCards.length - 1} enemies remain`,
+            `You've earned ⚡${sessionXp} XP so far`,
+            `Breathe. Then strike harder.`,
+          ];
+          setRestEvent(events[Math.floor(Math.random() * events.length)]);
+        } else { setRestEvent(null); }
+      }, 500);
     } else {
       // Card defeated — check if all done
       setTimeout(() => {
@@ -630,6 +685,17 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
         }} />
       </div>
 
+      {/* Session Bounties */}
+      {bounties.length > 0 && (
+        <div className="flex items-center justify-center gap-2 mb-2 px-4">
+          {bounties.map(b => (
+            <span key={b.id} className={`text-[9px] ${b.done ? 'text-amber-400' : 'text-zinc-600'}`} title={b.label}>
+              {b.done ? '🏆' : '🔒'}
+            </span>
+          ))}
+        </div>
+      )}
+
       {/* Carousel */}
       <div
         ref={carouselRef}
@@ -653,8 +719,8 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
             {/* Floating XP pop */}
             {idx === activeIndex && xpPop && (
               <div className="absolute top-2 right-3 z-10 pointer-events-none">
-                <span className={`text-sm font-bold ${colors.secondary}`} style={{ animation: 'xpFloat 800ms ease-out forwards', fontFamily: "var(--font-pixel), monospace" }}>
-                  +{xpPop}
+                <span className={`text-sm font-bold ${perfectStrike ? 'text-amber-300 text-lg' : colors.secondary}`} style={{ animation: 'xpFloat 800ms ease-out forwards', fontFamily: "var(--font-pixel), monospace" }}>
+                  {perfectStrike ? `⚡ +${xpPop} PERFECT` : `+${xpPop}`}
                 </span>
               </div>
             )}
@@ -693,6 +759,7 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
                 onSwap={(newExId, newName) => {
                   setCards(prev => prev.map(c => c.id === card.id ? { ...c, exerciseId: newExId, name: newName } : c));
                 }}
+                restEvent={idx === activeIndex ? restEvent : null}
               />
             )}
           </div>
@@ -749,11 +816,12 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
 }
 
 // --- Lifting Card ---
-function LiftingCard({ card, isActive, colors, currentTheme, weight, reps, onWeightChange, onRepsChange, isResting, restSeconds, restMax, onLogAttack, onSkipRest, subExerciseIdx, catalog, onSwap }: {
+function LiftingCard({ card, isActive, colors, currentTheme, weight, reps, onWeightChange, onRepsChange, isResting, restSeconds, restMax, onLogAttack, onSkipRest, subExerciseIdx, catalog, onSwap, restEvent }: {
   card: BattleCard; isActive: boolean; colors: any; currentTheme: string;
   weight: string; reps: string; onWeightChange: (v: string) => void; onRepsChange: (v: string) => void;
   isResting: boolean; restSeconds: number; restMax: number; onLogAttack: () => void; onSkipRest: () => void;
   subExerciseIdx: number; catalog: CatalogItem[]; onSwap: (exId: string, name: string) => void;
+  restEvent?: string | null;
 }) {
   const isCompound = ['squat', 'bench', 'deadlift', 'press', 'row', 'clean', 'snatch'].some(n => card.name.toLowerCase().includes(n));
   const isSuperset = card.exercises && card.exercises.length > 1;
@@ -872,6 +940,7 @@ function LiftingCard({ card, isActive, colors, currentTheme, weight, reps, onWei
             <span className="text-[10px] text-cyan-400/80 tracking-wider" style={{ fontFamily: "var(--font-pixel), monospace" }}>
               ◷ RESTING — TAP TO SKIP
             </span>
+            {restEvent && <p className="text-[10px] text-zinc-500 mt-1 italic">{restEvent}</p>}
           </div>
         </button>
       ) : (
