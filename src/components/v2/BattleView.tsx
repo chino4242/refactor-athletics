@@ -29,7 +29,7 @@ interface BattleCard {
   completedSets: number;
   targetReps: number;
   targetSeconds?: number;
-  intervals?: { zone: string; seconds: number; color: string }[];
+  intervals?: { zone: string; seconds: number; color: string; note?: string }[];
   exercises?: { name: string; exerciseId: string; targetReps: number }[];
   defeated: boolean;
   poofing: boolean;
@@ -172,7 +172,7 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
                 completedSets: 0,
                 targetReps: 0,
                 targetSeconds: (b.intervals || []).reduce((s: number, i: any) => s + (i.seconds || 0), 0),
-                intervals: (b.intervals || []).map((i: any) => ({ zone: i.zone || 'Go', seconds: i.seconds || 30, color: i.color || 'bg-green-500' })),
+                intervals: (b.intervals || []).map((i: any) => ({ zone: i.zone || 'Go', seconds: i.seconds || 30, color: i.color || 'bg-green-500', note: i.note || null })),
                 defeated: false,
                 poofing: false,
                 section: b.section,
@@ -1018,7 +1018,14 @@ function CardioCard({ card, isActive, colors, onComplete }: {
     if (!running || !current) return;
     const t = setInterval(() => {
       setElapsed(prev => {
+        // 3-second countdown beep
+        if (prev + 1 === current.seconds - 3) {
+          import('@/utils/audio').then(m => m.playCountdownBeep(600, 0.1));
+        }
         if (prev + 1 >= current.seconds) {
+          // Beep on zone transition
+          import('@/utils/audio').then(m => m.playCountdownBeep(1000, 0.15));
+          import('@/utils/haptics').then(m => m.haptic('medium'));
           if (currentIdx + 1 < intervals.length) {
             setCurrentIdx(i => i + 1);
             return 0;
@@ -1073,6 +1080,9 @@ function CardioCard({ card, isActive, colors, onComplete }: {
              current.zone === 'Full Send' ? 'All out — max effort, sprint' :
              'Steady effort'}
           </p>
+          {current.note && (
+            <p className="text-[11px] text-amber-400 mb-2 font-medium">📐 {current.note}</p>
+          )}
           <span className="text-4xl text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>
             {running ? (current.seconds - elapsed) : current.seconds}
           </span>
