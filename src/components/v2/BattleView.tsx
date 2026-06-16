@@ -591,25 +591,62 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
 
   if (victory) {
     return (
-      <div className="min-h-screen bg-[#0a0a12] flex flex-col items-center justify-center px-6">
-        <p className={`text-[12px] ${colors.headerText} mb-6 tracking-widest`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-          ⚔ VICTORY ⚔
+      <div className="min-h-screen bg-[#0a0a12] flex flex-col items-center justify-center px-4 py-8">
+        <p className={`text-[14px] ${colors.secondary} mb-4 tracking-widest`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          {currentTheme !== 'athlete' ? '⚔ VICTORY ⚔' : '✓ WORKOUT COMPLETE'}
         </p>
-        <div className={`w-full max-w-sm border-2 ${colors.primary} bg-zinc-900 p-6 space-y-4`}>
-          <div className="text-center space-y-2">
-            <p className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>{victory.exercisesDefeated} ENEMIES DEFEATED</p>
-            <p className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>⏱ {victory.duration}</p>
-            <p className={`text-[10px] ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>★ {victory.totalXp} XP EARNED</p>
+
+        <div className={`w-full max-w-sm border-2 ${colors.primary} bg-zinc-900 p-5 space-y-4`} style={{ boxShadow: colors.glow }}>
+          {/* Hero stats */}
+          <div className="grid grid-cols-3 gap-3 text-center">
+            <div>
+              <p className="text-xl text-white font-bold">{victory.totalXp}</p>
+              <p className="text-[9px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>XP</p>
+            </div>
+            <div>
+              <p className="text-xl text-white font-bold">{victory.exercisesDefeated}</p>
+              <p className="text-[9px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>{currentTheme !== 'athlete' ? 'DEFEATED' : 'DONE'}</p>
+            </div>
+            <div>
+              <p className="text-xl text-white font-bold">{victory.duration}</p>
+              <p className="text-[9px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>TIME</p>
+            </div>
           </div>
+
+          {/* Rank-ups */}
           {victory.rankUps.length > 0 && (
             <div className="border-t border-zinc-800 pt-3 space-y-1">
-              <p className="text-[8px] text-zinc-500 uppercase" style={{ fontFamily: "var(--font-pixel), monospace" }}>RANKS EARNED</p>
+              <p className={`text-[10px] ${colors.secondary} uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>⚡ RANKS EARNED</p>
               {victory.rankUps.map((r, i) => (
-                <p key={i} className="text-xs text-zinc-200">{r.name} LV{r.from}→LV{r.to}</p>
+                <div key={i} className="flex items-center justify-between">
+                  <span className="text-xs text-zinc-200">{r.name}</span>
+                  <span className={`text-[10px] ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>LV{r.from}→LV{r.to}</span>
+                </div>
               ))}
             </div>
           )}
+
+          {/* Session stats */}
+          <div className="border-t border-zinc-800 pt-3 grid grid-cols-2 gap-2">
+            {comboCount >= 3 && (
+              <div className="flex items-center gap-1">
+                <span className="text-[10px] text-amber-400">🔥</span>
+                <span className="text-[10px] text-zinc-300">{comboCount}x combo</span>
+              </div>
+            )}
+            {bounties.filter(b => b.done).length > 0 && (
+              <div className="flex items-center gap-1">
+                <span className="text-[10px] text-amber-400">🏆</span>
+                <span className="text-[10px] text-zinc-300">{bounties.filter(b => b.done).length} bounties</span>
+              </div>
+            )}
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] text-zinc-500">📊</span>
+              <span className="text-[10px] text-zinc-300">{cards.reduce((s, c) => s + c.completedSets, 0)} total sets</span>
+            </div>
+          </div>
         </div>
+
         <button
           onClick={onComplete}
           className={`mt-6 px-6 py-3 border-2 ${colors.primary} bg-zinc-800 text-white hover:bg-zinc-700 transition-colors`}
