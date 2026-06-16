@@ -16,6 +16,7 @@ interface PowerLevelScreenProps {
 interface PowerLevelData {
   powerLevel: number;
   maxPossible: number;
+  exercises: { name: string; exerciseId: string; level: number; expired: boolean }[];
   expiringExercises: { name: string; level: number; daysLeft: number }[];
   closestRankUps: { name: string; exerciseId: string; currentLevel: number; gap: string }[];
   recentPRs: { name: string; value: string; date: string }[];
@@ -107,6 +108,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
   const [playerLevel, setPlayerLevel] = useState<{ level: number; xp: number; xpForNext: number } | null>(null);
+  const [showXray, setShowXray] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -116,6 +118,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
         setData({
           powerLevel: result.powerLevel,
           maxPossible: result.maxPossible,
+          exercises: result.exercises.map(ex => ({ name: ex.name, exerciseId: ex.exerciseId, level: ex.level, expired: ex.expired })),
           expiringExercises: result.expiringExercises.map(ex => ({
             name: ex.name,
             level: ex.level,
@@ -125,7 +128,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
           recentPRs: result.recentPRs,
         });
       } catch {
-        setData({ powerLevel: 0, maxPossible: 60, expiringExercises: [], closestRankUps: [], recentPRs: [] });
+        setData({ powerLevel: 0, maxPossible: 60, exercises: [], expiringExercises: [], closestRankUps: [], recentPRs: [] });
       }
       // Fetch player level
       try {
@@ -170,26 +173,51 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
       {/* Nutrition summary */}
       <NutritionBar userId={userId} colors={colors} refreshKey={refreshKey} />
 
-      {/* Hero Power Level */}
+      {/* Hero Power Level — tap for X-ray */}
       <PixelBox highlight className="p-5 mb-4">
-        <div className="text-center">
-          <p className={`text-[10px] ${colors.headerText} mb-2 uppercase tracking-wider`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-            POWER LV
-          </p>
-          <span className="text-5xl text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-            {data.powerLevel}
-          </span>
-          <p className={`text-[10px] mt-2 uppercase tracking-widest ${tier.color}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-            ▸ {tier.name} ◂
-          </p>
-        </div>
-        <div className="mt-4">
-          <div className="flex justify-between text-[8px] text-zinc-500 mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-            <span>PWR</span>
-            <span>{data.powerLevel}/{data.maxPossible}</span>
+        <button onClick={() => setShowXray(!showXray)} className="w-full text-center">
+          {!showXray ? (
+            <>
+              <p className={`text-[10px] ${colors.headerText} mb-2 uppercase tracking-wider`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                POWER LV
+              </p>
+              <span className="text-5xl text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                {data.powerLevel}
+              </span>
+              <p className={`text-[10px] mt-2 uppercase tracking-widest ${tier.color}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                ▸ {tier.name} ◂
+              </p>
+            </>
+          ) : (
+            <>
+              <p className={`text-[10px] ${colors.headerText} mb-3 uppercase tracking-wider`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                RANKED EXERCISES
+              </p>
+              <div className="grid grid-cols-4 gap-2">
+                {data.exercises.map(ex => (
+                  <div key={ex.exerciseId} className="flex flex-col items-center gap-1">
+                    <div className={`w-8 h-8 border ${ex.level > 0 && !ex.expired ? colors.primary : 'border-zinc-700'} ${ex.expired ? 'opacity-40' : ''} flex items-center justify-center bg-zinc-800`}>
+                      <img src={`/themes/${currentTheme}/v2/level${ex.level}.png`} alt="" className="w-6 h-6" style={{ imageRendering: 'pixelated' }} />
+                    </div>
+                    <span className={`text-[8px] ${ex.level > 0 && !ex.expired ? 'text-zinc-300' : 'text-zinc-600'} truncate max-w-[60px]`}>
+                      {ex.name.split(' ').slice(0, 2).join(' ')}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[8px] text-zinc-600 mt-3">tap to close</p>
+            </>
+          )}
+        </button>
+        {!showXray && (
+          <div className="mt-4">
+            <div className="flex justify-between text-[8px] text-zinc-500 mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              <span>PWR</span>
+              <span>{data.powerLevel}/{data.maxPossible}</span>
+            </div>
+            <PixelBar current={data.powerLevel} max={data.maxPossible} />
           </div>
-          <PixelBar current={data.powerLevel} max={data.maxPossible} />
-        </div>
+        )}
       </PixelBox>
 
       {/* Player Level */}
