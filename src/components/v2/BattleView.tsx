@@ -390,6 +390,18 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
   const [restEvent, setRestEvent] = useState<string | null>(null);
   const [bounties, setBounties] = useState<{ id: string; label: string; done: boolean }[]>([]);
   const [bountyPop, setBountyPop] = useState<string | null>(null);
+  const [historyExercise, setHistoryExercise] = useState<string | null>(null);
+  const [historyData, setHistoryData] = useState<any[]>([]);
+
+  const showExerciseHistory = async (exerciseId: string) => {
+    const { createClient } = await import('@/utils/supabase/client');
+    const supabase = createClient();
+    const { data } = await supabase.from('workouts').select('date, sets, raw_value, level')
+      .eq('user_id', userId).eq('exercise_id', exerciseId)
+      .order('timestamp', { ascending: false }).limit(5);
+    setHistoryData(data || []);
+    setHistoryExercise(exerciseId);
+  };
 
   const logAttack = async () => {
     const aliveCards = cards.filter(c => !c.defeated);
@@ -760,6 +772,7 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
                   setCards(prev => prev.map(c => c.id === card.id ? { ...c, exerciseId: newExId, name: newName } : c));
                 }}
                 restEvent={idx === activeIndex ? restEvent : null}
+                onShowHistory={showExerciseHistory}
               />
             )}
           </div>
@@ -811,17 +824,46 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
           </div>
         </div>
       )}
+
+      {/* Exercise History Sheet */}
+      {historyExercise && (
+        <div className="fixed inset-0 z-50" onClick={() => setHistoryExercise(null)}>
+          <div className="absolute inset-0 bg-black/60" />
+          <div className="absolute bottom-0 left-0 right-0 max-h-[40vh] bg-zinc-900 border-t-2 border-zinc-700 p-4 overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <p className={`text-[10px] ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              HISTORY — {historyExercise.replace(/_/g, ' ')}
+            </p>
+            {historyData.length === 0 ? (
+              <p className="text-xs text-zinc-500">No previous sessions</p>
+            ) : (
+              <div className="space-y-2">
+                {historyData.map((h, i) => (
+                  <div key={i} className={`flex items-center justify-between border ${colors.border} bg-zinc-800/50 px-3 py-2`}>
+                    <div>
+                      <p className="text-[11px] text-zinc-300">{h.date}</p>
+                      <p className="text-[10px] text-zinc-500">
+                        {h.sets?.length ? h.sets.map((s: any) => `${s.weight}×${s.reps}`).join(', ') : `1RM: ${Math.round(h.raw_value || 0)}`}
+                      </p>
+                    </div>
+                    {h.level > 0 && <span className={`text-[9px] ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>LV{h.level}</span>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 // --- Lifting Card ---
-function LiftingCard({ card, isActive, colors, currentTheme, weight, reps, onWeightChange, onRepsChange, isResting, restSeconds, restMax, onLogAttack, onSkipRest, subExerciseIdx, catalog, onSwap, restEvent }: {
+function LiftingCard({ card, isActive, colors, currentTheme, weight, reps, onWeightChange, onRepsChange, isResting, restSeconds, restMax, onLogAttack, onSkipRest, subExerciseIdx, catalog, onSwap, restEvent, onShowHistory }: {
   card: BattleCard; isActive: boolean; colors: any; currentTheme: string;
   weight: string; reps: string; onWeightChange: (v: string) => void; onRepsChange: (v: string) => void;
   isResting: boolean; restSeconds: number; restMax: number; onLogAttack: () => void; onSkipRest: () => void;
   subExerciseIdx: number; catalog: CatalogItem[]; onSwap: (exId: string, name: string) => void;
-  restEvent?: string | null;
+  restEvent?: string | null; onShowHistory: (exId: string) => void;
 }) {
   const isCompound = ['squat', 'bench', 'deadlift', 'press', 'row', 'clean', 'snatch'].some(n => card.name.toLowerCase().includes(n));
   const isSuperset = card.exercises && card.exercises.length > 1;
@@ -864,10 +906,10 @@ function LiftingCard({ card, isActive, colors, currentTheme, weight, reps, onWei
           </div>
         ) : (
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+            <button onClick={() => onShowHistory(card.exerciseId)} className="flex items-center gap-2">
               <img src={`/themes/${currentTheme}/v2/level${card.catalogItem?.standards ? '1' : '0'}.png`} alt="" className="w-5 h-5" style={{ imageRendering: 'pixelated' }} />
-              <p className="text-xs text-white font-medium truncate max-w-[200px]">{displayName}</p>
-            </div>
+              <p className="text-xs text-white font-medium truncate max-w-[200px] underline decoration-zinc-700">{displayName}</p>
+            </button>
             <span className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
               {card.completedSets + 1 === card.totalSets ? (combat ? '⚡ FINAL STRIKE' : '⚡ LAST SET') : combat ? `STRIKE ${card.completedSets + 1}/${card.totalSets}` : `SET ${card.completedSets + 1}/${card.totalSets}`}
             </span>
