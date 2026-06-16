@@ -361,6 +361,7 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
   // Track which sub-exercise we're on for supersets
   const [subExerciseIdx, setSubExerciseIdx] = useState(0);
   const [showEndConfirm, setShowEndConfirm] = useState(false);
+  const [rankUpToast, setRankUpToast] = useState<string | null>(null);
 
   const logAttack = async () => {
     const aliveCards = cards.filter(c => !c.defeated);
@@ -381,7 +382,7 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
 
     // Log to database (with retry on failure)
     try {
-      await logTrainingAction(
+      const result: any = await logTrainingAction(
         userId,
         exerciseId,
         userBodyweight,
@@ -389,6 +390,11 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
         [{ weight: w, reps: r }],
         sessionId.current,
       );
+      // Show rank-up celebration if level increased
+      if (result?.level > 0 && result?.level > (result?.previous_level || 0)) {
+        setRankUpToast(`${card.name} → LV${result.level} ${result.rank_name || ''}`);
+        setTimeout(() => setRankUpToast(null), 3000);
+      }
     } catch {
       // Queue for retry on next open
       const pending = JSON.parse(localStorage.getItem('pending_sets') || '[]');
@@ -680,6 +686,17 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
               <button onClick={() => setShowEndConfirm(false)} className={`flex-1 py-3 border ${colors.border} bg-zinc-800 text-zinc-300 text-[9px]`} style={{ fontFamily: "var(--font-pixel), monospace" }}>KEEP GOING</button>
               <button onClick={onComplete} className="flex-1 py-3 border border-red-800 bg-zinc-800 text-red-400 text-[9px]" style={{ fontFamily: "var(--font-pixel), monospace" }}>END</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Rank-up toast */}
+      {rankUpToast && (
+        <div className="fixed top-16 left-4 right-4 z-50 flex justify-center animate-in slide-in-from-top-4">
+          <div className={`border-2 ${colors.primary} bg-zinc-900 px-4 py-3 text-center`} style={{ boxShadow: colors.glow }}>
+            <p className={`text-[10px] ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              ⚡ RANK UP! {rankUpToast}
+            </p>
           </div>
         </div>
       )}
