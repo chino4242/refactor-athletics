@@ -106,6 +106,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
   const [data, setData] = useState<PowerLevelData | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [playerLevel, setPlayerLevel] = useState<{ level: number; xp: number; xpForNext: number } | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -126,6 +127,17 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
       } catch {
         setData({ powerLevel: 0, maxPossible: 60, expiringExercises: [], closestRankUps: [], recentPRs: [] });
       }
+      // Fetch player level
+      try {
+        const { createClient } = await import('@/utils/supabase/client');
+        const supabase = createClient();
+        const { data: user } = await supabase.from('users').select('career_xp').eq('id', userId).single();
+        const totalXp = user?.career_xp || 0;
+        let level = 1; let xpNeeded = 1000;
+        let xpAccum = 0;
+        while (xpAccum + xpNeeded <= totalXp) { xpAccum += xpNeeded; level++; xpNeeded = Math.round(1000 * Math.pow(1.08, level - 1)); }
+        setPlayerLevel({ level, xp: totalXp - xpAccum, xpForNext: xpNeeded });
+      } catch {}
       setLoading(false);
     })();
   }, [userId, refreshKey]);
@@ -179,6 +191,17 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
           <PixelBar current={data.powerLevel} max={data.maxPossible} />
         </div>
       </PixelBox>
+
+      {/* Player Level */}
+      {playerLevel && (
+        <div className="flex items-center justify-center gap-3 mb-4">
+          <span className={`text-[12px] ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>LV {playerLevel.level}</span>
+          <div className="w-[120px] h-[6px] bg-white/10 rounded-full overflow-hidden">
+            <div className={`h-full ${colors.barFill} opacity-60 rounded-full`} style={{ width: `${(playerLevel.xp / playerLevel.xpForNext) * 100}%` }} />
+          </div>
+          <span className="text-[11px] text-white/60">{playerLevel.xp.toLocaleString()} / {playerLevel.xpForNext.toLocaleString()}</span>
+        </div>
+      )}
 
       {/* Expiring exercises */}
       {data.expiringExercises.length > 0 && (
