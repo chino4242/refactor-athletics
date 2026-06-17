@@ -90,7 +90,8 @@ export async function GET() {
 
             schedule.push({
                 day,
-                title: resolved.programName,
+                title: `${day.charAt(0).toUpperCase() + day.slice(1)} - ${resolved.dayType || 'training'}`,
+                programName: resolved.programName,
                 order: DAY_ORDER[day] ?? 99,
                 xp,
                 type: resolved.dayType || 'training',

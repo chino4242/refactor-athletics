@@ -100,6 +100,8 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
             exercises: (todayProgram.exercises || []).slice(0, 5),
             estimatedXp: todayProgram.xp || (todayProgram.exercises?.length || 3) * 50,
           });
+        } else {
+          setWorkout(null);
         }
 
         // Fetch this week's workout completions
