@@ -1,0 +1,85 @@
+# Sprint Status — Refactor Athletics
+# Last updated: 2026-06-17
+#
+# STATUS DEFINITIONS:
+#   done       — Complete and verified
+#   in-progress — Active development
+#   open       — Planned, not started
+#   blocked    — Waiting on dependency
+#   optional   — Nice-to-have, not committed
+
+current_epic: 4
+last_updated: "2026-06-17"
+
+development_status:
+  # ═══════════════════════════════════════════
+  # EPIC 1: V2 Core Rewrite
+  # ═══════════════════════════════════════════
+  epic-1: done
+  1-1-three-screen-app: done          # Power Level, Arena, Train screens
+  1-2-snes-pixel-aesthetic: done      # Pixel fonts, PixelBox, theme colors
+  1-3-battle-mode-engine: done        # Horizontal carousel, HP bars, attacks, crits, combos
+  1-4-onboarding-flow: done           # 5-step wizard (waiver, theme, info, path, wearable)
+  1-5-program-resolver: done          # Shared resolver, variant rotation, equipment swaps
+  1-6-profile-reskin: done            # Pixel aesthetic, theme picker, account management
+  epic-1-retrospective: done
+
+  # ═══════════════════════════════════════════
+  # EPIC 2: Arena & Social
+  # ═══════════════════════════════════════════
+  epic-2: in-progress                 # Bounties working, campaigns have bugs fixed, duels functional
+  2-1-weekly-bounties: done           # Generation, progress, difficulty, sweep bonus
+  2-2-guild-quests: done              # Group challenges, progress tracking
+  2-3-75-day-campaigns: in-progress   # Core working, dead campaign display fixed, evaluation bugs fixed
+  2-4-duels: done                     # Create, accept, track
+  2-5-party-features: done            # Status strip, ticker, leaderboard, party power
+  epic-2-retrospective: open
+
+  # ═══════════════════════════════════════════
+  # EPIC 3: Health Sync & Native
+  # ═══════════════════════════════════════════
+  epic-3: in-progress                 # Core working, iOS entitlement fix in progress, Android needs rebuild
+  3-1-android-health-connect: done    # Custom Kotlin plugin, steps/calories/sleep/weight/HRV/workouts
+  3-2-ios-healthkit: in-progress      # Plugin integrated, provisioning profile regenerated, awaiting TestFlight upload
+  3-3-exercise-auto-sync: done        # Type detection (iOS strings + Android codes), tiered XP, overlap detection
+  3-4-sync-reliability: done          # Permission revocation detection, dedup, 7-day backfill, mutex TTL
+  3-5-xp-ledger-integration: done    # Synced exercises write to ledger with readable labels
+  epic-3-retrospective: open
+
+  # ═══════════════════════════════════════════
+  # EPIC 4: Game Feel & Battle Visuals
+  # ═══════════════════════════════════════════
+  epic-4: in-progress
+  4-1-battle-mode-polish: done        # Crits, combos, threat levels, rest events, session bounties
+  4-2-enemy-sprites: in-progress      # Samurai bestiary started (2/12 exercises), Monster Hunter layout done
+  4-3-ranked-exercises-grid: done     # Color-coded borders + level badges
+  4-4-weekly-highlight-reel: done     # Swipeable slides (overview, best lift, rank-ups, party)
+  4-5-daily-xp-pill: done            # Tappable pill, breakdown sheet, sync status indicator
+  4-6-level-up-toast: done           # Global detection, toast on threshold crossing
+  4-7-attack-animations: open        # Flash, shake, defeat dissolve (Proposal 3)
+  4-8-battle-narration: open         # One-line action-reaction text (Proposal 2)
+  epic-4-retrospective: open
+
+  # ═══════════════════════════════════════════
+  # EPIC 5: Nutrition & Fuel
+  # ═══════════════════════════════════════════
+  epic-5: in-progress
+  5-1-ai-food-parse: done            # Claude-powered macro estimation from text
+  5-2-nutrition-input-v2: done       # Confirm step, meal tags, daily progress, weekly dots
+  5-3-nutrition-bar: done            # Calories/protein/carbs/fat display on Train screen
+  5-4-meal-xp: done                  # XP pop on confirm, 3+ meals = daily bonus
+  5-5-anthropic-model-update: done   # Migrated to claude-sonnet-4-6
+  5-6-nutrition-combo: open          # Streak counter for consecutive 3+ meal days
+  epic-5-retrospective: open
+
+  # ═══════════════════════════════════════════
+  # EPIC 6: App Store Submission
+  # ═══════════════════════════════════════════
+  epic-6: open
+  6-1-payments-revenuecat: open       # Subscriptions, paywall, entitlement checks
+  6-2-push-notifications: open        # Streak reminders, challenge updates
+  6-3-native-polish: open             # Haptics, splash screen, safe areas
+  6-4-app-store-requirements: open    # Screenshots, metadata, review notes
+  6-5-remove-debug-tools: open        # Debug health page, test routes
+  6-6-crash-reporting: open           # Sentry or equivalent
+  epic-6-retrospective: open
