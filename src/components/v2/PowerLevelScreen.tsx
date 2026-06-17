@@ -194,16 +194,38 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
                 RANKED EXERCISES
               </p>
               <div className="grid grid-cols-4 gap-2">
-                {data.exercises.map(ex => (
+                {data.exercises.map(ex => {
+                  const levelColors: Record<number, string> = {
+                    0: 'border-zinc-700',
+                    1: 'border-zinc-400',
+                    2: 'border-green-500',
+                    3: 'border-blue-500',
+                    4: 'border-purple-500',
+                    5: 'border-amber-400',
+                  };
+                  const levelTextColors: Record<number, string> = {
+                    0: 'text-zinc-700',
+                    1: 'text-zinc-400',
+                    2: 'text-green-500',
+                    3: 'text-blue-400',
+                    4: 'text-purple-400',
+                    5: 'text-amber-400',
+                  };
+                  const borderClass = ex.expired ? 'border-zinc-700' : (levelColors[ex.level] || 'border-zinc-700');
+                  return (
                   <div key={ex.exerciseId} className="flex flex-col items-center gap-1">
-                    <div className={`w-8 h-8 border ${ex.level > 0 && !ex.expired ? colors.primary : 'border-zinc-700'} ${ex.expired ? 'opacity-40' : ''} flex items-center justify-center bg-zinc-800`}>
+                    <div className={`relative w-8 h-8 border ${borderClass} ${ex.expired ? 'opacity-40' : ''} flex items-center justify-center bg-zinc-800`}>
                       <img src={`/themes/${currentTheme}/v2/level${ex.level}.png`} alt="" className="w-6 h-6" style={{ imageRendering: 'pixelated' }} />
+                      {ex.level > 0 && !ex.expired && (
+                        <span className={`absolute bottom-0 right-0.5 text-[7px] font-bold ${levelTextColors[ex.level]}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>{ex.level}</span>
+                      )}
                     </div>
                     <span className={`text-[8px] ${ex.level > 0 && !ex.expired ? 'text-zinc-300' : 'text-zinc-600'} truncate max-w-[60px]`}>
                       {ex.name.split(' ').slice(0, 2).join(' ')}
                     </span>
                   </div>
-                ))}
+                  );
+                })}
               </div>
               <p className="text-[8px] text-zinc-600 mt-3">tap to close</p>
             </>
