@@ -446,12 +446,14 @@ export async function logTrainingAction(
 
 
 export async function logSyncedCardioAction(
-    userId: string, type: string, durationSec: number, date: string
+    userId: string, type: string, durationSec: number, date: string, startTime?: string
 ) {
     'use server';
     const supabase = await createClient();
     const durMin = Math.round(durationSec / 60);
-    const syncId = `synced_${type.toLowerCase()}_${date}_${durationSec}`;
+    // Use start time (rounded to minute) for dedup to avoid midnight boundary duplicates
+    const dedupTs = startTime ? Math.floor(new Date(startTime).getTime() / 60000) : `${date}_${durationSec}`;
+    const syncId = `synced_${type.toLowerCase()}_${dedupTs}`;
 
     // Dedup
     const { data: existing } = await supabase.from('workouts')

@@ -262,7 +262,7 @@ class HealthConnectPlugin : Plugin() {
                     ReadRecordsRequest(ExerciseSessionRecord::class, timeRange)
                 )
                 val workouts = JSONArray()
-                records.records.takeLast(limit).forEach { r ->
+                records.records.forEach { r ->
                     val dur = java.time.Duration.between(r.startTime, r.endTime).seconds
                     workouts.put(JSONObject().apply {
                         put("type", r.exerciseType.toString())

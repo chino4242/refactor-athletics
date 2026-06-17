@@ -85,12 +85,15 @@ export default function HealthSync({ userId, refreshKey, onSyncComplete }: Props
           });
 
           for (const ex of exercises) {
-            const dur = ex.duration || ex.duration_seconds || ex.durationSeconds || 0;
+            let dur = ex.duration || ex.duration_seconds || ex.durationSeconds || 0;
+            // Sanity check: if duration looks like minutes (>0 but <60), convert to seconds
+            if (dur > 0 && dur < 60) dur = dur * 60;
             if (dur < 300) continue; // Skip under 5 min
 
-            // Use the exercise's actual date (not today)
+            // Skip exercises with no start_time — can't dedup or overlap-detect without it
             const exTime = ex.start_time || ex.end_time || ex.startDate || ex.endDate;
-            const exDate = exTime ? new Date(exTime).toLocaleDateString('en-CA') : today;
+            if (!exTime) continue;
+            const exDate = new Date(exTime).toLocaleDateString('en-CA');
 
             // Skip if user already logged manual workouts in a similar time window (avoid double XP)
             const exStart = ex.start_time || ex.startDate;
@@ -145,7 +148,7 @@ export default function HealthSync({ userId, refreshKey, onSyncComplete }: Props
               });
             } else {
               const type = isRun ? 'Run' : isBike ? 'Bike' : isSwim ? 'Swim' : isRow ? 'Row' : isHike ? 'Hike' : isStrength ? 'Strength' : isYoga ? 'Yoga' : isWalk ? 'Walk' : 'Cardio';
-              await logSyncedCardioAction(userId, type, dur, exDate);
+              await logSyncedCardioAction(userId, type, dur, exDate, exStart || undefined);
             }
           }
         }
