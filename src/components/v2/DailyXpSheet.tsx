@@ -125,8 +125,30 @@ export default function DailyXpSheet({ isOpen, onClose }: Props) {
               ))}
             </div>
           )}
+
+          {/* Sync status */}
+          <SyncStatus />
         </div>
       </div>
+    </div>
+  );
+}
+
+function SyncStatus() {
+  const [status, setStatus] = useState<{ ts: number; exercises: number; steps: number } | null>(null);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('health_sync_last');
+      if (raw) setStatus(JSON.parse(raw));
+    } catch {}
+  }, []);
+  if (!status) return null;
+  const ago = Math.round((Date.now() - status.ts) / 60000);
+  const label = ago < 1 ? 'just now' : ago < 60 ? `${ago}m ago` : `${Math.round(ago / 60)}h ago`;
+  return (
+    <div className="mt-4 pt-3 border-t border-zinc-800 flex items-center justify-center gap-2">
+      <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+      <span className="text-[10px] text-zinc-600">Synced {label}{status.exercises > 0 ? ` · ${status.exercises} exercise${status.exercises > 1 ? 's' : ''} found` : ''}</span>
     </div>
   );
 }

@@ -483,6 +483,16 @@ export async function logSyncedCardioAction(
         rank_name: 'Cardio',
     });
 
+    // Write to xp_ledger so it shows in daily breakdown
+    const readableLabel = `${durMin} min ${type} (synced)`;
+    await supabase.from('xp_ledger').insert({
+        user_id: userId,
+        amount: xp,
+        source_type: 'workout',
+        source_label: readableLabel,
+        is_background: true,
+    });
+
     return { status: 'logged', xp };
 }
 

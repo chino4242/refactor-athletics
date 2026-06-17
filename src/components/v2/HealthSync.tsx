@@ -12,12 +12,13 @@ interface Props {
 
 export default function HealthSync({ userId, refreshKey, onSyncComplete }: Props) {
   useEffect(() => {
-    // Mutex to prevent concurrent runs
-    if (localStorage.getItem('health_sync_in_progress')) return;
+    // Mutex with TTL (60s) to prevent stuck state if app crashes
+    const mutexTs = localStorage.getItem('health_sync_in_progress');
+    if (mutexTs && Date.now() - parseInt(mutexTs) < 60000) return;
 
     (async () => {
       try {
-        localStorage.setItem('health_sync_in_progress', '1');
+        localStorage.setItem('health_sync_in_progress', String(Date.now()));
         const { syncTodayHealth } = await import('@/services/nativeHealth');
         const data = await syncTodayHealth();
         if (!data || (data.steps === 0 && data.caloriesBurned === 0 && (!data.exercises || data.exercises.length === 0))) {
@@ -116,6 +117,12 @@ export default function HealthSync({ userId, refreshKey, onSyncComplete }: Props
             }
           }
         }
+        // Record successful sync status
+        localStorage.setItem('health_sync_last', JSON.stringify({
+          ts: Date.now(),
+          exercises: data.exercises?.length || 0,
+          steps: data.steps || 0,
+        }));
       } catch { /* silent — not native or plugin unavailable */ 
       } finally {
         localStorage.removeItem('health_sync_in_progress');
