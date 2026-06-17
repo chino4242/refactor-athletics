@@ -76,8 +76,27 @@ export default function HealthSync({ userId, refreshKey, onSyncComplete }: Props
             if (manualLogs?.length) continue; // User already logged this session manually
 
             const distMeters = ex.distance_meters || ex.distanceMeters || ex.distance || 0;
-            const typeCode = parseInt(ex.type || ex.exerciseType || '0') || 0;
-            const isRun = typeCode === 46 || typeCode === 47;
+            const rawType = ex.workoutType || ex.type || ex.exerciseType || '';
+            const typeCode = parseInt(rawType) || 0;
+            const typeStr = typeof rawType === 'string' && isNaN(Number(rawType)) ? rawType.toLowerCase() : '';
+
+            // Detect type from string (iOS @capgo plugin) or numeric code (Android Health Connect)
+            // HC: Running=56, RunningTreadmill=57
+            const isRun = typeStr === 'running' || typeCode === 56 || typeCode === 57;
+            // HC: Biking=8, BikingStationary=9
+            const isBike = typeStr === 'cycling' || typeCode === 8 || typeCode === 9;
+            // HC: SwimmingPool=74, SwimmingOpenWater=73
+            const isSwim = typeStr === 'swimming' || typeStr === 'swimmingpool' || typeStr === 'swimmingopenwater' || typeCode === 73 || typeCode === 74;
+            // HC: Rowing=53, RowingMachine=54
+            const isRow = typeStr === 'rowing' || typeCode === 53 || typeCode === 54;
+            // HC: Hiking=37
+            const isHike = typeStr === 'hiking' || typeCode === 37;
+            // HC: StrengthTraining=70, Weightlifting=81, Calisthenics=13
+            const isStrength = typeStr === 'strengthtraining' || typeStr === 'traditionalstrengthtraining' || typeStr === 'functionalstrengthtraining' || typeCode === 70 || typeCode === 81 || typeCode === 13;
+            // HC: Yoga=83, Pilates=48, Stretching=71
+            const isYoga = typeStr === 'yoga' || typeStr === 'pilates' || typeStr === 'flexibility' || typeCode === 83 || typeCode === 48 || typeCode === 71;
+            // HC: Walking=79
+            const isWalk = typeStr === 'walking' || typeCode === 79;
             const distMiles = distMeters / 1609.34;
             const isKnownDistance = isRun && (
               (distMiles >= 0.9 && distMiles <= 1.1) ||
@@ -92,7 +111,7 @@ export default function HealthSync({ userId, refreshKey, onSyncComplete }: Props
                 body: JSON.stringify({ exercises: [ex] }),
               });
             } else {
-              const type = isRun ? 'Run' : typeCode === 8 ? 'Bike' : typeCode === 74 ? 'Swim' : typeCode === 53 ? 'Row' : typeCode === 27 ? 'Hike' : typeCode === 79 ? 'Strength' : typeCode === 9 || typeCode === 64 ? 'Yoga' : typeCode === 37 || typeCode === 91 ? 'Walk' : 'Cardio';
+              const type = isRun ? 'Run' : isBike ? 'Bike' : isSwim ? 'Swim' : isRow ? 'Row' : isHike ? 'Hike' : isStrength ? 'Strength' : isYoga ? 'Yoga' : isWalk ? 'Walk' : 'Cardio';
               await logSyncedCardioAction(userId, type, dur, exDate);
             }
           }
