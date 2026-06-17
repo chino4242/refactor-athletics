@@ -20,7 +20,7 @@ export default function HealthSync({ userId, refreshKey, onSyncComplete }: Props
         localStorage.setItem('health_sync_in_progress', '1');
         const { syncTodayHealth } = await import('@/services/nativeHealth');
         const data = await syncTodayHealth();
-        if (!data || (data.steps === 0 && data.caloriesBurned === 0)) {
+        if (!data || (data.steps === 0 && data.caloriesBurned === 0 && (!data.exercises || data.exercises.length === 0))) {
           localStorage.removeItem('health_sync_in_progress');
           return;
         }
