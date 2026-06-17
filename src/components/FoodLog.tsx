@@ -55,19 +55,23 @@ export default function FoodLog({ userId, onUpdate }: FoodLogProps) {
     // Also subtract from nutrition_logs totals
     const today = new Date().toLocaleDateString('en-CA');
     if (entry.protein > 0) {
-      const { data: pLog } = await supabase.from('nutrition_logs').select('id, amount').eq('user_id', userId).eq('date', today).eq('macro_type', 'protein').order('timestamp', { ascending: false }).limit(1).single();
+      const { data: pLogs } = await supabase.from('nutrition_logs').select('id, amount').eq('user_id', userId).eq('date', today).eq('macro_type', 'protein').order('timestamp', { ascending: false }).limit(1);
+      const pLog = pLogs?.[0];
       if (pLog) await supabase.from('nutrition_logs').update({ amount: Math.max(0, pLog.amount - entry.protein) }).eq('id', pLog.id);
     }
     if (entry.carbs > 0) {
-      const { data: cLog } = await supabase.from('nutrition_logs').select('id, amount').eq('user_id', userId).eq('date', today).eq('macro_type', 'carbs').order('timestamp', { ascending: false }).limit(1).single();
+      const { data: cLogs } = await supabase.from('nutrition_logs').select('id, amount').eq('user_id', userId).eq('date', today).eq('macro_type', 'carbs').order('timestamp', { ascending: false }).limit(1);
+      const cLog = cLogs?.[0];
       if (cLog) await supabase.from('nutrition_logs').update({ amount: Math.max(0, cLog.amount - entry.carbs) }).eq('id', cLog.id);
     }
     if (entry.fat > 0) {
-      const { data: fLog } = await supabase.from('nutrition_logs').select('id, amount').eq('user_id', userId).eq('date', today).eq('macro_type', 'fat').order('timestamp', { ascending: false }).limit(1).single();
+      const { data: fLogs } = await supabase.from('nutrition_logs').select('id, amount').eq('user_id', userId).eq('date', today).eq('macro_type', 'fat').order('timestamp', { ascending: false }).limit(1);
+      const fLog = fLogs?.[0];
       if (fLog) await supabase.from('nutrition_logs').update({ amount: Math.max(0, fLog.amount - entry.fat) }).eq('id', fLog.id);
     }
     // Recalculate calories
-    const { data: calLog } = await supabase.from('nutrition_logs').select('id, amount').eq('user_id', userId).eq('date', today).eq('macro_type', 'calories').order('timestamp', { ascending: false }).limit(1).single();
+    const { data: calLogs } = await supabase.from('nutrition_logs').select('id, amount').eq('user_id', userId).eq('date', today).eq('macro_type', 'calories').order('timestamp', { ascending: false }).limit(1);
+    const calLog = calLogs?.[0];
     if (calLog) {
       const calDelta = entry.protein * 4 + entry.carbs * 4 + entry.fat * 9;
       await supabase.from('nutrition_logs').update({ amount: Math.max(0, calLog.amount - calDelta) }).eq('id', calLog.id);

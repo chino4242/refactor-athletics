@@ -29,8 +29,9 @@ export default function PartyPulse({ userId }: PartyPulseProps) {
       const supabase = createClient();
 
       // Get user's group
-      const { data: membership } = await supabase
-        .from('group_members').select('group_id').eq('user_id', userId).limit(1).single();
+      const { data: memberships } = await supabase
+        .from('group_members').select('group_id').eq('user_id', userId).limit(1);
+      const membership = memberships?.[0];
       if (!membership) return;
 
       // Get group info

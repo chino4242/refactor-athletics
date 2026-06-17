@@ -26,7 +26,8 @@ export default function PartyLeaderboard({ userId }: Props) {
       const { createClient } = await import('@/utils/supabase/client');
       const supabase = createClient();
 
-      const { data: membership } = await supabase.from('group_members').select('group_id').eq('user_id', userId).limit(1).single();
+      const { data: memberships } = await supabase.from('group_members').select('group_id').eq('user_id', userId).limit(1);
+      const membership = memberships?.[0];
       if (!membership) return;
 
       const { data: groupMembers } = await supabase

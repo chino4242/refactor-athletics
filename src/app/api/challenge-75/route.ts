@@ -136,8 +136,9 @@ export async function POST(request: NextRequest) {
         );
       } else {
         // Copy creator's metrics as defaults
-        const { data: creatorMember } = await service.from('challenge_75_members')
-          .select('id').eq('challenge_id', challenge_id).neq('user_id', user.id).limit(1).single();
+        const { data: creatorMembers } = await service.from('challenge_75_members')
+          .select('id').eq('challenge_id', challenge_id).neq('user_id', user.id).limit(1);
+        const creatorMember = creatorMembers?.[0];
         if (creatorMember) {
           const { data: creatorMetrics } = await service.from('challenge_75_metrics')
             .select('*').eq('challenge_id', challenge_id).eq('member_id', creatorMember.id);

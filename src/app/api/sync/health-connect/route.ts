@@ -170,8 +170,9 @@ export async function POST(request: NextRequest) {
       }
 
       // Check for existing row to merge (preserve manual entries)
-      const { data: existing } = await supabase.from('body_measurements')
-        .select('id, source').eq('user_id', user.id).eq('date', today).limit(1).single();
+      const { data: existingRows } = await supabase.from('body_measurements')
+        .select('id, source').eq('user_id', user.id).eq('date', today).limit(1);
+      const existing = existingRows?.[0];
 
       if (existing) {
         // Only overwrite fields that aren't manually entered
@@ -202,7 +203,8 @@ export async function POST(request: NextRequest) {
 }
 
 async function upsertHabit(supabase: any, userId: string, habitId: string, date: string, ts: number, value: number, xp: number) {
-  const { data: existing } = await supabase.from('habit_logs').select('value').eq('user_id', userId).eq('habit_id', habitId).eq('date', date).order('timestamp', { ascending: false }).limit(1).single();
+  const { data: existingRows } = await supabase.from('habit_logs').select('value').eq('user_id', userId).eq('habit_id', habitId).eq('date', date).order('timestamp', { ascending: false }).limit(1);
+  const existing = existingRows?.[0];
   if (existing && existing.value >= value) return;
 
   await supabase.from('habit_logs').delete().eq('user_id', userId).eq('habit_id', habitId).eq('date', date);

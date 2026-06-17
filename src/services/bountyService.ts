@@ -123,7 +123,7 @@ async function getPersonalizedTargets(userId: string, types: Record<Pillar, Boun
 
   const { data: workouts } = await supabase
     .from('workouts')
-    .select('date, raw_value, sets, reps, level')
+    .select('date, raw_value, sets, level')
     .eq('user_id', userId)
     .gte('date', fourWeeksAgo);
 
@@ -137,7 +137,10 @@ async function getPersonalizedTargets(userId: string, types: Record<Pillar, Boun
 
   // Training pillar
   if (types.training === 'volume') {
-    const totalVol = (workouts || []).reduce((sum, w) => sum + (w.raw_value || 0) * (w.sets || 1) * (w.reps || 1), 0);
+    const totalVol = (workouts || []).reduce((sum, w) => {
+      if (Array.isArray(w.sets)) return sum + w.sets.reduce((s: number, set: any) => s + ((set.weight || 0) * (set.reps || 1)), 0);
+      return sum + (w.raw_value || 0);
+    }, 0);
     targets.training = Math.round((totalVol / 4) || FALLBACK_TARGETS.volume);
   } else if (types.training === 'sessions') {
     const uniqueDates = new Set((workouts || []).map(w => w.date));
@@ -168,8 +171,8 @@ async function computeProgress(userId: string, weekStart: string, bounties: any[
   const weekEnd = new Date(new Date(weekStart).getTime() + 6 * 24 * 60 * 60 * 1000).toLocaleDateString('en-CA');
 
   const [{ data: workouts }, { data: nutrition }] = await Promise.all([
-    supabase.from('workouts').select('date, raw_value, sets, reps, level').eq('user_id', userId).gte('date', weekStart).lte('date', weekEnd),
-    supabase.from('nutrition_logs').select('date').eq('user_id', userId).gte('date', weekStart).lte('date', weekEnd),
+    supabase.from('workouts').select('date, raw_value, sets, level').eq('user_id', userId).gte('date', weekStart),
+    supabase.from('nutrition_logs').select('date').eq('user_id', userId).gte('date', weekStart),
   ]);
 
   const workoutDates = new Set((workouts || []).map(w => w.date));
@@ -183,7 +186,10 @@ async function computeProgress(userId: string, weekStart: string, bounties: any[
     let current = 0;
     switch (b.bounty_type as BountyType) {
       case 'volume':
-        current = (workouts || []).reduce((sum, w) => sum + (w.raw_value || 0) * (w.sets || 1) * (w.reps || 1), 0);
+        current = (workouts || []).reduce((sum, w) => {
+          if (Array.isArray(w.sets)) return sum + w.sets.reduce((s: number, set: any) => s + ((set.weight || 0) * (set.reps || 1)), 0);
+          return sum + (w.raw_value || 0);
+        }, 0);
         break;
       case 'sessions':
         current = workoutDates.size;

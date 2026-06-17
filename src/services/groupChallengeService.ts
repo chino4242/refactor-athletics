@@ -115,15 +115,15 @@ export async function getGroupChallengeWithProgress(groupId: string): Promise<Gr
   const supabase = createClient();
 
   // Get active or proposed challenge
-  const { data: challenge } = await supabase
+  const { data: challenges } = await supabase
     .from('group_challenges')
     .select('*')
     .eq('group_id', groupId)
     .in('status', ['active', 'proposed'])
     .order('created_at', { ascending: false })
-    .limit(1)
-    .single();
+    .limit(1);
 
+  const challenge = challenges?.[0];
   if (!challenge) return null;
 
   // Get group info + members
@@ -203,13 +203,17 @@ async function computeContributions(
   if (metric === 'volume') {
     const { data } = await supabase
       .from('workouts')
-      .select('user_id, raw_value, sets, reps')
+      .select('user_id, raw_value, sets')
       .in('user_id', memberIds)
       .gte('date', startDate)
       .lte('date', endDate);
 
     for (const w of data || []) {
-      result[w.user_id] = (result[w.user_id] || 0) + (w.raw_value || 0) * (w.sets || 1) * (w.reps || 1);
+      if (Array.isArray(w.sets)) {
+        result[w.user_id] = (result[w.user_id] || 0) + w.sets.reduce((s: number, set: any) => s + ((set.weight || 0) * (set.reps || 1)), 0);
+      } else {
+        result[w.user_id] = (result[w.user_id] || 0) + (w.raw_value || 0);
+      }
     }
   } else if (metric === 'sessions') {
     const { data } = await supabase

@@ -124,7 +124,7 @@ Rules:
       (promptKey === 'meal_photo' ? '' : '\n\nAlso include an "image_description" field (1-2 sentences describing the screenshot layout and what app/device it came from) in your JSON response.');
 
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 1024,
       messages: [
         {

@@ -203,10 +203,10 @@ function CampaignCard({ campaign, userId, colors, onUpdate }: { campaign: any; u
 async function getUserGuildQuest(userId: string): Promise<{ quest: GroupChallengeWithProgress | null; groupId: string | null }> {
   const { createClient } = await import('@/utils/supabase/client');
   const supabase = createClient();
-  const { data } = await supabase.from('group_members').select('group_id').eq('user_id', userId).limit(1).single();
-  if (!data) return { quest: null, groupId: null };
-  const quest = await getGroupChallengeWithProgress(data.group_id);
-  return { quest, groupId: data.group_id };
+  const { data } = await supabase.from('group_members').select('group_id').eq('user_id', userId).limit(1);
+  if (!data || data.length === 0) return { quest: null, groupId: null };
+  const quest = await getGroupChallengeWithProgress(data[0].group_id);
+  return { quest, groupId: data[0].group_id };
 }
 
 export default function ArenaScreen({ userId }: ArenaScreenProps) {
@@ -235,8 +235,12 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
         setGuildQuest(questResult?.quest || null);
         setGroupId(questResult?.groupId || null);
         const active = (campaignData?.challenges || []).find((c: any) => c.status === 'active')
-          || (campaignData?.challenges || []).find((c: any) => c.status === 'completed')
-          || (campaignData?.challenges || []).find((c: any) => c.status === 'failed');
+          || (campaignData?.challenges || []).find((c: any) => {
+            // Show completed campaigns for 7 days after completion
+            if (c.status !== 'completed') return false;
+            const completedAt = c.completed_at ? new Date(c.completed_at) : null;
+            return completedAt && (Date.now() - completedAt.getTime()) < 7 * 86400000;
+          });
         setCampaign(active || null);
 
         // Check for joinable campaigns from group

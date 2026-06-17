@@ -74,7 +74,8 @@ export async function POST(request: Request) {
   });
 
   // Generate 1 party quest if user is in a party
-  const { data: membership } = await service.from('group_members').select('group_id').eq('user_id', user.id).limit(1).single();
+  const { data: memberships } = await service.from('group_members').select('group_id').eq('user_id', user.id).limit(1);
+  const membership = memberships?.[0];
   if (membership) {
     const { data: members } = await service.from('group_members').select('user_id').eq('group_id', membership.group_id);
     const partySize = members?.length || 1;
