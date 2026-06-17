@@ -36,6 +36,7 @@ interface BattleCard {
   section?: string;
   catalogItem?: CatalogItem;
   lastWeight?: number;
+  currentLevel?: number;
   threatLevel?: 'guardian' | 'trickster' | 'titan' | 'spark';
 }
 
@@ -231,6 +232,7 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
               .filter((h: any) => (h.exercise_id || '').toLowerCase() === exId.toLowerCase())
               .sort((a: any, b: any) => (b.timestamp || 0) - (a.timestamp || 0))[0];
             const lastWeight = lastLog?.data?.[0]?.weight || 0;
+            const currentLevel = Math.max(...historyArr.filter((h: any) => (h.exercise_id || '').toLowerCase() === exId.toLowerCase()).map((h: any) => h.level || 0), 0);
 
             return [{
               id: uuidv4(),
@@ -246,6 +248,7 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
               section: b.section,
               catalogItem: catItem,
               lastWeight,
+              currentLevel,
             }];
           });
 
@@ -894,6 +897,47 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
   );
 }
 
+// --- Enemy Names (Samurai theme) ---
+const ENEMY_NAMES: Record<string, Record<string, string>> = {
+  samurai: {
+    back_squat: 'Crimson Oni', deadlift: 'Earth Yokai', bench_press: 'Haunted Armor',
+    pull_up: 'Tengu', overhead_press: 'Thunder Oni', run_1_mile: 'Fox Spirit',
+    plank: 'Stone Kappa', push_ups: 'Shadow Ninjas', run_400m: 'Kunai Volley',
+    dead_hang: 'Chain Spirit', barbell_row: 'Kraken Tentacle', run_5k: 'Wind Kami',
+  },
+};
+
+// --- Enemy Sprite ---
+function EnemySprite({ exerciseId, level, defeated, theme, showName }: { exerciseId: string; level: number; defeated: boolean; theme: string; showName?: boolean }) {
+  const tier = level >= 4 ? 2 : level >= 2 ? 1 : 0;
+  const normalized = exerciseId.replace(/^(barbell|dumbbell|smith_machine|cable|machine)_/, '');
+  const src = `/enemies/${theme}/${normalized}_t${tier}.png`;
+  const [hasImage, setHasImage] = useState(true);
+  const enemyName = ENEMY_NAMES[theme]?.[normalized] || null;
+
+  if (!hasImage) return null;
+
+  return (
+    <div className={`flex flex-col items-center gap-2 py-2 transition-all duration-700 ${defeated ? 'opacity-0 scale-75' : 'opacity-100'}`}>
+      <div className="w-20 h-20 rounded-lg bg-zinc-950 border border-zinc-800 flex items-center justify-center overflow-hidden relative">
+        <div className="absolute inset-0 rounded-lg" style={{ boxShadow: 'inset 0 0 12px rgba(0,0,0,0.9)' }} />
+        <img
+          src={src}
+          alt=""
+          className="w-16 h-16 relative z-10"
+          style={{ imageRendering: 'pixelated' }}
+          onError={() => setHasImage(false)}
+        />
+      </div>
+      {showName && enemyName && (
+        <p className="text-[11px] text-white tracking-wide" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          {enemyName}
+        </p>
+      )}
+    </div>
+  );
+}
+
 // --- Lifting Card ---
 function LiftingCard({ card, isActive, colors, currentTheme, weight, reps, onWeightChange, onRepsChange, isResting, restSeconds, restMax, onLogAttack, onSkipRest, subExerciseIdx, catalog, onSwap, restEvent, onShowHistory }: {
   card: BattleCard; isActive: boolean; colors: any; currentTheme: string;
@@ -914,10 +958,16 @@ function LiftingCard({ card, isActive, colors, currentTheme, weight, reps, onWei
 
   return (
     <div className={`border-2 ${isActive ? colors.primary : colors.border} bg-zinc-900 p-4 space-y-4`}>
+      {/* Battle scene — enemy sprite + name + HP */}
+      {combat && !isSuperset && <EnemySprite exerciseId={card.exerciseId} level={card.currentLevel || 0} defeated={card.defeated} theme={currentTheme} showName />}
+      {combat && !isSuperset && (
+        <PixelBar current={card.completedSets} max={card.totalSets} inverted={combat} />
+      )}
       {/* Enemy header */}
       <div>
         {isSuperset ? (
           <div className="space-y-2">
+            <EnemySprite exerciseId={card.exerciseId} level={card.currentLevel || 0} defeated={card.defeated} theme={currentTheme} showName={combat} />
             <div className="flex items-center justify-between">
               <span className={`text-[8px] ${colors.secondary} tracking-wider`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                 ⚔⚔ DUAL ENCOUNTER
@@ -944,8 +994,8 @@ function LiftingCard({ card, isActive, colors, currentTheme, weight, reps, onWei
         ) : (
           <div className="flex items-center justify-between">
             <button onClick={() => onShowHistory(card.exerciseId)} className="flex items-center gap-2">
-              <img src={`/themes/${currentTheme}/v2/level${card.catalogItem?.standards ? '1' : '0'}.png`} alt="" className="w-5 h-5" style={{ imageRendering: 'pixelated' }} />
-              <p className="text-xs text-white font-medium truncate max-w-[200px] underline decoration-zinc-700">{displayName}</p>
+              {!combat && <img src={`/themes/${currentTheme}/v2/level${card.catalogItem?.standards ? '1' : '0'}.png`} alt="" className="w-5 h-5" style={{ imageRendering: 'pixelated' }} />}
+              <p className={`${combat ? 'text-[10px] text-zinc-400' : 'text-xs text-white font-medium'} truncate max-w-[200px] ${combat ? '' : 'underline decoration-zinc-700'}`}>{displayName}</p>
             </button>
             <span className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
               {card.completedSets + 1 === card.totalSets ? (combat ? '⚡ FINAL STRIKE' : '⚡ LAST SET') : combat ? `STRIKE ${card.completedSets + 1}/${card.totalSets}` : `SET ${card.completedSets + 1}/${card.totalSets}`}
@@ -954,8 +1004,8 @@ function LiftingCard({ card, isActive, colors, currentTheme, weight, reps, onWei
         )}
       </div>
 
-      {/* HP Bar (enemy health drains as you attack) */}
-      <PixelBar current={card.completedSets} max={card.totalSets} inverted={combat} />
+      {/* HP Bar (shown here only for athlete mode or superset — combat non-superset has it above) */}
+      {(!combat || isSuperset) && <PixelBar current={card.completedSets} max={card.totalSets} inverted={combat} />}
 
       {/* Equipment variants */}
       {(() => {
