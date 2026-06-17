@@ -20,11 +20,22 @@ export default function HealthSync({ userId, refreshKey, onSyncComplete }: Props
       try {
         localStorage.setItem('health_sync_in_progress', String(Date.now()));
         const { syncTodayHealth } = await import('@/services/nativeHealth');
-        const data = await syncTodayHealth();
+        const isFirstSync = !localStorage.getItem('health_sync_last');
+        const data = await syncTodayHealth(isFirstSync ? 7 : undefined);
         if (!data || (data.steps === 0 && data.caloriesBurned === 0 && (!data.exercises || data.exercises.length === 0))) {
+          // Detect possible permission revocation: all zeros after previous success
+          const hadPriorSync = !!localStorage.getItem('health_sync_last');
+          if (hadPriorSync && data) {
+            const zeroCount = parseInt(localStorage.getItem('health_sync_zero_count') || '0') + 1;
+            localStorage.setItem('health_sync_zero_count', String(zeroCount));
+            if (zeroCount >= 3) localStorage.setItem('health_sync_needs_reconnect', '1');
+          }
           localStorage.removeItem('health_sync_in_progress');
           return;
         }
+        // Reset zero counter on successful sync
+        localStorage.removeItem('health_sync_zero_count');
+        localStorage.removeItem('health_sync_needs_reconnect');
 
         // Check if WHOOP handles calories
         const { createClient } = await import('@/utils/supabase/client');
@@ -54,7 +65,26 @@ export default function HealthSync({ userId, refreshKey, onSyncComplete }: Props
           const supabaseEx = (await import('@/utils/supabase/client')).createClient();
           const today = new Date().toLocaleDateString('en-CA');
 
-          for (const ex of data.exercises) {
+          // Dedup overlapping sessions (multiple apps writing same workout)
+          const exercises = data.exercises.filter((ex: any, i: number) => {
+            const start = new Date(ex.start_time || ex.startDate || 0).getTime();
+            const end = new Date(ex.end_time || ex.endDate || 0).getTime();
+            if (!start || !end) return true;
+            for (let j = 0; j < i; j++) {
+              const otherStart = new Date(data.exercises[j].start_time || data.exercises[j].startDate || 0).getTime();
+              const otherEnd = new Date(data.exercises[j].end_time || data.exercises[j].endDate || 0).getTime();
+              if (!otherStart || !otherEnd) continue;
+              const overlapStart = Math.max(start, otherStart);
+              const overlapEnd = Math.min(end, otherEnd);
+              if (overlapEnd <= overlapStart) continue;
+              const overlap = overlapEnd - overlapStart;
+              const shorter = Math.min(end - start, otherEnd - otherStart);
+              if (overlap / shorter > 0.8) return false; // Duplicate — skip this one (keep earlier/longer)
+            }
+            return true;
+          });
+
+          for (const ex of exercises) {
             const dur = ex.duration || ex.duration_seconds || ex.durationSeconds || 0;
             if (dur < 300) continue; // Skip under 5 min
 
@@ -63,15 +93,17 @@ export default function HealthSync({ userId, refreshKey, onSyncComplete }: Props
             const exDate = exTime ? new Date(exTime).toLocaleDateString('en-CA') : today;
 
             // Skip if user already logged manual workouts in a similar time window (avoid double XP)
-            const exTs = exTime ? Math.floor(new Date(exTime).getTime() / 1000) : Math.floor(Date.now() / 1000);
-            const windowStart = exTs - 300; // 5 min before
-            const windowEnd = exTs + dur + 300; // duration + 5 min after
+            const exStart = ex.start_time || ex.startDate;
+            const exEnd = ex.end_time || ex.endDate;
+            const startTs = exStart ? Math.floor(new Date(exStart).getTime() / 1000) : Math.floor(Date.now() / 1000);
+            const endTs = exEnd ? Math.floor(new Date(exEnd).getTime() / 1000) : startTs + dur;
+            // Check for any manual workout whose timestamp falls within the exercise window (±5min buffer)
             const { data: manualLogs } = await supabaseEx.from('workouts')
               .select('id')
               .eq('user_id', userId)
               .eq('date', exDate)
-              .gte('timestamp', windowStart)
-              .lte('timestamp', windowEnd)
+              .gte('timestamp', startTs - 300)
+              .lte('timestamp', endTs + 300)
               .not('exercise_id', 'like', 'synced_%')
               .limit(1);
             if (manualLogs?.length) continue; // User already logged this session manually

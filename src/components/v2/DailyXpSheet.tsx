@@ -136,12 +136,22 @@ export default function DailyXpSheet({ isOpen, onClose }: Props) {
 
 function SyncStatus() {
   const [status, setStatus] = useState<{ ts: number; exercises: number; steps: number } | null>(null);
+  const [needsReconnect, setNeedsReconnect] = useState(false);
   useEffect(() => {
     try {
       const raw = localStorage.getItem('health_sync_last');
       if (raw) setStatus(JSON.parse(raw));
+      setNeedsReconnect(localStorage.getItem('health_sync_needs_reconnect') === '1');
     } catch {}
   }, []);
+  if (needsReconnect) {
+    return (
+      <div className="mt-4 pt-3 border-t border-zinc-800 text-center">
+        <p className="text-[10px] text-amber-400">⚠ Health sync returning empty — permissions may have been revoked</p>
+        <p className="text-[10px] text-zinc-500 mt-1">Go to Settings → Health → Refactor Athletics to re-enable</p>
+      </div>
+    );
+  }
   if (!status) return null;
   const ago = Math.round((Date.now() - status.ts) / 60000);
   const label = ago < 1 ? 'just now' : ago < 60 ? `${ago}m ago` : `${Math.round(ago / 60)}h ago`;
