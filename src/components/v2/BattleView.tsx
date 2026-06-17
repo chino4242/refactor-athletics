@@ -694,6 +694,10 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
           0% { transform: translateY(0); opacity: 1; }
           100% { transform: translateY(-30px); opacity: 0; }
         }
+        @keyframes breathe {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.03); }
+        }
       `}</style>
       {/* Arena backdrop */}
       <img
@@ -908,12 +912,23 @@ const ENEMY_NAMES: Record<string, Record<string, string>> = {
 };
 
 // --- Enemy Sprite ---
-function EnemySprite({ exerciseId, level, defeated, theme, showName }: { exerciseId: string; level: number; defeated: boolean; theme: string; showName?: boolean }) {
+function EnemySprite({ exerciseId, level, defeated, theme, showName, attackCount }: { exerciseId: string; level: number; defeated: boolean; theme: string; showName?: boolean; attackCount?: number }) {
   const tier = level >= 4 ? 2 : level >= 2 ? 1 : 0;
   const normalized = exerciseId.replace(/^(barbell|dumbbell|smith_machine|cable|machine)_/, '');
   const src = `/enemies/${theme}/${normalized}_t${tier}.png`;
   const [hasImage, setHasImage] = useState(true);
+  const [flashing, setFlashing] = useState(false);
+  const prevAttack = useRef(attackCount || 0);
   const enemyName = ENEMY_NAMES[theme]?.[normalized] || null;
+
+  // Flash on attack
+  useEffect(() => {
+    if (attackCount !== undefined && attackCount > prevAttack.current) {
+      setFlashing(true);
+      setTimeout(() => setFlashing(false), 300);
+    }
+    prevAttack.current = attackCount || 0;
+  }, [attackCount]);
 
   if (!hasImage) return null;
 
@@ -924,8 +939,13 @@ function EnemySprite({ exerciseId, level, defeated, theme, showName }: { exercis
         <img
           src={src}
           alt=""
-          className="w-16 h-16 relative z-10"
-          style={{ imageRendering: 'pixelated' }}
+          className={`w-16 h-16 relative z-10 ${!defeated && !flashing ? 'animate-[breathe_3s_ease-in-out_infinite]' : ''}`}
+          style={{
+            imageRendering: 'pixelated',
+            filter: flashing ? 'brightness(8)' : undefined,
+            transform: flashing ? 'translateX(-2px)' : undefined,
+            transition: flashing ? 'none' : 'filter 0.2s, transform 0.2s',
+          }}
           onError={() => setHasImage(false)}
         />
       </div>
@@ -959,7 +979,7 @@ function LiftingCard({ card, isActive, colors, currentTheme, weight, reps, onWei
   return (
     <div className={`border-2 ${isActive ? colors.primary : colors.border} bg-zinc-900 p-4 space-y-4`}>
       {/* Battle scene — enemy sprite + name + HP */}
-      {combat && !isSuperset && <EnemySprite exerciseId={card.exerciseId} level={card.currentLevel || 0} defeated={card.defeated} theme={currentTheme} showName />}
+      {combat && !isSuperset && <EnemySprite exerciseId={card.exerciseId} level={card.currentLevel || 0} defeated={card.defeated} theme={currentTheme} showName attackCount={card.completedSets} />}
       {combat && !isSuperset && (
         <PixelBar current={card.completedSets} max={card.totalSets} inverted={combat} />
       )}
@@ -967,7 +987,7 @@ function LiftingCard({ card, isActive, colors, currentTheme, weight, reps, onWei
       <div>
         {isSuperset ? (
           <div className="space-y-2">
-            <EnemySprite exerciseId={card.exerciseId} level={card.currentLevel || 0} defeated={card.defeated} theme={currentTheme} showName={combat} />
+            <EnemySprite exerciseId={card.exerciseId} level={card.currentLevel || 0} defeated={card.defeated} theme={currentTheme} showName={combat} attackCount={card.completedSets} />
             <div className="flex items-center justify-between">
               <span className={`text-[8px] ${colors.secondary} tracking-wider`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                 ⚔⚔ DUAL ENCOUNTER
