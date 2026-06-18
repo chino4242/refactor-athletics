@@ -73,7 +73,7 @@ function NutritionBar({ userId, colors, refreshKey }: { userId: string; colors: 
     })();
   }, [userId, refreshKey]);
 
-  if (!data || (data.calsIn === 0 && data.protein === 0 && data.steps === 0)) return null;
+  if (!data) return null;
 
   const net = data.calsIn - data.burned;
 
