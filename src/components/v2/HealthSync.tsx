@@ -19,7 +19,12 @@ export default function HealthSync({ userId, refreshKey, onSyncComplete }: Props
     (async () => {
       try {
         localStorage.setItem('health_sync_in_progress', String(Date.now()));
-        const { syncTodayHealth } = await import('@/services/nativeHealth');
+        const { syncTodayHealth, requestPermissions, isHealthAvailable } = await import('@/services/nativeHealth');
+
+        // Ensure permissions are requested (no-op if already granted, prompts if not)
+        const available = await isHealthAvailable();
+        if (available) await requestPermissions();
+
         const isFirstSync = !localStorage.getItem('health_sync_last');
         const data = await syncTodayHealth(isFirstSync ? 7 : undefined);
         if (!data || (data.steps === 0 && data.caloriesBurned === 0 && (!data.exercises || data.exercises.length === 0))) {
