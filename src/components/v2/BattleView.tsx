@@ -71,6 +71,7 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
   const [restSeconds, setRestSeconds] = useState(0);
   const [restMax, setRestMax] = useState(60);
   const [isResting, setIsResting] = useState(false);
+  const [lastAttack, setLastAttack] = useState<{ cardId: string; exerciseId: string; weight: string; reps: string; subIdx?: number; isSuperset?: boolean } | null>(null);
   const [userBodyweight, setUserBodyweight] = useState(180);
   const [userSex, setUserSex] = useState('male');
   const [catalogItems, setCatalogItems] = useState<CatalogItem[]>([]);
@@ -462,6 +463,9 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
       localStorage.setItem('pending_sets', JSON.stringify(pending));
     }
 
+    // Track for undo
+    setLastAttack({ cardId: card.id, exerciseId, weight: String(w), reps: String(r), subIdx: isSuperset ? subExerciseIdx : undefined, isSuperset: !!isSuperset });
+
     // Superset: advance to next sub-exercise, only count a "set" when all exercises in the superset are done
     if (isSuperset) {
       const nextSub = subExerciseIdx + 1;
@@ -578,6 +582,46 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
       const newCompleted = c.completedSets + 1;
       return { ...c, completedSets: newCompleted, defeated: newCompleted >= c.totalSets, poofing: newCompleted >= c.totalSets };
     }));
+  };
+
+  const undoLastAttack = async () => {
+    if (!lastAttack) return;
+    const { cardId, exerciseId, weight: prevW, reps: prevR, isSuperset: wasSuperSet } = lastAttack;
+
+    // Delete the most recent workout row for this exercise+session
+    try {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: rows } = await supabase.from('workouts')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('exercise_id', exerciseId)
+        .eq('session_id', sessionId.current)
+        .order('timestamp', { ascending: false })
+        .limit(1);
+      if (rows?.length) await supabase.from('workouts').delete().eq('id', rows[0].id);
+    } catch {}
+
+    // Decrement completedSets (un-defeat if needed)
+    setCards(prev => prev.map(c => {
+      if (c.id !== cardId) return c;
+      const newCompleted = Math.max(0, c.completedSets - 1);
+      return { ...c, completedSets: newCompleted, defeated: false, poofing: false };
+    }));
+
+    // For supersets: reset subExerciseIdx to the last exercise in the round
+    if (wasSuperSet) {
+      const card = cards.find(c => c.id === cardId);
+      const lastSubIdx = (card?.exercises?.length || 1) - 1;
+      setSubExerciseIdx(lastSubIdx);
+    }
+
+    // Restore inputs and stop rest
+    setWeight(prevW);
+    setReps(prevR);
+    setIsResting(false);
+    setRestSeconds(0);
+    setLastAttack(null);
   };
 
   // --- Render ---
@@ -707,46 +751,38 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
         style={{ imageRendering: 'pixelated', maskImage: 'linear-gradient(transparent 0%, black 30%, black 70%, transparent 100%)' }}
       />
 
-      {/* Top bar: XP counter + combo + encounter counter */}
-      <div className="px-4 pt-4 pb-2 flex items-center justify-between">
+      {/* Top bar: close button */}
+      <div className="px-4 pt-3 pb-1 flex items-center justify-between">
         <button onClick={() => setShowEndConfirm(true)} className="text-zinc-600 text-xs">✕</button>
-        <div className="flex items-center gap-3">
-          {sessionXp > 0 && (
-            <span className={`text-[10px] ${colors.secondary} font-bold`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-              ⚡{sessionXp}
-            </span>
-          )}
-          {comboCount >= 3 && (
-            <span className={`text-[9px] ${comboCount >= 10 ? 'text-red-400' : comboCount >= 5 ? 'text-amber-400' : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-              🔥{comboCount}x
-            </span>
-          )}
-          <span className={`text-[8px] text-zinc-500 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-            {aliveCards.length === 1 && cards.filter(c => c.defeated).length > 0 ? (currentTheme !== 'athlete' ? '⚔ FINAL' : 'LAST') : `${cards.filter(c => c.defeated).length}/${cards.length}`}
-          </span>
-        </div>
+        <span className="text-[8px] text-zinc-600" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          {currentTheme !== 'athlete' ? 'BATTLE' : 'WORKOUT'}
+        </span>
         <div className="w-4" />
       </div>
 
-      {/* Theme banner strip */}
-      <div className={`mx-4 mb-2 border ${colors.border} overflow-hidden relative`}>
-        <img
-          src={`/themes/${currentTheme}/v2/banner.png`}
-          alt=""
-          className="w-full h-auto opacity-40"
-          style={{ imageRendering: 'pixelated' }}
-        />
-        <div className="absolute inset-0 opacity-[0.06]" style={{
-          backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 2px, ${colors.scanline} 2px, ${colors.scanline} 4px)`
-        }} />
+      {/* Compact status bar */}
+      <div className="mx-4 mb-2 flex items-center justify-between px-3 py-1.5 border border-zinc-800 bg-zinc-900/80 rounded-sm">
+        {sessionXp > 0 ? (
+          <span className={`text-[10px] ${colors.secondary} font-bold`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            ⚡{sessionXp}
+          </span>
+        ) : <span />}
+        <div className="flex items-center gap-2">
+          <div className="flex h-1.5 w-16 bg-zinc-800 rounded-full overflow-hidden">
+            <div className={`${colors.barFill} transition-all duration-500`} style={{ width: `${(cards.filter(c => c.defeated).length / cards.length) * 100}%` }} />
+          </div>
+          <span className="text-[9px] text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            {cards.filter(c => c.defeated).length}/{cards.length}
+          </span>
+        </div>
       </div>
 
-      {/* Session Bounties */}
+      {/* Session Bounties (meaningful labels) */}
       {bounties.length > 0 && (
-        <div className="flex items-center justify-center gap-2 mb-2 px-4">
+        <div className="flex items-center justify-center gap-3 mb-2 px-4">
           {bounties.map(b => (
-            <span key={b.id} className={`text-[9px] ${b.done ? 'text-amber-400' : 'text-zinc-600'}`} title={b.label}>
-              {b.done ? '🏆' : '🔒'}
+            <span key={b.id} className={`text-[8px] ${b.done ? 'text-amber-400' : 'text-zinc-600'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              {b.done ? '✓' : '○'} {b.label}
             </span>
           ))}
         </div>
@@ -817,6 +853,8 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
                 }}
                 restEvent={idx === activeIndex ? restEvent : null}
                 onShowHistory={showExerciseHistory}
+                onUndo={undoLastAttack}
+                canUndo={idx === activeIndex && isResting && !!lastAttack}
               />
             )}
           </div>
@@ -959,12 +997,12 @@ function EnemySprite({ exerciseId, level, defeated, theme, showName, attackCount
 }
 
 // --- Lifting Card ---
-function LiftingCard({ card, isActive, colors, currentTheme, weight, reps, onWeightChange, onRepsChange, isResting, restSeconds, restMax, onLogAttack, onSkipRest, subExerciseIdx, catalog, onSwap, restEvent, onShowHistory }: {
+function LiftingCard({ card, isActive, colors, currentTheme, weight, reps, onWeightChange, onRepsChange, isResting, restSeconds, restMax, onLogAttack, onSkipRest, subExerciseIdx, catalog, onSwap, restEvent, onShowHistory, onUndo, canUndo }: {
   card: BattleCard; isActive: boolean; colors: any; currentTheme: string;
   weight: string; reps: string; onWeightChange: (v: string) => void; onRepsChange: (v: string) => void;
   isResting: boolean; restSeconds: number; restMax: number; onLogAttack: () => void; onSkipRest: () => void;
   subExerciseIdx: number; catalog: CatalogItem[]; onSwap: (exId: string, name: string) => void;
-  restEvent?: string | null; onShowHistory: (exId: string) => void;
+  restEvent?: string | null; onShowHistory: (exId: string) => void; onUndo?: () => void; canUndo?: boolean;
 }) {
   const isCompound = ['squat', 'bench', 'deadlift', 'press', 'row', 'clean', 'snatch'].some(n => card.name.toLowerCase().includes(n));
   const isSuperset = card.exercises && card.exercises.length > 1;
@@ -1096,6 +1134,7 @@ function LiftingCard({ card, isActive, colors, currentTheme, weight, reps, onWei
 
       {/* LOG ATTACK / REST button */}
       {isResting ? (
+        <>
         <button
           onClick={onSkipRest}
           className="w-full py-3 border-2 border-cyan-500/60 bg-cyan-950/40 text-center relative overflow-hidden"
@@ -1111,6 +1150,12 @@ function LiftingCard({ card, isActive, colors, currentTheme, weight, reps, onWei
             {restEvent && <p className="text-[10px] text-zinc-500 mt-1 italic">{restEvent}</p>}
           </div>
         </button>
+        {canUndo && onUndo && (
+          <button onClick={onUndo} className="w-full py-2 mt-1 border border-zinc-700 bg-zinc-900 text-center hover:bg-zinc-800">
+            <span className="text-[9px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>↩ UNDO LAST</span>
+          </button>
+        )}
+        </>
       ) : (
         <button
           onClick={(e) => { (e.currentTarget as HTMLElement).style.animation = 'shake 200ms'; setTimeout(() => { (e.currentTarget as HTMLElement).style.animation = ''; }, 200); onLogAttack(); }}
