@@ -74,3 +74,59 @@ describe('nativeHealth — platform safety', () => {
     expect(await getWeight()).toBeNull();
   });
 });
+
+describe('nativeHealth — type identifier validation', () => {
+  // These are the valid identifiers accepted by @capgo/capacitor-health plugin
+  // Source: node_modules/@capgo/capacitor-health/ios/Sources/HealthPlugin/Health.swift (HealthDataType enum)
+  const VALID_PLUGIN_TYPES = new Set([
+    'steps', 'distance', 'calories', 'heartRate', 'weight', 'sleep',
+    'respiratoryRate', 'oxygenSaturation', 'restingHeartRate', 'heartRateVariability',
+    'bloodPressure', 'bloodGlucose', 'bodyTemperature', 'height', 'flightsClimbed',
+    'exerciseTime', 'distanceCycling', 'bodyFat', 'basalBodyTemperature',
+    'basalCalories', 'totalCalories', 'mindfulness',
+    'workouts', // special case handled separately by plugin
+  ]);
+
+  it('IOS_READ_TYPES only contains valid @capgo plugin identifiers', async () => {
+    // This test prevents the bug where invalid type names cause requestAuthorization
+    // to throw before the iOS permission prompt ever shows
+    const mod = await import('@/services/nativeHealth');
+    const iosTypes = (mod as any).IOS_READ_TYPES || [];
+
+    // If IOS_READ_TYPES isn't exported, read it from source
+    if (iosTypes.length === 0) {
+      const fs = await import('fs');
+      const source = fs.readFileSync('src/services/nativeHealth.ts', 'utf-8');
+      const match = source.match(/IOS_READ_TYPES\s*=\s*\[(.*?)\]/s);
+      if (match) {
+        const types = match[1].match(/'([^']+)'/g)?.map(s => s.replace(/'/g, '')) || [];
+        for (const type of types) {
+          expect(VALID_PLUGIN_TYPES.has(type), `"${type}" is not a valid @capgo plugin type. Valid types: ${[...VALID_PLUGIN_TYPES].join(', ')}`).toBe(true);
+        }
+      }
+    }
+  });
+
+  it('ANDROID_READ_TYPES only contains valid @capgo plugin identifiers', async () => {
+    const fs = await import('fs');
+    const source = fs.readFileSync('src/services/nativeHealth.ts', 'utf-8');
+    const match = source.match(/ANDROID_READ_TYPES\s*=\s*\[(.*?)\]/s);
+    if (match) {
+      const types = match[1].match(/'([^']+)'/g)?.map(s => s.replace(/'/g, '')) || [];
+      for (const type of types) {
+        expect(VALID_PLUGIN_TYPES.has(type), `"${type}" is not a valid @capgo plugin type. Valid types: ${[...VALID_PLUGIN_TYPES].join(', ')}`).toBe(true);
+      }
+    }
+  });
+
+  it('query dataType strings in getCaloriesBurned/getSleep/getBodyFat use valid identifiers', async () => {
+    const fs = await import('fs');
+    const source = fs.readFileSync('src/services/nativeHealth.ts', 'utf-8');
+
+    // Extract all dataType values from queryAggregated and readSamples calls
+    const dataTypeMatches = source.matchAll(/dataType:\s*'([^']+)'/g);
+    for (const match of dataTypeMatches) {
+      expect(VALID_PLUGIN_TYPES.has(match[1]), `queryAggregated/readSamples uses invalid dataType "${match[1]}"`).toBe(true);
+    }
+  });
+});

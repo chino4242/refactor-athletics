@@ -21,7 +21,7 @@ function getHealth(): any {
 
 // v8 data type strings (camelCase per definitions.ts)
 const ANDROID_READ_TYPES = ['steps', 'totalCalories', 'sleep', 'weight', 'heartRate', 'heartRateVariability', 'bodyFat', 'workouts'];
-const IOS_READ_TYPES = ['steps', 'activeEnergyBurned', 'basalEnergyBurned', 'sleepAnalysis', 'weight', 'heartRate', 'heartRateVariability', 'bodyFatPercentage', 'workouts', 'restingHeartRate'];
+const IOS_READ_TYPES = ['steps', 'calories', 'totalCalories', 'sleep', 'weight', 'heartRate', 'heartRateVariability', 'bodyFat', 'workouts', 'restingHeartRate'];
 
 export async function isHealthAvailable(): Promise<boolean> {
   if (!isNative()) return false;
@@ -72,13 +72,13 @@ export async function getCaloriesBurned(startDate: string, endDate: string): Pro
   try {
     const h = getHealth();
     if (isIOS()) {
-      // iOS: sum basal + active energy for total calories burned
-      const [basal, active] = await Promise.all([
-        h.queryAggregated({ dataType: 'basalEnergyBurned', startDate, endDate }).catch(() => ({ samples: [] })),
-        h.queryAggregated({ dataType: 'activeEnergyBurned', startDate, endDate }).catch(() => ({ samples: [] })),
-      ]);
-      const total = sumAggregated(basal) + sumAggregated(active);
-      return Math.round(total);
+      // iOS: use totalCalories (plugin maps to basal + active internally)
+      const result = await h.queryAggregated({ dataType: 'totalCalories', startDate, endDate }).catch(() => ({ samples: [] }));
+      const total = sumAggregated(result);
+      if (total > 0) return Math.round(total);
+      // Fallback to just 'calories' (active only)
+      const active = await h.queryAggregated({ dataType: 'calories', startDate, endDate }).catch(() => ({ samples: [] }));
+      return Math.round(sumAggregated(active));
     }
     // Android: try total calories first, fall back to active-only
     const result = await h.queryAggregated({ dataType: 'totalCalories', startDate, endDate });
@@ -95,7 +95,7 @@ export async function getSleep(startDate: string, endDate: string): Promise<numb
     const h = getHealth();
     if (isIOS()) {
       // iOS: HealthKit doesn't support aggregated sleep queries; use readSamples
-      const { samples } = await h.readSamples({ dataType: 'sleepAnalysis', startDate, endDate, limit: 100 });
+      const { samples } = await h.readSamples({ dataType: 'sleep', startDate, endDate, limit: 100 });
       if (!samples?.length) return 0;
       // Sum duration of all sleep samples (value is minutes in Capgo plugin)
       return Math.round(samples.reduce((s: number, sample: any) => s + (sample.value || 0), 0));
