@@ -36,6 +36,8 @@ interface BattleCard {
   section?: string;
   catalogItem?: CatalogItem;
   lastWeight?: number;
+  bestValue?: number;
+  lastThree?: number[];
   currentLevel?: number;
   threatLevel?: 'guardian' | 'trickster' | 'titan' | 'spark';
 }
@@ -72,6 +74,8 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
   const [restMax, setRestMax] = useState(60);
   const [isResting, setIsResting] = useState(false);
   const [lastAttack, setLastAttack] = useState<{ cardId: string; exerciseId: string; weight: string; reps: string; subIdx?: number; isSuperset?: boolean } | null>(null);
+  const [defeatedOverlay, setDefeatedOverlay] = useState<{ name: string; xp: number; lastThree: number[]; isPr: boolean } | null>(null);
+  const [prFlash, setPrFlash] = useState(false);
   const [userBodyweight, setUserBodyweight] = useState(180);
   const [userSex, setUserSex] = useState('male');
   const [catalogItems, setCatalogItems] = useState<CatalogItem[]>([]);
@@ -228,12 +232,14 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
               }];
             }
 
-            // Find last weight from history
             const lastLog = historyArr
               .filter((h: any) => (h.exercise_id || '').toLowerCase() === exId.toLowerCase())
               .sort((a: any, b: any) => (b.timestamp || 0) - (a.timestamp || 0))[0];
             const lastWeight = lastLog?.data?.[0]?.weight || 0;
             const currentLevel = Math.max(...historyArr.filter((h: any) => (h.exercise_id || '').toLowerCase() === exId.toLowerCase()).map((h: any) => h.level || 0), 0);
+            const exHistory = historyArr.filter((h: any) => (h.exercise_id || '').toLowerCase() === exId.toLowerCase()).sort((a: any, b: any) => (b.timestamp || 0) - (a.timestamp || 0));
+            const bestValue = Math.max(...exHistory.map((h: any) => h.raw_value || 0), 0);
+            const lastThree = exHistory.slice(0, 3).map((h: any) => h.raw_value || 0).reverse();
 
             return [{
               id: uuidv4(),
@@ -250,6 +256,8 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
               catalogItem: catItem,
               lastWeight,
               currentLevel,
+              bestValue,
+              lastThree,
             }];
           });
 
@@ -386,7 +394,7 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
   // Track which sub-exercise we're on for supersets
   const [subExerciseIdx, setSubExerciseIdx] = useState(0);
   const [showEndConfirm, setShowEndConfirm] = useState(false);
-  const [rankUpToast, setRankUpToast] = useState<string | null>(null);
+  const [rankUpToast, setRankUpToast] = useState<{ name: string; level: number; rankName: string; nextThreshold?: string } | null>(null);
   const [sessionXp, setSessionXp] = useState(0);
   const [xpPop, setXpPop] = useState<number | null>(null);
   const [comboCount, setComboCount] = useState(0);
@@ -436,14 +444,23 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
       );
       // Show rank-up celebration if level increased
       if (result?.level > 0 && result?.level > (result?.previous_level || 0)) {
-        setRankUpToast(`${card.name} → LV${result.level} ${result.rank_name || ''}`);
-        setTimeout(() => setRankUpToast(null), 3000);
+        setRankUpToast({ name: card.name, level: result.level, rankName: result.rank_name || '', nextThreshold: result.next_threshold || '' });
+        setTimeout(() => setRankUpToast(null), 3500);
       }
       // Track session XP + floating number
       if (result?.xp_earned > 0) {
         setSessionXp(prev => prev + result.xp_earned);
         setXpPop(result.xp_earned);
         setTimeout(() => setXpPop(null), 900);
+      }
+      // PR detection — compare raw weight to historical best
+      if (w > 0 && w > (card.bestValue || 0)) {
+        setPrFlash(true);
+        setTimeout(() => setPrFlash(false), 1500);
+        // Mark PR for defeat overlay
+        if (card.completedSets + 1 >= card.totalSets) {
+          setDefeatedOverlay(prev => prev ? { ...prev, isPr: true } : prev);
+        }
       }
       // Perfect Strike (15% chance, 30% if beat last weight)
       if (currentTheme !== 'athlete') {
@@ -481,15 +498,25 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
     }
 
     // Update card state (1 full set complete)
+    const newCompleted = card.completedSets + 1;
+    const isDefeated = newCompleted >= card.totalSets;
+
+    if (isDefeated) {
+      // Show defeat overlay — card marks defeated when user taps to continue
+      setDefeatedOverlay({
+        name: card.name,
+        xp: sessionXp,
+        lastThree: card.lastThree || [],
+        isPr: false, // will be set by PR detection below
+      });
+    }
+
     setCards(prev => prev.map(c => {
       if (c.id !== card.id) return c;
-      const newCompleted = c.completedSets + 1;
-      const defeated = newCompleted >= c.totalSets;
-      return { ...c, completedSets: newCompleted, defeated, poofing: defeated };
+      return { ...c, completedSets: newCompleted, defeated: isDefeated, poofing: isDefeated };
     }));
 
     // Start rest (if not final set) — 500ms reward delay first
-    const newCompleted = card.completedSets + 1;
     setComboCount(prev => {
       const next = prev + 1;
       if (next === 5) setBounties(b => b.map(x => x.id === 'combo5' && !x.done ? { ...x, done: true } : x));
@@ -855,6 +882,7 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
                 onShowHistory={showExerciseHistory}
                 onUndo={undoLastAttack}
                 canUndo={idx === activeIndex && isResting && !!lastAttack}
+                prFlash={idx === activeIndex && prFlash}
               />
             )}
           </div>
@@ -896,12 +924,54 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
         </div>
       )}
 
-      {/* Rank-up toast */}
+      {/* Rank-up full-screen flash */}
       {rankUpToast && (
-        <div className="fixed top-16 left-4 right-4 z-50 flex justify-center animate-in slide-in-from-top-4">
-          <div className={`border-2 ${colors.primary} bg-zinc-900 px-4 py-3 text-center`} style={{ boxShadow: colors.glow }}>
-            <p className={`text-[10px] ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-              ⚡ RANK UP! {rankUpToast}
+        <div className="fixed inset-0 z-50 flex items-center justify-center animate-in fade-in duration-200" onClick={() => setRankUpToast(null)}>
+          <div className="absolute inset-0 bg-black/80" />
+          <div className="relative text-center space-y-3 px-8">
+            <p className={`text-[12px] ${colors.secondary} tracking-widest`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              ⬆ RANK UP
+            </p>
+            <p className="text-xl text-white font-bold" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              {rankUpToast.name}
+            </p>
+            <p className={`text-3xl ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              LV {rankUpToast.level}
+            </p>
+            <p className="text-[10px] text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              {rankUpToast.rankName}
+            </p>
+            {rankUpToast.nextThreshold && (
+              <p className="text-[10px] text-zinc-500 mt-2">
+                Next: {rankUpToast.nextThreshold}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Defeat overlay — tap to continue */}
+      {defeatedOverlay && !rankUpToast && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center" onClick={() => setDefeatedOverlay(null)}>
+          <div className="absolute inset-0 bg-black/70" />
+          <div className="relative text-center space-y-3 px-8">
+            <p className="text-[11px] text-green-400 tracking-widest" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              ✓ DEFEATED
+            </p>
+            <p className="text-lg text-white font-bold" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              {defeatedOverlay.name}
+            </p>
+            {defeatedOverlay.isPr && (
+              <p className="text-sm text-amber-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>★ NEW PR</p>
+            )}
+            {defeatedOverlay.lastThree.length > 0 && (
+              <p className="text-[10px] text-zinc-400">
+                Last {defeatedOverlay.lastThree.length}: {defeatedOverlay.lastThree.join(' → ')}{' '}
+                {defeatedOverlay.lastThree.length >= 2 && (defeatedOverlay.lastThree[defeatedOverlay.lastThree.length - 1] > defeatedOverlay.lastThree[0] ? '↑' : defeatedOverlay.lastThree[defeatedOverlay.lastThree.length - 1] < defeatedOverlay.lastThree[0] ? '↓' : '→')}
+              </p>
+            )}
+            <p className="text-[9px] text-zinc-600 mt-4" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              tap to continue
             </p>
           </div>
         </div>
@@ -997,12 +1067,12 @@ function EnemySprite({ exerciseId, level, defeated, theme, showName, attackCount
 }
 
 // --- Lifting Card ---
-function LiftingCard({ card, isActive, colors, currentTheme, weight, reps, onWeightChange, onRepsChange, isResting, restSeconds, restMax, onLogAttack, onSkipRest, subExerciseIdx, catalog, onSwap, restEvent, onShowHistory, onUndo, canUndo }: {
+function LiftingCard({ card, isActive, colors, currentTheme, weight, reps, onWeightChange, onRepsChange, isResting, restSeconds, restMax, onLogAttack, onSkipRest, subExerciseIdx, catalog, onSwap, restEvent, onShowHistory, onUndo, canUndo, prFlash }: {
   card: BattleCard; isActive: boolean; colors: any; currentTheme: string;
   weight: string; reps: string; onWeightChange: (v: string) => void; onRepsChange: (v: string) => void;
   isResting: boolean; restSeconds: number; restMax: number; onLogAttack: () => void; onSkipRest: () => void;
   subExerciseIdx: number; catalog: CatalogItem[]; onSwap: (exId: string, name: string) => void;
-  restEvent?: string | null; onShowHistory: (exId: string) => void; onUndo?: () => void; canUndo?: boolean;
+  restEvent?: string | null; onShowHistory: (exId: string) => void; onUndo?: () => void; canUndo?: boolean; prFlash?: boolean;
 }) {
   const isCompound = ['squat', 'bench', 'deadlift', 'press', 'row', 'clean', 'snatch'].some(n => card.name.toLowerCase().includes(n));
   const isSuperset = card.exercises && card.exercises.length > 1;
@@ -1064,6 +1134,11 @@ function LiftingCard({ card, isActive, colors, currentTheme, weight, reps, onWei
 
       {/* HP Bar (shown here only for athlete mode or superset — combat non-superset has it above) */}
       {(!combat || isSuperset) && <PixelBar current={card.completedSets} max={card.totalSets} inverted={combat} />}
+
+      {/* PR Flash */}
+      {prFlash && (
+        <p className="text-center text-sm text-amber-400 font-bold animate-pulse" style={{ fontFamily: "var(--font-pixel), monospace" }}>★ NEW PR</p>
+      )}
 
       {/* Equipment variants */}
       {(() => {
