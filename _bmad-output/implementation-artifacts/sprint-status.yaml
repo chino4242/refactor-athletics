@@ -84,3 +84,13 @@ development_status:
   6-5-remove-debug-tools: open        # Debug health page, test routes
   6-6-crash-reporting: open           # Sentry or equivalent
   epic-6-retrospective: open
+
+  # ═══════════════════════════════════════════
+  # EPIC 7: Train Screen — Daily Mission Board
+  # ═══════════════════════════════════════════
+  epic-7: open
+  7-1-daily-progress-tracker: open    # Show completed vs remaining, grouped by session type
+  7-2-multi-session-battle-state: open # Save & exit, resume later, date-keyed state
+  7-3-completion-bonus: open          # Bonus XP + celebration when all exercises done
+  7-4-session-type-grouping: open     # Tap a group to start only those cards
+  epic-7-retrospective: open
