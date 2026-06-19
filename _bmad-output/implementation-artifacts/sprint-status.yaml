@@ -58,6 +58,7 @@ development_status:
   4-6-level-up-toast: done           # Global detection, toast on threshold crossing
   4-7-attack-animations: open        # Flash, shake, defeat dissolve (Proposal 3)
   4-8-battle-narration: open         # One-line action-reaction text (Proposal 2)
+  4-9-treadmill-cardio-ux: ready-for-dev  # Full-screen zone colors + audio coaching
   epic-4-retrospective: open
 
   # ═══════════════════════════════════════════

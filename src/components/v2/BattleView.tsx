@@ -553,9 +553,9 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
     }
   };
 
-  const logDurationAttack = async (seconds: number) => {
+  const logDurationAttack = async (seconds: number, targetCardId?: string) => {
     const aliveCards = cards.filter(c => !c.defeated);
-    const card = aliveCards[activeIndex];
+    const card = targetCardId ? cards.find(c => c.id === targetCardId) : aliveCards[activeIndex];
     if (!card) return;
 
     try {
@@ -1163,7 +1163,7 @@ function LiftingCard({ card, isActive, colors, currentTheme, weight, reps, onWei
 
 // --- Duration Card ---
 function DurationCard({ card, isActive, colors, currentTheme, onComplete }: {
-  card: BattleCard; isActive: boolean; colors: any; currentTheme: string; onComplete: (seconds: number) => void;
+  card: BattleCard; isActive: boolean; colors: any; currentTheme: string; onComplete: (seconds: number, cardId?: string) => void;
 }) {
   const [elapsed, setElapsed] = useState(0);
   const [running, setRunning] = useState(false);
@@ -1175,7 +1175,7 @@ function DurationCard({ card, isActive, colors, currentTheme, onComplete }: {
       setElapsed(prev => {
         if (prev + 1 >= targetSec) {
           setRunning(false);
-          onComplete(prev + 1);
+          onComplete(prev + 1, card.id);
           return 0;
         }
         return prev + 1;
@@ -1222,7 +1222,7 @@ function DurationCard({ card, isActive, colors, currentTheme, onComplete }: {
       {/* Start / Stop */}
       <button
         onClick={() => {
-          if (running) { setRunning(false); onComplete(elapsed); setElapsed(0); }
+          if (running) { setRunning(false); onComplete(elapsed, card.id); setElapsed(0); }
           else setRunning(true);
         }}
         className={`w-full py-4 border-2 ${running ? 'border-red-500' : colors.primary} bg-zinc-800 text-center transition-colors hover:bg-zinc-700`}
@@ -1237,7 +1237,7 @@ function DurationCard({ card, isActive, colors, currentTheme, onComplete }: {
 
 // --- Cardio Card (interval runner) ---
 function CardioCard({ card, isActive, colors, onComplete }: {
-  card: BattleCard; isActive: boolean; colors: any; onComplete: (seconds: number) => void;
+  card: BattleCard; isActive: boolean; colors: any; onComplete: (seconds: number, cardId?: string) => void;
 }) {
   const [engineChoice, setEngineChoice] = useState<'hiit' | 'zone2' | null>(null);
   const [zone2Duration, setZone2Duration] = useState(30);
@@ -1256,17 +1256,41 @@ function CardioCard({ card, isActive, colors, onComplete }: {
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
 
+  const [flash, setFlash] = useState(false);
+  const prevIdx = useRef(currentIdx);
+
+  // Flash on zone transition
+  useEffect(() => {
+    if (currentIdx !== prevIdx.current) {
+      setFlash(true);
+      setTimeout(() => setFlash(false), 150);
+      prevIdx.current = currentIdx;
+    }
+  }, [currentIdx]);
+
   useEffect(() => {
     if (!running || !current) return;
     const t = setInterval(() => {
       setElapsed(prev => {
-        // 3-second countdown beep
-        if (prev + 1 === current.seconds - 3) {
-          import('@/utils/audio').then(m => m.playCountdownBeep(600, 0.1));
-        }
+        const remaining = current.seconds - (prev + 1);
+        // 3-2-1 countdown beeps (ascending pitch)
+        if (remaining === 2) import('@/utils/audio').then(m => m.playCountdownBeep(600, 0.1));
+        if (remaining === 1) import('@/utils/audio').then(m => m.playCountdownBeep(800, 0.1));
+        if (remaining === 0) import('@/utils/audio').then(m => m.playCountdownBeep(1000, 0.15));
+
         if (prev + 1 >= current.seconds) {
-          // Beep on zone transition
-          import('@/utils/audio').then(m => m.playCountdownBeep(1000, 0.15));
+          // Zone transition sound
+          const nextZone = intervals[currentIdx + 1];
+          if (nextZone?.color.includes('red')) {
+            // Urgent triple beep for Full Send
+            setTimeout(() => import('@/utils/audio').then(m => m.playCountdownBeep(800, 0.05)), 0);
+            setTimeout(() => import('@/utils/audio').then(m => m.playCountdownBeep(1000, 0.05)), 80);
+            setTimeout(() => import('@/utils/audio').then(m => m.playCountdownBeep(1200, 0.1)), 160);
+          } else {
+            // Normal double beep
+            setTimeout(() => import('@/utils/audio').then(m => m.playCountdownBeep(800, 0.05)), 0);
+            setTimeout(() => import('@/utils/audio').then(m => m.playCountdownBeep(1200, 0.1)), 80);
+          }
           import('@/utils/haptics').then(m => m.haptic('medium'));
           if (currentIdx + 1 < intervals.length) {
             setCurrentIdx(i => i + 1);
@@ -1274,7 +1298,7 @@ function CardioCard({ card, isActive, colors, onComplete }: {
           } else {
             setRunning(false);
             setFinished(true);
-            onCompleteRef.current(totalDuration);
+            onCompleteRef.current(totalDuration, card.id);
             return prev + 1;
           }
         }
@@ -1323,12 +1347,27 @@ function CardioCard({ card, isActive, colors, onComplete }: {
     );
   }
 
+  // Zone-based card styling
+  const zoneBg = current?.color.includes('red') ? 'bg-red-950/60 border-red-700'
+    : current?.color.includes('orange') ? 'bg-orange-950/60 border-orange-700'
+    : 'bg-green-950/60 border-green-700';
+  const zoneText = current?.color.includes('red') ? 'text-red-400'
+    : current?.color.includes('orange') ? 'text-orange-400'
+    : 'text-green-400';
+
+  // Parse incline from note (e.g., "3%", "@ 3% incline", "8%")
+  const inclineMatch = current?.note?.match(/(\d+(?:\.\d+)?)\s*%/);
+  const incline = inclineMatch ? inclineMatch[1] : null;
+
+  const remaining = current ? current.seconds - elapsed : 0;
+  const isCountdown = remaining <= 5 && running;
+
   return (
-    <div className={`border-2 ${isActive ? colors.primary : colors.border} bg-zinc-900 p-4 space-y-4`}>
+    <div className={`border-2 ${zoneBg} p-4 space-y-4 transition-colors duration-300 ${flash ? 'brightness-200' : ''}`} style={flash ? { filter: 'brightness(2)' } : undefined}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <p className="text-xs text-white font-medium">{card.name}</p>
-        <span className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+        <span className="text-[8px] text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>
           {Math.round(totalElapsed / 60)}/{Math.round(totalDuration / 60)} MIN
         </span>
       </div>
@@ -1340,23 +1379,29 @@ function CardioCard({ card, isActive, colors, onComplete }: {
         ))}
       </div>
 
-      {/* Current zone */}
+      {/* Current zone — LARGE display */}
       {current && (
-        <div className="text-center py-4">
-          <p className={`text-[10px] uppercase mb-1 font-bold ${current.color.includes('red') ? 'text-red-400' : current.color.includes('orange') ? 'text-orange-400' : 'text-green-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+        <div className="text-center py-3">
+          <p className={`text-sm uppercase font-bold ${zoneText}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
             {current.zone}
           </p>
-          <p className="text-[11px] text-zinc-400 mb-3">
+          <p className="text-[10px] text-zinc-500 mt-1 mb-3">
             {current.zone === 'Comfortable' ? 'Easy pace — can hold a conversation' :
-             current.zone === 'Challenging' ? 'Push it — breathing hard, can still talk in short phrases' :
-             current.zone === 'Full Send' ? 'All out — max effort, sprint' :
+             current.zone === 'Challenging' ? 'Push it — breathing hard' :
+             current.zone === 'Full Send' ? 'All out — max effort' :
              'Steady effort'}
           </p>
-          {current.note && (
-            <p className="text-[11px] text-amber-400 mb-2 font-medium">📐 {current.note}</p>
+
+          {/* Large incline display */}
+          {incline && (
+            <p className="text-3xl text-white font-bold mb-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              {incline}%<span className="text-base text-zinc-400 ml-1">incline</span>
+            </p>
           )}
-          <span className="text-4xl text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-            {running ? (current.seconds - elapsed) : current.seconds}
+
+          {/* Countdown */}
+          <span className={`text-white block ${isCountdown ? 'text-5xl animate-pulse' : 'text-3xl'}`} style={{ fontFamily: "var(--font-pixel), monospace", transition: 'font-size 0.2s' }}>
+            {running ? remaining : current.seconds}
           </span>
           <p className="text-[8px] text-zinc-600 mt-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>
             INTERVAL {currentIdx + 1}/{intervals.length}
@@ -1369,15 +1414,35 @@ function CardioCard({ card, isActive, colors, onComplete }: {
         </div>
       )}
 
-      {/* Start / Stop */}
-      <button
-        onClick={() => setRunning(!running)}
-        className={`w-full py-4 border-2 ${running ? 'border-red-500' : colors.primary} bg-zinc-800 text-center transition-colors hover:bg-zinc-700`}
-      >
-        <span className={`text-[10px] ${running ? 'text-red-400' : colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-          {running ? '■ PAUSE' : '▶ START CARDIO'}
-        </span>
-      </button>
+      {/* Controls */}
+      <div className="space-y-2">
+        <button
+          onClick={() => setRunning(!running)}
+          className={`w-full py-3 border-2 ${running ? 'border-red-500' : colors.primary} bg-zinc-800 text-center transition-colors hover:bg-zinc-700`}
+        >
+          <span className={`text-[10px] ${running ? 'text-red-400' : colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            {running ? '■ PAUSE' : '▶ START CARDIO'}
+          </span>
+        </button>
+        {running && (
+          <div className="flex gap-2">
+            {currentIdx + 1 < intervals.length && (
+              <button
+                onClick={() => { setCurrentIdx(i => i + 1); setElapsed(0); }}
+                className="flex-1 py-2 border border-zinc-700 bg-zinc-800 text-center hover:bg-zinc-700"
+              >
+                <span className="text-[9px] text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>▸ SKIP</span>
+              </button>
+            )}
+            <button
+              onClick={() => { if (totalElapsed > 0) onCompleteRef.current(totalElapsed, card.id); setRunning(false); setFinished(true); }}
+              className="flex-1 py-2 border border-zinc-700 bg-zinc-800 text-center hover:bg-zinc-700"
+            >
+              <span className="text-[9px] text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>✓ END EARLY</span>
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
