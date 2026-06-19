@@ -156,4 +156,80 @@ Add session_group column to workouts.
 
 1. Should unconfirmed activities expire? (e.g., if you don't confirm within 24h, auto-confirm at lower XP?)
 2. Should there be a "quick confirm all" button for multiple pending activities?
-3. For ranked exercises synced externally (e.g., a 5K run tracked by Strava → Health Connect), should it trigger rank calculation? (Currently only Battle Mode logs rank.)
+
+---
+
+### 9-6: Rank Evaluation from Synced Activities
+
+**As a** user who went for a run tracked by my watch,
+**I want** the system to automatically check if I crossed any ranking thresholds,
+**So that** my Power Level increases from real-world training without using Battle Mode.
+
+**Behavior:**
+- On exercise sync, if activity is a run with distance data:
+  - Distance ≥ 5K → evaluate total time against `run_5k` thresholds
+  - Distance ≥ 1 mile → extract best mile split → evaluate against `run_1_mile` thresholds
+  - Distance ≥ 400m → extract best 400m split → evaluate against `run_400m` thresholds
+- One run can trigger MULTIPLE rank evaluations (5K time + best mile + best 400m)
+- If any threshold is exceeded:
+  - Store the ranked workout with the appropriate level
+  - Power Level updates immediately
+  - Rank-up celebration shown in confirmation modal (not full-screen — they're not in battle)
+  - Notification text includes rank-up: *"The Fox Spirit bows. Your mile time just hit LV2."*
+
+**Future extension (non-running):**
+- Plank hold detected from wearable → rank `plank`
+- Dead hang detected → rank `dead_hang`
+- Strength training with weight data (rare from wearables, but possible from Apple Watch)
+
+**Data needed from Health Connect / HealthKit:**
+- `distance_meters` — total distance
+- `duration_seconds` — total time
+- Splits/laps if available (rare — most wearables only give total)
+- If no splits: assume even pace for split estimation
+
+**Platform notes:**
+- Health Connect (Android): `ExerciseSessionRecord` includes `distance` aggregate
+- HealthKit (iOS): `HKWorkout` includes `totalDistance` as `HKQuantity`
+- Both already returned by the sync plugins
+
+---
+
+### 9-7: Background Health Sync (Infrastructure)
+
+**As a** user who just finished an activity,
+**I want** the notification to arrive shortly after I finish (not only when I open the app),
+**So that** the experience feels responsive and real-time.
+
+**Current limitation:**
+- HealthSync runs in a React component on app mount (web layer)
+- No code runs when the app is closed
+- "Immediate notification" currently means "next time you open the app"
+
+**Platform-specific solutions:**
+
+**iOS:**
+- `HKObserverQuery` — registers a background callback when specific HealthKit data types change
+- Triggers a brief background execution window
+- Can fire a local notification from background
+- Requires: Background Modes capability (already available in Capacitor)
+
+**Android:**
+- Health Connect `registerForDataNotifications` — notifies when new exercise sessions are written
+- Alternatively: Capacitor Background Runner plugin for periodic checks
+- Can fire a local notification from the background task
+
+**Acceptance Criteria:**
+- App registers for exercise session change events on both platforms
+- When new exercise data is detected in background:
+  - Evaluate if >15 min duration
+  - Fire local push notification with theme-specific text
+  - Badge the app icon with pending activity count
+- Tapping notification opens app → confirmation modal with the detected activity
+
+**Dependencies:**
+- Push notification infrastructure (story 6-2)
+- Native background execution capability
+- This is an ENHANCEMENT — the core flow (9-1 through 9-5) works without this, just fires on next app open instead of immediately
+
+**Effort note:** This is the most complex story in the epic. It requires native Swift/Kotlin code for background observers. Consider shipping 9-1 through 9-6 first with "on app open" detection, then adding true background sync as a polish pass.
