@@ -17,13 +17,14 @@ export default function ActiveWorkoutPage({ userId }: Props) {
   const filter = params.get('filter');
   const exercise = params.get('exercise');
   const day = params.get('day');
+  const session = params.get('session');
 
   return (
     <BattleView
       userId={userId}
       onComplete={() => router.push('/train')}
       flexibleMode={mode === 'flexible'}
-      filter={filter || undefined}
+      filter={session || filter || undefined}
       singleExercise={exercise || undefined}
       overrideDay={day || undefined}
     />

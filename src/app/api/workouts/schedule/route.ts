@@ -98,6 +98,34 @@ export async function GET() {
                 exercises: exerciseNames,
                 treadmillBlocks: treadmillCount,
                 dayType: resolved.dayType,
+                // Session groups for daily mission board
+                sessionGroups: (() => {
+                    const groups: { type: string; exercises: { id: string; name: string }[] }[] = [];
+                    const coreKeywords = ['plank', 'crunch', 'sit_up', 'v_up', 'flutter', 'ab', 'core', 'dead_bug', 'russian_twist', 'leg_raise'];
+
+                    // Flatten ALL exercises from both exercise blocks and supersets
+                    const allExercises: { id: string; name: string }[] = [];
+                    for (const b of blocks) {
+                        if (b.section === 'warmup' || b.section === 'cooldown') continue;
+                        if (b.block_type === 'exercise' && b.exercise_id) {
+                            allExercises.push({ id: b.exercise_id, name: catalogMap.get(b.exercise_id)?.name || b.exercise_id.replace(/_/g, ' ') });
+                        } else if (b.block_type === 'superset' && b.exercises?.length) {
+                            for (const ex of b.exercises) {
+                                if (ex.exercise_id) allExercises.push({ id: ex.exercise_id, name: catalogMap.get(ex.exercise_id)?.name || ex.exercise_id.replace(/_/g, ' ') });
+                            }
+                        }
+                    }
+
+                    // Categorize
+                    const coreExs = allExercises.filter(e => coreKeywords.some(k => e.id.includes(k)) || (catalogMap.get(e.id)?.category || '').toLowerCase().includes('core'));
+                    const coreIds = new Set(coreExs.map(e => e.id));
+                    const strengthExs = allExercises.filter(e => !coreIds.has(e.id));
+
+                    if (strengthExs.length > 0) groups.push({ type: 'Strength', exercises: strengthExs });
+                    if (treadmillCount > 0) groups.push({ type: 'Cardio', exercises: [{ id: 'cardio_block', name: 'Treadmill' }] });
+                    if (coreExs.length > 0) groups.push({ type: 'Core', exercises: coreExs });
+                    return groups;
+                })(),
             });
         }
 

@@ -261,9 +261,20 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
             }];
           });
 
+        // Filter by session type if specified
+        let filteredCards = battleCards;
+        if (filter === 'strength') {
+          filteredCards = battleCards.filter(c => c.type === 'lifting');
+        } else if (filter === 'cardio') {
+          filteredCards = battleCards.filter(c => c.type === 'cardio' || c.exerciseId === 'cardio_block');
+        } else if (filter === 'core') {
+          const coreKeywords = ['plank', 'crunch', 'sit_up', 'v_up', 'flutter', 'ab', 'core', 'dead_bug', 'russian_twist', 'leg_raise'];
+          filteredCards = battleCards.filter(c => coreKeywords.some(k => c.exerciseId.includes(k) || c.name.toLowerCase().includes(k)));
+        }
+
         // Assign threat levels (combat mode only)
         const threats: ('guardian' | 'trickster' | 'titan' | 'spark')[] = ['guardian', 'trickster', 'titan', 'spark'];
-        const cardsWithThreats = battleCards.map(c => ({
+        const cardsWithThreats = filteredCards.map(c => ({
           ...c,
           threatLevel: currentTheme !== 'athlete' ? threats[Math.floor(Math.random() * threats.length)] : undefined,
         }));
@@ -914,11 +925,11 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
       {showEndConfirm && (
         <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-6">
           <div className={`border-2 ${colors.primary} bg-zinc-900 p-6 max-w-xs w-full text-center`}>
-            <p className={`text-[10px] ${colors.headerText} mb-4`} style={{ fontFamily: "var(--font-pixel), monospace" }}>END BATTLE?</p>
-            <p className="text-xs text-zinc-500 mb-4">Progress is saved. You can resume later.</p>
-            <div className="flex gap-3">
-              <button onClick={() => setShowEndConfirm(false)} className={`flex-1 py-3 border ${colors.border} bg-zinc-800 text-zinc-300 text-[9px]`} style={{ fontFamily: "var(--font-pixel), monospace" }}>KEEP GOING</button>
-              <button onClick={onComplete} className="flex-1 py-3 border border-red-800 bg-zinc-800 text-red-400 text-[9px]" style={{ fontFamily: "var(--font-pixel), monospace" }}>END</button>
+            <p className={`text-[10px] ${colors.headerText} mb-4`} style={{ fontFamily: "var(--font-pixel), monospace" }}>PAUSE BATTLE?</p>
+            <div className="space-y-2">
+              <button onClick={() => setShowEndConfirm(false)} className={`w-full py-3 border ${colors.primary} bg-zinc-800 ${colors.secondary} text-[9px]`} style={{ fontFamily: "var(--font-pixel), monospace" }}>▸ KEEP GOING</button>
+              <button onClick={onComplete} className={`w-full py-3 border ${colors.border} bg-zinc-800 text-zinc-300 text-[9px]`} style={{ fontFamily: "var(--font-pixel), monospace" }}>◷ SAVE & EXIT</button>
+              <button onClick={() => { localStorage.removeItem(BATTLE_STATE_KEY); onComplete(); }} className="w-full py-3 border border-red-900 bg-zinc-800 text-red-400 text-[9px]" style={{ fontFamily: "var(--font-pixel), monospace" }}>✕ END WORKOUT</button>
             </div>
           </div>
         </div>

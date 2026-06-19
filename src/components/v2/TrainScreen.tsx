@@ -63,6 +63,9 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
   const [yesterday, setYesterday] = useState<string | null>(null);
   const [tomorrow, setTomorrow] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [sessionGroups, setSessionGroups] = useState<{ type: string; exercises: { id: string; name: string }[]; completed: number }[]>([]);
+  const [todayXp, setTodayXp] = useState(0);
+  const [allComplete, setAllComplete] = useState(false);
 
   // Refresh when app returns to foreground
   useEffect(() => {
@@ -100,6 +103,40 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
             exercises: (todayProgram.exercises || []).slice(0, 5),
             estimatedXp: todayProgram.xp || (todayProgram.exercises?.length || 3) * 50,
           });
+
+          // Build session groups with completion data
+          if (todayProgram.sessionGroups?.length) {
+            const today = new Date().toLocaleDateString('en-CA');
+            const { createClient: getClient } = await import('@/utils/supabase/client');
+            const sb = getClient();
+            const { data: todayWorkouts } = await sb.from('workouts').select('exercise_id, xp').eq('user_id', userId).eq('date', today);
+            const completedIds = new Set((todayWorkouts || []).map((w: any) => w.exercise_id));
+            const xpTotal = (todayWorkouts || []).reduce((s: number, w: any) => s + (w.xp || 0), 0);
+            setTodayXp(xpTotal);
+
+            const groups = (todayProgram.sessionGroups as any[]).map((g: any) => ({
+              type: g.type,
+              exercises: g.exercises,
+              completed: g.exercises.filter((e: any) => completedIds.has(e.id)).length,
+            }));
+            setSessionGroups(groups);
+
+            const totalExercises = groups.reduce((s: number, g: any) => s + g.exercises.length, 0);
+            const totalCompleted = groups.reduce((s: number, g: any) => s + g.completed, 0);
+            const isAllDone = totalCompleted >= totalExercises && totalExercises > 0;
+            setAllComplete(isAllDone);
+
+            // Award completion bonus if all done and not already awarded
+            if (isAllDone) {
+              const bonusKey = `day_complete_${today}`;
+              if (!localStorage.getItem(bonusKey)) {
+                localStorage.setItem(bonusKey, '1');
+                const { awardXp } = await import('@/utils/xp-service');
+                const sb2 = (await import('@/utils/supabase/client')).createClient();
+                await awardXp(sb2, userId, { type: 'workout', level: 0, volumeXp: 200 }, 'Day Complete Bonus');
+              }
+            }
+          }
         } else {
           setWorkout(null);
         }
@@ -189,31 +226,72 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
         )}
       </PixelBox>
 
-      {/* Today's Workout */}
+      {/* Today's Battle — Daily Mission Board */}
       <PixelBox highlight className="p-4 mb-4">
         {workout ? (
           <>
-            <p className={`text-[10px] ${colors.headerText} mb-2 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-              {selectedDay ? `${selectedDay.toUpperCase()}'S WORKOUT` : "TODAY\u0027S WORKOUT"}
-            </p>
-            <p className="text-sm text-white font-medium mb-1">{workout.name}</p>
-            <div className="space-y-1 mb-3">
-              {workout.exercises.map((ex, i) => (
-                <p key={i} className="text-xs text-zinc-400">• {ex}</p>
-              ))}
+            <div className="flex items-center justify-between mb-2">
+              <p className={`text-[10px] ${colors.headerText} uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                {selectedDay ? `${selectedDay.toUpperCase()}'S WORKOUT` : allComplete ? '✓ DAY COMPLETE' : "TODAY\u0027S BATTLE"}
+              </p>
+              {todayXp > 0 && <span className={`text-[10px] ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>⚡{todayXp} XP</span>}
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] text-zinc-500">
-                ~{Math.round((workout.exercises.length * 4 + 10))} min • +{workout.estimatedXp} XP
-              </span>
-              <a
-                href={`/train/active${selectedDay ? `?day=${selectedDay}` : ''}`}
-                className={`text-[10px] px-4 py-2 border ${colors.primary} bg-zinc-800 ${colors.secondary} hover:bg-zinc-700 transition-colors`}
-                style={{ fontFamily: "var(--font-pixel), monospace" }}
-              >
-                {hasBattleSession ? '▸ RESUME BATTLE' : '▸ START'}
-              </a>
-            </div>
+
+            {/* Session Groups */}
+            {sessionGroups.length > 0 ? (
+              <div className="space-y-2 mb-3">
+                {sessionGroups.map((g, i) => {
+                  const done = g.completed >= g.exercises.length;
+                  return (
+                    <a key={i} href={`/train/active?session=${g.type.toLowerCase()}${selectedDay ? `&day=${selectedDay}` : ''}`} className={`flex items-center justify-between px-3 py-2 border ${done ? 'border-green-800 bg-green-950/30' : colors.border + ' bg-zinc-800/50'} hover:bg-zinc-700/50 transition-colors`}>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[10px] ${done ? 'text-green-400' : 'text-zinc-300'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                          {done ? '✓' : '○'} {g.type}
+                        </span>
+                      </div>
+                      <span className={`text-[9px] ${done ? 'text-green-500' : 'text-zinc-500'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                        {g.completed}/{g.exercises.length}
+                      </span>
+                    </a>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="space-y-1 mb-3">
+                {workout.exercises.map((ex, i) => (
+                  <p key={i} className="text-xs text-zinc-400">• {ex}</p>
+                ))}
+              </div>
+            )}
+
+            {/* Progress bar */}
+            {sessionGroups.length > 0 && (
+              <div className="mb-3">
+                <div className="flex h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                  <div className={`${allComplete ? 'bg-green-500' : colors.barFill} transition-all duration-500`} style={{ width: `${(sessionGroups.reduce((s, g) => s + g.completed, 0) / Math.max(sessionGroups.reduce((s, g) => s + g.exercises.length, 0), 1)) * 100}%` }} />
+                </div>
+              </div>
+            )}
+
+            {/* Completion bonus teaser or action button */}
+            {allComplete ? (
+              <p className="text-[10px] text-green-400 text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                🏆 ALL SESSIONS COMPLETE — +200 XP BONUS
+              </p>
+            ) : (
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-zinc-600">
+                  Complete all → +200 XP bonus
+                </span>
+                <a
+                  href={`/train/active${selectedDay ? `?day=${selectedDay}` : ''}`}
+                  className={`text-[10px] px-4 py-2 border ${colors.primary} bg-zinc-800 ${colors.secondary} hover:bg-zinc-700 transition-colors`}
+                  style={{ fontFamily: "var(--font-pixel), monospace" }}
+                >
+                  {hasBattleSession ? '▸ RESUME' : '▸ START ALL'}
+                </a>
+              </div>
+            )}
           </>
         ) : (
           <>
