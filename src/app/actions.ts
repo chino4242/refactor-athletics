@@ -240,7 +240,8 @@ export async function logTrainingAction(
 
     // If this exercise normalizes to a base exercise, fetch that exercise's standards
     let standards = catalogItem?.standards || {};
-    if (normalizesTo && (!standards.brackets || Object.keys(standards).length === 0)) {
+    const hasBrackets = standards.brackets && (standards.brackets.male?.length > 0 || standards.brackets.female?.length > 0);
+    if (normalizesTo && !hasBrackets) {
         const { data: baseExercise } = await supabase.from('catalog').select('standards').eq('id', normalizesTo).single();
         if (baseExercise?.standards?.brackets) {
             standards = baseExercise.standards;
