@@ -1021,30 +1021,38 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
 }
 
 // --- Battle Narration ---
+const CREATURE_DIALOGUE: Record<string, { idle: string[]; hit: string[]; nearDefeat: string; defeated: string }> = {
+  back_squat: { idle: ['The Oni cracks its knuckles. Waiting.', 'It watches you warm up. Unimpressed.'], hit: ['The Oni grunts. It felt that.', 'A worthy strike. The Oni staggers.'], nearDefeat: 'The Oni is breathing hard. One more.', defeated: 'The Oni bows — barely. "Took you long enough."' },
+  deadlift: { idle: ['The Earth Yokai rises from the ground. Slowly.', 'Stone grinds against stone. It stirs.'], hit: ['Cracks form across its body.', 'The Yokai crumbles at the edges.'], nearDefeat: 'It\'s barely holding together. Finish it.', defeated: 'The Earth Yokai sinks back into the ground. Respect earned.' },
+  bench_press: { idle: ['The Haunted Armor hovers. Silent. Waiting.', 'Ghost light flickers inside the visor.'], hit: ['The armor dents. A gauntlet drops.', 'Spectral energy leaks from the impact.'], nearDefeat: 'The armor is losing cohesion. One more strike.', defeated: 'The armor crashes to the ground. The ghost within nods.' },
+  pull_up: { idle: ['The Tengu perches above. Looking down.', '"You again," it sneers.'], hit: ['The Tengu\'s wings falter.', 'It drops a few feet. Pride wounded.'], nearDefeat: '"Fine. FINE. One more and I yield."', defeated: 'The Tengu folds its wings. It has nothing left to teach you here.' },
+  overhead_press: { idle: ['Thunder rumbles. The Oni drums overhead.', 'Lightning crackles between its horns.'], hit: ['The storm wavers.', 'Its drums skip a beat.'], nearDefeat: 'The thunder is fading. Press through.', defeated: 'The Thunder Oni lowers its drums. The sky clears.' },
+  run_1_mile: { idle: ['The Fox Spirit paces. Tails swishing.', '"Catch me if you can," it grins.'], hit: ['You\'re gaining on it.', 'The Fox glances back. Surprised.'], nearDefeat: 'It\'s within reach. Don\'t slow down.', defeated: 'The Fox Spirit stops running. "Well. That was fun."' },
+  plank: { idle: ['The Stone Kappa sits. Immovable.', '"I can do this forever. Can you?"'], hit: ['A crack appears.', 'The Kappa shifts. Slightly.'], nearDefeat: '"You\'re still here? ...Impressive."', defeated: 'The Kappa tips its head. Water spills. It yields.' },
+  push_ups: { idle: ['Shadows gather. Eyes multiply.', 'The ninjas watch from every angle.'], hit: ['One shadow dissipates.', 'The formation breaks slightly.'], nearDefeat: 'Only a few remain. Finish them.', defeated: 'The shadows scatter. They\'ll regroup... but not today.' },
+  run_400m: { idle: ['Steel glints in the air. The volley is ready.', 'Kunai hover. Waiting for you to move.'], hit: ['Blades deflected.', 'The volley thins.'], nearDefeat: 'Almost through the storm.', defeated: 'The last kunai falls. Clear path ahead.' },
+  dead_hang: { idle: ['Chains rattle. The spirit hangs above.', '"Let go," it whispers. "Everyone does."'], hit: ['The chains loosen.', '"Still here?" it asks, genuinely surprised.'], nearDefeat: '"You... won\'t... let go?"', defeated: 'The Chain Spirit dissolves. The chains fall silent.' },
+  barbell_row: { idle: ['A tentacle emerges from below. Then another.', 'The depths stir. Something massive waits.'], hit: ['The tentacle recoils.', 'Ink sprays. You struck something vital.'], nearDefeat: 'The kraken eye appears. It\'s retreating.', defeated: 'The tentacles withdraw. The deep is quiet... for now.' },
+  run_5k: { idle: ['The wind takes shape. A face forms in the gust.', 'The Wind Kami swirls. Patient. Eternal.'], hit: ['The wind falters.', 'Leaves scatter as you push through.'], nearDefeat: 'The gale is weakening. You\'re cutting through.', defeated: 'The wind stills. The Kami dissolves into cherry blossoms.' },
+};
+
 function getBattleNarration(card: BattleCard, theme: string): string {
   const normalized = card.exerciseId.replace(/^(barbell|dumbbell|smith_machine|cable|machine)_/, '');
+  const creature = CREATURE_DIALOGUE[normalized];
   const enemyName = ENEMY_NAMES[theme]?.[normalized] || 'The enemy';
 
-  if (card.defeated) return `${enemyName} yields. Well fought.`;
-  if (card.completedSets === 0) {
-    const idle = [
-      `${enemyName} watches. Waiting.`,
-      `${enemyName} sizes you up.`,
-      `${enemyName} doesn't look impressed. Yet.`,
-      `The air between you grows heavy.`,
-    ];
-    return idle[Math.abs(card.id.charCodeAt(0)) % idle.length];
+  if (!creature) {
+    // Fallback for exercises without specific dialogue
+    if (card.defeated) return `${enemyName} yields.`;
+    if (card.completedSets === 0) return `${enemyName} watches. Waiting.`;
+    if (card.completedSets + 1 >= card.totalSets) return `${enemyName} staggers. One more.`;
+    return `${enemyName} felt that. Keep going.`;
   }
-  if (card.completedSets + 1 >= card.totalSets) {
-    return `${enemyName} staggers. One more strike.`;
-  }
-  const mid = [
-    `${enemyName} reels. Keep going.`,
-    `A solid hit. ${enemyName} felt that.`,
-    `${enemyName} braces for the next one.`,
-    `The ground shakes beneath ${enemyName}.`,
-  ];
-  return mid[card.completedSets % mid.length];
+
+  if (card.defeated) return creature.defeated;
+  if (card.completedSets === 0) return creature.idle[Math.abs(card.id.charCodeAt(0)) % creature.idle.length];
+  if (card.completedSets + 1 >= card.totalSets) return creature.nearDefeat;
+  return creature.hit[card.completedSets % creature.hit.length];
 }
 
 // --- Enemy Names (Samurai theme) ---

@@ -13,11 +13,11 @@ interface Props {
 }
 
 const THEMES_LIST = [
-  { key: 'athlete', emoji: '🏟️', name: 'Athlete', desc: 'Clean and straightforward' },
-  { key: 'dragon', emoji: '🐉', name: 'Draconic', desc: 'RPG elements throughout' },
-  { key: 'samurai', emoji: '⛩️', name: 'Samurai', desc: 'RPG elements throughout' },
-  { key: 'dinosaur', emoji: '🦖', name: 'Apex Predator', desc: 'RPG elements throughout' },
-  { key: 'viking', emoji: '⚡', name: 'Viking', desc: 'RPG elements throughout' },
+  { key: 'athlete', emoji: '🏟️', name: 'Athlete', desc: 'No myth. Just the work. The purest path.' },
+  { key: 'dragon', emoji: '🐉', name: 'Draconic', desc: 'Fire within. Every rep fuels the transformation.' },
+  { key: 'samurai', emoji: '⛩️', name: 'Samurai', desc: 'Discipline. Precision. The blade is an extension of will.' },
+  { key: 'dinosaur', emoji: '🦖', name: 'Apex Predator', desc: 'Instinct. The strongest thrive. The rest adapt.' },
+  { key: 'viking', emoji: '⚡', name: 'Viking', desc: 'Survive everything. Outlast everyone.' },
 ];
 
 const PATHS_LIST = Object.entries(PATHS).map(([key, p]) => ({ key, ...p }));
@@ -106,9 +106,9 @@ export default function OnboardingFlow({ userId }: Props) {
         {step === 2 && (
           <div className="border-2 border-zinc-700 bg-zinc-900 p-5 space-y-4">
             <p className="text-[10px] text-zinc-400 uppercase tracking-widest text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-              CHOOSE YOUR THEME
+              THE AWAKENING
             </p>
-            <p className="text-[8px] text-zinc-600 text-center">Athlete is straightforward. Others add RPG flavor to your workouts.</p>
+            <p className="text-[9px] text-zinc-500 text-center italic">Something shifted. You see what others can&apos;t. The rift bleeds through — and a tradition calls to you.</p>
             <div className="space-y-2">
               {THEMES_LIST.map(t => (
                 <button
@@ -187,8 +187,9 @@ export default function OnboardingFlow({ userId }: Props) {
         {step === 4 && (
           <div className="border-2 border-zinc-700 bg-zinc-900 p-5 space-y-4">
             <p className="text-[10px] text-zinc-400 uppercase tracking-widest text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-              CHOOSE YOUR PATH
+              YOUR DISCIPLINES
             </p>
+            <p className="text-[9px] text-zinc-500 text-center italic">Every Adventurer discovers 12 Disciplines — physical movements that resonate with the rift. Your focus determines your class.</p>
             <div className="space-y-2">
               {PATHS_LIST.map(p => (
                 <button

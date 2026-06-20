@@ -30,6 +30,34 @@ function getTier(pl: number): { name: string; color: string } {
   return { name: 'BRONZE', color: 'text-amber-600' };
 }
 
+function StoryBeat({ powerLevel, playerLevel, streak }: { powerLevel: number; playerLevel: number; streak: number }) {
+  const [beat, setBeat] = useState<{ key: string; text: string } | null>(null);
+
+  useEffect(() => {
+    const beats = [
+      { key: 'first_rank', threshold: () => powerLevel >= 1, text: 'The creature yielded for the first time. It wasn\'t expecting that. Neither were you.' },
+      { key: 'pl_10', threshold: () => powerLevel >= 10, text: 'Ten disciplines forged. The rift watchers request an audience.' },
+      { key: 'lv_5', threshold: () => playerLevel >= 5, text: 'The rift noticed you. The creatures arrive differently now — prepared, not curious.' },
+      { key: 'lv_10', threshold: () => playerLevel >= 10, text: 'Legends form in the rift. They speak of an Adventurer who refuses to stop.' },
+    ];
+    for (const b of beats) {
+      if (b.threshold() && !localStorage.getItem(`story_beat_${b.key}`)) {
+        setBeat(b);
+        break;
+      }
+    }
+  }, [powerLevel, playerLevel, streak]);
+
+  if (!beat) return null;
+
+  return (
+    <button onClick={() => { localStorage.setItem(`story_beat_${beat.key}`, '1'); setBeat(null); }} className="w-full mb-4 p-4 border border-amber-700 bg-amber-950/20 text-center">
+      <p className="text-[9px] text-amber-400 italic">{beat.text}</p>
+      <p className="text-[7px] text-zinc-600 mt-1">tap to dismiss</p>
+    </button>
+  );
+}
+
 function NutritionBar({ userId, colors, refreshKey }: { userId: string; colors: any; refreshKey: number }) {
   const [data, setData] = useState<{ protein: number; carbs: number; fat: number; calsIn: number; burned: number; steps: number } | null>(null);
 
@@ -245,6 +273,9 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
 
       {/* Nutrition summary */}
       <NutritionBar userId={userId} colors={colors} refreshKey={refreshKey} />
+
+      {/* Story progression beat */}
+      {currentTheme !== 'athlete' && <StoryBeat powerLevel={data.powerLevel} playerLevel={playerLevel?.level || 1} streak={0} />}
 
       {/* Hero Power Level — tap for X-ray */}
       <PixelBox highlight className="p-5 mb-4">
