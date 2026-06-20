@@ -92,9 +92,42 @@ Show the user's current class weapon on their profile/hero. Evolves with tier.
 
 ---
 
-## Open Questions
+## Open Questions — RESOLVED
 
-1. Should sub-tiers (divisions) exist within each tier? (e.g., "Ronin III" at PL 9)
-2. Should the tier frame/border on the Power Level box change color per tier?
-3. When should the user first learn their tier name? (Onboarding? First rank-up? First PL screen visit?)
-4. Should the tier ladder be visible (showing all 5 names) or just current + next?
+1. ~~Should sub-tiers (divisions) exist?~~ **No.** Too noisy. One tier name per band.
+2. ~~Should the frame/border change per tier?~~ **Yes.** Let's see what it looks like.
+3. ~~When should the user first learn their tier name?~~ **Onboarding.** Part of the Awakening — "You begin as a Ronin."
+4. ~~Should the tier ladder be visible?~~ **Yes, on expand.** Current tier prominent. Tap into ranked exercises → see the ladder with upper tiers grayed out but descriptions visible. Makes it clear the tier is an aggregation of ranked exercises.
+
+---
+
+## Additional Design Decisions
+
+### Lore Integration
+When you tap into the ranked exercises grid, the tier ladder should be visible WITH lore:
+
+```
+⛩️ YOUR PATH
+
+▸ RONIN (current)
+  "A wanderer with a blade. Untested, but willing."
+
+  SAMURAI — PL 12
+  "Armor earned through discipline. The rift begins to notice."
+
+  DAIMYO — PL 24
+  "A lord of war. Creatures hesitate before engaging."
+
+  SHOGUN — PL 36
+  "Commander of the rift. Others follow your path."
+
+  LEGENDARY WARRIOR — PL 48
+  "The rift itself bends to your will."
+```
+
+Upper tiers: visible but dimmed. Current: highlighted with accent border. This makes it obvious that tier = aggregation of the 12 exercises below.
+
+### Story Reason
+*"Your tier reflects the total mastery of your 12 Disciplines. Each exercise you rank up strengthens your standing in the rift. A Ronin has barely begun forging their weapons. A Shogun has forged them all to a terrifying edge."*
+
+This connects: rank exercises → Power Level rises → tier name changes → sprite evolves (future).
