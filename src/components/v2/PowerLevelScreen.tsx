@@ -201,6 +201,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
   const [physique, setPhysique] = useState<{ rank: number; bodyFat: number | null; leanMass: number | null; streak: number } | null>(null);
   const [showPhysique, setShowPhysique] = useState(false);
   const [storyBeatVisible, setStoryBeatVisible] = useState(false);
+  const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
   const [showXray, setShowXray] = useState(false);
 
   useEffect(() => {
@@ -329,7 +330,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
                   };
                   const borderClass = ex.expired ? 'border-zinc-700' : (levelColors[ex.level] || 'border-zinc-700');
                   return (
-                  <div key={ex.exerciseId} className="flex flex-col items-center gap-1">
+                  <button key={ex.exerciseId} onClick={() => setSelectedExercise(ex.exerciseId)} className="flex flex-col items-center gap-1">
                     <div className={`relative w-8 h-8 border ${borderClass} ${ex.expired ? 'opacity-40' : ''} flex items-center justify-center bg-zinc-800`}>
                       <img src={`/themes/${currentTheme}/v2/level${ex.level}.png`} alt="" className="w-6 h-6" style={{ imageRendering: 'pixelated' }} />
                       {ex.level > 0 && !ex.expired && (
@@ -339,7 +340,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
                     <span className={`text-[8px] ${ex.level > 0 && !ex.expired ? 'text-zinc-300' : 'text-zinc-600'} truncate max-w-[60px]`}>
                       {ex.name.split(' ').slice(0, 2).join(' ')}
                     </span>
-                  </div>
+                  </button>
                   );
                 })}
               </div>
@@ -499,6 +500,119 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
           </a>
         </PixelBox>
       )}
+
+      {/* Exercise Detail Sheet */}
+      {selectedExercise && (
+        <ExerciseDetailSheet exerciseId={selectedExercise} userId={userId} exercises={data.exercises} onClose={() => setSelectedExercise(null)} colors={colors} />
+      )}
     </ScreenWrapper>
+  );
+}
+
+function ExerciseDetailSheet({ exerciseId, userId, exercises, onClose, colors }: { exerciseId: string; userId: string; exercises: any[]; onClose: () => void; colors: any }) {
+  const [thresholds, setThresholds] = useState<number[]>([]);
+  const [history, setHistory] = useState<number[]>([]);
+  const [currentValue, setCurrentValue] = useState(0);
+  const [unit, setUnit] = useState('lbs');
+  const [bodyweight, setBodyweight] = useState(180);
+  const ex = exercises.find((e: any) => e.exerciseId === exerciseId);
+
+  useEffect(() => {
+    (async () => {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+
+      // Get catalog for thresholds
+      const baseId = exerciseId.replace(/^(barbell|dumbbell|smith_machine|cable|machine)_/, '');
+      const { data: cat } = await supabase.from('catalog').select('standards, normalizes_to').eq('id', baseId).single();
+      let standards = cat?.standards;
+      if (cat?.normalizes_to) {
+        const { data: baseCat } = await supabase.from('catalog').select('standards').eq('id', cat.normalizes_to).single();
+        if (baseCat?.standards?.brackets?.male?.length) standards = baseCat.standards;
+      }
+
+      const { data: user } = await supabase.from('users').select('bodyweight').eq('id', userId).single();
+      const bw = user?.bodyweight || 180;
+      setBodyweight(bw);
+
+      if (standards?.brackets?.male?.[0]?.levels) {
+        const levels = standards.brackets.male[0].levels;
+        const isXBW = standards.unit === 'xBW';
+        const isTime = standards.unit === 'sec' || standards.unit === 'seconds' || standards.scoring === 'lower_is_better';
+        const isReps = standards.unit === 'reps' || standards.unit === 'Reps';
+        setUnit(isTime ? 'time' : isReps ? 'reps' : 'lbs');
+        setThresholds(levels.map((l: number) => isXBW ? Math.round(l * bw) : Math.round(l)));
+      }
+
+      // Get recent history
+      const { data: workouts } = await supabase.from('workouts').select('raw_value').eq('user_id', userId).eq('exercise_id', exerciseId).gt('raw_value', 0).order('timestamp', { ascending: false }).limit(5);
+      const vals = (workouts || []).map((w: any) => Math.round(w.raw_value));
+      setHistory(vals.reverse());
+      if (vals.length > 0) setCurrentValue(Math.max(...vals));
+    })();
+  }, [exerciseId, userId]);
+
+  const levelColors = ['text-zinc-500', 'text-zinc-300', 'text-green-400', 'text-blue-400', 'text-purple-400', 'text-amber-400'];
+  const formatValue = (v: number) => {
+    if (unit === 'time') {
+      const m = Math.floor(v / 60);
+      const s = Math.round(v % 60);
+      return `${m}:${s.toString().padStart(2, '0')}`;
+    }
+    if (unit === 'reps') return `${v} reps`;
+    return `${v} lbs`;
+  };
+
+  return (
+    <div className="fixed inset-0 z-50" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/70" />
+      <div className="absolute bottom-0 left-0 right-0 max-h-[60vh] bg-zinc-900 border-t-2 border-zinc-700 rounded-t-lg overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="p-4 space-y-3">
+          {/* Header */}
+          <div className="text-center">
+            <p className="text-sm text-white font-medium">{ex?.name || exerciseId.replace(/_/g, ' ')}</p>
+            <p className={`text-[10px] ${levelColors[ex?.level || 0]}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              LV {ex?.level || 0}
+            </p>
+          </div>
+
+          {/* Threshold Table */}
+          {thresholds.length > 0 && (
+            <div className="space-y-1">
+              <p className="text-[8px] text-zinc-500 uppercase" style={{ fontFamily: "var(--font-pixel), monospace" }}>THRESHOLDS</p>
+              {thresholds.map((t, i) => {
+                const level = i + 1;
+                const achieved = (ex?.level || 0) >= level;
+                const isNext = (ex?.level || 0) === level - 1;
+                const gap = isNext && currentValue > 0 ? t - currentValue : null;
+                return (
+                  <div key={i} className={`flex items-center justify-between px-2 py-1 rounded-sm ${achieved ? 'bg-zinc-800/50' : ''} ${isNext ? `border ${colors.border}` : ''}`}>
+                    <span className={`text-[10px] ${achieved ? levelColors[level] : 'text-zinc-600'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                      {achieved ? '✓' : '○'} LV {level}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-[10px] ${achieved ? 'text-zinc-300' : 'text-zinc-600'}`}>{formatValue(t)}</span>
+                      {isNext && gap && gap > 0 && <span className={`text-[8px] ${colors.secondary}`}>{unit === 'time' ? `-${formatValue(gap)} to go` : `+${gap} to go`}</span>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Recent History */}
+          {history.length > 0 && (
+            <div>
+              <p className="text-[8px] text-zinc-500 uppercase mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>RECENT</p>
+              <p className="text-[10px] text-zinc-400">
+                {history.map(v => formatValue(v)).join(' → ')} {history.length >= 2 && (unit === 'time' ? (history[history.length - 1] < history[0] ? '↑' : '↓') : (history[history.length - 1] > history[0] ? '↑' : '↓'))}
+              </p>
+            </div>
+          )}
+
+          <button onClick={onClose} className="w-full text-center text-[8px] text-zinc-600 py-2">tap to close</button>
+        </div>
+      </div>
+    </div>
   );
 }
