@@ -301,9 +301,23 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
 
             {/* Completion bonus teaser or action button */}
             {allComplete ? (
-              <p className="text-[10px] text-green-400 text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-                🏆 ALL SESSIONS COMPLETE — +200 XP BONUS
-              </p>
+              <div className="text-center space-y-2">
+                <p className="text-[10px] text-green-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                  🏆 ALL SESSIONS COMPLETE — +200 XP BONUS
+                </p>
+                <div className="flex justify-center gap-4 text-[9px] text-zinc-400">
+                  <span>{sessionGroups.reduce((s, g) => s + g.exercises.length, 0)} exercises</span>
+                  <span>⚡{todayXp} XP</span>
+                  {dailyStreak >= 2 && <span>🔥 {dailyStreak} streak</span>}
+                </div>
+                <p className="text-[8px] text-zinc-600 italic mt-1">
+                  {currentTheme === 'samurai' ? 'The rift is quiet tonight. Rest well, warrior.' :
+                   currentTheme === 'draconic' ? 'The flames dim. You have earned your rest.' :
+                   currentTheme === 'viking' ? 'The battle is won. Odin raises his horn.' :
+                   currentTheme === 'apex_predator' ? 'The pack rests. Tomorrow, you hunt again.' :
+                   'Great work today. Recovery starts now.'}
+                </p>
+              </div>
             ) : (
               <div className="flex items-center justify-between">
                 <span className="text-[10px] text-zinc-600">
@@ -369,8 +383,20 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
       {confirmingActivity && (
         <ActivityConfirmModal
           activity={confirmingActivity}
-          onConfirm={(sessionGroup) => {
-            // TODO: update session_group in DB for this workout
+          onConfirm={async (sessionGroup) => {
+            if (sessionGroup) {
+              // Update the workout row with session_group
+              const { createClient } = await import('@/utils/supabase/client');
+              const supabase = createClient();
+              // Find the workout by exercise_id and today's date
+              const today = new Date().toLocaleDateString('en-CA');
+              await supabase.from('workouts').update({ session_id: sessionGroup }).eq('user_id', userId).eq('exercise_id', confirmingActivity.exerciseId).eq('date', today);
+
+              // Update local session groups — mark this group as fully complete
+              setSessionGroups(prev => prev.map(g =>
+                g.type.toLowerCase() === sessionGroup ? { ...g, completed: g.exercises.length } : g
+              ));
+            }
             setConfirmingActivity(null);
           }}
           onDismiss={() => setConfirmingActivity(null)}

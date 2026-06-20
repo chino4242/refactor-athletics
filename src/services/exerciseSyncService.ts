@@ -79,8 +79,8 @@ export async function processExerciseSessions(
 
     if (dur < 60) continue;
 
-    // Known running types (46=running, 47=running_treadmill)
-    if (typeCode === 46 || typeCode === 47) {
+    // Try to rank any exercise with running distance (400m+)
+    if (distMeters >= 400) {
       const ranked = await tryRankRun(supabase, userId, bodyweight, sex, dur, distMeters);
       if (ranked) {
         synced.push(`${ranked.exerciseId}: Lv.${ranked.level}`);
@@ -117,23 +117,41 @@ function getDuration(ex: RawExercise): number {
 
 async function tryRankRun(supabase: any, userId: string, bodyweight: number, sex: string, dur: number, distMeters: number): Promise<{ exerciseId: string; level: number } | null> {
   const distMiles = distMeters / 1609.34;
-  let rankedExerciseId: string | null = null;
-  if (distMiles >= 0.9 && distMiles <= 1.1) rankedExerciseId = 'run_1_mile';
-  else if (distMeters >= 350 && distMeters <= 450) rankedExerciseId = 'run_400m';
-  else if (distMiles >= 1.9 && distMiles <= 2.1) rankedExerciseId = 'run_2_mile';
-  else if (distMiles >= 3.0 && distMiles <= 3.7) rankedExerciseId = 'run_5k';
-  else if (distMiles >= 4.8 && distMiles <= 5.2) rankedExerciseId = 'running_5_miles';
-
-  if (!rankedExerciseId) return null;
+  const results: { exerciseId: string; level: number }[] = [];
 
   try {
     const { logTrainingAction } = await import('@/app/actions');
-    const result = await logTrainingAction(userId, rankedExerciseId, bodyweight, sex, [{ duration: dur, weight: 0 }]);
-    return { exerciseId: rankedExerciseId, level: result.level };
+
+    // Evaluate ALL applicable distances from this single run (assume even pace for splits)
+    const paceSecPerMeter = distMeters > 0 ? dur / distMeters : 0;
+
+    // 400m: if ran at least 400m, estimate 400m time
+    if (distMeters >= 400) {
+      const time400m = Math.round(paceSecPerMeter * 400);
+      const result = await logTrainingAction(userId, 'run_400m', bodyweight, sex, [{ duration: time400m, weight: 0 }]);
+      if (result?.level > 0) results.push({ exerciseId: 'run_400m', level: result.level });
+    }
+
+    // 1 mile: if ran at least 1 mile, estimate mile time
+    if (distMeters >= 1609) {
+      const timeMile = Math.round(paceSecPerMeter * 1609.34);
+      const result = await logTrainingAction(userId, 'run_1_mile', bodyweight, sex, [{ duration: timeMile, weight: 0 }]);
+      if (result?.level > 0) results.push({ exerciseId: 'run_1_mile', level: result.level });
+    }
+
+    // 5K: if ran at least 5K, use actual total time
+    if (distMeters >= 5000) {
+      const time5k = distMeters <= 5500 ? dur : Math.round(paceSecPerMeter * 5000);
+      const result = await logTrainingAction(userId, 'run_5k', bodyweight, sex, [{ duration: time5k, weight: 0 }]);
+      if (result?.level > 0) results.push({ exerciseId: 'run_5k', level: result.level });
+    }
   } catch (e: any) {
-    console.error('Ranked exercise failed:', e.message);
-    return null;
+    console.error('Ranked run failed:', e.message);
   }
+
+  // Return the highest-level result (or null if none ranked)
+  if (results.length === 0) return null;
+  return results.sort((a, b) => b.level - a.level)[0];
 }
 
 function detectExerciseType(ex: RawExercise, dur: number, distMeters: number, typeCode: number): string {

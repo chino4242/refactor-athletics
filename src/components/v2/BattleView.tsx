@@ -1020,6 +1020,33 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
   );
 }
 
+// --- Battle Narration ---
+function getBattleNarration(card: BattleCard, theme: string): string {
+  const normalized = card.exerciseId.replace(/^(barbell|dumbbell|smith_machine|cable|machine)_/, '');
+  const enemyName = ENEMY_NAMES[theme]?.[normalized] || 'The enemy';
+
+  if (card.defeated) return `${enemyName} yields. Well fought.`;
+  if (card.completedSets === 0) {
+    const idle = [
+      `${enemyName} watches. Waiting.`,
+      `${enemyName} sizes you up.`,
+      `${enemyName} doesn't look impressed. Yet.`,
+      `The air between you grows heavy.`,
+    ];
+    return idle[Math.abs(card.id.charCodeAt(0)) % idle.length];
+  }
+  if (card.completedSets + 1 >= card.totalSets) {
+    return `${enemyName} staggers. One more strike.`;
+  }
+  const mid = [
+    `${enemyName} reels. Keep going.`,
+    `A solid hit. ${enemyName} felt that.`,
+    `${enemyName} braces for the next one.`,
+    `The ground shakes beneath ${enemyName}.`,
+  ];
+  return mid[card.completedSets % mid.length];
+}
+
 // --- Enemy Names (Samurai theme) ---
 const ENEMY_NAMES: Record<string, Record<string, string>> = {
   samurai: {
@@ -1099,6 +1126,12 @@ function LiftingCard({ card, isActive, colors, currentTheme, weight, reps, onWei
     <div className={`border-2 ${isActive ? colors.primary : colors.border} bg-zinc-900 p-4 space-y-4`}>
       {/* Battle scene — enemy sprite + name + HP */}
       {combat && !isSuperset && <EnemySprite exerciseId={card.exerciseId} level={card.currentLevel || 0} defeated={card.defeated} theme={currentTheme} showName attackCount={card.completedSets} />}
+      {/* Battle narration */}
+      {combat && !isSuperset && (
+        <p className="text-[9px] text-zinc-500 italic text-center mb-1">
+          {getBattleNarration(card, currentTheme)}
+        </p>
+      )}
       {combat && !isSuperset && (
         <PixelBar current={card.completedSets} max={card.totalSets} inverted={combat} />
       )}

@@ -76,6 +76,13 @@ function CampaignCard({ campaign, userId, colors, onUpdate }: { campaign: any; u
   const duration = campaign.duration_days || 75;
   const metrics = campaign.challenge_75_metrics || [];
   const days = campaign.challenge_75_days || [];
+
+  // Milestone celebration
+  const milestones = [Math.round(duration * 0.25), Math.round(duration * 0.5), Math.round(duration * 0.75)];
+  const isMilestoneDay = milestones.includes(dayNum);
+  const milestoneKey = `milestone_${campaign.id}_${dayNum}`;
+  const [showMilestone, setShowMilestone] = useState(() => isMilestoneDay && !localStorage.getItem(milestoneKey));
+  const dismissMilestone = () => { localStorage.setItem(milestoneKey, '1'); setShowMilestone(false); };
   const members = campaign.challenge_75_members || [];
   const myMembership = members.find((m: any) => m.user_id === userId);
 
@@ -186,6 +193,17 @@ function CampaignCard({ campaign, userId, colors, onUpdate }: { campaign: any; u
         <span className="text-[11px] text-zinc-400">✓ {checkedCount}/{metrics.length} TODAY</span>
       </div>
 
+      {/* Milestone celebration */}
+      {showMilestone && (
+        <button onClick={dismissMilestone} className={`w-full p-3 border-2 border-amber-600 bg-amber-950/30 text-center space-y-1`}>
+          <p className="text-[10px] text-amber-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>🏆 MILESTONE — DAY {dayNum}</p>
+          <p className="text-[8px] text-zinc-400">
+            {dayNum === milestones[0] ? 'Quarter way there!' : dayNum === milestones[1] ? 'Halfway! Keep pushing.' : 'Almost there. Final stretch.'}
+          </p>
+          <p className="text-[7px] text-zinc-600">tap to dismiss</p>
+        </button>
+      )}
+
       {/* Partner status */}
       {members.length > 1 && (
         <div className="space-y-1">
@@ -199,9 +217,26 @@ function CampaignCard({ campaign, userId, colors, onUpdate }: { campaign: any; u
                 <span className="text-[8px] text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>
                   {partnerDone ? '✓' : partnerPending ? '○' : '✕'} {name}
                 </span>
-                <span className={`text-[7px] ${partnerDone ? 'text-green-500' : 'text-zinc-600'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-                  {partnerDone ? 'DONE' : partnerPending ? 'PENDING' : 'MISSED'}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className={`text-[7px] ${partnerDone ? 'text-green-500' : 'text-zinc-600'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                    {partnerDone ? 'DONE' : partnerPending ? 'PENDING' : 'MISSED'}
+                  </span>
+                  {partnerPending && (
+                    <button
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        const nudgeKey = `nudge_${campaign.id}_${m.user_id}_${today}`;
+                        if (localStorage.getItem(nudgeKey)) return;
+                        localStorage.setItem(nudgeKey, '1');
+                        await fetch('/api/challenge-75', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'nudge', challenge_id: campaign.id, target_user_id: m.user_id }) });
+                        (e.target as HTMLElement).textContent = '✓';
+                      }}
+                      className="text-[7px] text-amber-500 hover:text-amber-400" style={{ fontFamily: "var(--font-pixel), monospace" }}
+                    >
+                      NUDGE
+                    </button>
+                  )}
+                </div>
               </div>
             );
           })}
