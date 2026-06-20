@@ -561,6 +561,39 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
           </button>
         </div>
       </PixelBox>
+
+      {/* Invite to Party */}
+      <PixelBox className="p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className={`text-[10px] ${colors.headerText} uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>⚔ PARTY</p>
+            <p className="text-[8px] text-zinc-500 mt-1">Grow your adventuring company</p>
+          </div>
+          <button
+            onClick={async () => {
+              const code = groupId || '';
+              const url = `https://refactorathletics.com/join/${code}`;
+              const themeMessages: Record<string, string> = {
+                samurai: 'The dojo has an opening. Join the company.',
+                dragon: 'The hoard grows. We need another flame.',
+                viking: 'The longship has room. Join the raid.',
+                dinosaur: 'The pack hunts better in numbers.',
+                athlete: 'Join my training group on Refactor Athletics.',
+              };
+              const text = `${themeMessages[currentTheme] || themeMessages['athlete']} ${url}`;
+              try {
+                if (navigator.share) await navigator.share({ text, url });
+                else await navigator.clipboard.writeText(text);
+              } catch {}
+            }}
+            className={`text-[9px] px-3 py-2 border ${colors.primary} bg-zinc-800 ${colors.secondary} hover:bg-zinc-700 transition-colors`}
+            style={{ fontFamily: "var(--font-pixel), monospace" }}
+          >
+            ▸ INVITE
+          </button>
+        </div>
+      </PixelBox>
+
       </div>{/* end secondary */}
 
       {/* Guild Quest Modal */}
