@@ -538,9 +538,10 @@ function ExerciseDetailSheet({ exerciseId, userId, exercises, onClose, colors }:
       if (standards?.brackets?.male?.[0]?.levels) {
         const levels = standards.brackets.male[0].levels;
         const isXBW = standards.unit === 'xBW';
-        const isTime = standards.unit === 'sec' || standards.unit === 'seconds' || standards.scoring === 'lower_is_better';
+        const isTime = standards.unit?.toLowerCase() === 'sec' || standards.unit?.toLowerCase() === 'seconds' || standards.scoring === 'lower_is_better';
         const isReps = standards.unit === 'reps' || standards.unit === 'Reps';
-        setUnit(isTime ? 'time' : isReps ? 'reps' : 'lbs');
+        const isLowerBetter = standards.scoring === 'lower_is_better';
+        setUnit(isTime ? (isLowerBetter ? 'time-lower' : 'time') : isReps ? 'reps' : 'lbs');
         setThresholds(levels.map((l: number) => isXBW ? Math.round(l * bw) : Math.round(l)));
       }
 
@@ -554,7 +555,7 @@ function ExerciseDetailSheet({ exerciseId, userId, exercises, onClose, colors }:
 
   const levelColors = ['text-zinc-500', 'text-zinc-300', 'text-green-400', 'text-blue-400', 'text-purple-400', 'text-amber-400'];
   const formatValue = (v: number) => {
-    if (unit === 'time') {
+    if (unit === 'time' || unit === 'time-lower') {
       const m = Math.floor(v / 60);
       const s = Math.round(v % 60);
       return `${m}:${s.toString().padStart(2, '0')}`;
@@ -584,7 +585,7 @@ function ExerciseDetailSheet({ exerciseId, userId, exercises, onClose, colors }:
                 const level = i + 1;
                 const achieved = (ex?.level || 0) >= level;
                 const isNext = (ex?.level || 0) === level - 1;
-                const gap = isNext && currentValue > 0 ? t - currentValue : null;
+                const gap = isNext && currentValue > 0 ? (unit === 'time-lower' ? currentValue - t : t - currentValue) : null;
                 return (
                   <div key={i} className={`flex items-center justify-between px-2 py-1 rounded-sm ${achieved ? 'bg-zinc-800/50' : ''} ${isNext ? `border ${colors.border}` : ''}`}>
                     <span className={`text-[10px] ${achieved ? levelColors[level] : 'text-zinc-600'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
@@ -605,7 +606,7 @@ function ExerciseDetailSheet({ exerciseId, userId, exercises, onClose, colors }:
             <div>
               <p className="text-[8px] text-zinc-500 uppercase mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>RECENT</p>
               <p className="text-[10px] text-zinc-400">
-                {history.map(v => formatValue(v)).join(' → ')} {history.length >= 2 && (unit === 'time' ? (history[history.length - 1] < history[0] ? '↑' : '↓') : (history[history.length - 1] > history[0] ? '↑' : '↓'))}
+                {history.map(v => formatValue(v)).join(' → ')} {history.length >= 2 && (history[history.length - 1] > history[0] ? '↑' : history[history.length - 1] < history[0] ? '↓' : '→')}
               </p>
             </div>
           )}
