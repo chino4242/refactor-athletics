@@ -1063,6 +1063,12 @@ const ENEMY_NAMES: Record<string, Record<string, string>> = {
     plank: 'Stone Kappa', push_ups: 'Shadow Ninjas', run_400m: 'Kunai Volley',
     dead_hang: 'Chain Spirit', barbell_row: 'Kraken Tentacle', run_5k: 'Wind Kami',
   },
+  dragon: {
+    back_squat: 'Molten Golem', deadlift: 'Iron Wyrm', bench_press: 'Fire Shield',
+    pull_up: 'Sky Drake', overhead_press: 'Thunder Dragon', run_1_mile: 'Wind Serpent',
+    plank: 'Lava Tortoise', push_ups: 'Fire Sprites', run_400m: 'Lightning Drake',
+    dead_hang: 'Gravity Phantom', barbell_row: 'Deep Wyrm', run_5k: 'Storm Dragon',
+  },
 };
 
 // --- Enemy Sprite ---
