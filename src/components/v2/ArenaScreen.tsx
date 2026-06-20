@@ -186,6 +186,28 @@ function CampaignCard({ campaign, userId, colors, onUpdate }: { campaign: any; u
         <span className="text-[11px] text-zinc-400">✓ {checkedCount}/{metrics.length} TODAY</span>
       </div>
 
+      {/* Partner status */}
+      {members.length > 1 && (
+        <div className="space-y-1">
+          {members.filter((m: any) => m.user_id !== userId).map((m: any) => {
+            const partnerDay = days.find((d: any) => d.user_id === m.user_id && d.date === today);
+            const partnerDone = partnerDay?.status === 'passed';
+            const partnerPending = !partnerDay || partnerDay.status === 'pending';
+            const name = m.users?.display_name || 'Partner';
+            return (
+              <div key={m.user_id} className={`flex items-center justify-between px-2 py-1 border ${partnerDone ? 'border-green-800/50 bg-green-900/10' : 'border-zinc-800 bg-zinc-900/50'}`}>
+                <span className="text-[8px] text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                  {partnerDone ? '✓' : partnerPending ? '○' : '✕'} {name}
+                </span>
+                <span className={`text-[7px] ${partnerDone ? 'text-green-500' : 'text-zinc-600'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                  {partnerDone ? 'DONE' : partnerPending ? 'PENDING' : 'MISSED'}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {/* Today's checklist */}
       <div className="space-y-1.5">
         {metrics.sort((a: any, b: any) => a.sort_order - b.sort_order).map((m: any) => {

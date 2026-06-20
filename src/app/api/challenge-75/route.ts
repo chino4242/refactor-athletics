@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
   let updated: any[] = [];
   if (memberIds.length > 0) {
     const { data } = await service.from('challenges_75')
-      .select('*, challenge_75_metrics(*), challenge_75_members(id, user_id, status, failed_on, failed_metric), challenge_75_days(user_id, date, status, metrics_snapshot, custom_checks)')
+      .select('*, challenge_75_metrics(*), challenge_75_members(id, user_id, status, failed_on, failed_metric, users(display_name)), challenge_75_days(user_id, date, status, metrics_snapshot, custom_checks)')
       .in('id', memberIds)
       .order('created_at', { ascending: false });
     updated = data || [];
