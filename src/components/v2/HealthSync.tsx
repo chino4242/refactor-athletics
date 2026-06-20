@@ -139,13 +139,9 @@ export default function HealthSync({ userId, refreshKey, onSyncComplete }: Props
             // HC: Walking=79
             const isWalk = typeStr === 'walking' || typeCode === 79;
             const distMiles = distMeters / 1609.34;
-            const isKnownDistance = isRun && (
-              (distMiles >= 0.9 && distMiles <= 1.1) ||
-              (distMeters >= 350 && distMeters <= 450) ||
-              (distMiles >= 3.0 && distMiles <= 3.7)
-            );
+            const canRank = isRun && distMeters >= 400;
 
-            if (isKnownDistance) {
+            if (canRank) {
               await fetch('/api/sync/exercises', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
