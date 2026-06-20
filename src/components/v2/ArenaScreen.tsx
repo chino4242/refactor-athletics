@@ -101,14 +101,20 @@ function CampaignCard({ campaign, userId, colors, onUpdate }: { campaign: any; u
   if (campaign.status === 'failed' || myMembership?.status === 'failed') {
     const failedDay = myMembership?.failed_on || campaign.failed_on;
     const failedMetric = myMembership?.failed_metric || campaign.failed_metric || 'Unknown';
+    const daysCompleted = failedDay ? Math.max(0, Math.floor((new Date(failedDay + 'T12:00:00').getTime() - startDate.getTime()) / 86400000)) : 0;
+    const passedDays = days.filter((d: any) => d.user_id === userId && d.status === 'passed').length;
     return (
       <div className="space-y-3">
         <div className="text-center">
-          <p className="text-[10px] text-red-400 mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>☠ CAMPAIGN FALLEN</p>
+          <p className="text-[10px] text-red-400 mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>CAMPAIGN FALLEN</p>
           <p className="text-xs text-zinc-400">{campaign.title}</p>
-          <p className="text-[8px] text-zinc-500 mt-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-            FAILED {failedDay ? `DAY ${Math.floor((new Date(failedDay + 'T12:00:00').getTime() - startDate.getTime()) / 86400000) + 1}` : ''} — {failedMetric}
+          <p className="text-[8px] text-zinc-500 mt-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            FELL ON DAY {daysCompleted + 1} — {failedMetric}
           </p>
+        </div>
+        <div className="flex justify-center gap-4 text-[9px] text-zinc-500">
+          <span>{passedDays} days completed</span>
+          <span>{daysCompleted > 0 ? Math.round((passedDays / daysCompleted) * 100) : 0}% success rate</span>
         </div>
         <button
           onClick={async () => {
@@ -291,6 +297,19 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
   const [showDuelModal, setShowDuelModal] = useState(false);
   const [activeDuels, setActiveDuels] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [bountyReveal, setBountyReveal] = useState(() => {
+    const key = `bounty_reveal_${new Date().toLocaleDateString('en-CA')}`;
+    const isMonday = new Date().getDay() === 1;
+    return isMonday && !localStorage.getItem(key);
+  });
+
+  // Dismiss reveal after animation
+  useEffect(() => {
+    if (bountyReveal) {
+      const key = `bounty_reveal_${new Date().toLocaleDateString('en-CA')}`;
+      setTimeout(() => { localStorage.setItem(key, '1'); setBountyReveal(false); }, 3000);
+    }
+  }, [bountyReveal]);
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
@@ -310,6 +329,13 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
             if (c.status !== 'completed') return false;
             const completedAt = c.completed_at ? new Date(c.completed_at) : null;
             return completedAt && (Date.now() - completedAt.getTime()) < 7 * 86400000;
+          })
+          || (campaignData?.challenges || []).find((c: any) => {
+            // Show most recent failed campaign (for restart flow)
+            if (c.status !== 'failed') return false;
+            const members = c.challenge_75_members || [];
+            const myMember = members.find((m: any) => m.user_id === userId);
+            return myMember?.status === 'failed';
           });
         setCampaign(active || null);
 
@@ -400,10 +426,29 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
             {bounties.filter(b => b.completed).length}/{bounties.length}
           </span>
         </div>
+        {bountyReveal && (
+          <p className="text-[9px] text-zinc-500 italic text-center mb-2">This week&apos;s challenges await...</p>
+        )}
+        <style>{`@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
         <div className="space-y-3">
-          {bounties.map((b) => <BountyCard key={b.id} bounty={b} colors={colors} onDifficultyChange={handleDifficultyChange} />)}
+          {bounties.map((b, i) => (
+            <div key={b.id} style={{ opacity: bountyReveal ? 0 : 1, animation: bountyReveal ? `fadeIn 0.4s ease-out ${i * 0.3 + 0.5}s forwards` : undefined }}>
+              <BountyCard bounty={b} colors={colors} onDifficultyChange={handleDifficultyChange} />
+            </div>
+          ))}
         </div>
       </PixelBox>
+
+      {/* Bounty Sweep Celebration */}
+      {bounties.length > 0 && bounties.every(b => b.completed) && (
+        <div className={`border-2 border-amber-600 bg-amber-950/20 p-3 mb-4 text-center`}>
+          <p className="text-[11px] text-amber-400 font-bold" style={{ fontFamily: "var(--font-pixel), monospace" }}>⚔ BOUNTY SWEEP ⚔</p>
+          <p className="text-[9px] text-zinc-400 mt-1">All bounties complete — sweep bonus earned!</p>
+        </div>
+      )}
+
+      {/* Bounty History */}
+      {bounties.length > 0 && <BountyHistory userId={userId} colors={colors} />}
 
       {/* Guild Quest */}
       <PixelBox className="p-4 mb-4">
@@ -552,5 +597,47 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
         }}
       />
     </ScreenWrapper>
+  );
+}
+
+function BountyHistory({ userId, colors }: { userId: string; colors: any }) {
+  const [history, setHistory] = useState<{ week: string; completed: number; total: number }[]>([]);
+  const [show, setShow] = useState(false);
+
+  const loadHistory = async () => {
+    if (history.length > 0) { setShow(!show); return; }
+    const { createClient } = await import('@/utils/supabase/client');
+    const supabase = createClient();
+    const eightWeeksAgo = new Date(Date.now() - 56 * 86400000).toLocaleDateString('en-CA');
+    const { data } = await supabase.from('bounties').select('week_start, completed').eq('user_id', userId).gte('week_start', eightWeeksAgo).order('week_start', { ascending: false });
+    const weeks: Record<string, { completed: number; total: number }> = {};
+    for (const b of data || []) {
+      if (!weeks[b.week_start]) weeks[b.week_start] = { completed: 0, total: 0 };
+      weeks[b.week_start].total++;
+      if (b.completed) weeks[b.week_start].completed++;
+    }
+    setHistory(Object.entries(weeks).map(([week, d]) => ({ week, ...d })));
+    setShow(true);
+  };
+
+  const sweepCount = history.filter(w => w.completed === w.total && w.total > 0).length;
+
+  return (
+    <div className="mb-4">
+      <button onClick={loadHistory} className="text-[8px] text-zinc-600 hover:text-zinc-400 w-full text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+        {show ? '▾ HIDE HISTORY' : '▸ BOUNTY HISTORY'}
+      </button>
+      {show && history.length > 0 && (
+        <div className="mt-2 space-y-1 px-2">
+          {sweepCount > 0 && <p className="text-[8px] text-amber-400 text-center mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>Swept {sweepCount}/{history.length} weeks</p>}
+          {history.map(w => (
+            <div key={w.week} className="flex items-center justify-between text-[8px] text-zinc-500">
+              <span>{w.week}</span>
+              <span>{w.completed === w.total && w.total > 0 ? '⚔ SWEEP' : `${w.completed}/${w.total}`}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

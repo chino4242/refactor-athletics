@@ -45,6 +45,7 @@ export default function NutritionInputV2({ userId }: Props) {
   const [dailyTotals, setDailyTotals] = useState<{ protein: number; carbs: number; fat: number; calsIn: number; burned: number; meals: { tag: string; cals: number }[] }>({ protein: 0, carbs: 0, fat: 0, calsIn: 0, burned: 0, meals: [] });
   const [weeklyDots, setWeeklyDots] = useState<boolean[]>([]);
   const [targets, setTargets] = useState({ protein: 170, carbs: 250, fat: 65, calories: 2000 });
+  const [recentMeals, setRecentMeals] = useState<string[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Fetch daily totals + weekly dots
@@ -92,6 +93,12 @@ export default function NutritionInputV2({ userId }: Props) {
       dots.push((byDay[dateStr] || 0) >= (targets.protein * 0.8));
     }
     setWeeklyDots(dots);
+
+    // Load recent meals for quick-log
+    const twoWeeksAgo = new Date(Date.now() - 14 * 86400000).toLocaleDateString('en-CA');
+    const { data: recentLogs } = await supabase.from('nutrition_logs').select('label').eq('user_id', userId).gte('date', twoWeeksAgo).eq('macro_type', 'calories').not('label', 'is', null).order('timestamp', { ascending: false }).limit(20);
+    const labels = [...new Set((recentLogs || []).map((l: any) => l.label).filter(Boolean))].slice(0, 5);
+    setRecentMeals(labels as string[]);
   };
 
   useEffect(() => { fetchProgress(); }, [userId]);
@@ -212,6 +219,17 @@ export default function NutritionInputV2({ userId }: Props) {
         </div>
       )}
       <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={handlePhoto} className="hidden" />
+
+      {/* Quick-log favorites */}
+      {!pending && !loading && recentMeals.length > 0 && (
+        <div className="flex gap-1 flex-wrap">
+          {recentMeals.map((meal, i) => (
+            <button key={i} onClick={() => { setText(meal); }} className="text-[8px] px-2 py-1 border border-zinc-700 bg-zinc-800 text-zinc-400 hover:text-white rounded-sm truncate max-w-[120px]">
+              {meal}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Confirm card — editable food items */}
       {pending && (
