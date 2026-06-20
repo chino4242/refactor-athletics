@@ -183,8 +183,8 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
       try {
         const { createClient } = await import('@/utils/supabase/client');
         const supabase = createClient();
-        const { data: user } = await supabase.from('users').select('career_xp').eq('id', userId).single();
-        const totalXp = user?.career_xp || 0;
+        const { data: ledger } = await supabase.from('xp_ledger').select('amount').eq('user_id', userId);
+        const totalXp = (ledger || []).reduce((s: number, r: any) => s + (r.amount || 0), 0);
         let level = 1; let xpNeeded = 1000;
         let xpAccum = 0;
         while (xpAccum + xpNeeded <= totalXp) { xpAccum += xpNeeded; level++; xpNeeded = Math.round(1000 * Math.pow(1.08, level - 1)); }
