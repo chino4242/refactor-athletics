@@ -148,8 +148,25 @@ But keep it minimal. Fuel is functional first.
 
 ---
 
-## Open Questions
+## Open Questions — RESOLVED
 
-1. Should the tab order be POWER / FUEL / ARENA / TRAIN or POWER / ARENA / FUEL / TRAIN?
-2. Should the NutritionBar on Power Level screen remain, or remove it entirely now that Fuel has its own tab?
-3. Should there be a net calories target line (e.g., "Target: -500 deficit") configurable in profile?
+1. ~~Tab order~~ **POWER / FUEL / ARENA / TRAIN** — status left, action right.
+2. ~~NutritionBar on PL~~ **Keep it.** Compact hub for the day. Also add Daily XP earned to it (same info density as the Android widget: tier + XP + NET + streak).
+3. ~~Deficit target~~ **Yes, configurable** in profile settings.
+
+---
+
+## Power Level "Hub Bar" (enhanced NutritionBar)
+
+The NutritionBar on Power Level becomes a mini daily dashboard (same concept as the Android widget):
+
+```
+⛩️ Ronin · PL 9  |  ⚡247 XP  |  NET -350  |  🔥12
+```
+
+- Tier + PL (identity)
+- Today's XP earned
+- Net calories
+- Daily streak
+
+Tapping it navigates to the relevant tab (Fuel for nutrition, or stays as a glanceable summary).
