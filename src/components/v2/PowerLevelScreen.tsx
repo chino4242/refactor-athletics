@@ -193,7 +193,9 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
 
       // Fetch physique rank (body composition)
       try {
-        const { data: measurements } = await supabase.from('body_measurements').select('body_fat_percentage, lean_body_mass, date').eq('user_id', userId).not('body_fat_percentage', 'is', null).order('date', { ascending: false }).limit(8);
+        const { createClient: getClient } = await import('@/utils/supabase/client');
+        const sb = getClient();
+        const { data: measurements } = await sb.from('body_measurements').select('body_fat_percentage, lean_body_mass, date').eq('user_id', userId).not('body_fat_percentage', 'is', null).order('date', { ascending: false }).limit(8);
         if (measurements?.length) {
           const latest = measurements[0];
           const bf = latest.body_fat_percentage;
