@@ -66,6 +66,7 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
   const [sessionGroups, setSessionGroups] = useState<{ type: string; exercises: { id: string; name: string }[]; completed: number }[]>([]);
   const [todayXp, setTodayXp] = useState(0);
   const [allComplete, setAllComplete] = useState(false);
+  const [dailyStreak, setDailyStreak] = useState(0);
 
   // Refresh when app returns to foreground
   useEffect(() => {
@@ -157,6 +158,19 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
         const completedDates = new Set((workouts || []).map((w: any) => w.date));
         setWeekDays(prev => prev.map(d => ({ ...d, completed: completedDates.has(d.date) })));
 
+        // Daily streak: count consecutive days with workouts ending yesterday (or today if already trained)
+        const { data: streakData } = await supabase.from('workouts').select('date').eq('user_id', userId).gte('date', new Date(Date.now() - 60 * 86400000).toLocaleDateString('en-CA'));
+        const streakDates = new Set((streakData || []).map((w: any) => w.date));
+        let streak = 0;
+        const today = new Date().toLocaleDateString('en-CA');
+        let checkDay = streakDates.has(today) ? new Date() : new Date(Date.now() - 86400000);
+        while (true) {
+          const ds = checkDay.toLocaleDateString('en-CA');
+          if (streakDates.has(ds)) { streak++; checkDay.setDate(checkDay.getDate() - 1); }
+          else break;
+        }
+        setDailyStreak(streak);
+
         // Tomorrow preview (from schedule)
         const tomorrowDay = new Date(Date.now() + 86400000).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
         const tomorrowProg = (schedule || []).find((p: any) => (p.day || '').toLowerCase() === tomorrowDay);
@@ -219,9 +233,9 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
             );
           })}
         </div>
-        {weekDays.filter(d => d.completed).length >= 3 && (
+        {dailyStreak >= 2 && (
           <p className="text-[10px] text-amber-400 mt-2 text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-            🔥 {weekDays.filter(d => d.completed).length} DAY STREAK
+            🔥 {dailyStreak} DAY STREAK
           </p>
         )}
       </PixelBox>

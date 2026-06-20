@@ -161,11 +161,24 @@ function CampaignCard({ campaign, userId, colors, onUpdate }: { campaign: any; u
         <span className="text-[11px] text-zinc-500">DAY {dayNum}/{duration}</span>
       </div>
 
-      {/* Progress bar */}
-      <div className="h-2 bg-zinc-800 border border-zinc-700 flex">
-        {Array.from({ length: 20 }).map((_, i) => (
-          <div key={i} className={`flex-1 border-r border-zinc-900 ${i < Math.round((dayNum / duration) * 20) ? colors.barFill : ''}`} />
+      {/* Progress bar with milestone markers */}
+      <div className="relative">
+        <div className="h-2 bg-zinc-800 border border-zinc-700 flex">
+          {Array.from({ length: 20 }).map((_, i) => (
+            <div key={i} className={`flex-1 border-r border-zinc-900 ${i < Math.round((dayNum / duration) * 20) ? colors.barFill : ''}`} />
+          ))}
+        </div>
+        {/* Milestone markers at 25%, 50%, 75% */}
+        {[0.25, 0.5, 0.75].map(pct => (
+          <div key={pct} className="absolute top-0 h-2 w-0.5" style={{ left: `${pct * 100}%`, backgroundColor: dayNum / duration >= pct ? '#fbbf24' : '#3f3f46' }} />
         ))}
+      </div>
+      {/* Milestone labels */}
+      <div className="flex justify-between text-[7px] text-zinc-600" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+        <span>{dayNum >= Math.round(duration * 0.25) ? '✓' : ''} {Math.round(duration * 0.25)}</span>
+        <span>{dayNum >= Math.round(duration * 0.5) ? '✓' : ''} {Math.round(duration * 0.5)}</span>
+        <span>{dayNum >= Math.round(duration * 0.75) ? '✓' : ''} {Math.round(duration * 0.75)}</span>
+        <span>{duration}</span>
       </div>
 
       <div className="flex items-center justify-between">
