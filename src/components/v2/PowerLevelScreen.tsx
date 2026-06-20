@@ -157,6 +157,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
   const [refreshKey, setRefreshKey] = useState(0);
   const [playerLevel, setPlayerLevel] = useState<{ level: number; xp: number; xpForNext: number } | null>(null);
   const [physique, setPhysique] = useState<{ rank: number; bodyFat: number | null; leanMass: number | null; streak: number } | null>(null);
+  const [showPhysique, setShowPhysique] = useState(false);
   const [showXray, setShowXray] = useState(false);
 
   useEffect(() => {
@@ -327,6 +328,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
 
       {/* Physique Rank + Recomp Streak */}
       {physique && (
+        <button onClick={() => setShowPhysique(p => !p)} className="w-full text-left">
         <PixelBox className="p-3 mb-4">
           <div className="flex items-center justify-between">
             <div>
@@ -340,7 +342,30 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
               <span className="text-[9px] text-amber-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>🔥 {physique.streak}wk streak</span>
             )}
           </div>
+          {/* Threshold detail (shown on tap) */}
+          {showPhysique && physique.bodyFat !== null && (
+            <div className="mt-3 pt-2 border-t border-zinc-800 space-y-1">
+              {[
+                { lv: 1, range: '> 25%', target: 25 },
+                { lv: 2, range: '20-25%', target: 20 },
+                { lv: 3, range: '15-20%', target: 15 },
+                { lv: 4, range: '10-15%', target: 10 },
+                { lv: 5, range: '< 10%', target: 5 },
+              ].map(t => {
+                const current = physique.rank >= t.lv;
+                const isNext = physique.rank === t.lv - 1;
+                const gap = isNext && physique.bodyFat !== null ? (physique.bodyFat - t.target).toFixed(1) : null;
+                return (
+                  <div key={t.lv} className={`flex items-center justify-between text-[9px] ${current ? 'text-zinc-300' : 'text-zinc-600'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                    <span>{current ? '✓' : '○'} LV {t.lv} — {t.range}</span>
+                    {isNext && gap && <span className={colors.secondary}>-{gap}% to go</span>}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </PixelBox>
+        </button>
       )}
 
       {/* Expiring exercises */}
