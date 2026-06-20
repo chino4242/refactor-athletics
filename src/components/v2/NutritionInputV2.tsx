@@ -14,6 +14,7 @@ interface ParsedMeal {
   carbs: number;
   fat: number;
   calories: number;
+  items?: { name: string; protein: number; carbs: number; fat: number; calories: number }[];
 }
 
 const MEAL_TAGS = [
@@ -106,17 +107,13 @@ export default function NutritionInputV2({ userId }: Props) {
       });
       const data = await res.json();
       if (data.foods?.length) {
-        const totals = data.foods.reduce((acc: ParsedMeal, f: any) => {
+        const items = data.foods.map((f: any) => {
           const servingGrams = parseInt(f.servingSize) || 100;
           const factor = servingGrams / 100;
-          return {
-            protein: acc.protein + ((f.per100g?.protein || 0) * factor),
-            carbs: acc.carbs + ((f.per100g?.carbs || 0) * factor),
-            fat: acc.fat + ((f.per100g?.fat || 0) * factor),
-            calories: acc.calories + ((f.per100g?.calories || 0) * factor),
-          };
-        }, { protein: 0, carbs: 0, fat: 0, calories: 0 });
-        setPending({ protein: Math.round(totals.protein), carbs: Math.round(totals.carbs), fat: Math.round(totals.fat), calories: Math.round(totals.calories) });
+          return { name: f.name || 'Food', protein: Math.round((f.per100g?.protein || 0) * factor), carbs: Math.round((f.per100g?.carbs || 0) * factor), fat: Math.round((f.per100g?.fat || 0) * factor), calories: Math.round((f.per100g?.calories || 0) * factor) };
+        });
+        const totals = items.reduce((acc: any, f: any) => ({ protein: acc.protein + f.protein, carbs: acc.carbs + f.carbs, fat: acc.fat + f.fat, calories: acc.calories + f.calories }), { protein: 0, carbs: 0, fat: 0, calories: 0 });
+        setPending({ ...totals, items });
         setMealTag(getAutoMealTag());
       }
     } catch { /* silent */ }
@@ -183,28 +180,61 @@ export default function NutritionInputV2({ userId }: Props) {
 
       {/* Input row */}
       {!pending && !loading && (
-        <div className="flex gap-2">
-          <div className={`flex-1 border ${colors.border} bg-zinc-800 flex items-center px-3`}>
-            <span className="text-sm mr-2">🍽️</span>
-            <input
-              type="text"
-              value={text}
-              onChange={e => setText(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-              placeholder="What did you eat?"
-              className="flex-1 bg-transparent text-sm text-white placeholder:text-zinc-600 outline-none py-2.5"
-            />
+        <div className="space-y-2">
+          {/* Meal tag selector */}
+          <div className="flex gap-1">
+            {MEAL_TAGS.map(m => (
+              <button key={m.key} onClick={() => setMealTag(m.key)} className={`text-[8px] px-2 py-1 border ${mealTag === m.key ? colors.primary + ' ' + colors.secondary : 'border-zinc-700 text-zinc-500'} bg-zinc-800`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                {m.emoji} {m.label}
+              </button>
+            ))}
           </div>
-          <button onClick={() => fileRef.current?.click()} disabled={loading} className={`border ${colors.border} bg-zinc-800 px-3 hover:bg-zinc-700 transition-colors disabled:opacity-50`}>
-            <span className="text-sm">📷</span>
-          </button>
+          <div className="flex gap-2">
+            <div className={`flex-1 border ${colors.border} bg-zinc-800 px-3 py-2`}>
+              <textarea
+                value={text}
+                onChange={e => setText(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
+                placeholder="Chicken breast, rice, and broccoli..."
+                rows={2}
+                className="w-full bg-transparent text-sm text-white placeholder:text-zinc-600 outline-none resize-none"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <button onClick={handleSubmit} disabled={!text.trim() || loading} className={`flex-1 border ${colors.primary} bg-zinc-800 px-3 hover:bg-zinc-700 transition-colors disabled:opacity-50`}>
+                <span className="text-sm">▸</span>
+              </button>
+              <button onClick={() => fileRef.current?.click()} disabled={loading} className={`flex-1 border ${colors.border} bg-zinc-800 px-3 hover:bg-zinc-700 transition-colors disabled:opacity-50`}>
+                <span className="text-sm">📷</span>
+              </button>
+            </div>
+          </div>
         </div>
       )}
       <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={handlePhoto} className="hidden" />
 
-      {/* Confirm card */}
+      {/* Confirm card — editable food items */}
       {pending && (
         <div className={`border ${colors.primary} bg-zinc-800 p-3 space-y-2`}>
+          {/* Individual food items */}
+          {pending.items && pending.items.length > 0 && (
+            <div className="space-y-1 max-h-[120px] overflow-y-auto">
+              {pending.items.map((item, i) => (
+                <div key={i} className="flex items-center justify-between text-[9px] px-1 py-0.5 border-b border-zinc-700/50">
+                  <span className="text-zinc-300 truncate max-w-[140px]">{item.name}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-zinc-500">{item.calories}cal</span>
+                    <button onClick={() => {
+                      const newItems = pending.items!.filter((_, idx) => idx !== i);
+                      const totals = newItems.reduce((acc, f) => ({ protein: acc.protein + f.protein, carbs: acc.carbs + f.carbs, fat: acc.fat + f.fat, calories: acc.calories + f.calories }), { protein: 0, carbs: 0, fat: 0, calories: 0 });
+                      setPending({ ...totals, items: newItems });
+                    }} className="text-red-500 text-[8px]">✕</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          {/* Totals */}
           <div className="flex items-center justify-between">
             <span className="text-[9px] text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>
               P:{pending.protein}g C:{pending.carbs}g F:{pending.fat}g {pending.calories}cal
