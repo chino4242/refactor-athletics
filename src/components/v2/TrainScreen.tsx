@@ -67,6 +67,7 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
   const [todayXp, setTodayXp] = useState(0);
   const [allComplete, setAllComplete] = useState(false);
   const [dailyStreak, setDailyStreak] = useState(0);
+  const [syncedActivities, setSyncedActivities] = useState<{ name: string; duration: number; xp: number }[]>([]);
 
   // Refresh when app returns to foreground
   useEffect(() => {
@@ -114,6 +115,15 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
             const completedIds = new Set((todayWorkouts || []).map((w: any) => w.exercise_id));
             const xpTotal = (todayWorkouts || []).reduce((s: number, w: any) => s + (w.xp || 0), 0);
             setTodayXp(xpTotal);
+
+            // Synced activities for the activity log
+            const synced = (todayWorkouts || []).filter((w: any) => (w.exercise_id || '').startsWith('synced_'));
+            setSyncedActivities(synced.map((w: any) => {
+              const parts = w.exercise_id.replace('synced_', '').split('_');
+              const type = parts[0] || 'Activity';
+              const dur = Math.round((w.raw_value || 0) / 60);
+              return { name: type.charAt(0).toUpperCase() + type.slice(1), duration: dur, xp: w.xp || 0 };
+            }));
 
             const groups = (todayProgram.sessionGroups as any[]).map((g: any) => ({
               type: g.type,
@@ -334,6 +344,23 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
           {yesterday && <p className="text-[11px] text-zinc-500">Yesterday: {yesterday}</p>}
           {tomorrow && <p className="text-[11px] text-zinc-600">Tomorrow: {tomorrow}</p>}
         </div>
+      )}
+
+      {/* Today's Synced Activities */}
+      {syncedActivities.length > 0 && (
+        <PixelBox className="p-3 mb-4">
+          <p className={`text-[9px] ${colors.headerText} mb-2 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            TODAY&apos;S ACTIVITIES
+          </p>
+          <div className="space-y-1">
+            {syncedActivities.map((a, i) => (
+              <div key={i} className="flex items-center justify-between">
+                <span className="text-[10px] text-zinc-300">{a.name} · {a.duration} min</span>
+                <span className={`text-[9px] ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>+{a.xp} XP</span>
+              </div>
+            ))}
+          </div>
+        </PixelBox>
       )}
 
       {/* Quick Log */}
