@@ -332,7 +332,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
             <div>
               <span className={`text-[9px] ${colors.headerText} uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>PHYSIQUE LV {physique.rank}</span>
               <div className="flex gap-3 mt-1 text-[10px]">
-                {physique.bodyFat !== null && <span className="text-zinc-300">BF {physique.bodyFat}%</span>}
+                {physique.bodyFat !== null && <span className="text-zinc-300">BF {Number(physique.bodyFat).toFixed(1)}%</span>}
                 {physique.leanMass !== null && <span className="text-zinc-300">LEAN {Math.round(physique.leanMass)} lbs</span>}
               </div>
             </div>
