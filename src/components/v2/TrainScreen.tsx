@@ -5,6 +5,7 @@ import { useTheme } from '@/context/ThemeContext';
 import { getV2Theme } from '@/data/v2themes';
 import PixelBox, { ScreenWrapper } from './PixelBox';
 import NutritionInputV2 from './NutritionInputV2';
+import ActivityConfirmModal from './ActivityConfirmModal';
 import { TrainSkeleton } from './Skeletons';
 
 interface TrainScreenProps {
@@ -67,7 +68,8 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
   const [todayXp, setTodayXp] = useState(0);
   const [allComplete, setAllComplete] = useState(false);
   const [dailyStreak, setDailyStreak] = useState(0);
-  const [syncedActivities, setSyncedActivities] = useState<{ name: string; duration: number; xp: number }[]>([]);
+  const [syncedActivities, setSyncedActivities] = useState<{ name: string; duration: number; xp: number; exerciseId: string; confirmed: boolean }[]>([]);
+  const [confirmingActivity, setConfirmingActivity] = useState<{ name: string; duration: number; xp: number; exerciseId: string; id: string } | null>(null);
 
   // Refresh when app returns to foreground
   useEffect(() => {
@@ -122,7 +124,7 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
               const parts = w.exercise_id.replace('synced_', '').split('_');
               const type = parts[0] || 'Activity';
               const dur = Math.round((w.raw_value || 0) / 60);
-              return { name: type.charAt(0).toUpperCase() + type.slice(1), duration: dur, xp: w.xp || 0 };
+              return { name: type.charAt(0).toUpperCase() + type.slice(1), duration: dur, xp: w.xp || 0, exerciseId: w.exercise_id, confirmed: true };
             }));
 
             const groups = (todayProgram.sessionGroups as any[]).map((g: any) => ({
@@ -354,13 +356,25 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
           </p>
           <div className="space-y-1">
             {syncedActivities.map((a, i) => (
-              <div key={i} className="flex items-center justify-between">
+              <button key={i} onClick={() => setConfirmingActivity({ ...a, id: String(i) })} className="w-full flex items-center justify-between hover:bg-zinc-800/50 px-1 py-0.5 -mx-1 rounded transition-colors">
                 <span className="text-[10px] text-zinc-300">{a.name} · {a.duration} min</span>
                 <span className={`text-[9px] ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>+{a.xp} XP</span>
-              </div>
+              </button>
             ))}
           </div>
         </PixelBox>
+      )}
+
+      {/* Activity Confirm Modal */}
+      {confirmingActivity && (
+        <ActivityConfirmModal
+          activity={confirmingActivity}
+          onConfirm={(sessionGroup) => {
+            // TODO: update session_group in DB for this workout
+            setConfirmingActivity(null);
+          }}
+          onDismiss={() => setConfirmingActivity(null)}
+        />
       )}
 
       {/* Quick Log */}
