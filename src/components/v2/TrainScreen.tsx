@@ -52,6 +52,48 @@ function getWeekDays(): WeekDay[] {
   });
 }
 
+function getTrainQuote(theme: string, allDone: boolean, completedCount: number, streak: number): string {
+  if (allDone) {
+    const done: Record<string, string[]> = {
+      samurai: ['The rift is quiet tonight. Rest well, warrior.', 'The Oni bows. Today was yours.'],
+      draconic: ['The flames dim. You have earned your rest.', 'The rift remembers what you did today.'],
+      viking: ['Odin raises his horn. Today, you were worthy.', 'The sagas will speak of this day.'],
+      apex_predator: ['The pack rests. Tomorrow, you hunt again.', 'Apex. No prey escaped today.'],
+    };
+    const lines = done[theme] || done['samurai'];
+    return lines[new Date().getMinutes() % lines.length];
+  }
+  if (completedCount > 0) {
+    const mid: Record<string, string[]> = {
+      samurai: ['The Oni watches your progress. It expects more.', 'Not done yet. The rift still hums.'],
+      draconic: ['The flames still burn. More remains.', 'Half-forged weapons break. Finish the work.'],
+      viking: ['A Viking doesn\'t stop mid-raid.', 'The battle rages. Your shield arm tires?'],
+      apex_predator: ['The hunt isn\'t over. Prey still moves.', 'Partial effort. The pack notices.'],
+    };
+    const lines = mid[theme] || mid['samurai'];
+    return lines[new Date().getHours() % lines.length];
+  }
+  const h = new Date().getHours();
+  if (h < 10) {
+    const morning: Record<string, string[]> = {
+      samurai: ['The Oni stirs. It sensed you waking.', 'Dawn breaks. The Fox Spirit is already running.'],
+      draconic: ['The dragon opens one eye. Will today be worthy?', 'Morning embers. Time to stoke the fire.'],
+      viking: ['The longship is ready. Are you?', 'Frost on the ground. A good day to fight.'],
+      apex_predator: ['The jungle wakes. Everything is hungry.', 'First light. The hunters move.'],
+    };
+    const lines = morning[theme] || morning['samurai'];
+    return lines[new Date().getDate() % lines.length];
+  }
+  const idle: Record<string, string[]> = {
+    samurai: ['The Oni is waiting. It\'s been quiet too long.', 'The rift hums. Your disciplines grow restless.'],
+    draconic: ['The fire cools if you don\'t feed it.', 'Dragons don\'t wait. Why do you?'],
+    viking: ['A still axe rusts. Move.', 'Your ancestors trained in worse conditions.'],
+    apex_predator: ['The predator that rests too long becomes prey.', 'The pack moved on. Catch up.'],
+  };
+  const lines = idle[theme] || idle['samurai'];
+  return lines[(h + streak) % lines.length];
+}
+
 export default function TrainScreen({ userId }: TrainScreenProps) {
   const { currentTheme } = useTheme();
   const colors = getV2Theme(currentTheme);
@@ -251,6 +293,13 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
           </p>
         )}
       </PixelBox>
+
+      {/* Creature quote */}
+      {currentTheme !== 'athlete' && (
+        <p className="text-[9px] text-zinc-600 italic text-center mb-3 px-4">
+          {getTrainQuote(currentTheme, allComplete, sessionGroups.reduce((s, g) => s + g.completed, 0), dailyStreak)}
+        </p>
+      )}
 
       {/* Today's Battle — Daily Mission Board */}
       <PixelBox highlight className="p-4 mb-4">

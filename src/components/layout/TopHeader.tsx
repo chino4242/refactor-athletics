@@ -54,12 +54,19 @@ function LevelUpToast({ colors }: { colors: any }) {
     })();
   }, []);
   if (!levelUp) return null;
+  const narrativeBeat = levelUp.to >= 15 ? 'The tournament watchers have taken notice.' :
+    levelUp.to >= 10 ? 'Legends in the rift speak of you.' :
+    levelUp.to >= 7 ? 'The creatures no longer underestimate you.' :
+    levelUp.to >= 5 ? 'The rift noticed you. Something shifted.' :
+    levelUp.to >= 3 ? 'The creatures whisper your name.' :
+    'Your awakening deepens.';
   return (
     <div className="fixed top-12 left-4 right-4 z-[60] flex justify-center animate-in slide-in-from-top-4">
       <div className={`border-2 ${colors.primary} bg-zinc-900 px-5 py-3 text-center`} style={{ boxShadow: colors.glow }}>
         <p className={`text-[12px] ${colors.secondary} font-bold`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
           ⚡ LEVEL UP! LV{levelUp.from} → LV{levelUp.to}
         </p>
+        <p className="text-[9px] text-zinc-400 italic mt-1">{narrativeBeat}</p>
       </div>
     </div>
   );

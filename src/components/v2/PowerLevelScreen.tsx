@@ -326,6 +326,17 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
         </div>
       )}
 
+      {/* Creature quote — Power Level reaction */}
+      {currentTheme !== 'athlete' && playerLevel && (
+        <p className="text-[9px] text-zinc-600 italic text-center mb-3 px-4">
+          {playerLevel.level >= 10 ? 'The rift whispers your name to those who listen.' :
+           playerLevel.level >= 7 ? 'The creatures no longer underestimate you. They arrive prepared.' :
+           playerLevel.level >= 5 ? 'The rift noticed you. Something shifted.' :
+           playerLevel.level >= 3 ? 'The creatures are curious. You keep coming back.' :
+           'You are new to this. The rift watches with mild interest.'}
+        </p>
+      )}
+
       {/* Physique Rank + Recomp Streak */}
       {physique && (
         <button onClick={() => setShowPhysique(p => !p)} className="w-full text-left">
