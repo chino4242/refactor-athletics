@@ -331,11 +331,13 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
             return completedAt && (Date.now() - completedAt.getTime()) < 7 * 86400000;
           })
           || (campaignData?.challenges || []).find((c: any) => {
-            // Show most recent failed campaign (for restart flow)
+            // Show failed campaign for 7 days after failure (for restart flow)
             if (c.status !== 'failed') return false;
             const members = c.challenge_75_members || [];
             const myMember = members.find((m: any) => m.user_id === userId);
-            return myMember?.status === 'failed';
+            if (!myMember?.failed_on) return false;
+            const failedAt = new Date(myMember.failed_on + 'T12:00:00');
+            return (Date.now() - failedAt.getTime()) < 7 * 86400000;
           });
         setCampaign(active || null);
 
