@@ -410,6 +410,13 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
         </button>
       )}
 
+      {/* ─── Detail Sections ─── */}
+      {(data.expiringExercises.length > 0 || data.closestRankUps.length > 0 || data.recentPRs.length > 0) && (
+        <div className="border-t border-zinc-800 mt-2 mb-4 pt-1">
+          <p className="text-[7px] text-zinc-700 text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>DETAILS</p>
+        </div>
+      )}
+
       {/* Expiring exercises */}
       {data.expiringExercises.length > 0 && (
         <PixelBox className="p-4 mb-4">

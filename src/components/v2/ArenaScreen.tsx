@@ -450,8 +450,10 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
       {/* Bounty History */}
       {bounties.length > 0 && <BountyHistory userId={userId} colors={colors} />}
 
+      {/* ─── Secondary ─── */}
+      <div className="opacity-80 space-y-4">
       {/* Guild Quest */}
-      <PixelBox className="p-4 mb-4">
+      <PixelBox className="p-4">
         <p className={`text-[10px] ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
           ⚔ GUILD QUEST
         </p>
@@ -557,6 +559,7 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
           </button>
         </div>
       </PixelBox>
+      </div>{/* end secondary */}
 
       {/* Guild Quest Modal */}
       {groupId && (
