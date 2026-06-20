@@ -217,6 +217,23 @@ Steps 1-3 are the MVP.
 
 ---
 
+## 12. NON-RANKED EXERCISES (Design Decision)
+
+Not all exercises in the program are Disciplines. Cable rows, lateral raises, flutter kicks — they're auxiliary work. **Decision: Option A — XP only, no creature.**
+
+**In Battle Mode:**
+- Non-ranked exercises show WITHOUT the creature frame (no sprite, no creature name, no narration)
+- They still earn XP, still have the STRIKE button
+- They're labeled as "Training" — the conditioning that supports your Disciplines
+
+**Why:** If everything has a creature, nothing feels special to bind. The 12 Disciplines earn their creature because they're YOUR ranked exercises. Everything else is just good work.
+
+**Lore:** *"Not every motion resonates with the rift. But the spirits notice when you condition your body. It makes the Disciplines sharper."*
+
+**Implementation:** The `EnemySprite` component already hides itself (via `onError`) when no sprite file exists for an exercise. Non-ranked exercises naturally have no sprite file → no creature renders → cleaner card.
+
+---
+
 ## 11. FRAMEWORK SUMMARY
 
 | Concept | Name | Function |
