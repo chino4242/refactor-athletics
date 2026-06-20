@@ -30,7 +30,7 @@ function getTier(pl: number): { name: string; color: string } {
   return { name: 'BRONZE', color: 'text-amber-600' };
 }
 
-function StoryBeat({ powerLevel, playerLevel, streak }: { powerLevel: number; playerLevel: number; streak: number }) {
+function StoryBeat({ powerLevel, playerLevel, streak, onVisible }: { powerLevel: number; playerLevel: number; streak: number; onVisible?: (v: boolean) => void }) {
   const [beat, setBeat] = useState<{ key: string; text: string } | null>(null);
 
   useEffect(() => {
@@ -43,15 +43,16 @@ function StoryBeat({ powerLevel, playerLevel, streak }: { powerLevel: number; pl
     for (const b of beats) {
       if (b.threshold() && !localStorage.getItem(`story_beat_${b.key}`)) {
         setBeat(b);
+        onVisible?.(true);
         break;
       }
     }
-  }, [powerLevel, playerLevel, streak]);
+  }, [powerLevel, playerLevel, streak, onVisible]);
 
   if (!beat) return null;
 
   return (
-    <button onClick={() => { localStorage.setItem(`story_beat_${beat.key}`, '1'); setBeat(null); }} className="w-full mb-4 p-4 border border-amber-700 bg-amber-950/20 text-center">
+    <button onClick={() => { localStorage.setItem(`story_beat_${beat.key}`, '1'); setBeat(null); onVisible?.(false); }} className="w-full mb-4 p-4 border border-amber-700 bg-amber-950/20 text-center">
       <p className="text-[9px] text-amber-400 italic">{beat.text}</p>
       <p className="text-[7px] text-zinc-600 mt-1">tap to dismiss</p>
     </button>
@@ -186,6 +187,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
   const [playerLevel, setPlayerLevel] = useState<{ level: number; xp: number; xpForNext: number } | null>(null);
   const [physique, setPhysique] = useState<{ rank: number; bodyFat: number | null; leanMass: number | null; streak: number } | null>(null);
   const [showPhysique, setShowPhysique] = useState(false);
+  const [storyBeatVisible, setStoryBeatVisible] = useState(false);
   const [showXray, setShowXray] = useState(false);
 
   useEffect(() => {
@@ -274,9 +276,6 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
       {/* Nutrition summary */}
       <NutritionBar userId={userId} colors={colors} refreshKey={refreshKey} />
 
-      {/* Story progression beat */}
-      {currentTheme !== 'athlete' && <StoryBeat powerLevel={data.powerLevel} playerLevel={playerLevel?.level || 1} streak={0} />}
-
       {/* Hero Power Level — tap for X-ray */}
       <PixelBox highlight className="p-5 mb-4">
         <button onClick={() => setShowXray(!showXray)} className="w-full text-center">
@@ -355,17 +354,6 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
           </div>
           <span className="text-[11px] text-white/60">{playerLevel.xp.toLocaleString()} / {playerLevel.xpForNext.toLocaleString()}</span>
         </div>
-      )}
-
-      {/* Creature quote — Power Level reaction */}
-      {currentTheme !== 'athlete' && playerLevel && (
-        <p className="text-[9px] text-zinc-600 italic text-center mb-3 px-4">
-          {playerLevel.level >= 10 ? 'The rift whispers your name to those who listen.' :
-           playerLevel.level >= 7 ? 'The creatures no longer underestimate you. They arrive prepared.' :
-           playerLevel.level >= 5 ? 'The rift noticed you. Something shifted.' :
-           playerLevel.level >= 3 ? 'The creatures are curious. You keep coming back.' :
-           'You are new to this. The rift watches with mild interest.'}
-        </p>
       )}
 
       {/* Physique Rank + Recomp Streak */}
