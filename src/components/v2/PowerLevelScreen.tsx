@@ -73,12 +73,32 @@ function NutritionBar({ userId, colors, refreshKey }: { userId: string; colors: 
     })();
   }, [userId, refreshKey]);
 
+  const [showMealLog, setShowMealLog] = useState(false);
+  const [mealLog, setMealLog] = useState<{ id: string; macro_type: string; amount: number; label?: string; meal_tag?: string; timestamp: number }[]>([]);
+
   if (!data) return null;
 
   const net = data.calsIn - data.burned;
 
+  const openMealLog = async () => {
+    const { createClient } = await import('@/utils/supabase/client');
+    const supabase = createClient();
+    const today = new Date().toLocaleDateString('en-CA');
+    const { data: logs } = await supabase.from('nutrition_logs').select('id, macro_type, amount, label, meal_tag, timestamp').eq('user_id', userId).eq('date', today).order('timestamp', { ascending: false });
+    setMealLog(logs || []);
+    setShowMealLog(true);
+  };
+
+  const deleteMealEntry = async (id: string) => {
+    const { createClient } = await import('@/utils/supabase/client');
+    const supabase = createClient();
+    await supabase.from('nutrition_logs').delete().eq('id', id);
+    setMealLog(prev => prev.filter(l => l.id !== id));
+  };
+
   return (
-    <div className={`border ${colors.border} border-l-2 ${colors.primary} bg-zinc-900/80 px-3 py-2.5 mb-4`}>
+    <>
+    <button onClick={openMealLog} className={`w-full text-left border ${colors.border} border-l-2 ${colors.primary} bg-zinc-900/80 px-3 py-2.5 mb-4 hover:bg-zinc-800/80 transition-colors`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3 text-xs">
           <span className="text-blue-400 font-medium">P {data.protein}g</span>
@@ -86,7 +106,7 @@ function NutritionBar({ userId, colors, refreshKey }: { userId: string; colors: 
           <span className="text-yellow-400 font-medium">F {data.fat}g</span>
           {data.steps > 0 && <span className="text-emerald-400">👟 {data.steps.toLocaleString()}</span>}
         </div>
-        <span className={`text-xs font-bold ${net <= 0 ? 'text-green-400' : 'text-zinc-400'}`}>
+        <span className={`text-xs font-bold ${net < 0 ? 'text-green-400' : net > 200 ? 'text-amber-400' : 'text-zinc-400'}`}>
           NET {net > 0 ? '+' : ''}{net}
         </span>
       </div>
@@ -97,7 +117,35 @@ function NutritionBar({ userId, colors, refreshKey }: { userId: string; colors: 
           <span>BURNED {data.burned.toLocaleString()}</span>
         </div>
       )}
-    </div>
+    </button>
+
+    {/* Meal Log Sheet */}
+    {showMealLog && (
+      <div className="fixed inset-0 z-50" onClick={() => setShowMealLog(false)}>
+        <div className="absolute inset-0 bg-black/60" />
+        <div className="absolute bottom-0 left-0 right-0 max-h-[50vh] bg-zinc-900 border-t-2 border-zinc-700 rounded-t-lg overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <div className="p-4">
+            <p className={`text-[10px] ${colors.secondary} font-bold mb-3`} style={{ fontFamily: "var(--font-pixel), monospace" }}>TODAY&apos;S MEALS</p>
+            {mealLog.length === 0 ? (
+              <p className="text-xs text-zinc-500 text-center py-4">No meals logged today</p>
+            ) : (
+              <div className="space-y-1">
+                {mealLog.filter(l => l.macro_type === 'calories').map(l => (
+                  <div key={l.id} className="flex items-center justify-between py-1.5 border-b border-zinc-800">
+                    <div>
+                      <p className="text-[11px] text-zinc-300">{l.label || l.meal_tag || 'Meal'}</p>
+                      <p className="text-[9px] text-zinc-500">{l.amount} cal</p>
+                    </div>
+                    <button onClick={() => deleteMealEntry(l.id)} className="text-[9px] text-red-500 px-2 py-1 border border-red-900 bg-zinc-800 hover:bg-red-950">DEL</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
 
@@ -108,6 +156,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
   const [playerLevel, setPlayerLevel] = useState<{ level: number; xp: number; xpForNext: number } | null>(null);
+  const [physique, setPhysique] = useState<{ rank: number; bodyFat: number | null; leanMass: number | null; streak: number } | null>(null);
   const [showXray, setShowXray] = useState(false);
 
   useEffect(() => {
@@ -141,6 +190,27 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
         while (xpAccum + xpNeeded <= totalXp) { xpAccum += xpNeeded; level++; xpNeeded = Math.round(1000 * Math.pow(1.08, level - 1)); }
         setPlayerLevel({ level, xp: totalXp - xpAccum, xpForNext: xpNeeded });
       } catch {}
+
+      // Fetch physique rank (body composition)
+      try {
+        const { data: measurements } = await supabase.from('body_measurements').select('body_fat_percentage, lean_body_mass, date').eq('user_id', userId).not('body_fat_percentage', 'is', null).order('date', { ascending: false }).limit(8);
+        if (measurements?.length) {
+          const latest = measurements[0];
+          const bf = latest.body_fat_percentage;
+          // Rank from BF%: male brackets
+          const rank = bf <= 10 ? 5 : bf <= 15 ? 4 : bf <= 20 ? 3 : bf <= 25 ? 2 : 1;
+          // Recomp streak: consecutive weeks where BF went down or lean mass went up
+          let streak = 0;
+          for (let i = 0; i < measurements.length - 1; i++) {
+            const curr = measurements[i];
+            const prev = measurements[i + 1];
+            if ((curr.body_fat_percentage < prev.body_fat_percentage) || (curr.lean_body_mass > prev.lean_body_mass)) streak++;
+            else break;
+          }
+          setPhysique({ rank, bodyFat: bf, leanMass: latest.lean_body_mass, streak });
+        }
+      } catch {}
+
       setLoading(false);
     })();
   }, [userId, refreshKey]);
@@ -251,6 +321,24 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
           </div>
           <span className="text-[11px] text-white/60">{playerLevel.xp.toLocaleString()} / {playerLevel.xpForNext.toLocaleString()}</span>
         </div>
+      )}
+
+      {/* Physique Rank + Recomp Streak */}
+      {physique && (
+        <PixelBox className="p-3 mb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <span className={`text-[9px] ${colors.headerText} uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>PHYSIQUE LV {physique.rank}</span>
+              <div className="flex gap-3 mt-1 text-[10px]">
+                {physique.bodyFat !== null && <span className="text-zinc-300">BF {physique.bodyFat}%</span>}
+                {physique.leanMass !== null && <span className="text-zinc-300">LEAN {Math.round(physique.leanMass)} lbs</span>}
+              </div>
+            </div>
+            {physique.streak >= 2 && (
+              <span className="text-[9px] text-amber-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>🔥 {physique.streak}wk streak</span>
+            )}
+          </div>
+        </PixelBox>
       )}
 
       {/* Expiring exercises */}
