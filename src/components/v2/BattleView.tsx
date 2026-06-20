@@ -1233,30 +1233,32 @@ function LiftingCard({ card, isActive, colors, currentTheme, weight, reps, onWei
 
       {/* Weight + Reps inputs */}
       <div className="grid grid-cols-2 gap-3">
-        <div className={`border ${colors.border} bg-zinc-800 p-3 text-center`}>
+        <button onClick={() => { if (!weight && card.lastWeight) onWeightChange(String(card.lastWeight)); }} className={`border ${colors.border} bg-zinc-800 p-4 text-center`}>
           <input
             type="number"
             inputMode="numeric"
             value={weight}
             onChange={e => onWeightChange(e.target.value)}
-            className="w-full bg-transparent text-center text-xl text-white outline-none placeholder:text-zinc-600"
+            onClick={e => e.stopPropagation()}
+            className="w-full bg-transparent text-center text-3xl text-white outline-none placeholder:text-zinc-600"
             style={{ fontFamily: "var(--font-pixel), monospace" }}
             placeholder={card.lastWeight ? String(card.lastWeight) : '0'}
           />
-          <p className="text-[7px] text-zinc-500 mt-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>LBS</p>
-        </div>
-        <div className={`border ${colors.border} bg-zinc-800 p-3 text-center`}>
+          <p className="text-[8px] text-zinc-500 mt-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>LBS</p>
+        </button>
+        <button onClick={() => { if (!reps) onRepsChange(String(card.targetReps || 8)); }} className={`border ${colors.border} bg-zinc-800 p-4 text-center`}>
           <input
             type="number"
             inputMode="numeric"
             value={reps}
             onChange={e => onRepsChange(e.target.value)}
-            className="w-full bg-transparent text-center text-xl text-white outline-none placeholder:text-zinc-600"
+            onClick={e => e.stopPropagation()}
+            className="w-full bg-transparent text-center text-3xl text-white outline-none placeholder:text-zinc-600"
             style={{ fontFamily: "var(--font-pixel), monospace" }}
             placeholder={String(card.targetReps || 8)}
           />
-          <p className="text-[7px] text-zinc-500 mt-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>REPS</p>
-        </div>
+          <p className="text-[8px] text-zinc-500 mt-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>REPS</p>
+        </button>
       </div>
 
       {/* LOG ATTACK / REST button */}
@@ -1286,11 +1288,11 @@ function LiftingCard({ card, isActive, colors, currentTheme, weight, reps, onWei
       ) : (
         <button
           onClick={(e) => { (e.currentTarget as HTMLElement).style.animation = 'shake 200ms'; setTimeout(() => { (e.currentTarget as HTMLElement).style.animation = ''; }, 200); onLogAttack(); }}
-          className={`w-full py-4 border-2 ${card.completedSets + 1 === card.totalSets && combat ? 'border-red-500 animate-pulse' : colors.primary} bg-zinc-800 text-center transition-colors hover:bg-zinc-700`}
+          className={`w-full py-6 border-2 ${card.completedSets + 1 === card.totalSets && combat ? 'border-red-500 animate-pulse' : colors.primary} bg-zinc-800 text-center transition-colors hover:bg-zinc-700`}
         >
-          <span className={`text-[10px] ${card.completedSets + 1 === card.totalSets && combat ? 'text-red-400' : colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          <span className={`text-sm ${card.completedSets + 1 === card.totalSets && combat ? 'text-red-400' : colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
             {combat
-              ? (card.completedSets + 1 === card.totalSets ? '💀 FINISH' : card.completedSets === 0 ? '⚔ ATTACK' : card.completedSets === 1 ? '⚔⚔ STRIKE' : '⚔⚔⚔ CRUSH')
+              ? (card.completedSets + 1 === card.totalSets ? '⚔ FINISH' : card.completedSets === 0 ? '⚔ ATTACK' : '⚔⚔ STRIKE')
               : (card.completedSets + 1 === card.totalSets ? '✓ COMPLETE' : '▸ LOG SET')
             }
           </span>

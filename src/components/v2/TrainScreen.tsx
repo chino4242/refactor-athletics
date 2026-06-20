@@ -318,15 +318,18 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
                 {sessionGroups.map((g, i) => {
                   const done = g.completed >= g.exercises.length;
                   return (
-                    <a key={i} href={`/train/active?session=${g.type.toLowerCase()}${selectedDay ? `&day=${selectedDay}` : ''}`} className={`flex items-center justify-between px-3 py-2 border ${done ? 'border-green-800 bg-green-950/30' : colors.border + ' bg-zinc-800/50'} hover:bg-zinc-700/50 transition-colors`}>
+                    <a key={i} href={`/train/active?session=${g.type.toLowerCase()}${selectedDay ? `&day=${selectedDay}` : ''}`} className={`flex items-center justify-between px-3 py-3 border ${done ? 'border-green-800 bg-green-950/30' : colors.border + ' bg-zinc-800/50'} hover:bg-zinc-700/50 transition-colors`}>
                       <div className="flex items-center gap-2">
-                        <span className={`text-[10px] ${done ? 'text-green-400' : 'text-zinc-300'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-                          {done ? '✓' : '○'} {g.type}
+                        <span className={`text-[11px] ${done ? 'text-green-400' : 'text-zinc-200'} font-medium`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                          {done ? '✓' : '▸'} {g.type}
                         </span>
                       </div>
-                      <span className={`text-[9px] ${done ? 'text-green-500' : 'text-zinc-500'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-                        {g.completed}/{g.exercises.length}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[9px] ${done ? 'text-green-500' : 'text-zinc-500'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                          {g.completed}/{g.exercises.length}
+                        </span>
+                        {!done && <span className="text-zinc-600 text-xs">›</span>}
+                      </div>
                     </a>
                   );
                 })}
