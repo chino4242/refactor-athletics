@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useTheme } from '@/context/ThemeContext';
 import { getV2Theme } from '@/data/v2themes';
 import PixelBox, { ScreenWrapper } from './PixelBox';
-import NutritionInputV2 from './NutritionInputV2';
 import ActivityConfirmModal from './ActivityConfirmModal';
 import { TrainSkeleton } from './Skeletons';
 
@@ -477,14 +476,6 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
             </a>
           ))}
         </div>
-      </PixelBox>
-
-      {/* Nutrition */}
-      <PixelBox className="p-4">
-        <p className={`text-[10px] ${colors.headerText} mb-2 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-          FUEL
-        </p>
-        <NutritionInputV2 userId={userId} />
       </PixelBox>
     </ScreenWrapper>
   );

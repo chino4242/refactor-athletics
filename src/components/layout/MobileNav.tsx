@@ -17,13 +17,14 @@ export default function MobileNav() {
 
     const tabs = [
         { href: '/', icon: '⚡', label: 'POWER' },
+        { href: '/fuel', icon: '🍽', label: 'FUEL' },
         { href: '/arena', icon: '⚔', label: 'ARENA' },
         { href: '/train', icon: '◆', label: 'TRAIN' },
     ];
 
     return (
         <nav className={`md:hidden fixed bottom-0 left-0 w-full ${colors.bgTint} border-t-2 ${colors.border} z-50 pb-safe`}>
-            <div className="grid grid-cols-3 h-14">
+            <div className="grid grid-cols-4 h-14">
                 {tabs.map((tab) => (
                     <Link
                         key={tab.href}

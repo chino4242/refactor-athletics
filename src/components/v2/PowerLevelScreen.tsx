@@ -22,12 +22,25 @@ interface PowerLevelData {
   recentPRs: { name: string; value: string; date: string }[];
 }
 
-function getTier(pl: number): { name: string; color: string } {
-  if (pl >= 49) return { name: 'DIAMOND', color: 'text-cyan-300' };
-  if (pl >= 37) return { name: 'PLATINUM', color: 'text-purple-300' };
-  if (pl >= 25) return { name: 'GOLD', color: 'text-yellow-400' };
-  if (pl >= 13) return { name: 'SILVER', color: 'text-zinc-300' };
-  return { name: 'BRONZE', color: 'text-amber-600' };
+const TIER_NAMES: Record<string, string[]> = {
+  samurai: ['Ronin', 'Samurai', 'Daimyo', 'Shogun', 'Legendary Warrior'],
+  dragon: ['Hatchling', 'Whelp', 'Drake', 'Wyrm', 'Ancient Dragon'],
+  viking: ['Thrall', 'Warrior', 'Berserker', 'Jarl', 'Einherjar'],
+  dinosaur: ['Fossil', 'Compy', 'Raptor', 'Allosaurus', 'T-Rex'],
+  athlete: ['Rookie', 'Varsity', 'All-Star', 'Pro', 'Hall of Fame'],
+};
+const TIER_COLORS = ['text-amber-600', 'text-zinc-300', 'text-yellow-400', 'text-purple-300', 'text-cyan-300'];
+const TIER_FLOORS = [0, 12, 24, 36, 48];
+
+function getTier(pl: number, theme: string): { name: string; color: string; index: number; floor: number; ceiling: number; next?: string } {
+  const names = TIER_NAMES[theme] || TIER_NAMES['athlete'];
+  let idx = 4;
+  if (pl < 12) idx = 0;
+  else if (pl < 24) idx = 1;
+  else if (pl < 36) idx = 2;
+  else if (pl < 48) idx = 3;
+  const ceiling = idx < 4 ? TIER_FLOORS[idx + 1] : 60;
+  return { name: names[idx], color: TIER_COLORS[idx], index: idx, floor: TIER_FLOORS[idx], ceiling, next: idx < 4 ? names[idx + 1] : undefined };
 }
 
 function StoryBeat({ powerLevel, playerLevel, streak, onVisible }: { powerLevel: number; playerLevel: number; streak: number; onVisible?: (v: boolean) => void }) {
@@ -254,7 +267,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
 
   if (!data) return null;
 
-  const tier = getTier(data.powerLevel);
+  const tier = getTier(data.powerLevel, currentTheme);
 
   return (
     <ScreenWrapper onRefresh={async () => { setRefreshKey(k => k + 1); }}>
@@ -337,10 +350,10 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
         {!showXray && (
           <div className="mt-4">
             <div className="flex justify-between text-[8px] text-zinc-500 mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-              <span>PWR</span>
-              <span>{data.powerLevel}/{data.maxPossible}</span>
+              <span>{data.powerLevel - tier.floor}/{tier.ceiling - tier.floor}</span>
+              {tier.next && <span>{tier.ceiling - data.powerLevel} more to {tier.next}</span>}
             </div>
-            <PixelBar current={data.powerLevel} max={data.maxPossible} />
+            <PixelBar current={data.powerLevel - tier.floor} max={tier.ceiling - tier.floor} />
           </div>
         )}
       </PixelBox>

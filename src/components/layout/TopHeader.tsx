@@ -108,6 +108,7 @@ export default function TopHeader() {
                 <nav className="flex items-center gap-1">
                     {[
                         { href: '/', label: 'POWER' },
+                        { href: '/fuel', label: 'FUEL' },
                         { href: '/arena', label: 'ARENA' },
                         { href: '/train', label: 'TRAIN' },
                     ].map((tab) => (
