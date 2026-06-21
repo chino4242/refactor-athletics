@@ -283,8 +283,6 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
         // Generate session bounties (3 random micro-achievements)
         if (currentTheme !== 'athlete' && battleCards.length > 0) {
           const bountyPool = [
-            { id: 'combo5', label: '🔥 Reach a 5x combo' },
-            { id: 'combo10', label: '🔥 Reach a 10x combo' },
             { id: 'perfect', label: '⚡ Land a Perfect Strike' },
             { id: 'noskip', label: '⏱ Complete without skipping rest' },
             { id: 'allsets', label: '💪 Finish every exercise' },
