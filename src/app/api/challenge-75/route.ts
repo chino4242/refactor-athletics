@@ -71,12 +71,18 @@ export async function POST(request: NextRequest) {
   if (action === 'create') {
     const { title, metrics, start_date, group_id, shared_failure, duration_days } = body;
 
+    // Validate start_date not in the past
+    const today = new Date().toLocaleDateString('en-CA');
+    if (start_date && start_date < today) {
+      return NextResponse.json({ error: 'Start date cannot be in the past' }, { status: 400 });
+    }
+
     // Max 1 active campaign per user
     const { data: existing } = await service.from('challenge_75_members')
-      .select('challenge_id, challenges_75(status)')
-      .eq('user_id', user.id);
-    const hasActive = (existing || []).some((m: any) => m.challenges_75?.status === 'active');
-    if (hasActive) return NextResponse.json({ error: 'You already have an active campaign' }, { status: 400 });
+      .select('challenge_id, challenges_75!inner(status)')
+      .eq('user_id', user.id)
+      .eq('challenges_75.status', 'active');
+    if (existing && existing.length > 0) return NextResponse.json({ error: 'You already have an active campaign' }, { status: 400 });
 
     // Create challenge
     const { data: challenge, error } = await service.from('challenges_75').insert({

@@ -29,6 +29,7 @@ export async function signup(formData: FormData) {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
     const displayName = formData.get('displayName') as string;
+    const redirectTo = formData.get('redirect') as string;
 
     // 1. Sign up the user
     const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -56,7 +57,8 @@ export async function signup(formData: FormData) {
         }
     }
 
-    return redirect('/?message=Check email to continue sign in process');
+    const redirectParam = redirectTo && redirectTo.startsWith('/') ? `&redirect=${encodeURIComponent(redirectTo)}` : '';
+    return redirect(`/?message=Check email to continue sign in process${redirectParam}`);
 }
 
 export async function signout() {

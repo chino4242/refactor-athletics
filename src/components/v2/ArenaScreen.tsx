@@ -293,6 +293,7 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
   const [guildQuest, setGuildQuest] = useState<GroupChallengeWithProgress | null>(null);
   const [groupId, setGroupId] = useState<string | null>(null);
   const [inviteCode, setInviteCode] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
   const [campaign, setCampaign] = useState<any>(null);
   const [showQuestModal, setShowQuestModal] = useState(false);
   const [showCampaignModal, setShowCampaignModal] = useState(false);
@@ -586,9 +587,10 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
           </div>
           <div className="flex gap-1">
           <button
+            disabled={!inviteCode}
             onClick={async () => {
-              const code = inviteCode || groupId || '';
-              const url = `https://refactorathletics.com/join/${code}`;
+              if (!inviteCode) return;
+              const url = `https://refactorathletics.com/join/${inviteCode}`;
               const themeMessages: Record<string, string> = {
                 samurai: 'The dojo has an opening. Join the company.',
                 dragon: 'The hoard grows. We need another flame.',
@@ -598,11 +600,18 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
               };
               const text = themeMessages[currentTheme] || themeMessages['athlete'];
               try {
-                if (navigator.share) await navigator.share({ text, url });
-                else await navigator.clipboard.writeText(`${text} ${url}`);
-              } catch {}
+                if (navigator.share) {
+                  await navigator.share({ text, url });
+                } else {
+                  await navigator.clipboard.writeText(`${text} ${url}`);
+                  setToast('Link copied!');
+                }
+              } catch (e: any) {
+                // iOS dismisses share sheet with AbortError — not a real error
+                if (e?.name !== 'AbortError') setToast('Could not share');
+              }
             }}
-            className={`text-[9px] px-3 py-2 border ${colors.primary} bg-zinc-800 ${colors.secondary} hover:bg-zinc-700 transition-colors`}
+            className={`text-[9px] px-3 py-2 border ${colors.primary} bg-zinc-800 ${!inviteCode ? 'opacity-40 cursor-not-allowed' : `${colors.secondary} hover:bg-zinc-700`} transition-colors`}
             style={{ fontFamily: "var(--font-pixel), monospace" }}
           >
             ▸ INVITE
@@ -665,6 +674,9 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
           setActiveDuels(await getActiveDuels(userId));
         }}
       />
+      {toast && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-zinc-700 text-zinc-100 text-xs px-4 py-2 rounded shadow-lg z-50 animate-fade-in" onAnimationEnd={() => setTimeout(() => setToast(null), 1500)}>{toast}</div>
+      )}
     </ScreenWrapper>
   );
 }
