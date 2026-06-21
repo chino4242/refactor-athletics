@@ -130,9 +130,9 @@ Optional tie-in: completing a body comp challenge could grant a small Power Leve
 
 ---
 
-## Open Questions
+## Open Questions — RESOLVED
 
-1. Should this use the existing campaign system (challenge_75 tables) or a new dedicated system?
-2. Should there be a "team goal" (collective BF% lost) in addition to individual tracking?
-3. How do we handle members who don't have smart scales? (Manual entry weekly?)
-4. Should the challenge support different goals per member? (Ryan wants to lose fat, Amanda wants to gain muscle)
+1. ~~Use existing campaign tables or new?~~ **Use existing.** The challenge_75 system already supports custom metrics, per-member tracking, and daily evaluation. Body comp challenge is just a campaign with metric_type = 'body_comp' and longer evaluation windows (weekly not daily).
+2. ~~Team goal?~~ **Yes.** Show collective target: "Party goal: lose a combined 10% BF" alongside individual progress.
+3. ~~Members without smart scales?~~ **Covered in a separate epic** (non-wearable user persona).
+4. ~~Different goals per member?~~ **Yes.** Each member picks their focus when joining: BF% drop OR lean mass gain OR recomp score. The challenge tracks everyone but each person's "success" is measured against their chosen goal. This uses the existing per-member metrics in challenge_75_metrics.
