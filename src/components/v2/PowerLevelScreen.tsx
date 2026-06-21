@@ -307,6 +307,20 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
     })();
   }, [userId, refreshKey]);
 
+  // Detect tier-up (must be before early returns — hooks must always run)
+  const tierIndex = data ? getTier(data.powerLevel, currentTheme).index : -1;
+  useEffect(() => {
+    if (tierIndex < 0) return;
+    const key = `tier_seen_${currentTheme}`;
+    const lastSeen = parseInt(localStorage.getItem(key) || '0');
+    if (tierIndex > lastSeen) {
+      const prevNames = (TIER_NAMES[currentTheme] || TIER_NAMES['athlete']);
+      const names = TIER_NAMES[currentTheme] || TIER_NAMES['athlete'];
+      setTierUp({ name: names[tierIndex], prev: prevNames[lastSeen] || '' });
+      localStorage.setItem(key, String(tierIndex));
+    }
+  }, [tierIndex, currentTheme]);
+
   if (loading) {
     return <PowerLevelSkeleton />;
   }
@@ -314,17 +328,6 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
   if (!data) return null;
 
   const tier = getTier(data.powerLevel, currentTheme);
-
-  // Detect tier-up (once per tier per theme)
-  useEffect(() => {
-    const key = `tier_seen_${currentTheme}`;
-    const lastSeen = parseInt(localStorage.getItem(key) || '0');
-    if (tier.index > lastSeen) {
-      const prevNames = (TIER_NAMES[currentTheme] || TIER_NAMES['athlete']);
-      setTierUp({ name: tier.name, prev: prevNames[lastSeen] || '' });
-      localStorage.setItem(key, String(tier.index));
-    }
-  }, [tier.index, currentTheme]);
 
   return (
     <ScreenWrapper onRefresh={async () => { setRefreshKey(k => k + 1); }}>
