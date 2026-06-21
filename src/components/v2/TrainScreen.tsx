@@ -154,7 +154,7 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
             const today = new Date().toLocaleDateString('en-CA');
             const { createClient: getClient } = await import('@/utils/supabase/client');
             const sb = getClient();
-            const { data: todayWorkouts } = await sb.from('workouts').select('exercise_id, xp').eq('user_id', userId).eq('date', today);
+            const { data: todayWorkouts } = await sb.from('workouts').select('exercise_id, xp, raw_value').eq('user_id', userId).eq('date', today);
             const completedIds = new Set((todayWorkouts || []).map((w: any) => w.exercise_id));
             const xpTotal = (todayWorkouts || []).reduce((s: number, w: any) => s + (w.xp || 0), 0);
             setTodayXp(xpTotal);

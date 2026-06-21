@@ -116,7 +116,7 @@ export default function HealthSync({ userId, refreshKey, onSyncComplete }: Props
               .limit(1);
             if (manualLogs?.length) continue; // User already logged this session manually
 
-            const distMeters = ex.distance_meters || ex.distanceMeters || ex.distance || 0;
+            const distMeters = ex.distance_meters || ex.distanceMeters || ex.distance || ex.totalDistance || 0;
             const rawType = ex.workoutType || ex.type || ex.exerciseType || '';
             const typeCode = parseInt(rawType) || 0;
             const typeStr = typeof rawType === 'string' && isNaN(Number(rawType)) ? rawType.toLowerCase() : '';

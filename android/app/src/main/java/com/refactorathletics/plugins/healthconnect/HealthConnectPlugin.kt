@@ -264,15 +264,53 @@ class HealthConnectPlugin : Plugin() {
                 val workouts = JSONArray()
                 records.records.forEach { r ->
                     val dur = java.time.Duration.between(r.startTime, r.endTime).seconds
-                    workouts.put(JSONObject().apply {
+                    val workout = JSONObject().apply {
                         put("type", r.exerciseType.toString())
                         put("exerciseType", r.exerciseType.toString())
                         put("duration", dur)
                         put("duration_seconds", dur)
                         put("start_time", r.startTime.toString())
                         put("end_time", r.endTime.toString())
-                    })
+                    }
+
+                    // Laps
+                    if (r.laps.isNotEmpty()) {
+                        val lapsArr = JSONArray()
+                        r.laps.forEach { lap ->
+                            lapsArr.put(JSONObject().apply {
+                                put("start_time", lap.startTime.toString())
+                                put("end_time", lap.endTime.toString())
+                                put("duration_seconds", java.time.Duration.between(lap.startTime, lap.endTime).seconds)
+                            })
+                        }
+                        workout.put("laps", lapsArr)
+                    }
+
+                    workouts.put(workout)
                 }
+
+                // For each workout, query distance and heart rate in the same time range
+                records.records.forEachIndexed { idx, r ->
+                    try {
+                        val timeRange = TimeRangeFilter.between(r.startTime, r.endTime)
+                        // Distance
+                        val distRecords = hc.readRecords(ReadRecordsRequest(DistanceRecord::class, timeRange))
+                        val totalDist = distRecords.records.sumOf { it.distance.inMeters }
+                        if (totalDist > 0) {
+                            (workouts.get(idx) as JSONObject).put("distance_meters", totalDist)
+                        }
+                        // Heart rate (average)
+                        val hrRecords = hc.readRecords(ReadRecordsRequest(HeartRateRecord::class, timeRange))
+                        val allSamples = hrRecords.records.flatMap { it.samples }
+                        if (allSamples.isNotEmpty()) {
+                            val avgHr = allSamples.map { it.beatsPerMinute }.average()
+                            val maxHr = allSamples.maxOf { it.beatsPerMinute }
+                            (workouts.get(idx) as JSONObject).put("avg_heart_rate", avgHr.toLong())
+                            (workouts.get(idx) as JSONObject).put("max_heart_rate", maxHr)
+                        }
+                    } catch (_: Exception) {}
+                }
+
                 call.resolve(JSObject().put("workouts", workouts))
             } catch (e: Exception) {
                 call.resolve(JSObject().put("workouts", JSArray()))
