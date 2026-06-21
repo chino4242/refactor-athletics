@@ -198,7 +198,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
   const [playerLevel, setPlayerLevel] = useState<{ level: number; xp: number; xpForNext: number } | null>(null);
-  const [physique, setPhysique] = useState<{ rank: number; bodyFat: number | null; leanMass: number | null; streak: number } | null>(null);
+  const [physique, setPhysique] = useState<{ rank: number; bodyFat: number | null; leanMass: number | null; streak: number; isFemale: boolean } | null>(null);
   const [showPhysique, setShowPhysique] = useState(false);
   const [storyBeatVisible, setStoryBeatVisible] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
@@ -244,8 +244,13 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
         if (measurements?.length) {
           const latest = measurements[0];
           const bf = latest.body_fat_percentage;
-          // Rank from BF%: male brackets
-          const rank = bf <= 10 ? 5 : bf <= 15 ? 4 : bf <= 20 ? 3 : bf <= 25 ? 2 : 1;
+          // Get user sex for appropriate BF% brackets
+          const { data: userSexData } = await sb.from('users').select('sex').eq('id', userId).single();
+          const isFemale = (userSexData?.sex || 'male').toLowerCase() === 'female';
+          // Rank from BF%: female brackets are higher (women naturally carry more body fat)
+          const rank = isFemale
+            ? (bf <= 18 ? 5 : bf <= 22 ? 4 : bf <= 28 ? 3 : bf <= 35 ? 2 : 1)
+            : (bf <= 10 ? 5 : bf <= 15 ? 4 : bf <= 20 ? 3 : bf <= 25 ? 2 : 1);
           // Recomp streak: consecutive weeks where BF went down or lean mass went up
           let streak = 0;
           for (let i = 0; i < measurements.length - 1; i++) {
@@ -254,7 +259,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
             if ((curr.body_fat_percentage < prev.body_fat_percentage) || (curr.lean_body_mass > prev.lean_body_mass)) streak++;
             else break;
           }
-          setPhysique({ rank, bodyFat: bf, leanMass: latest.lean_body_mass, streak });
+          setPhysique({ rank, bodyFat: bf, leanMass: latest.lean_body_mass, streak, isFemale });
         }
       } catch {}
 
@@ -389,13 +394,19 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
           {/* Threshold detail (shown on tap) */}
           {showPhysique && physique.bodyFat !== null && (
             <div className="mt-3 pt-2 border-t border-zinc-800 space-y-1">
-              {[
+              {(physique.isFemale ? [
+                { lv: 1, range: '> 35%', target: 35 },
+                { lv: 2, range: '28-35%', target: 28 },
+                { lv: 3, range: '22-28%', target: 22 },
+                { lv: 4, range: '18-22%', target: 18 },
+                { lv: 5, range: '< 18%', target: 14 },
+              ] : [
                 { lv: 1, range: '> 25%', target: 25 },
                 { lv: 2, range: '20-25%', target: 20 },
                 { lv: 3, range: '15-20%', target: 15 },
                 { lv: 4, range: '10-15%', target: 10 },
                 { lv: 5, range: '< 10%', target: 5 },
-              ].map(t => {
+              ]).map(t => {
                 const current = physique.rank >= t.lv;
                 const isNext = physique.rank === t.lv - 1;
                 const gap = isNext && physique.bodyFat !== null ? (physique.bodyFat - t.target).toFixed(1) : null;
@@ -538,8 +549,12 @@ function ExerciseDetailSheet({ exerciseId, userId, exercises, onClose, colors }:
 
       if (standards?.brackets?.male?.[0]?.levels) {
         // Find the correct age bracket for the user
-        const userAge = (await supabase.from('users').select('age').eq('id', userId).single()).data?.age || 30;
-        const bracket = standards.brackets.male.find((b: any) => userAge >= (b.min || 0) && userAge <= (b.max || 100)) || standards.brackets.male[0];
+        const { data: userProfile } = await supabase.from('users').select('age, sex').eq('id', userId).single();
+        const userAge = userProfile?.age || 30;
+        const sexKey = (userProfile?.sex || 'male').toLowerCase() === 'female' ? 'female' : 'male';
+        const sexBrackets = standards.brackets[sexKey] || standards.brackets.male || [];
+        const bracket = sexBrackets.find((b: any) => userAge >= (b.min || 0) && userAge <= (b.max || 100)) || sexBrackets[0];
+        if (!bracket?.levels) { setThresholds([]); return; }
         const levels = bracket.levels;
         const isXBW = standards.unit === 'xBW';
         const isTime = standards.unit?.toLowerCase() === 'sec' || standards.unit?.toLowerCase() === 'seconds' || standards.scoring === 'lower_is_better';
