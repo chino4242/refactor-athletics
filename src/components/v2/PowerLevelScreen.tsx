@@ -202,6 +202,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
   const [showPhysique, setShowPhysique] = useState(false);
   const [storyBeatVisible, setStoryBeatVisible] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
+  const [tierUp, setTierUp] = useState<{ name: string; prev: string } | null>(null);
   const [showXray, setShowXray] = useState(false);
 
   useEffect(() => {
@@ -275,10 +276,51 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
 
   const tier = getTier(data.powerLevel, currentTheme);
 
+  // Detect tier-up (once per tier per theme)
+  useEffect(() => {
+    const key = `tier_seen_${currentTheme}`;
+    const lastSeen = parseInt(localStorage.getItem(key) || '0');
+    if (tier.index > lastSeen) {
+      const prevNames = (TIER_NAMES[currentTheme] || TIER_NAMES['athlete']);
+      setTierUp({ name: tier.name, prev: prevNames[lastSeen] || '' });
+      localStorage.setItem(key, String(tier.index));
+    }
+  }, [tier.index, currentTheme]);
+
   return (
     <ScreenWrapper onRefresh={async () => { setRefreshKey(k => k + 1); }}>
       <HealthSync userId={userId} refreshKey={refreshKey} onSyncComplete={() => setRefreshKey(k => k + 1)} />
       <PushRegistration userId={userId} />
+
+      {/* Tier-Up Celebration */}
+      {tierUp && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center" onClick={() => setTierUp(null)}>
+          <div className="absolute inset-0 bg-black/90" />
+          <div className="relative text-center space-y-4 px-8 animate-in fade-in zoom-in duration-500">
+            <p className="text-[10px] text-zinc-400 uppercase tracking-widest" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              TIER ASCENSION
+            </p>
+            {tierUp.prev && (
+              <p className="text-sm text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                {tierUp.prev}
+              </p>
+            )}
+            <p className="text-zinc-600 text-lg">↓</p>
+            <p className={`text-3xl ${tier.color} font-bold`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              {tierUp.name.toUpperCase()}
+            </p>
+            <p className="text-[10px] text-zinc-500 italic mt-4">
+              {currentTheme === 'samurai' ? 'Your blade carries a new weight. The rift bows.' :
+               currentTheme === 'dragon' ? 'The fire within burns brighter. You have evolved.' :
+               currentTheme === 'viking' ? 'The sagas will remember this day.' :
+               currentTheme === 'dinosaur' ? 'You are no longer prey. You are the apex.' :
+               'A new chapter begins.'}
+            </p>
+            <p className="text-[8px] text-zinc-700 mt-6">tap to continue</p>
+          </div>
+        </div>
+      )}
+
       {/* Weekly Recap (shows Sun-Tue) */}
       <WeeklyRecapCard userId={userId} />
 
