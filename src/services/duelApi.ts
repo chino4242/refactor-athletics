@@ -43,7 +43,7 @@ export const getDuelHistory = async (userId: string): Promise<DuelResponse[]> =>
     return data || [];
 };
 
-export const createChallenge = async (userId: string, durationDays: number): Promise<DuelResponse | null> => {
+export const createChallenge = async (userId: string, durationDays: number, duelType: string = 'xp'): Promise<DuelResponse | null> => {
     const supabase = createClient();
     const startAt = Math.floor(Date.now() / 1000);
     const endAt = startAt + (durationDays * 86400);
@@ -52,7 +52,8 @@ export const createChallenge = async (userId: string, durationDays: number): Pro
         challenger_id: userId,
         status: 'PENDING',
         start_at: startAt,
-        end_at: endAt
+        end_at: endAt,
+        duel_type: duelType,
     }]).select().single();
 
     if (error) {

@@ -529,13 +529,18 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
               const timeLeft = Math.max(0, duel.end_at - Date.now() / 1000);
               const daysLeft = Math.floor(timeLeft / 86400);
               const isPending = duel.status === 'PENDING';
+              const typeLabels: Record<string, string> = { xp: '⚡ XP', volume: '🏋️ Volume', distance: '🏃 Distance', sessions: '📅 Sessions', rank_ups: '⬆ Ranks', prs: '★ PRs' };
+              const typeLabel = typeLabels[duel.duel_type || 'xp'] || '⚡ XP';
               return (
                 <div key={duel.id} className={`border ${colors.border} bg-zinc-800/50 p-2`}>
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-[8px] text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>
                       {isPending ? '⏳ AWAITING OPPONENT' : `YOU ${myScore} - ${theirScore} THEM`}
                     </span>
-                    <span className="text-[10px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>{daysLeft}D LEFT</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[7px] text-zinc-600" style={{ fontFamily: "var(--font-pixel), monospace" }}>{typeLabel}</span>
+                      <span className="text-[10px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>{daysLeft}D LEFT</span>
+                    </div>
                   </div>
                   {!isPending && (
                     <div className="h-1.5 bg-zinc-900 flex">
@@ -603,6 +608,8 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
           </button>
           </div>
         </div>
+        {/* Party Composition */}
+        {groupId && <PartyComposition groupId={groupId} />}
       </PixelBox>
 
       </div>{/* end secondary */}
@@ -692,6 +699,40 @@ function BountyHistory({ userId, colors }: { userId: string; colors: any }) {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function PartyComposition({ groupId }: { groupId: string }) {
+  const [composition, setComposition] = useState<Record<string, number>>({});
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data } = await supabase.from('group_members').select('users(selected_path)').eq('group_id', groupId);
+      const paths: Record<string, number> = {};
+      for (const m of data || []) {
+        const path = (m as any).users?.selected_path || 'hybrid';
+        const classNames: Record<string, string> = { strength: 'Vanguard', endurance: 'Ranger', mobility: 'Monk', hybrid: 'Warden' };
+        const name = classNames[path] || 'Warden';
+        paths[name] = (paths[name] || 0) + 1;
+      }
+      setComposition(paths);
+      setLoaded(true);
+    })();
+  }, [groupId]);
+
+  if (!loaded || Object.keys(composition).length === 0) return null;
+
+  return (
+    <div className="mt-3 pt-2 border-t border-zinc-800 flex flex-wrap gap-2">
+      {Object.entries(composition).map(([cls, count]) => (
+        <span key={cls} className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          {count}× {cls}
+        </span>
+      ))}
     </div>
   );
 }

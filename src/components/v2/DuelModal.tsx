@@ -23,6 +23,7 @@ export default function DuelModal({ isOpen, userId, onClose, onCreated }: Props)
   const { currentTheme } = useTheme();
   const colors = getV2Theme(currentTheme);
   const [days, setDays] = useState(7);
+  const [duelType, setDuelType] = useState('xp');
   const [loading, setLoading] = useState(false);
   const [link, setLink] = useState<string | null>(null);
 
@@ -30,7 +31,7 @@ export default function DuelModal({ isOpen, userId, onClose, onCreated }: Props)
 
   const handleCreate = async () => {
     setLoading(true);
-    const duel = await createChallenge(userId, days);
+    const duel = await createChallenge(userId, days, duelType);
     if (duel) {
       const url = `${window.location.origin}/arena/duel/${duel.id}`;
       setLink(url);
@@ -75,8 +76,21 @@ export default function DuelModal({ isOpen, userId, onClose, onCreated }: Props)
               </div>
 
               <div>
-                <p className="text-[8px] text-zinc-500 uppercase mb-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>METRIC</p>
-                <p className="text-[8px] text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>XP EARNED (all activity counts)</p>
+                <p className="text-[8px] text-zinc-500 uppercase mb-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>ARENA TYPE</p>
+                <div className="grid grid-cols-3 gap-1">
+                  {[
+                    { id: 'xp', label: '⚡ XP', desc: 'All activity' },
+                    { id: 'volume', label: '🏋️ Volume', desc: 'Weight lifted' },
+                    { id: 'distance', label: '🏃 Distance', desc: 'Miles logged' },
+                    { id: 'sessions', label: '📅 Sessions', desc: 'Days trained' },
+                    { id: 'rank_ups', label: '⬆ Ranks', desc: 'Rank-ups' },
+                    { id: 'prs', label: '★ PRs', desc: 'Records set' },
+                  ].map(t => (
+                    <button key={t.id} onClick={() => setDuelType(t.id)} className={`py-2 border text-center ${duelType === t.id ? `${colors.primary} bg-zinc-800` : 'border-zinc-700 bg-zinc-900'}`}>
+                      <span className={`text-[8px] ${duelType === t.id ? colors.secondary : 'text-zinc-500'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>{t.label}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <button
