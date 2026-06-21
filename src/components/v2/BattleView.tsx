@@ -411,7 +411,7 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
   // Track which sub-exercise we're on for supersets
   const [subExerciseIdx, setSubExerciseIdx] = useState(0);
   const [showEndConfirm, setShowEndConfirm] = useState(false);
-  const [rankUpToast, setRankUpToast] = useState<{ name: string; level: number; rankName: string; nextThreshold?: string } | null>(null);
+  const [rankUpToast, setRankUpToast] = useState<{ name: string; level: number; rankName: string; nextThreshold?: string; isRecruitment?: boolean } | null>(null);
   const [sessionXp, setSessionXp] = useState(0);
   const [xpPop, setXpPop] = useState<number | null>(null);
   const [comboCount, setComboCount] = useState(0);
@@ -463,8 +463,9 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
       );
       // Show rank-up celebration if level increased
       if (result?.level > 0 && result?.level > (result?.previous_level || 0)) {
-        setRankUpToast({ name: card.name, level: result.level, rankName: result.rank_name || '', nextThreshold: result.next_threshold || '' });
-        setTimeout(() => setRankUpToast(null), 3500);
+        const isRecruitment = (result?.previous_level || 0) === 0;
+        setRankUpToast({ name: card.name, level: result.level, rankName: result.rank_name || '', nextThreshold: result.next_threshold || '', isRecruitment });
+        setTimeout(() => setRankUpToast(null), isRecruitment ? 5000 : 3500);
       }
       // Track session XP + floating number
       if (result?.xp_earned > 0) {
@@ -948,6 +949,21 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
         <div className="fixed inset-0 z-50 flex items-center justify-center animate-in fade-in duration-200" onClick={() => setRankUpToast(null)}>
           <div className="absolute inset-0 bg-black/80" />
           <div className="relative text-center space-y-3 px-8">
+            {rankUpToast.isRecruitment ? (
+              <>
+                <p className="text-[12px] text-amber-400 tracking-widest" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                  ★ NEW SPIRIT BOUND
+                </p>
+                <p className="text-xl text-white font-bold" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                  {rankUpToast.name}
+                </p>
+                <p className="text-[10px] text-zinc-400 italic mt-2">
+                  It acknowledges your strength. It joins your bestiary.
+                </p>
+                <p className="text-[9px] text-zinc-600 mt-3">tap to continue</p>
+              </>
+            ) : (
+              <>
             <p className={`text-[12px] ${colors.secondary} tracking-widest`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
               ⬆ RANK UP
             </p>
@@ -964,6 +980,8 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
               <p className="text-[10px] text-zinc-500 mt-2">
                 Next: {rankUpToast.nextThreshold}
               </p>
+            )}
+              </>
             )}
           </div>
         </div>
