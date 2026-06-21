@@ -46,6 +46,12 @@ export async function joinGroup(userId: string, inviteCode: string): Promise<Gro
         throw joinError;
     }
 
+    // Award recruit reward (+100 XP) to the group leader
+    try {
+        const { awardXp } = await import('@/utils/xp-service');
+        await awardXp(supabase, group.leader_id, { type: 'workout', level: 0, volumeXp: 100 } as any, `Party Recruit: new member joined`);
+    } catch {}
+
     return group;
 }
 

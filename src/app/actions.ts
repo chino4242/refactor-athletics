@@ -422,6 +422,21 @@ export async function logTrainingAction(
     import('@/utils/questProgress').then(m => m.checkQuestProgress(supabase, userId)).catch(() => {});
     import('@/utils/challenge75Snapshot').then(m => m.updateChallenge75Snapshot(supabase, userId)).catch(() => {});
 
+    // First workout recruit reward: +200 XP to group leader
+    supabase.from('workouts').select('id', { count: 'exact', head: true }).eq('user_id', userId).then(({ count }) => {
+      if (count === 1) {
+        supabase.from('group_members').select('group_id').eq('user_id', userId).limit(1).then(({ data: gm }) => {
+          if (gm?.[0]?.group_id) {
+            supabase.from('groups').select('leader_id').eq('id', gm[0].group_id).single().then(({ data: g }) => {
+              if (g?.leader_id && g.leader_id !== userId) {
+                import('@/utils/xp-service').then(m => m.awardXp(supabase, g.leader_id, { type: 'workout', level: 0, volumeXp: 200 } as any, 'Party Recruit: first workout!'));
+              }
+            });
+          }
+        });
+      }
+    }).catch(() => {});
+
     // Complete 'first_strike' starter quest if not already done
     supabase.from('users').select('starter_quest_progress').eq('id', userId).single().then(({ data }) => {
       const progress = data?.starter_quest_progress || [];
