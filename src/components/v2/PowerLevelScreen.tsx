@@ -536,7 +536,10 @@ function ExerciseDetailSheet({ exerciseId, userId, exercises, onClose, colors }:
       setBodyweight(bw);
 
       if (standards?.brackets?.male?.[0]?.levels) {
-        const levels = standards.brackets.male[0].levels;
+        // Find the correct age bracket for the user
+        const userAge = (await supabase.from('users').select('age').eq('id', userId).single()).data?.age || 30;
+        const bracket = standards.brackets.male.find((b: any) => userAge >= (b.min || 0) && userAge <= (b.max || 100)) || standards.brackets.male[0];
+        const levels = bracket.levels;
         const isXBW = standards.unit === 'xBW';
         const isTime = standards.unit?.toLowerCase() === 'sec' || standards.unit?.toLowerCase() === 'seconds' || standards.scoring === 'lower_is_better';
         const isReps = standards.unit === 'reps' || standards.unit === 'Reps';
