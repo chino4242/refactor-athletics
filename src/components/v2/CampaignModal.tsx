@@ -28,6 +28,7 @@ export default function CampaignModal({ isOpen, userId, groupId, onClose, onCrea
   const [step, setStep] = useState(1);
   const [name, setName] = useState('75 Day Challenge');
   const [duration, setDuration] = useState(75);
+  const [startDate, setStartDate] = useState(new Date().toLocaleDateString('en-CA'));
   const [scope, setScope] = useState<'solo' | 'group'>('solo');
   const [sharedFate, setSharedFate] = useState(false);
 
@@ -71,7 +72,7 @@ export default function CampaignModal({ isOpen, userId, groupId, onClose, onCrea
         action: 'create',
         title: name,
         duration_days: duration,
-        start_date: new Date().toLocaleDateString('en-CA'),
+        start_date: startDate,
         group_id: scope === 'group' ? groupId : null,
         shared_failure: sharedFate,
         metrics,
@@ -128,6 +129,17 @@ export default function CampaignModal({ isOpen, userId, groupId, onClose, onCrea
                     style={{ fontFamily: "var(--font-pixel), monospace" }}
                   />
                 </div>
+              </div>
+              <div>
+                <p className="text-[8px] text-zinc-500 uppercase mb-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>START DATE</p>
+                <input
+                  type="date"
+                  value={startDate}
+                  min={new Date().toLocaleDateString('en-CA')}
+                  onChange={e => setStartDate(e.target.value)}
+                  className={`w-full bg-zinc-800 border ${colors.border} px-3 py-2 text-white text-[9px] rounded-sm`}
+                  style={{ fontFamily: "var(--font-pixel), monospace" }}
+                />
               </div>
               <div>
                 <p className="text-[8px] text-zinc-500 uppercase mb-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>SCOPE</p>
