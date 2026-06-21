@@ -8,9 +8,10 @@ interface Props {
   userId: string;
   refreshKey?: number;
   onSyncComplete?: () => void;
+  onSyncStatus?: (status: 'ok' | 'unavailable' | 'needs_reconnect') => void;
 }
 
-export default function HealthSync({ userId, refreshKey, onSyncComplete }: Props) {
+export default function HealthSync({ userId, refreshKey, onSyncComplete, onSyncStatus }: Props) {
   useEffect(() => {
     // Mutex with TTL (60s) to prevent stuck state if app crashes
     const mutexTs = localStorage.getItem('health_sync_in_progress');
@@ -23,7 +24,12 @@ export default function HealthSync({ userId, refreshKey, onSyncComplete }: Props
 
         // Ensure permissions are requested (no-op if already granted, prompts if not)
         const available = await isHealthAvailable();
-        if (available) await requestPermissions();
+        if (!available) {
+          onSyncStatus?.('unavailable');
+          localStorage.removeItem('health_sync_in_progress');
+          return;
+        }
+        await requestPermissions();
 
         const isFirstSync = !localStorage.getItem('health_sync_last');
         const data = await syncTodayHealth(isFirstSync ? 7 : undefined);
@@ -34,6 +40,7 @@ export default function HealthSync({ userId, refreshKey, onSyncComplete }: Props
             const zeroCount = parseInt(localStorage.getItem('health_sync_zero_count') || '0') + 1;
             localStorage.setItem('health_sync_zero_count', String(zeroCount));
             if (zeroCount >= 3) localStorage.setItem('health_sync_needs_reconnect', '1');
+            if (zeroCount >= 3) onSyncStatus?.('needs_reconnect');
           }
           localStorage.removeItem('health_sync_in_progress');
           return;

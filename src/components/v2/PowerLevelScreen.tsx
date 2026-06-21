@@ -255,6 +255,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
   const [narratorState, setNarratorState] = useState<{ streak: number; todayXp: number; dailyTarget: number; hasPrToday: boolean; missedYesterday: boolean }>({ streak: 0, todayXp: 0, dailyTarget: 0, hasPrToday: false, missedYesterday: false });
   const [thresholdToast, setThresholdToast] = useState(false);
   const [bountyTeaser, setBountyTeaser] = useState<{ description: string; current: number; target: number; completed: boolean } | null>(null);
+  const [healthStatus, setHealthStatus] = useState<'ok' | 'unavailable' | 'needs_reconnect' | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -402,8 +403,22 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
 
   return (
     <ScreenWrapper onRefresh={async () => { setRefreshKey(k => k + 1); }}>
-      <HealthSync userId={userId} refreshKey={refreshKey} onSyncComplete={() => setRefreshKey(k => k + 1)} />
+      <HealthSync userId={userId} refreshKey={refreshKey} onSyncComplete={() => setRefreshKey(k => k + 1)} onSyncStatus={setHealthStatus} />
       <PushRegistration userId={userId} />
+
+      {/* Health Sync Status Banner */}
+      {healthStatus === 'unavailable' && (
+        <div className="mb-4 p-3 border border-amber-800 bg-amber-950/20 flex items-center gap-2">
+          <span className="text-amber-400 text-sm">⚠️</span>
+          <p className="text-[9px] text-amber-300">Health sync unavailable — install the native app from TestFlight for automatic workout tracking.</p>
+        </div>
+      )}
+      {healthStatus === 'needs_reconnect' && (
+        <div className="mb-4 p-3 border border-red-800 bg-red-950/20 flex items-center gap-2">
+          <span className="text-red-400 text-sm">⚠️</span>
+          <p className="text-[9px] text-red-300">Health sync failing — open Settings → Health → Refactor Athletics and re-enable permissions.</p>
+        </div>
+      )}
 
       {/* Tier-Up Celebration */}
       {tierUp && (
