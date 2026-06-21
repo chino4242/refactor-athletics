@@ -435,7 +435,7 @@ export async function logTrainingAction(
           }
         });
       }
-    }).catch(() => {});
+    }).then(() => {}).catch(() => {});
 
     // Complete 'first_strike' starter quest if not already done
     supabase.from('users').select('starter_quest_progress').eq('id', userId).single().then(({ data }) => {
