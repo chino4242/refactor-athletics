@@ -68,6 +68,7 @@
 | N5 | Crash reporting (Sentry) | P1 | 6 | Open |
 | N6 | App Store submission — screenshots, metadata, review | P1 | 6 | Open |
 | N7 | RevenueCat payments — free vs premium gating | P1 | 6 | Open |
+| N8 | Universal Links (iOS) + App Links (Android) — invite/join links open in Capacitor app instead of browser. Without this, shared links open in Safari/Chrome where user may not be authenticated. | P1 | 6 | Open |
 
 ---
 

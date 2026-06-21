@@ -278,10 +278,13 @@ async function evaluateChallenge(service: any, challenge: any, userId: string, t
   if (metrics.length === 0) return;
 
   let d = new Date(startDate);
+  let evaluated = 0;
+  const MAX_EVAL_PER_REQUEST = 7;
 
-  while (d <= yesterday) {
+  while (d <= yesterday && evaluated < MAX_EVAL_PER_REQUEST) {
     const dateStr = d.toLocaleDateString('en-CA');
     if (!evaluatedDates.has(dateStr)) {
+      evaluated++;
       const result = await evaluateDay(service, challenge.id, userId, dateStr, metrics);
       if (result.passed) {
         // If this was a re-evaluation of yesterday that previously failed, un-fail the member
