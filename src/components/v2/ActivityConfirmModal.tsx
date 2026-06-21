@@ -26,7 +26,7 @@ export default function ActivityConfirmModal({ activity, onConfirm, onDismiss }:
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={onDismiss}>
       <div className="absolute inset-0 bg-black/70" />
-      <div className="relative w-full max-w-md bg-zinc-900 border-t-2 border-zinc-700 rounded-t-lg p-5 space-y-4 animate-in slide-in-from-bottom" onClick={e => e.stopPropagation()}>
+      <div className="relative w-full max-w-md bg-zinc-900 border-t-2 border-zinc-700 rounded-t-lg p-5 pb-24 space-y-4 animate-in slide-in-from-bottom" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="text-center">
           <p className={`text-[10px] ${colors.secondary} uppercase tracking-wider mb-1`} style={{ fontFamily: "var(--font-pixel), monospace" }}>

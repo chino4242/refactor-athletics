@@ -405,14 +405,6 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
         )}
       </PixelBox>
 
-      {/* Yesterday + Tomorrow context */}
-      {(yesterday || tomorrow) && (
-        <div className="mb-4 px-1 space-y-1">
-          {yesterday && <p className="text-[11px] text-zinc-500">Yesterday: {yesterday}</p>}
-          {tomorrow && <p className="text-[11px] text-zinc-600">Tomorrow: {tomorrow}</p>}
-        </div>
-      )}
-
       {/* Today's Synced Activities */}
       {syncedActivities.length > 0 && (
         <PixelBox className="p-3 mb-4">
@@ -428,6 +420,14 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
             ))}
           </div>
         </PixelBox>
+      )}
+
+      {/* Yesterday + Tomorrow context */}
+      {(yesterday || tomorrow) && (
+        <div className="mb-4 px-1 space-y-1">
+          {yesterday && <p className="text-[11px] text-zinc-500">Yesterday: {yesterday}</p>}
+          {tomorrow && <p className="text-[11px] text-zinc-600">Tomorrow: {tomorrow}</p>}
+        </div>
       )}
 
       {/* Activity Confirm Modal */}
