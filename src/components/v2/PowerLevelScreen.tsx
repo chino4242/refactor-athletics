@@ -673,7 +673,12 @@ function ExerciseDetailSheet({ exerciseId, userId, exercises, onClose, colors, c
 
       // Get catalog for thresholds
       const baseId = exerciseId.replace(/^(barbell|dumbbell|smith_machine|cable|machine)_/, '');
-      const { data: catRows } = await supabase.from('catalog').select('standards, normalizes_to').eq('id', baseId).limit(1);
+      // Try original ID first, then stripped version
+      let { data: catRows } = await supabase.from('catalog').select('standards, normalizes_to').eq('id', exerciseId).limit(1);
+      if (!catRows?.length) {
+        const res = await supabase.from('catalog').select('standards, normalizes_to').eq('id', baseId).limit(1);
+        catRows = res.data;
+      }
       const cat = catRows?.[0];
       let standards = cat?.standards;
       if (cat?.normalizes_to) {
@@ -752,6 +757,9 @@ function ExerciseDetailSheet({ exerciseId, userId, exercises, onClose, colors, c
               LV {ex?.level || 0}
             </p>
           </div>
+
+          {/* Train button */}
+          <a href={`/train/active?exercise=${exerciseId}`} className={`w-full block text-center text-[10px] py-3 border ${colors.primary} ${colors.secondary} bg-zinc-800 hover:bg-zinc-700 transition-colors`} style={{ fontFamily: "var(--font-pixel), monospace" }}>▸ TRAIN</a>
 
           {/* Threshold Table */}
           {thresholds.length > 0 && (

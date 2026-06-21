@@ -32,7 +32,7 @@ export async function getPowerLevelV2(userId: string): Promise<PowerLevelV2Data>
   const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toLocaleDateString('en-CA');
 
   const [{ data: workouts }, { data: catalog }, { data: profile }] = await Promise.all([
-    supabase.from('workouts').select('exercise_id, level, raw_value, date, timestamp').eq('user_id', userId).gte('date', ninetyDaysAgo),
+    supabase.from('workouts').select('exercise_id, level, raw_value, date, timestamp, sets').eq('user_id', userId).gte('date', ninetyDaysAgo),
     supabase.from('catalog').select('id, name, standards, normalizes_to'),
     supabase.from('users').select('selected_path, age, sex, bodyweight').eq('id', userId).single(),
   ]);
@@ -187,8 +187,14 @@ export async function getPowerLevelV2(userId: string): Promise<PowerLevelV2Data>
       const name = catItem?.name || w.exercise_id.replace(/_/g, ' ');
       const unit = catItem?.standards?.unit || '';
       let value = '';
-      if (unit === 'xBW') value = `${Math.round(w.raw_value)} lbs`;
-      else if (unit === 'Sec') {
+      if (unit === 'xBW') {
+        // Show actual lift + est 1RM
+        const sets = Array.isArray(w.sets) ? w.sets : [];
+        const bestSet = sets.reduce((best: any, s: any) => (!best || (s.weight || 0) > (best.weight || 0)) ? s : best, null);
+        if (bestSet && bestSet.weight) {
+          value = `${bestSet.weight} × ${bestSet.reps || 1} (est. ${Math.round(w.raw_value)} lbs)`;
+        } else value = `${Math.round(w.raw_value)} lbs`;
+      } else if (unit === 'Sec') {
         const min = Math.floor(w.raw_value / 60);
         const sec = Math.round(w.raw_value % 60);
         value = min > 0 ? `${min}:${String(sec).padStart(2, '0')}` : `${sec}s`;
