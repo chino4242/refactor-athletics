@@ -9,7 +9,7 @@
 #   optional   — Nice-to-have, not committed
 
 current_epic: 4
-last_updated: "2026-06-17"
+last_updated: "2026-06-20"
 
 development_status:
   # ═══════════════════════════════════════════
@@ -56,9 +56,11 @@ development_status:
   4-4-weekly-highlight-reel: done     # Swipeable slides (overview, best lift, rank-ups, party)
   4-5-daily-xp-pill: done            # Tappable pill, breakdown sheet, sync status indicator
   4-6-level-up-toast: done           # Global detection, toast on threshold crossing
-  4-7-attack-animations: open        # Flash, shake, defeat dissolve (Proposal 3)
-  4-8-battle-narration: open         # One-line action-reaction text (Proposal 2)
-  4-9-treadmill-cardio-ux: ready-for-dev  # Full-screen zone colors + audio coaching
+  4-7-attack-animations: done           # Flash, shake, defeat dissolve
+  4-8-battle-narration: done           # Creature-specific dialogue (12 creatures × 4 states)
+  4-9-treadmill-cardio-ux: done        # Zone colors + audio + skip/end early
+  4-10-undo-last-attack: done          # Undo during rest, supersets
+  4-11-battle-celebrations: done       # Rank-up flash, defeat overlay, PR detection
   epic-4-retrospective: open
 
   # ═══════════════════════════════════════════
