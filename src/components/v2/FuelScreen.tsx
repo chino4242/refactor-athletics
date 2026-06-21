@@ -30,7 +30,19 @@ export default function FuelScreen({ userId }: Props) {
 
       const t: Record<string, number> = {};
       for (const l of logs || []) t[l.macro_type] = (t[l.macro_type] || 0) + (l.amount || 0);
-      setTotals({ protein: Math.round(t['protein'] || 0), carbs: Math.round(t['carbs'] || 0), fat: Math.round(t['fat'] || 0), calsIn: Math.round(t['calories'] || 0), burned: Math.round(t['calories_burned'] || 0) });
+      let burned = Math.round(t['calories_burned'] || 0);
+
+      // Read calories burned directly from native plugin (more accurate than DB)
+      try {
+        const { getCaloriesBurned } = await import('@/services/nativeHealth');
+        const now = new Date();
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+        const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).toISOString();
+        const nativeBurned = await getCaloriesBurned(startOfToday, endOfToday);
+        if (nativeBurned > burned) burned = nativeBurned;
+      } catch {}
+
+      setTotals({ protein: Math.round(t['protein'] || 0), carbs: Math.round(t['carbs'] || 0), fat: Math.round(t['fat'] || 0), calsIn: Math.round(t['calories'] || 0), burned });
 
       if (user?.nutrition_targets) {
         setTargets({ protein: user.nutrition_targets.protein || 170, carbs: user.nutrition_targets.carbs || 250, fat: user.nutrition_targets.fat || 65, calories: user.nutrition_targets.calories || 2000 });
