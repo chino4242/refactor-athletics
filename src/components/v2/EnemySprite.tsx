@@ -58,6 +58,15 @@ export function getBattleNarration(card: BattleCard, theme: string): string {
   const normalized = card.exerciseId.replace(/^(barbell|dumbbell|smith_machine|cable|machine)_/, '');
   const creature = CREATURE_DIALOGUE[normalized];
   const enemyName = ENEMY_NAMES[theme]?.[normalized] || 'The enemy';
+  const isAllied = (card.currentLevel || 0) >= 1;
+
+  // Allied creatures are sparring partners, not enemies
+  if (isAllied) {
+    if (card.defeated) return `${enemyName} nods. "Good session."`;
+    if (card.completedSets === 0) return `${enemyName} stretches beside you. "Ready when you are."`;
+    if (card.completedSets + 1 >= card.totalSets) return `${enemyName} grins. "One more. Show me."`;
+    return `${enemyName} matches your effort. "Again."`;
+  }
 
   if (!creature) {
     if (card.defeated) return `${enemyName} yields.`;
