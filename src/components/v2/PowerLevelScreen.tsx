@@ -32,6 +32,14 @@ const TIER_NAMES: Record<string, string[]> = {
 const TIER_COLORS = ['text-amber-600', 'text-zinc-300', 'text-yellow-400', 'text-purple-300', 'text-cyan-300'];
 const TIER_FLOORS = [0, 12, 24, 36, 48];
 
+
+const ENEMY_NAMES_PL: Record<string, Record<string, string>> = {
+  samurai: { back_squat: 'Oni', deadlift: 'Earth Yokai', bench_press: 'Armor', pull_up: 'Tengu', overhead_press: 'Thunder Oni', run_1_mile: 'Fox Spirit', plank: 'Kappa', push_ups: 'Ninjas', run_400m: 'Kunai', dead_hang: 'Chain Spirit', barbell_row: 'Kraken', run_5k: 'Wind Kami' },
+  dragon: { back_squat: 'Golem', deadlift: 'Iron Wyrm', bench_press: 'Fire Shield', pull_up: 'Sky Drake', overhead_press: 'Thunder Dragon', run_1_mile: 'Wind Serpent', plank: 'Lava Tortoise', push_ups: 'Fire Sprites', run_400m: 'Lightning Drake', dead_hang: 'Gravity Phantom', barbell_row: 'Deep Wyrm', run_5k: 'Storm Dragon' },
+  viking: { back_squat: 'Frost Troll', deadlift: 'Draugr', bench_press: 'War Shield', pull_up: 'Storm Raven', overhead_press: 'Lightning Giant', run_1_mile: 'Fenrir', plank: 'Glacier', push_ups: 'Berserkers', run_400m: 'Valkyrie', dead_hang: 'Anchor Wraith', barbell_row: 'Sea Serpent', run_5k: 'Odin\'s Hunt' },
+  dinosaur: { back_squat: 'Mammoth', deadlift: 'T-Rex', bench_press: 'Triceratops', pull_up: 'Pterodactyl', overhead_press: 'Brachiosaurus', run_1_mile: 'Velociraptor', plank: 'Ankylosaurus', push_ups: 'Compys', run_400m: 'Raptor', dead_hang: 'Tar Pit', barbell_row: 'Mosasaurus', run_5k: 'Migration' },
+};
+
 const TIER_LORE: Record<string, string[]> = {
   samurai: [
     'A wanderer with a blade. Untested, but willing.',
@@ -417,9 +425,14 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
             </>
           ) : (
             <>
-              <p className={`text-[10px] ${colors.headerText} mb-3 uppercase tracking-wider`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-                RANKED EXERCISES
+              <p className={`text-[10px] ${colors.headerText} mb-1 uppercase tracking-wider`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                {currentTheme === 'athlete' ? 'RANKED EXERCISES' : 'BESTIARY'}
               </p>
+              {currentTheme !== 'athlete' && (
+                <p className="text-[8px] text-zinc-500 mb-3">
+                  {data.exercises.filter(ex => ex.level > 0 && !ex.expired).length}/12 Allied
+                </p>
+              )}
               <div className="grid grid-cols-4 gap-2">
                 {data.exercises.map(ex => {
                   const levelColors: Record<number, string> = {
@@ -439,15 +452,23 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
                     5: 'text-amber-400',
                   };
                   const borderClass = ex.expired ? 'border-zinc-700' : (levelColors[ex.level] || 'border-zinc-700');
+                  const normalized = ex.exerciseId.replace(/^(barbell|dumbbell|smith_machine|cable|machine)_/, '');
+                  const state = ex.level === 0 ? 'unmet' : ex.expired ? 'dormant' : 'allied';
+                  const spriteTier = ex.level >= 4 ? 2 : ex.level >= 2 ? 1 : 0;
+                  const spriteSrc = `/enemies/${currentTheme}/${normalized}_t${spriteTier}.png`;
                   return (
                   <div key={ex.exerciseId} onClick={(e) => { e.stopPropagation(); setSelectedExercise(ex.exerciseId); }} className="flex flex-col items-center gap-1 cursor-pointer">
-                    <div className={`relative w-8 h-8 border ${borderClass} ${ex.expired ? 'opacity-40' : ''} flex items-center justify-center bg-zinc-800`}>
-                      <img src={`/themes/${currentTheme}/v2/level${ex.level}.png`} alt="" className="w-6 h-6" style={{ imageRendering: 'pixelated' }} />
+                    <div className={`relative w-8 h-8 border ${borderClass} ${state === 'dormant' ? 'opacity-40' : state === 'unmet' ? 'opacity-25' : ''} flex items-center justify-center bg-zinc-800 overflow-hidden`}>
+                      {currentTheme !== 'athlete' ? (
+                        <img src={spriteSrc} alt="" className="w-7 h-7" style={{ imageRendering: 'pixelated' }} onError={(e) => { (e.target as HTMLImageElement).src = `/themes/${currentTheme}/v2/level${ex.level}.png`; }} />
+                      ) : (
+                        <img src={`/themes/${currentTheme}/v2/level${ex.level}.png`} alt="" className="w-6 h-6" style={{ imageRendering: 'pixelated' }} />
+                      )}
                       {ex.level > 0 && !ex.expired && (
                         <span className={`absolute bottom-0 right-0.5 text-[7px] font-bold ${levelTextColors[ex.level]}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>{ex.level}</span>
                       )}
                     </div>
-                    <span className={`text-[8px] ${ex.level > 0 && !ex.expired ? 'text-zinc-300' : 'text-zinc-600'} truncate max-w-[60px]`}>
+                    <span className={`text-[7px] ${state === 'allied' ? 'text-zinc-300' : 'text-zinc-600'} truncate max-w-[60px]`}>
                       {ex.name.split(' ').slice(0, 2).join(' ')}
                     </span>
                   </div>
@@ -619,13 +640,13 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
 
       {/* Exercise Detail Sheet */}
       {selectedExercise && (
-        <ExerciseDetailSheet exerciseId={selectedExercise} userId={userId} exercises={data.exercises} onClose={() => setSelectedExercise(null)} colors={colors} />
+        <ExerciseDetailSheet exerciseId={selectedExercise} userId={userId} exercises={data.exercises} onClose={() => setSelectedExercise(null)} colors={colors} currentTheme={currentTheme} />
       )}
     </ScreenWrapper>
   );
 }
 
-function ExerciseDetailSheet({ exerciseId, userId, exercises, onClose, colors }: { exerciseId: string; userId: string; exercises: any[]; onClose: () => void; colors: any }) {
+function ExerciseDetailSheet({ exerciseId, userId, exercises, onClose, colors, currentTheme }: { exerciseId: string; userId: string; exercises: any[]; onClose: () => void; colors: any; currentTheme: string }) {
   const [thresholds, setThresholds] = useState<number[]>([]);
   const [history, setHistory] = useState<number[]>([]);
   const [currentValue, setCurrentValue] = useState(0);
@@ -695,8 +716,27 @@ function ExerciseDetailSheet({ exerciseId, userId, exercises, onClose, colors }:
         <div className="p-4 space-y-3">
           {/* Header */}
           <div className="text-center">
+            {/* Creature sprite */}
+            {currentTheme !== 'athlete' && (() => {
+              const normalized = exerciseId.replace(/^(barbell|dumbbell|smith_machine|cable|machine)_/, '');
+              const spriteTier = (ex?.level || 0) >= 4 ? 2 : (ex?.level || 0) >= 2 ? 1 : 0;
+              return (
+                <div className="w-24 h-24 mx-auto mb-2 rounded-lg bg-zinc-950 border border-zinc-800 flex items-center justify-center overflow-hidden">
+                  <img src={`/enemies/${currentTheme}/${normalized}_t${spriteTier}.png`} alt="" className="w-20 h-20" style={{ imageRendering: 'pixelated' }} />
+                </div>
+              );
+            })()}
             <p className="text-sm text-white font-medium">{ex?.name || exerciseId.replace(/_/g, ' ')}</p>
-            <p className={`text-[10px] ${levelColors[ex?.level || 0]}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            {(() => {
+              const normalized = exerciseId.replace(/^(barbell|dumbbell|smith_machine|cable|machine)_/, '');
+              const creature = ENEMY_NAMES_PL[currentTheme]?.[normalized];
+              const state = (ex?.level || 0) === 0 ? 'Unmet' : ex?.expired ? 'Dormant' : 'Allied';
+              if (creature && currentTheme !== 'athlete') return (
+                <p className="text-[9px] text-zinc-400 italic mt-0.5">{creature} · {state}</p>
+              );
+              return null;
+            })()}
+            <p className={`text-[10px] ${levelColors[ex?.level || 0]} mt-1`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
               LV {ex?.level || 0}
             </p>
           </div>
@@ -717,7 +757,7 @@ function ExerciseDetailSheet({ exerciseId, userId, exercises, onClose, colors }:
                     </span>
                     <div className="flex items-center gap-2">
                       <span className={`text-[10px] ${achieved ? 'text-zinc-300' : 'text-zinc-600'}`}>{formatValue(t)}</span>
-                      {isNext && gap && gap > 0 && <span className={`text-[8px] ${colors.secondary}`}>{unit === 'time' ? `-${formatValue(gap)} to go` : `+${gap} to go`}</span>}
+                      {isNext && gap && gap > 0 && <span className={`text-[8px] ${colors.secondary}`}>{unit === 'time-lower' ? `${formatValue(gap)} faster` : unit === 'time' ? `+${formatValue(gap)} more` : unit === 'reps' ? `+${gap} more` : `+${gap} lbs`}</span>}
                     </div>
                   </div>
                 );
