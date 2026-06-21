@@ -330,7 +330,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
                   };
                   const borderClass = ex.expired ? 'border-zinc-700' : (levelColors[ex.level] || 'border-zinc-700');
                   return (
-                  <button key={ex.exerciseId} onClick={() => setSelectedExercise(ex.exerciseId)} className="flex flex-col items-center gap-1">
+                  <div key={ex.exerciseId} onClick={(e) => { e.stopPropagation(); setSelectedExercise(ex.exerciseId); }} className="flex flex-col items-center gap-1 cursor-pointer">
                     <div className={`relative w-8 h-8 border ${borderClass} ${ex.expired ? 'opacity-40' : ''} flex items-center justify-center bg-zinc-800`}>
                       <img src={`/themes/${currentTheme}/v2/level${ex.level}.png`} alt="" className="w-6 h-6" style={{ imageRendering: 'pixelated' }} />
                       {ex.level > 0 && !ex.expired && (
@@ -340,7 +340,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
                     <span className={`text-[8px] ${ex.level > 0 && !ex.expired ? 'text-zinc-300' : 'text-zinc-600'} truncate max-w-[60px]`}>
                       {ex.name.split(' ').slice(0, 2).join(' ')}
                     </span>
-                  </button>
+                  </div>
                   );
                 })}
               </div>
@@ -524,7 +524,8 @@ function ExerciseDetailSheet({ exerciseId, userId, exercises, onClose, colors }:
 
       // Get catalog for thresholds
       const baseId = exerciseId.replace(/^(barbell|dumbbell|smith_machine|cable|machine)_/, '');
-      const { data: cat } = await supabase.from('catalog').select('standards, normalizes_to').eq('id', baseId).single();
+      const { data: catRows } = await supabase.from('catalog').select('standards, normalizes_to').eq('id', baseId).limit(1);
+      const cat = catRows?.[0];
       let standards = cat?.standards;
       if (cat?.normalizes_to) {
         const { data: baseCat } = await supabase.from('catalog').select('standards').eq('id', cat.normalizes_to).single();

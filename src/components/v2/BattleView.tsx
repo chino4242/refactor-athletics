@@ -341,19 +341,23 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
           } else {
             items = catalog.slice(0, 8);
           }
-          const flexCards: BattleCard[] = items.map((c: CatalogItem) => ({
+          const flexCards: BattleCard[] = items.map((c: CatalogItem) => {
+            const isHold = ['plank', 'dead_hang', 'l_sit', 'deep_squat_hold'].some(k => c.id.includes(k));
+            const isRun = ['run_1_mile', 'run_400m', 'run_5k', 'run_2_mile'].some(k => c.id === k);
+            return {
             id: uuidv4(),
             name: c.name || c.id.replace(/_/g, ' '),
             exerciseId: c.id,
-            type: 'lifting' as const,
-            totalSets: 3,
+            type: isHold ? 'duration' as const : 'lifting' as const,
+            totalSets: (isHold || isRun) ? 1 : 3,
             completedSets: 0,
-            targetReps: 8,
+            targetReps: (isHold || isRun) ? 0 : 8,
+            targetSeconds: isHold ? 60 : undefined,
             defeated: false,
             poofing: false,
             catalogItem: c,
             lastWeight: 0,
-          }));
+          }; });
           setCards(flexCards);
         }
       } catch {
@@ -444,13 +448,15 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
       : card.exerciseId;
 
     // Log to database (with retry on failure)
+    const isRunExercise = ['run_1_mile', 'run_400m', 'run_5k', 'run_2_mile'].some(k => exerciseId === k || exerciseId.includes(k));
+    const sets = isRunExercise ? [{ weight: 0, reps: 0, duration: (Number(weight) || 0) * 60 + (Number(reps) || 0) }] : [{ weight: w, reps: r }];
     try {
       const result: any = await logTrainingAction(
         userId,
         exerciseId,
         userBodyweight,
         userSex,
-        [{ weight: w, reps: r }],
+        sets,
         sessionId.current,
       );
       // Show rank-up celebration if level increased
@@ -1238,6 +1244,23 @@ function LiftingCard({ card, isActive, colors, currentTheme, weight, reps, onWei
       })()}
 
       {/* Weight + Reps inputs */}
+      {(() => {
+        const isRunExercise = ['run_1_mile', 'run_400m', 'run_5k', 'run_2_mile'].some(k => card.exerciseId === k || card.exerciseId.includes(k));
+        if (isRunExercise) {
+          return (
+            <div className="grid grid-cols-2 gap-3">
+              <div className={`border ${colors.border} bg-zinc-800 p-4 text-center`}>
+                <input type="number" inputMode="numeric" value={weight} onChange={e => onWeightChange(e.target.value)} className="w-full bg-transparent text-center text-3xl text-white outline-none placeholder:text-zinc-600" style={{ fontFamily: "var(--font-pixel), monospace" }} placeholder="0" />
+                <p className="text-[8px] text-zinc-500 mt-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>MIN</p>
+              </div>
+              <div className={`border ${colors.border} bg-zinc-800 p-4 text-center`}>
+                <input type="number" inputMode="numeric" value={reps} onChange={e => onRepsChange(e.target.value)} className="w-full bg-transparent text-center text-3xl text-white outline-none placeholder:text-zinc-600" style={{ fontFamily: "var(--font-pixel), monospace" }} placeholder="00" />
+                <p className="text-[8px] text-zinc-500 mt-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>SEC</p>
+              </div>
+            </div>
+          );
+        }
+        return (
       <div className="grid grid-cols-2 gap-3">
         <button onClick={() => { if (!weight && card.lastWeight) onWeightChange(String(card.lastWeight)); }} className={`border ${colors.border} bg-zinc-800 p-4 text-center`}>
           <input
@@ -1266,6 +1289,8 @@ function LiftingCard({ card, isActive, colors, currentTheme, weight, reps, onWei
           <p className="text-[8px] text-zinc-500 mt-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>REPS</p>
         </button>
       </div>
+        );
+      })()}
 
       {/* LOG ATTACK / REST button */}
       {isResting ? (

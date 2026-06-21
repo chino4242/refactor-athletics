@@ -154,8 +154,12 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
             const today = new Date().toLocaleDateString('en-CA');
             const { createClient: getClient } = await import('@/utils/supabase/client');
             const sb = getClient();
-            const { data: todayWorkouts } = await sb.from('workouts').select('exercise_id, xp, raw_value').eq('user_id', userId).eq('date', today);
+            const { data: todayWorkouts } = await sb.from('workouts').select('exercise_id, xp, raw_value, session_id').eq('user_id', userId).eq('date', today);
             const completedIds = new Set((todayWorkouts || []).map((w: any) => w.exercise_id));
+            const assignedGroups = new Set((todayWorkouts || []).filter((w: any) => w.session_id).map((w: any) => w.session_id));
+            // Also check localStorage for session assignments from activity confirmation
+            const localAssignments = JSON.parse(localStorage.getItem(`session_assign_${today}`) || '[]');
+            for (const a of localAssignments) assignedGroups.add(a);
             const xpTotal = (todayWorkouts || []).reduce((s: number, w: any) => s + (w.xp || 0), 0);
             setTodayXp(xpTotal);
 
@@ -171,7 +175,7 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
             const groups = (todayProgram.sessionGroups as any[]).map((g: any) => ({
               type: g.type,
               exercises: g.exercises,
-              completed: g.exercises.filter((e: any) => completedIds.has(e.id)).length,
+              completed: assignedGroups.has(g.type.toLowerCase()) ? g.exercises.length : g.exercises.filter((e: any) => completedIds.has(e.id)).length,
             }));
             setSessionGroups(groups);
 
@@ -436,12 +440,11 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
           activity={confirmingActivity}
           onConfirm={async (sessionGroup) => {
             if (sessionGroup) {
-              // Update the workout row with session_group
-              const { createClient } = await import('@/utils/supabase/client');
-              const supabase = createClient();
-              // Find the workout by exercise_id and today's date
-              const today = new Date().toLocaleDateString('en-CA');
-              await supabase.from('workouts').update({ session_id: sessionGroup }).eq('user_id', userId).eq('exercise_id', confirmingActivity.exerciseId).eq('date', today);
+              // Persist assignment in localStorage (session_id column is used by Battle Mode)
+              const key = `session_assign_${new Date().toLocaleDateString('en-CA')}`;
+              const existing = JSON.parse(localStorage.getItem(key) || '[]');
+              existing.push(sessionGroup);
+              localStorage.setItem(key, JSON.stringify(existing));
 
               // Update local session groups — mark this group as fully complete
               setSessionGroups(prev => prev.map(g =>
