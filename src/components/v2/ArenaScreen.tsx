@@ -592,11 +592,11 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
               if (!inviteCode) return;
               const url = `https://refactorathletics.com/join/${inviteCode}`;
               const themeMessages: Record<string, string> = {
-                samurai: 'The dojo has an opening. Join the company.',
-                dragon: 'The hoard grows. We need another flame.',
-                viking: 'The longship has room. Join the raid.',
-                dinosaur: 'The pack hunts better in numbers.',
-                athlete: 'Join my training group on Refactor Athletics.',
+                samurai: 'Join my party on Refactor Athletics — a fitness RPG. The dojo has an opening.',
+                dragon: 'Join my party on Refactor Athletics — a fitness RPG. The hoard grows.',
+                viking: 'Join my party on Refactor Athletics — a fitness RPG. The longship has room.',
+                dinosaur: 'Join my party on Refactor Athletics — a fitness RPG. The pack hunts better in numbers.',
+                athlete: 'Join my training group on Refactor Athletics — track workouts, earn ranks, level up.',
               };
               const text = themeMessages[currentTheme] || themeMessages['athlete'];
               try {

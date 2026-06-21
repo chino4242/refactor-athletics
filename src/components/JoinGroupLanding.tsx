@@ -56,11 +56,11 @@ export default function JoinGroupLanding({ currentUserId, inviteCode }: Props) {
         try {
             await joinGroup(currentUserId, inviteCode);
             setStatus('success');
-            setTimeout(() => router.push('/arena'), 1500);
+            setTimeout(() => router.push('/'), 1500);
         } catch (e: any) {
             if (e.message === 'Already a member') {
                 setStatus('success');
-                setTimeout(() => router.push('/arena'), 1000);
+                setTimeout(() => router.push('/'), 1000);
             } else {
                 setError(e.message || 'Failed to join group.');
                 setStatus('error');
