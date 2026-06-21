@@ -96,18 +96,18 @@ export default function JoinGroupLanding({ currentUserId, inviteCode }: Props) {
                             <h1 className="text-3xl font-black italic text-white uppercase tracking-tight mb-2">
                                 You&apos;re Invited!
                             </h1>
-                            <p className="text-zinc-400 mb-6">You&apos;ve been invited to join a group.</p>
+                            <p className="text-zinc-500 italic text-sm mb-6">&quot;The rift responds to collective will. A Party can challenge the rift itself.&quot;</p>
 
                             <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 mb-6">
                                 <div className="text-lg font-bold text-white mb-1">{groupName}</div>
-                                <div className="text-sm text-zinc-500">{memberCount} {memberCount === 1 ? 'member' : 'members'}</div>
+                                <div className="text-sm text-zinc-500">{memberCount} {memberCount === 1 ? 'adventurer awaits' : 'adventurers await'}</div>
                             </div>
 
                             <button
                                 onClick={handleJoin}
                                 className="w-full py-4 bg-emerald-500 text-black font-black uppercase tracking-wider rounded-xl hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/10"
                             >
-                                Join Group
+                                Join the Party
                             </button>
                         </>
                     )}
