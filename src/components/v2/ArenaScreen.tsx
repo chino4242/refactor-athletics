@@ -292,6 +292,7 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
   const [bounties, setBounties] = useState<BountyWithProgress[]>([]);
   const [guildQuest, setGuildQuest] = useState<GroupChallengeWithProgress | null>(null);
   const [groupId, setGroupId] = useState<string | null>(null);
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [campaign, setCampaign] = useState<any>(null);
   const [showQuestModal, setShowQuestModal] = useState(false);
   const [showCampaignModal, setShowCampaignModal] = useState(false);
@@ -325,6 +326,13 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
         setBounties(bountyData);
         setGuildQuest(questResult?.quest || null);
         setGroupId(questResult?.groupId || null);
+        // Fetch invite code for sharing
+        if (questResult?.groupId) {
+          const { createClient: getClient2 } = await import('@/utils/supabase/client');
+          const sb2 = getClient2();
+          const { data: grp } = await sb2.from('groups').select('invite_code').eq('id', questResult.groupId).single();
+          if (grp?.invite_code) setInviteCode(grp.invite_code);
+        }
         const active = (campaignData?.challenges || []).find((c: any) => c.status === 'active')
           || (campaignData?.challenges || []).find((c: any) => {
             // Show completed campaigns for 7 days after completion
@@ -579,7 +587,7 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
           <div className="flex gap-1">
           <button
             onClick={async () => {
-              const code = groupId || '';
+              const code = inviteCode || groupId || '';
               const url = `https://refactorathletics.com/join/${code}`;
               const themeMessages: Record<string, string> = {
                 samurai: 'The dojo has an opening. Join the company.',
@@ -615,8 +623,8 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
       </div>{/* end secondary */}
 
       {/* QR Invite Modal */}
-      {showQR && groupId && (
-        <QRInviteModal code={groupId} onClose={() => setShowQR(false)} />
+      {showQR && (inviteCode || groupId) && (
+        <QRInviteModal code={inviteCode || groupId || ''} onClose={() => setShowQR(false)} />
       )}
 
       {/* Guild Quest Modal */}
