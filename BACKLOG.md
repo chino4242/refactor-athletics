@@ -104,3 +104,18 @@
 ---
 
 *Last updated: 2026-06-17*
+
+---
+
+## 🍎 iOS Risks & Verification
+
+| # | Item | Priority | Status |
+|---|------|----------|--------|
+| iOS1 | Verify HealthKit data flows end-to-end (steps/calories/sleep appear after permission grant) | P1 | Awaiting tester verification |
+| iOS2 | Verify run distance from HealthKit (totalDistance field → rank evaluation fires) | P1 | Awaiting tester run |
+| iOS3 | Add "How to enable HealthKit" guidance if permissions previously denied (link to Settings) | P1 | Open |
+| iOS4 | Verify totalCalories mapping on iOS (basal+active vs dietary) | P2 | Untested |
+| iOS5 | Verify sleep data unit from @capgo readSamples (minutes vs hours?) | P2 | Untested |
+| iOS6 | Audit for remaining window.confirm() calls → replace with custom modals | P2 | Open |
+| iOS7 | Test safe areas / notch / Dynamic Island on iPhone 14+ | P2 | Untested |
+| iOS8 | Background health sync (HKObserverQuery) — Epic 9 story 9-7 | P2 | Planned (future) |
