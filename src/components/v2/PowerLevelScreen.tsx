@@ -17,7 +17,7 @@ interface PowerLevelData {
   powerLevel: number;
   maxPossible: number;
   exercises: { name: string; exerciseId: string; level: number; expired: boolean }[];
-  expiringExercises: { name: string; level: number; daysLeft: number }[];
+  expiringExercises: { exerciseId: string; name: string; level: number; daysLeft: number }[];
   closestRankUps: { name: string; exerciseId: string; currentLevel: number; gap: string }[];
   recentPRs: { name: string; value: string; date: string }[];
 }
@@ -262,6 +262,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
           maxPossible: result.maxPossible,
           exercises: result.exercises.map(ex => ({ name: ex.name, exerciseId: ex.exerciseId, level: ex.level, expired: ex.expired })),
           expiringExercises: result.expiringExercises.map(ex => ({
+            exerciseId: ex.exerciseId,
             name: ex.name,
             level: ex.level,
             daysLeft: ex.daysUntilExpiry,
@@ -560,18 +561,29 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
       {data.expiringExercises.length > 0 && (
         <PixelBox className="p-4 mb-4">
           <p className="text-[10px] text-amber-400 mb-3 uppercase" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-            ⚠ EXPIRING
+            {currentTheme === 'athlete' ? '⚠ EXPIRING' : '⚠ GROWING RESTLESS'}
           </p>
           <div className="space-y-2">
-            {data.expiringExercises.map((ex) => (
-              <div key={ex.name} className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <img src={`/themes/${currentTheme}/v2/level${ex.level}.png`} alt={`Level ${ex.level}`} className="w-6 h-6" style={{ imageRendering: 'pixelated' }} />
-                  <span className="text-xs text-zinc-200">{ex.name}</span>
+            {data.expiringExercises.map((ex) => {
+              const normalized = ex.exerciseId.replace(/^(barbell|dumbbell|smith_machine|cable|machine)_/, '');
+              const creature = currentTheme !== 'athlete' ? ENEMY_NAMES_PL[currentTheme]?.[normalized] : null;
+              return (
+              <div key={ex.name}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <img src={`/themes/${currentTheme}/v2/level${ex.level}.png`} alt={`Level ${ex.level}`} className="w-6 h-6" style={{ imageRendering: 'pixelated' }} />
+                    <span className="text-xs text-zinc-200">{ex.name}</span>
+                  </div>
+                  <span className={`text-[8px] ${ex.daysLeft <= 3 ? 'text-red-400' : ex.daysLeft <= 7 ? 'text-amber-400' : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>{ex.daysLeft}D</span>
                 </div>
-                <span className={`text-[8px] ${ex.daysLeft <= 3 ? 'text-red-400' : ex.daysLeft <= 7 ? 'text-amber-400' : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>{ex.daysLeft}D</span>
+                {creature && (
+                  <p className="text-[8px] text-zinc-600 italic ml-8 mt-0.5">
+                    {ex.daysLeft <= 3 ? `${creature} is drifting. Prove yourself again.` : `${creature} grows impatient. Don't let it sleep.`}
+                  </p>
+                )}
               </div>
-            ))}
+              );
+            })}
           </div>
         </PixelBox>
       )}
