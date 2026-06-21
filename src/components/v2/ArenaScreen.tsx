@@ -571,6 +571,7 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
             <p className={`text-[10px] ${colors.headerText} uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>⚔ PARTY</p>
             <p className="text-[8px] text-zinc-500 mt-1">Grow your adventuring company</p>
           </div>
+          <div className="flex gap-1">
           <button
             onClick={async () => {
               const code = groupId || '';
@@ -600,6 +601,7 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
           >
             QR
           </button>
+          </div>
         </div>
       </PixelBox>
 
