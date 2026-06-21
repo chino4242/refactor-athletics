@@ -10,6 +10,7 @@ import { getGroupChallengeWithProgress, getMetricLabel, type GroupChallengeWithP
 import GuildQuestModal from './GuildQuestModal';
 import CampaignModal from './CampaignModal';
 import DuelModal from './DuelModal';
+import QRInviteModal from './QRInviteModal';
 import PartyStatusStrip from './PartyStatusStrip';
 import GuildEventTicker from './GuildEventTicker';
 import PartyLeaderboard from './PartyLeaderboard';
@@ -297,6 +298,7 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
   const [showDuelModal, setShowDuelModal] = useState(false);
   const [activeDuels, setActiveDuels] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showQR, setShowQR] = useState(false);
   const [bountyReveal, setBountyReveal] = useState(() => {
     const key = `bounty_reveal_${new Date().toLocaleDateString('en-CA')}`;
     const isMonday = new Date().getDay() === 1;
@@ -580,10 +582,10 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
                 dinosaur: 'The pack hunts better in numbers.',
                 athlete: 'Join my training group on Refactor Athletics.',
               };
-              const text = `${themeMessages[currentTheme] || themeMessages['athlete']} ${url}`;
+              const text = themeMessages[currentTheme] || themeMessages['athlete'];
               try {
                 if (navigator.share) await navigator.share({ text, url });
-                else await navigator.clipboard.writeText(text);
+                else await navigator.clipboard.writeText(`${text} ${url}`);
               } catch {}
             }}
             className={`text-[9px] px-3 py-2 border ${colors.primary} bg-zinc-800 ${colors.secondary} hover:bg-zinc-700 transition-colors`}
@@ -591,10 +593,22 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
           >
             ▸ INVITE
           </button>
+          <button
+            onClick={() => setShowQR(true)}
+            className={`text-[9px] px-3 py-2 border ${colors.border} bg-zinc-800 text-zinc-400 hover:text-white transition-colors`}
+            style={{ fontFamily: "var(--font-pixel), monospace" }}
+          >
+            QR
+          </button>
         </div>
       </PixelBox>
 
       </div>{/* end secondary */}
+
+      {/* QR Invite Modal */}
+      {showQR && groupId && (
+        <QRInviteModal code={groupId} onClose={() => setShowQR(false)} />
+      )}
 
       {/* Guild Quest Modal */}
       {groupId && (
