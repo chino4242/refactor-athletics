@@ -8,6 +8,7 @@ import { PowerLevelSkeleton } from './Skeletons';
 import WeeklyRecapCard from './WeeklyRecapCard';
 import HealthSync from './HealthSync';
 import PushRegistration from './PushRegistration';
+import CreatureNarrator from './CreatureNarrator';
 
 interface PowerLevelScreenProps {
   userId: string;
@@ -251,6 +252,9 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
   const [tierUp, setTierUp] = useState<{ name: string; prev: string } | null>(null);
   const [showLoreLadder, setShowLoreLadder] = useState(false);
   const [showXray, setShowXray] = useState(false);
+  const [narratorState, setNarratorState] = useState<{ streak: number; todayXp: number; dailyTarget: number; hasPrToday: boolean; missedYesterday: boolean }>({ streak: 0, todayXp: 0, dailyTarget: 0, hasPrToday: false, missedYesterday: false });
+  const [thresholdToast, setThresholdToast] = useState(false);
+  const [bountyTeaser, setBountyTeaser] = useState<{ description: string; current: number; target: number; completed: boolean } | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -283,6 +287,64 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
         let xpAccum = 0;
         while (xpAccum + xpNeeded <= totalXp) { xpAccum += xpNeeded; level++; xpNeeded = Math.round(1000 * Math.pow(1.08, level - 1)); }
         setPlayerLevel({ level, xp: totalXp - xpAccum, xpForNext: xpNeeded });
+      } catch {}
+
+      // Fetch narrator state (streak, today XP, daily target, PRs, yesterday)
+      try {
+        const { createClient: getClient2 } = await import('@/utils/supabase/client');
+        const sb2 = getClient2();
+        const today = new Date().toLocaleDateString('en-CA');
+        const yesterday = new Date(Date.now() - 86400000).toLocaleDateString('en-CA');
+        const weekAgo = new Date(Date.now() - 7 * 86400000).toLocaleDateString('en-CA');
+        const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+
+        const [{ data: todayLedger }, { data: weekLedger }, { data: streakData }, { data: yesterdayW }, { data: todayPRs }] = await Promise.all([
+          sb2.from('xp_ledger').select('amount').eq('user_id', userId).gte('created_at', todayStart.toISOString()),
+          sb2.from('xp_ledger').select('amount, created_at').eq('user_id', userId).gte('created_at', new Date(Date.now() - 7 * 86400000).toISOString()),
+          sb2.from('workouts').select('date').eq('user_id', userId).gte('date', new Date(Date.now() - 60 * 86400000).toLocaleDateString('en-CA')),
+          sb2.from('workouts').select('id').eq('user_id', userId).eq('date', yesterday).limit(1),
+          sb2.from('workouts').select('id').eq('user_id', userId).eq('date', today).gt('level', 0).limit(1),
+        ]);
+
+        const todayXp = (todayLedger || []).reduce((s: number, r: any) => s + (r.amount || 0), 0);
+        // Daily target = 7-day average
+        const dailyTarget = Math.round((weekLedger || []).reduce((s: number, r: any) => s + (r.amount || 0), 0) / 7);
+
+        // Streak calc
+        const streakDates = new Set((streakData || []).map((w: any) => w.date));
+        let streak = 0;
+        let checkDay = streakDates.has(today) ? new Date() : new Date(Date.now() - 86400000);
+        while (streakDates.has(checkDay.toLocaleDateString('en-CA'))) { streak++; checkDay.setDate(checkDay.getDate() - 1); }
+
+        setNarratorState({
+          streak,
+          todayXp,
+          dailyTarget: Math.max(dailyTarget, 100), // minimum 100 XP target
+          hasPrToday: (todayPRs || []).length > 0,
+          missedYesterday: (yesterdayW || []).length === 0,
+        });
+
+        // Daily Threshold toast: fire once per day when XP crosses target
+        const thresholdKey = `threshold_${today}`;
+        if (todayXp >= Math.max(dailyTarget, 100) && !localStorage.getItem(thresholdKey)) {
+          localStorage.setItem(thresholdKey, '1');
+          setThresholdToast(true);
+          setTimeout(() => setThresholdToast(false), 4000);
+        }
+      } catch {}
+
+      // Fetch nearest bounty for teaser
+      try {
+        const { getWeeklyBounties } = await import('@/services/bountyService');
+        const bounties = await getWeeklyBounties(userId);
+        // Pick the closest-to-completion incomplete bounty
+        const incomplete = bounties.filter(b => !b.completed).sort((a, b) => (b.current / b.target) - (a.current / a.target));
+        if (incomplete.length > 0) {
+          const best = incomplete[0];
+          setBountyTeaser({ description: best.description, current: best.current, target: best.target, completed: false });
+        } else if (bounties.length > 0 && bounties.every(b => b.completed)) {
+          setBountyTeaser({ description: 'All bounties swept!', current: 1, target: 1, completed: true });
+        }
       } catch {}
 
       // Fetch physique rank (body composition)
@@ -372,6 +434,19 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
         </div>
       )}
 
+      {/* Daily Threshold Toast */}
+      {thresholdToast && currentTheme !== 'athlete' && (
+        <div className="fixed top-16 left-4 right-4 z-50 animate-in slide-in-from-top duration-300" onClick={() => setThresholdToast(false)}>
+          <div className={`flex items-center gap-3 p-4 border ${colors.primary} bg-zinc-900 shadow-lg`}>
+            <img src={`/enemies/${currentTheme === 'dragon' ? 'dragon' : 'samurai'}/back_squat_t1.png`} alt="" className="w-8 h-8" style={{ imageRendering: 'pixelated' }} />
+            <div>
+              <p className={`text-[9px] ${colors.secondary} uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>★ DAY CLAIMED</p>
+              <p className="text-[10px] text-zinc-200 italic">&ldquo;{narratorState.todayXp} XP earned. The rift remembers this day.&rdquo;</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Weekly Recap (shows Sun-Tue) */}
       <WeeklyRecapCard userId={userId} />
 
@@ -384,6 +459,42 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
           style={{ imageRendering: 'pixelated' }}
         />
       </div>
+
+      {/* Creature Narrator */}
+      {currentTheme !== 'athlete' && (
+        <CreatureNarrator
+          theme={currentTheme}
+          streak={narratorState.streak}
+          todayXp={narratorState.todayXp}
+          dailyTarget={narratorState.dailyTarget}
+          hasPrToday={narratorState.hasPrToday}
+          missedYesterday={narratorState.missedYesterday}
+          expiringCount={data.expiringExercises.length}
+          colors={colors}
+        />
+      )}
+
+      {/* Bounty Teaser */}
+      {bountyTeaser && (
+        <button onClick={() => { window.location.hash = 'arena'; }} className={`w-full flex items-center justify-between p-3 mb-4 border ${bountyTeaser.completed ? 'border-green-700 bg-green-950/20' : `${colors.border} bg-zinc-900/50`}`}>
+          <div className="text-left">
+            <p className={`text-[8px] uppercase ${bountyTeaser.completed ? 'text-green-400' : colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              {bountyTeaser.completed ? '✓ SWEEP' : '◎ BOUNTY'}
+            </p>
+            <p className="text-[10px] text-zinc-300 mt-0.5">{bountyTeaser.description}</p>
+          </div>
+          {!bountyTeaser.completed && (
+            <div className="text-right">
+              <p className="text-[9px] text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                {bountyTeaser.current}/{bountyTeaser.target}
+              </p>
+              <div className="w-16 h-1.5 bg-zinc-800 mt-1">
+                <div className={`h-full ${colors.primary.replace('border-', 'bg-')}`} style={{ width: `${Math.min((bountyTeaser.current / bountyTeaser.target) * 100, 100)}%` }} />
+              </div>
+            </div>
+          )}
+        </button>
+      )}
 
       {/* Nutrition summary */}
       <NutritionBar userId={userId} colors={colors} refreshKey={refreshKey} />
