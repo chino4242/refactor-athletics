@@ -32,6 +32,44 @@ const TIER_NAMES: Record<string, string[]> = {
 const TIER_COLORS = ['text-amber-600', 'text-zinc-300', 'text-yellow-400', 'text-purple-300', 'text-cyan-300'];
 const TIER_FLOORS = [0, 12, 24, 36, 48];
 
+const TIER_LORE: Record<string, string[]> = {
+  samurai: [
+    'A wanderer with a blade. Untested, but willing.',
+    'Armor earned through discipline. The rift begins to notice.',
+    'A lord of war. Creatures hesitate before engaging.',
+    'Commander of the rift. Others follow your path.',
+    'The rift itself bends to your will.',
+  ],
+  dragon: [
+    'A spark in the dark. The flame barely flickers.',
+    'Wings unfurl. The fire finds its voice.',
+    'Scales harden. Lesser creatures flee your shadow.',
+    'Ancient power courses through you. The rift trembles.',
+    'You are the dragon. The rift is your domain.',
+  ],
+  viking: [
+    'A thrall with nothing. Survival is the only goal.',
+    'Battle-tested. You have earned your place at the table.',
+    'The fury is yours to command. Enemies scatter.',
+    'Lord of the hall. Your name carries weight.',
+    'Chosen of the gods. Valhalla watches.',
+  ],
+  dinosaur: [
+    'Buried deep. Barely a whisper in the fossil record.',
+    'Small but fast. You survive by instinct.',
+    'The hunt is yours. Prey cannot escape.',
+    'Apex of your ecosystem. Nothing challenges you.',
+    'Extinction-proof. You are the ultimate predator.',
+  ],
+  athlete: [
+    'Just getting started. Every journey begins here.',
+    'Consistent and improving. You belong on the team.',
+    'Standing out. Your performance speaks for itself.',
+    'Elite territory. Few reach this level.',
+    'Legendary. Your name goes in the record books.',
+  ],
+};
+
 function getTier(pl: number, theme: string): { name: string; color: string; index: number; floor: number; ceiling: number; next?: string } {
   const names = TIER_NAMES[theme] || TIER_NAMES['athlete'];
   let idx = 4;
@@ -203,6 +241,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
   const [storyBeatVisible, setStoryBeatVisible] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
   const [tierUp, setTierUp] = useState<{ name: string; prev: string } | null>(null);
+  const [showLoreLadder, setShowLoreLadder] = useState(false);
   const [showXray, setShowXray] = useState(false);
 
   useEffect(() => {
@@ -348,9 +387,30 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
               <span className="text-5xl text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>
                 {data.powerLevel}
               </span>
-              <p className={`text-[10px] mt-2 uppercase tracking-widest ${tier.color}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              <button onClick={(e) => { e.stopPropagation(); setShowLoreLadder(!showLoreLadder); }} className={`text-[10px] mt-2 uppercase tracking-widest ${tier.color}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                 ▸ {tier.name} ◂
-              </p>
+              </button>
+              {/* Lore Ladder */}
+              {showLoreLadder && (
+                <div className="mt-3 space-y-2 text-left">
+                  {(TIER_NAMES[currentTheme] || TIER_NAMES['athlete']).map((name, i) => {
+                    const isCurrent = i === tier.index;
+                    const isLocked = i > tier.index;
+                    const lore = TIER_LORE[currentTheme]?.[i] || TIER_LORE['athlete'][i];
+                    return (
+                      <div key={i} className={`px-3 py-2 border ${isCurrent ? colors.primary + ' bg-zinc-800' : 'border-zinc-800'} ${isLocked ? 'opacity-40' : ''}`}>
+                        <div className="flex items-center justify-between">
+                          <span className={`text-[9px] ${isCurrent ? colors.secondary : isLocked ? 'text-zinc-600' : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                            {isCurrent ? '▸ ' : isLocked ? '○ ' : '✓ '}{name}
+                          </span>
+                          <span className="text-[7px] text-zinc-600" style={{ fontFamily: "var(--font-pixel), monospace" }}>PL {TIER_FLOORS[i]}</span>
+                        </div>
+                        <p className="text-[8px] text-zinc-500 italic mt-0.5">{lore}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </>
           ) : (
             <>
