@@ -287,7 +287,7 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
         // Generate session bounties (3 random micro-achievements)
         if (currentTheme !== 'athlete' && battleCards.length > 0) {
           const bountyPool = [
-            { id: 'perfect', label: '⚡ Land a Perfect Strike' },
+            { id: 'perfect', label: '⚡ Crit: beat your last weight' },
             { id: 'noskip', label: '⏱ Complete without skipping rest' },
             { id: 'allsets', label: '💪 Finish every exercise' },
             { id: 'fast', label: '⚡ Defeat an enemy in under 3 min' },
