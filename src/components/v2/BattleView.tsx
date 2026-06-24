@@ -473,8 +473,9 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
         setXpPop(result.xp_earned);
         setTimeout(() => setXpPop(null), 900);
       }
-      // PR detection — compare raw weight to historical best
-      if (w > 0 && w > (card.bestValue || 0)) {
+      // PR detection — compare estimated 1RM of this set to historical best 1RM
+      const estimated1RM = w * (1 + r / 30);
+      if (w > 0 && estimated1RM > (card.bestValue || 0)) {
         setPrFlash(true);
         setTimeout(() => setPrFlash(false), 1500);
         // Mark PR for defeat overlay
