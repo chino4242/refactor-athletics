@@ -41,6 +41,11 @@ export async function proposeChallenge(params: {
   endDate: string;
 }): Promise<{ id: string } | null> {
   const supabase = createClient();
+  const today = new Date().toLocaleDateString('en-CA');
+
+  // Auto-expire past challenges
+  await supabase.from('group_challenges').update({ status: 'completed' })
+    .eq('group_id', params.groupId).eq('status', 'active').lt('end_date', today);
 
   // Check no active/proposed challenge exists
   const { data: existing } = await supabase
@@ -50,7 +55,10 @@ export async function proposeChallenge(params: {
     .in('status', ['active', 'proposed'])
     .limit(1);
 
-  if (existing && existing.length > 0) return null;
+  if (existing && existing.length > 0) {
+    console.error('[proposeChallenge] blocked: active/proposed challenge already exists', existing[0].id);
+    return null;
+  }
 
   // Check if proposer is the leader (auto-approve)
   const { data: group } = await supabase
@@ -77,7 +85,10 @@ export async function proposeChallenge(params: {
     .select('id')
     .single();
 
-  if (error) return null;
+  if (error) {
+    console.error('[proposeChallenge] insert failed:', error.message, error.code, error.details);
+    return null;
+  }
   return { id: data.id };
 }
 
@@ -236,7 +247,7 @@ async function computeContributions(
       .from('habit_logs')
       .select('user_id, value')
       .in('user_id', memberIds)
-      .eq('metric', 'steps')
+      .eq('habit_id', 'habit_steps')
       .gte('date', startDate)
       .lte('date', endDate);
 

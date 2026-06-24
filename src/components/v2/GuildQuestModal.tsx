@@ -16,13 +16,15 @@ interface Props {
 const METRICS: { key: ChallengeMetric; label: string; icon: string; unit: string; defaultTarget: number }[] = [
   { key: 'volume', label: 'WEIGHT LIFTED', icon: '🏋️', unit: 'lbs', defaultTarget: 20000 },
   { key: 'sessions', label: 'WORKOUTS', icon: '⚔', unit: 'workouts', defaultTarget: 12 },
-  { key: 'steps', label: 'STEPS', icon: '👟', unit: 'steps', defaultTarget: 100000 },
+  { key: 'steps', label: 'STEPS', icon: '👟', unit: 'steps', defaultTarget: 25000 },
   { key: 'active_minutes', label: 'ACTIVE MIN', icon: '⏱', unit: 'min', defaultTarget: 300 },
 ];
 
 const DURATIONS = [
-  { label: '7 DAYS', days: 7 },
+  { label: '1 DAY', days: 1 },
+  { label: '3 DAYS', days: 3 },
   { label: '5 DAYS', days: 5 },
+  { label: '7 DAYS', days: 7 },
   { label: '14 DAYS', days: 14 },
 ];
 
@@ -79,6 +81,10 @@ export default function GuildQuestModal({ isOpen, groupId, userId, onClose, onCr
     if (result) {
       onCreated();
       onClose();
+      // Brief alert so user knows it worked
+      setTimeout(() => alert('Quest proposed! Your party can now see it.'), 100);
+    } else {
+      alert('Failed to create quest. Try again.');
     }
   };
 
