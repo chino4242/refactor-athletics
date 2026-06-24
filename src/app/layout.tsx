@@ -25,7 +25,6 @@ import { ExperienceModeProvider } from "@/context/ExperienceModeContext";
 import { ToastProvider } from "@/context/ToastContext";
 import ToastContainer from "@/components/ui/Toast";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
-import InstallPrompt from "@/components/InstallPrompt";
 import TimezoneSync from "@/components/TimezoneSync";
 import OfflineBanner from "@/components/OfflineBanner";
 import AuthGuard from "@/components/AuthGuard";
@@ -80,7 +79,6 @@ export default async function RootLayout({
           <ExperienceModeProvider>
           <ToastProvider>
             <ServiceWorkerRegistration />
-            <InstallPrompt />
             <TimezoneSync />
             <OfflineBanner />
             <AuthGuard />
