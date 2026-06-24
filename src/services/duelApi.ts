@@ -57,7 +57,7 @@ export const createChallenge = async (userId: string, durationDays: number, duel
     }]).select().single();
 
     if (error) {
-        console.error("Error creating duel challenge:", error);
+        console.error("Error creating duel challenge:", error.message, error.code, error.details);
         return null;
     }
     return data;
