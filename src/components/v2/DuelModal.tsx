@@ -24,6 +24,7 @@ export default function DuelModal({ isOpen, userId, onClose, onCreated }: Props)
   const colors = getV2Theme(currentTheme);
   const [days, setDays] = useState(7);
   const [duelType, setDuelType] = useState('xp');
+  const [startDate, setStartDate] = useState(new Date(Date.now() + 86400000).toLocaleDateString('en-CA'));
   const [loading, setLoading] = useState(false);
   const [link, setLink] = useState<string | null>(null);
 
@@ -31,7 +32,7 @@ export default function DuelModal({ isOpen, userId, onClose, onCreated }: Props)
 
   const handleCreate = async () => {
     setLoading(true);
-    const duel = await createChallenge(userId, days, duelType);
+    const duel = await createChallenge(userId, days, duelType, startDate);
     if (duel) {
       const url = `${window.location.origin}/arena/duel/${duel.id}`;
       setLink(url);
@@ -73,6 +74,18 @@ export default function DuelModal({ isOpen, userId, onClose, onCreated }: Props)
                     </button>
                   ))}
                 </div>
+              </div>
+
+              <div>
+                <p className="text-[8px] text-zinc-500 uppercase mb-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>START DATE</p>
+                <input
+                  type="date"
+                  value={startDate}
+                  min={new Date().toLocaleDateString('en-CA')}
+                  onChange={e => setStartDate(e.target.value)}
+                  className={`w-full bg-zinc-800 border ${colors.border} px-3 py-2 text-white text-[9px] rounded-sm`}
+                  style={{ fontFamily: "var(--font-pixel), monospace" }}
+                />
               </div>
 
               <div>

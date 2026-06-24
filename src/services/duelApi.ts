@@ -43,9 +43,16 @@ export const getDuelHistory = async (userId: string): Promise<DuelResponse[]> =>
     return data || [];
 };
 
-export const createChallenge = async (userId: string, durationDays: number, duelType: string = 'xp'): Promise<DuelResponse | null> => {
+export const createChallenge = async (userId: string, durationDays: number, duelType: string = 'xp', startDate?: string): Promise<DuelResponse | null> => {
     const supabase = createClient();
-    const startAt = Math.floor(Date.now() / 1000);
+    // Start at 12:01 AM local on the chosen date (or now if no date)
+    let startAt: number;
+    if (startDate) {
+      const d = new Date(startDate + 'T00:01:00');
+      startAt = Math.floor(d.getTime() / 1000);
+    } else {
+      startAt = Math.floor(Date.now() / 1000);
+    }
     const endAt = startAt + (durationDays * 86400);
 
     const { data, error } = await supabase.from('duels').insert([{
