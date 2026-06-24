@@ -226,7 +226,7 @@ export async function logTrainingAction(
     // Fetch catalog and user profile
     const [catalogResult, profileResult] = await Promise.all([
         supabase.from('catalog').select('*').eq('id', exerciseId).single(),
-        supabase.from('users').select('age').eq('id', userId).single()
+        supabase.from('users').select('age, selected_theme').eq('id', userId).single()
     ]);
 
     // Get previous best level for this exercise
@@ -312,8 +312,16 @@ export async function logTrainingAction(
     // currentLevelIndex represents the highest threshold passed (0-4 for 5 thresholds)
     // Level is currentLevelIndex + 1, where level 0 = failed all thresholds
     const userLevel = currentLevelIndex + 1;
-    const rankNames = ["Peasant", "Rookie", "Amateur", "Contender", "Pro", "Champion", "Legend"];
-    const rankName = rankNames[userLevel] || "Peasant";
+    const THEMED_RANK_NAMES: Record<string, string[]> = {
+      samurai: ['Unranked', 'Ronin', 'Samurai', 'Daimyo', 'Shogun', 'Legendary Warrior'],
+      dragon: ['Unranked', 'Hatchling', 'Whelp', 'Drake', 'Wyrm', 'Ancient Dragon'],
+      viking: ['Unranked', 'Thrall', 'Warrior', 'Berserker', 'Jarl', 'Einherjar'],
+      dinosaur: ['Unranked', 'Fossil', 'Compy', 'Raptor', 'Allosaurus', 'T-Rex'],
+      athlete: ['Unranked', 'Rookie', 'Contender', 'Pro', 'Champion', 'Legend'],
+    };
+    const theme = profileResult.data?.selected_theme || 'athlete';
+    const rankNames = THEMED_RANK_NAMES[theme] || THEMED_RANK_NAMES['athlete'];
+    const rankName = rankNames[userLevel] || rankNames[0];
     const xpEarned = userLevel > 0 ? userLevel * 20 + 30 : 0; // L1=50, L3=90, L5=130, scales but doesn't dominate
 
     // Calculate distance to next rank threshold
