@@ -12,8 +12,6 @@ import CampaignModal from './CampaignModal';
 import DuelModal from './DuelModal';
 import QRInviteModal from './QRInviteModal';
 import PartyStatusStrip from './PartyStatusStrip';
-import GuildEventTicker from './GuildEventTicker';
-import PartyLeaderboard from './PartyLeaderboard';
 
 interface ArenaScreenProps {
   userId: string;
@@ -401,12 +399,6 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
       {/* Party Status */}
       <PartyStatusStrip userId={userId} />
 
-      {/* Guild Event Ticker */}
-      <GuildEventTicker userId={userId} />
-
-      {/* Party Power Leaderboard */}
-      <PartyLeaderboard userId={userId} />
-
       {/* Active Campaign / CTA */}
       <PixelBox highlight={!!campaign} className="p-4 mb-4">
         <p className={`text-[10px] ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
@@ -453,29 +445,26 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
             {bounties.filter(b => b.completed).length}/{bounties.length}
           </span>
         </div>
-        {bountyReveal && (
-          <p className="text-[9px] text-zinc-500 italic text-center mb-2">This week&apos;s challenges await...</p>
-        )}
-        <style>{`@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
-        <div className="space-y-3">
-          {bounties.map((b, i) => (
-            <div key={b.id} style={{ opacity: bountyReveal ? 0 : 1, animation: bountyReveal ? `fadeIn 0.4s ease-out ${i * 0.3 + 0.5}s forwards` : undefined }}>
-              <BountyCard bounty={b} colors={colors} onDifficultyChange={handleDifficultyChange} />
+        {bounties.length > 0 && bounties.every(b => b.completed) ? (
+          <p className="text-[9px] text-green-400 text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>✓ ALL BOUNTIES SWEPT</p>
+        ) : (
+          <>
+            {bountyReveal && (
+              <p className="text-[9px] text-zinc-500 italic text-center mb-2">This week&apos;s challenges await...</p>
+            )}
+            <style>{`@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+            <div className="space-y-3">
+              {bounties.map((b, i) => (
+                <div key={b.id} style={{ opacity: bountyReveal ? 0 : 1, animation: bountyReveal ? `fadeIn 0.4s ease-out ${i * 0.3 + 0.5}s forwards` : undefined }}>
+                  <BountyCard bounty={b} colors={colors} onDifficultyChange={handleDifficultyChange} />
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </>
+        )}
       </PixelBox>
 
-      {/* Bounty Sweep Celebration */}
-      {bounties.length > 0 && bounties.every(b => b.completed) && (
-        <div className={`border-2 border-amber-600 bg-amber-950/20 p-3 mb-4 text-center`}>
-          <p className="text-[11px] text-amber-400 font-bold" style={{ fontFamily: "var(--font-pixel), monospace" }}>⚔ BOUNTY SWEEP ⚔</p>
-          <p className="text-[9px] text-zinc-400 mt-1">All bounties complete — sweep bonus earned!</p>
-        </div>
-      )}
-
-      {/* Bounty History */}
-      {bounties.length > 0 && <BountyHistory userId={userId} colors={colors} />}
+      {/* Bounty History (hidden by default) */}
 
       {/* ─── Secondary ─── */}
       <div className="opacity-80 space-y-4">
@@ -522,19 +511,14 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
             <p className="text-[8px] text-zinc-500">{guildQuest.name}</p>
           </div>
         ) : (
-          <div className="text-center py-3">
-            <p className="text-[9px] text-zinc-500 mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>NO ACTIVE QUEST</p>
-            <p className="text-[8px] text-zinc-600 mb-3">Rally your party to hit a shared goal this week.</p>
-            <button
-              onClick={() => setShowQuestModal(true)}
-              disabled={!groupId}
-              className={`text-[10px] px-3 py-2 border ${colors.border} bg-zinc-800 text-zinc-400 hover:text-white transition-colors disabled:opacity-50`}
-              style={{ fontFamily: "var(--font-pixel), monospace" }}
-            >
-              ▸ RALLY YOUR PARTY
-            </button>
-            {!groupId && <p className="text-[7px] text-zinc-600 mt-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>JOIN A PARTY FIRST</p>}
-          </div>
+          <button
+            onClick={() => setShowQuestModal(true)}
+            disabled={!groupId}
+            className={`w-full text-[9px] py-2 ${colors.secondary} disabled:opacity-50`}
+            style={{ fontFamily: "var(--font-pixel), monospace" }}
+          >
+            ▸ RALLY YOUR PARTY
+          </button>
         )}
       </PixelBox>
 
@@ -576,10 +560,13 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
             })}
           </div>
         ) : (
-          <>
-            <p className="text-[9px] text-zinc-500 text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>NO ACTIVE DUELS</p>
-            <p className="text-[8px] text-zinc-600 text-center py-2">Challenge a friend to a 1v1 XP race.</p>
-          </>
+          <button
+            onClick={() => setShowDuelModal(true)}
+            className={`w-full text-[9px] py-2 ${colors.secondary}`}
+            style={{ fontFamily: "var(--font-pixel), monospace" }}
+          >
+            ▸ CHALLENGE SOMEONE
+          </button>
         )}
         <div className="flex justify-center mt-3">
           <button
