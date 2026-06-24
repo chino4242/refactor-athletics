@@ -48,38 +48,36 @@ export async function resolveProgramBlocks(
   // 1. User-owned programs for this day (path-independent for user programs)
   const { data: userPrograms } = await supabase
     .from('workout_programs')
-    .select('id, name, variant, day_type')
+    .select('id, name, variant, day_type, muscle_focus')
     .eq('user_id', userId)
     .ilike('day_of_week', day)
     .order('variant');
 
   if (userPrograms && userPrograms.length > 0) {
     const startIdx = weekNum % userPrograms.length;
-    for (let i = 0; i < userPrograms.length; i++) {
-      const program = userPrograms[(startIdx + i) % userPrograms.length];
-      const { data: blocks } = await supabase
-        .from('program_blocks')
-        .select('*')
-        .eq('workout_id', program.id)
-        .order('block_order');
+    const program = userPrograms[startIdx];
+    const { data: blocks } = await supabase
+      .from('program_blocks')
+      .select('*')
+      .eq('workout_id', program.id)
+      .order('block_order');
 
-      if (blocks && blocks.length > 0) {
-        return {
-          programId: program.id,
-          programName: program.name || 'Workout',
-          dayType: program.day_type || 'training',
-          blocks: applyEquipmentSwaps(blocks, userEquipment),
-          userEquipment,
-          cardioType,
-        };
-      }
+    if (blocks && blocks.length > 0) {
+      return {
+        programId: program.id,
+        programName: program.muscle_focus || program.name || 'Workout',
+        dayType: program.day_type || 'training',
+        blocks: applyEquipmentSwaps(blocks, userEquipment),
+        userEquipment,
+        cardioType,
+      };
     }
   }
 
   // 2. Default programs for this path + day
   const { data: defaultPrograms } = await supabase
     .from('workout_programs')
-    .select('id, name, variant, day_type')
+    .select('id, name, variant, day_type, muscle_focus')
     .eq('is_default', true)
     .eq('training_path', userPath)
     .ilike('day_of_week', day)
@@ -87,24 +85,22 @@ export async function resolveProgramBlocks(
 
   if (defaultPrograms && defaultPrograms.length > 0) {
     const startIdx = weekNum % defaultPrograms.length;
-    for (let i = 0; i < defaultPrograms.length; i++) {
-      const program = defaultPrograms[(startIdx + i) % defaultPrograms.length];
-      const { data: blocks } = await supabase
-        .from('program_blocks')
-        .select('*')
-        .eq('workout_id', program.id)
-        .order('block_order');
+    const program = defaultPrograms[startIdx];
+    const { data: blocks } = await supabase
+      .from('program_blocks')
+      .select('*')
+      .eq('workout_id', program.id)
+      .order('block_order');
 
-      if (blocks && blocks.length > 0) {
-        return {
-          programId: program.id,
-          programName: program.name || 'Workout',
-          dayType: program.day_type || 'training',
-          blocks: applyEquipmentSwaps(blocks, userEquipment),
-          userEquipment,
-          cardioType,
-        };
-      }
+    if (blocks && blocks.length > 0) {
+      return {
+        programId: program.id,
+        programName: program.muscle_focus || program.name || 'Workout',
+        dayType: program.day_type || 'training',
+        blocks: applyEquipmentSwaps(blocks, userEquipment),
+        userEquipment,
+        cardioType,
+      };
     }
   }
 
