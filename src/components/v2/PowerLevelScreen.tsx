@@ -257,6 +257,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
   const [tierUp, setTierUp] = useState<{ name: string; prev: string } | null>(null);
   const [showLoreLadder, setShowLoreLadder] = useState(false);
   const [showXray, setShowXray] = useState(false);
+  const [avatarSex, setAvatarSex] = useState<'male' | 'female'>('male');
   const [narratorState, setNarratorState] = useState<{ streak: number; todayXp: number; dailyTarget: number; hasPrToday: boolean; missedYesterday: boolean }>({ streak: 0, todayXp: 0, dailyTarget: 0, hasPrToday: false, missedYesterday: false });
   const [thresholdToast, setThresholdToast] = useState(false);
   const [bountyTeaser, setBountyTeaser] = useState<{ description: string; current: number; target: number; completed: boolean } | null>(null);
@@ -364,6 +365,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
           // Get user sex for appropriate BF% brackets
           const { data: userSexData } = await sb.from('users').select('sex').eq('id', userId).single();
           const isFemale = (userSexData?.sex || 'male').toLowerCase() === 'female';
+          setAvatarSex(isFemale ? 'female' : 'male');
           // Rank from BF%: female brackets are higher (women naturally carry more body fat)
           const rank = isFemale
             ? (bf <= 18 ? 5 : bf <= 22 ? 4 : bf <= 28 ? 3 : bf <= 35 ? 2 : 1)
@@ -502,7 +504,16 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
         <button onClick={() => setShowXray(!showXray)} className="w-full text-center">
           {!showXray ? (
             <>
-              <p className={`text-[10px] ${colors.headerText} mb-2 uppercase tracking-wider`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              {currentTheme !== 'athlete' && (
+                <img
+                  src={`/avatars/${currentTheme}/${avatarSex}_t${tier.index}.png`}
+                  alt={`${tier.name} avatar`}
+                  className="w-16 h-16 mx-auto mb-2"
+                  style={{ imageRendering: 'pixelated' }}
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
+              )}
+              <p className={`text-[10px] ${colors.headerText} mb-1 uppercase tracking-wider`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                 POWER LV
               </p>
               <span className="text-5xl text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>
