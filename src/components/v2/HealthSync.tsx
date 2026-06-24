@@ -73,6 +73,7 @@ export default function HealthSync({ userId, refreshKey, onSyncComplete, onSyncS
         onSyncComplete?.();
 
         // Exercise session auto-sync
+        console.log('[HealthSync] exercises from native:', data.exercises?.length || 0, data.exercises?.map((e: any) => e.workoutType || e.type || 'unknown').join(','));
         if (data.exercises?.length > 0) {
           const supabaseEx = (await import('@/utils/supabase/client')).createClient();
           const today = new Date().toLocaleDateString('en-CA');
@@ -132,7 +133,7 @@ export default function HealthSync({ userId, refreshKey, onSyncComplete, onSyncS
             // HC: Running=56, RunningTreadmill=57
             const isRun = typeStr === 'running' || typeCode === 56 || typeCode === 57;
             // HC: Biking=8, BikingStationary=9
-            const isBike = typeStr === 'cycling' || typeCode === 8 || typeCode === 9;
+            const isBike = typeStr === 'cycling' || typeStr === 'bikingstationary' || typeCode === 8 || typeCode === 9;
             // HC: SwimmingPool=74, SwimmingOpenWater=73
             const isSwim = typeStr === 'swimming' || typeStr === 'swimmingpool' || typeStr === 'swimmingopenwater' || typeCode === 73 || typeCode === 74;
             // HC: Rowing=53, RowingMachine=54
