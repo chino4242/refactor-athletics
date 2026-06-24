@@ -80,21 +80,19 @@ export default function CreatureNarrator({ theme, streak, todayXp, dailyTarget, 
   const phase = streak > 0 ? getStreakPhase(streak) : null;
 
   return (
-    <div className={`flex items-center gap-3 mb-4 p-3 border ${colors.border} bg-zinc-900/50`}>
+    <div className="flex items-center gap-2 mb-3 px-1">
       <img
         src={spritePath}
         alt=""
-        className="w-10 h-10 object-contain"
+        className="w-6 h-6 object-contain"
         style={{ imageRendering: 'pixelated' }}
       />
-      <div className="flex-1 min-w-0">
-        <p className="text-[10px] text-zinc-200 italic leading-tight">&ldquo;{line}&rdquo;</p>
-        {phase && (
-          <p className={`text-[8px] mt-1 ${phase.color}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-            🔥 {phase.name} — Day {streak}
-          </p>
-        )}
-      </div>
+      <p className="text-[9px] text-zinc-400 italic leading-tight flex-1">&ldquo;{line}&rdquo;</p>
+      {phase && (
+        <span className={`text-[8px] ${phase.color} whitespace-nowrap`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          🔥 {phase.name}
+        </span>
+      )}
     </div>
   );
 }

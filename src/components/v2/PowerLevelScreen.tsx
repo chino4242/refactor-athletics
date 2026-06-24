@@ -163,6 +163,7 @@ function NutritionBar({ userId, colors, refreshKey }: { userId: string; colors: 
   }, [userId, refreshKey]);
 
   const [showMealLog, setShowMealLog] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [mealLog, setMealLog] = useState<{ id: string; macro_type: string; amount: number; label?: string; meal_tag?: string; timestamp: number }[]>([]);
 
   if (!data) return null;
@@ -187,23 +188,27 @@ function NutritionBar({ userId, colors, refreshKey }: { userId: string; colors: 
 
   return (
     <>
-    <button onClick={openMealLog} className={`w-full text-left border ${colors.border} border-l-2 ${colors.primary} bg-zinc-900/80 px-3 py-2.5 mb-4 hover:bg-zinc-800/80 transition-colors`}>
+    <button onClick={() => setExpanded(!expanded)} className={`w-full text-left px-3 py-2 mb-4 hover:bg-zinc-800/50 transition-colors`}>
+      {/* Collapsed: single line */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3 text-xs">
-          <span className="text-blue-400 font-medium">P {data.protein}g</span>
-          <span className="text-orange-400 font-medium">C {data.carbs}g</span>
-          <span className="text-yellow-400 font-medium">F {data.fat}g</span>
+        <div className="flex items-center gap-2 text-[10px] text-zinc-500">
           {data.steps > 0 && <span className="text-emerald-400">👟 {data.steps.toLocaleString()}</span>}
+          {data.calsIn > 0 && <span>IN {data.calsIn.toLocaleString()}</span>}
+          {data.burned > 0 && <span>BURN {data.burned.toLocaleString()}</span>}
         </div>
-        <span className={`text-xs font-bold ${net < 0 ? 'text-green-400' : net > 200 ? 'text-amber-400' : 'text-zinc-400'}`}>
+        <span className={`text-[10px] font-bold ${net < 0 ? 'text-green-400' : net > 200 ? 'text-amber-400' : 'text-zinc-400'}`}>
           NET {net > 0 ? '+' : ''}{net}
         </span>
       </div>
-      {(data.calsIn > 0 || data.burned > 0) && (
-        <div className="flex items-center gap-2 mt-1.5 text-[11px] text-zinc-500">
-          <span>IN {data.calsIn.toLocaleString()}</span>
-          <span className="text-zinc-700">•</span>
-          <span>BURNED {data.burned.toLocaleString()}</span>
+      {/* Expanded: macro breakdown */}
+      {expanded && (
+        <div className="flex items-center justify-between mt-2 pt-2 border-t border-zinc-800">
+          <div className="flex items-center gap-3 text-xs">
+            <span className="text-blue-400">P {data.protein}g</span>
+            <span className="text-orange-400">C {data.carbs}g</span>
+            <span className="text-yellow-400">F {data.fat}g</span>
+          </div>
+          <span onClick={(e) => { e.stopPropagation(); openMealLog(); }} className="text-[8px] text-zinc-500 underline">meal log</span>
         </div>
       )}
     </button>
@@ -489,28 +494,6 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
         />
       )}
 
-      {/* Bounty Teaser */}
-      {bountyTeaser && (
-        <button onClick={() => { window.location.hash = 'arena'; }} className={`w-full flex items-center justify-between p-3 mb-4 border ${bountyTeaser.completed ? 'border-green-700 bg-green-950/20' : `${colors.border} bg-zinc-900/50`}`}>
-          <div className="text-left">
-            <p className={`text-[8px] uppercase ${bountyTeaser.completed ? 'text-green-400' : colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-              {bountyTeaser.completed ? '✓ SWEEP' : '◎ BOUNTY'}
-            </p>
-            <p className="text-[10px] text-zinc-300 mt-0.5">{bountyTeaser.description}</p>
-          </div>
-          {!bountyTeaser.completed && (
-            <div className="text-right">
-              <p className="text-[9px] text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-                {bountyTeaser.current}/{bountyTeaser.target}
-              </p>
-              <div className="w-16 h-1.5 bg-zinc-800 mt-1">
-                <div className={`h-full ${colors.primary.replace('border-', 'bg-')}`} style={{ width: `${Math.min((bountyTeaser.current / bountyTeaser.target) * 100, 100)}%` }} />
-              </div>
-            </div>
-          )}
-        </button>
-      )}
-
       {/* Nutrition summary */}
       <NutritionBar userId={userId} colors={colors} refreshKey={refreshKey} />
 
@@ -613,68 +596,16 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
               {tier.next && <span>{tier.ceiling - data.powerLevel} more to {tier.next}</span>}
             </div>
             <PixelBar current={data.powerLevel - tier.floor} max={tier.ceiling - tier.floor} />
+            {playerLevel && (
+              <p className="text-[8px] text-zinc-500 text-center mt-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                LV {playerLevel.level} · {playerLevel.xp.toLocaleString()}/{playerLevel.xpForNext.toLocaleString()} XP
+              </p>
+            )}
           </div>
         )}
       </PixelBox>
 
-      {/* Player Level */}
-      {playerLevel && (
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <span className={`text-[12px] ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>LV {playerLevel.level}</span>
-          <div className="w-[120px] h-[6px] bg-white/10 rounded-full overflow-hidden">
-            <div className={`h-full ${colors.barFill} opacity-60 rounded-full`} style={{ width: `${(playerLevel.xp / playerLevel.xpForNext) * 100}%` }} />
-          </div>
-          <span className="text-[11px] text-white/60">{playerLevel.xp.toLocaleString()} / {playerLevel.xpForNext.toLocaleString()}</span>
-        </div>
-      )}
-
-      {/* Physique Rank + Recomp Streak */}
-      {physique && (
-        <button onClick={() => setShowPhysique(p => !p)} className="w-full text-left">
-        <PixelBox className="p-3 mb-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <span className={`text-[9px] ${colors.headerText} uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>PHYSIQUE LV {physique.rank}</span>
-              <div className="flex gap-3 mt-1 text-[10px]">
-                {physique.bodyFat !== null && <span className="text-zinc-300">BF {Number(physique.bodyFat).toFixed(1)}%</span>}
-                {physique.leanMass !== null && <span className="text-zinc-300">LEAN {Math.round(physique.leanMass)} lbs</span>}
-              </div>
-            </div>
-            {physique.streak >= 2 && (
-              <span className="text-[9px] text-amber-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>🔥 {physique.streak}wk streak</span>
-            )}
-          </div>
-          {/* Threshold detail (shown on tap) */}
-          {showPhysique && physique.bodyFat !== null && (
-            <div className="mt-3 pt-2 border-t border-zinc-800 space-y-1">
-              {(physique.isFemale ? [
-                { lv: 1, range: '> 35%', target: 35 },
-                { lv: 2, range: '28-35%', target: 28 },
-                { lv: 3, range: '22-28%', target: 22 },
-                { lv: 4, range: '18-22%', target: 18 },
-                { lv: 5, range: '< 18%', target: 14 },
-              ] : [
-                { lv: 1, range: '> 25%', target: 25 },
-                { lv: 2, range: '20-25%', target: 20 },
-                { lv: 3, range: '15-20%', target: 15 },
-                { lv: 4, range: '10-15%', target: 10 },
-                { lv: 5, range: '< 10%', target: 5 },
-              ]).map(t => {
-                const current = physique.rank >= t.lv;
-                const isNext = physique.rank === t.lv - 1;
-                const gap = isNext && physique.bodyFat !== null ? (physique.bodyFat - t.target).toFixed(1) : null;
-                return (
-                  <div key={t.lv} className={`flex items-center justify-between text-[9px] ${current ? 'text-zinc-300' : 'text-zinc-600'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-                    <span>{current ? '✓' : '○'} LV {t.lv} — {t.range}</span>
-                    {isNext && gap && <span className={colors.secondary}>-{gap}% to go</span>}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </PixelBox>
-        </button>
-      )}
+      {/* Player Level merged into PL box below */}
 
       {/* ─── Detail Sections ─── */}
       {(data.expiringExercises.length > 0 || data.closestRankUps.length > 0 || data.recentPRs.length > 0) && (
@@ -714,6 +645,53 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
         </PixelBox>
       )}
 
+      {/* Physique Rank (below fold) */}
+      {physique && (
+        <button onClick={() => setShowPhysique(p => !p)} className="w-full text-left">
+        <PixelBox className="p-3 mb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <span className={`text-[9px] ${colors.headerText} uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>PHYSIQUE LV {physique.rank}</span>
+              <div className="flex gap-3 mt-1 text-[10px]">
+                {physique.bodyFat !== null && <span className="text-zinc-300">BF {Number(physique.bodyFat).toFixed(1)}%</span>}
+                {physique.leanMass !== null && <span className="text-zinc-300">LEAN {Math.round(physique.leanMass)} lbs</span>}
+              </div>
+            </div>
+            {physique.streak >= 2 && (
+              <span className="text-[9px] text-amber-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>🔥 {physique.streak}wk streak</span>
+            )}
+          </div>
+          {showPhysique && physique.bodyFat !== null && (
+            <div className="mt-3 pt-2 border-t border-zinc-800 space-y-1">
+              {(physique.isFemale ? [
+                { lv: 1, range: '> 35%', target: 35 },
+                { lv: 2, range: '28-35%', target: 28 },
+                { lv: 3, range: '22-28%', target: 22 },
+                { lv: 4, range: '18-22%', target: 18 },
+                { lv: 5, range: '< 18%', target: 14 },
+              ] : [
+                { lv: 1, range: '> 25%', target: 25 },
+                { lv: 2, range: '20-25%', target: 20 },
+                { lv: 3, range: '15-20%', target: 15 },
+                { lv: 4, range: '10-15%', target: 10 },
+                { lv: 5, range: '< 10%', target: 5 },
+              ]).map(t => {
+                const current = physique.rank >= t.lv;
+                const isNext = physique.rank === t.lv - 1;
+                const gap = isNext && physique.bodyFat !== null ? (physique.bodyFat - t.target).toFixed(1) : null;
+                return (
+                  <div key={t.lv} className={`flex items-center justify-between text-[9px] ${current ? 'text-zinc-300' : 'text-zinc-600'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                    <span>{current ? '✓' : '○'} LV {t.lv} — {t.range}</span>
+                    {isNext && gap && <span className={colors.secondary}>-{gap}% to go</span>}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </PixelBox>
+        </button>
+      )}
+
       {/* Closest rank-ups */}
       {data.closestRankUps.length > 0 && (
         <PixelBox className="p-4 mb-4">
@@ -749,6 +727,20 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
             ))}
           </div>
         </PixelBox>
+      )}
+
+      {/* Bounty Teaser (footer nudge) */}
+      {bountyTeaser && (
+        <button onClick={() => { window.location.hash = 'arena'; }} className={`w-full flex items-center justify-between px-3 py-2 mb-4 ${bountyTeaser.completed ? 'text-green-400' : 'text-zinc-500'}`}>
+          <span className="text-[8px]" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            {bountyTeaser.completed ? '✓ BOUNTIES SWEPT' : `◎ ${bountyTeaser.description}`}
+          </span>
+          {!bountyTeaser.completed && (
+            <span className="text-[8px] text-zinc-600" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              {bountyTeaser.current}/{bountyTeaser.target}
+            </span>
+          )}
+        </button>
       )}
 
       {/* Empty state */}
