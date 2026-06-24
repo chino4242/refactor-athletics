@@ -110,6 +110,7 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
   const [allComplete, setAllComplete] = useState(false);
   const [dailyStreak, setDailyStreak] = useState(0);
   const [syncedActivities, setSyncedActivities] = useState<{ name: string; duration: number; xp: number; exerciseId: string; confirmed: boolean }[]>([]);
+  const [zone2, setZone2] = useState<{ enrolled: boolean; currentWeek: number; weekMinutes: number; weekTarget: number; totalWeeks: number; completed: boolean } | null>(null);
   const [confirmingActivity, setConfirmingActivity] = useState<{ name: string; duration: number; xp: number; exerciseId: string; id: string } | null>(null);
 
   // Refresh when app returns to foreground
@@ -240,6 +241,24 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
           const rankUps = yesterdayWorkouts.filter((w: any) => w.level >= 2).length;
           setYesterday(`${yesterdayWorkouts.length} exercises${rankUps > 0 ? ` · ${rankUps} rank-up${rankUps > 1 ? 's' : ''} 🏆` : ''}`);
         }
+
+        // Zone 2 program progress
+        try {
+          const { data: profile } = await supabase.from('users').select('age').eq('id', userId).single();
+          const { getZone2Progress, checkAndAdvance } = await import('@/services/zone2Program');
+          const progress = await getZone2Progress(supabase, userId, profile?.age || 30);
+          if (progress.enrolled && !progress.completed) {
+            const result = await checkAndAdvance(supabase, userId, progress);
+            if (result.advanced) {
+              const updated = await getZone2Progress(supabase, userId, profile?.age || 30);
+              setZone2(updated);
+            } else {
+              setZone2(progress);
+            }
+          } else {
+            setZone2(progress);
+          }
+        } catch {}
       } catch {}
       setLoading(false);
     })();
@@ -424,6 +443,47 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
             ))}
           </div>
         </PixelBox>
+      )}
+
+      {/* Zone 2 Program Card */}
+      {zone2 && zone2.enrolled && !zone2.completed && (
+        <PixelBox className="p-3 mb-4">
+          <div className="flex items-center justify-between mb-2">
+            <p className={`text-[9px] ${colors.headerText} uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              ❤️ ZONE 2 FOUNDATION
+            </p>
+            <span className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              WEEK {zone2.currentWeek}/{zone2.totalWeeks}
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex-1">
+              <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+                <div className={`h-full bg-rose-500 transition-all`} style={{ width: `${Math.min((zone2.weekMinutes / zone2.weekTarget) * 100, 100)}%` }} />
+              </div>
+            </div>
+            <span className="text-[10px] text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              {zone2.weekMinutes}/{zone2.weekTarget} min
+            </span>
+          </div>
+          <p className="text-[8px] text-zinc-500 mt-1.5">HR {Math.round(0.6 * (180 - 30))}–{180 - 30} BPM · Any cardio counts</p>
+        </PixelBox>
+      )}
+      {zone2 && !zone2.enrolled && (
+        <button
+          onClick={async () => {
+            const { createClient } = await import('@/utils/supabase/client');
+            const supabase = createClient();
+            const { enrollZone2 } = await import('@/services/zone2Program');
+            await enrollZone2(supabase, userId);
+            setZone2({ ...zone2, enrolled: true });
+          }}
+          className={`w-full mb-4 p-3 border ${colors.border} bg-zinc-900/50 text-left`}
+        >
+          <p className={`text-[9px] ${colors.secondary} uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>❤️ NEW PROGRAM AVAILABLE</p>
+          <p className="text-[10px] text-zinc-300 mt-1">Zone 2 Foundation — Build 150 min/week aerobic base in 6 weeks</p>
+          <p className="text-[8px] text-zinc-500 mt-0.5">Tap to enroll</p>
+        </button>
       )}
 
       {/* Yesterday + Tomorrow context */}
