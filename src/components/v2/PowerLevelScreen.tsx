@@ -508,9 +508,9 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
               <span className="text-5xl text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>
                 {data.powerLevel}
               </span>
-              <button onClick={(e) => { e.stopPropagation(); setShowLoreLadder(!showLoreLadder); }} className={`text-[10px] mt-2 uppercase tracking-widest ${tier.color}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              <span role="button" onClick={(e) => { e.stopPropagation(); setShowLoreLadder(!showLoreLadder); }} className={`text-[10px] mt-2 uppercase tracking-widest ${tier.color} block cursor-pointer`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                 ▸ {tier.name} ◂
-              </button>
+              </span>
               {/* Lore Ladder */}
               {showLoreLadder && (
                 <div className="mt-3 space-y-2 text-left">
