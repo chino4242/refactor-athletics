@@ -79,6 +79,7 @@ export async function proposeChallenge(params: {
       target: params.target,
       start_date: params.startDate,
       end_date: params.endDate,
+      week_start: params.startDate,
       status: isLeader ? 'active' : 'proposed',
       challenge_type: 'collaborative',
     })
