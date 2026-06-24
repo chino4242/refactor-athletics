@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTheme } from '@/context/ThemeContext';
 import { getV2Theme } from '@/data/v2themes';
 import { createChallenge } from '@/services/duelApi';
@@ -8,6 +8,7 @@ import { createChallenge } from '@/services/duelApi';
 interface Props {
   isOpen: boolean;
   userId: string;
+  groupId?: string | null;
   onClose: () => void;
   onCreated: () => void;
 }
@@ -19,7 +20,7 @@ const DURATIONS = [
   { label: '7D', days: 7 },
 ];
 
-export default function DuelModal({ isOpen, userId, onClose, onCreated }: Props) {
+export default function DuelModal({ isOpen, userId, groupId, onClose, onCreated }: Props) {
   const { currentTheme } = useTheme();
   const colors = getV2Theme(currentTheme);
   const [days, setDays] = useState(7);
@@ -27,15 +28,32 @@ export default function DuelModal({ isOpen, userId, onClose, onCreated }: Props)
   const [startDate, setStartDate] = useState(new Date(Date.now() + 86400000).toLocaleDateString('en-CA'));
   const [loading, setLoading] = useState(false);
   const [link, setLink] = useState<string | null>(null);
+  const [partyMembers, setPartyMembers] = useState<{ id: string; name: string }[]>([]);
+  const [opponent, setOpponent] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isOpen || !groupId) return;
+    (async () => {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data } = await supabase.from('group_members').select('user_id, users(display_name)').eq('group_id', groupId).neq('user_id', userId);
+      setPartyMembers((data || []).map((m: any) => ({ id: m.user_id, name: m.users?.display_name || 'Unknown' })));
+    })();
+  }, [isOpen, groupId, userId]);
 
   if (!isOpen) return null;
 
   const handleCreate = async () => {
     setLoading(true);
-    const duel = await createChallenge(userId, days, duelType, startDate);
+    const duel = await createChallenge(userId, days, duelType, startDate, opponent);
     if (duel) {
-      const url = `${window.location.origin}/arena/duel/${duel.id}`;
-      setLink(url);
+      if (!opponent) {
+        const url = `${window.location.origin}/arena/duel/${duel.id}`;
+        setLink(url);
+      } else {
+        onCreated();
+        onClose();
+      }
     }
     setLoading(false);
   };
@@ -96,13 +114,27 @@ export default function DuelModal({ isOpen, userId, onClose, onCreated }: Props)
                     { id: 'volume', label: '🏋️ Volume', desc: 'Weight lifted' },
                     { id: 'distance', label: '🏃 Distance', desc: 'Miles logged' },
                     { id: 'sessions', label: '📅 Sessions', desc: 'Days trained' },
-                    { id: 'rank_ups', label: '⬆ Ranks', desc: 'Rank-ups' },
-                    { id: 'prs', label: '★ PRs', desc: 'Records set' },
+                    { id: 'steps', label: '👟 Steps', desc: 'Total steps' },
+                    { id: 'active_minutes', label: '⏱ Minutes', desc: 'Active minutes' },
                   ].map(t => (
                     <button key={t.id} onClick={() => setDuelType(t.id)} className={`py-2 border text-center ${duelType === t.id ? `${colors.primary} bg-zinc-800` : 'border-zinc-700 bg-zinc-900'}`}>
                       <span className={`text-[8px] ${duelType === t.id ? colors.secondary : 'text-zinc-500'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>{t.label}</span>
                     </button>
                   ))}
+                </div>
+              </div>
+
+              <div>
+                <p className="text-[8px] text-zinc-500 uppercase mb-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>OPPONENT</p>
+                <div className="space-y-1">
+                  {partyMembers.map(m => (
+                    <button key={m.id} onClick={() => setOpponent(opponent === m.id ? null : m.id)} className={`w-full py-2 px-3 border text-left ${opponent === m.id ? `${colors.primary} bg-zinc-800` : 'border-zinc-700 bg-zinc-900'}`}>
+                      <span className={`text-[9px] ${opponent === m.id ? colors.secondary : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>{m.name}</span>
+                    </button>
+                  ))}
+                  <button onClick={() => setOpponent(null)} className={`w-full py-2 px-3 border text-left ${opponent === null ? `${colors.primary} bg-zinc-800` : 'border-zinc-700 bg-zinc-900'}`}>
+                    <span className={`text-[9px] ${opponent === null ? colors.secondary : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>📎 Share link instead</span>
+                  </button>
                 </div>
               </div>
 

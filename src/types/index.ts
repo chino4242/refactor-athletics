@@ -172,6 +172,7 @@ export interface DuelResponse {
     status: 'OPEN' | 'PENDING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
     start_at: number;
     end_at: number;
+    duel_type?: string;
     challenger_xp?: number;
     opponent_xp?: number;
     winner_id?: string | null;

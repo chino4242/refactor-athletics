@@ -359,7 +359,21 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
 
         // Fetch duels
         const { getActiveDuels } = await import('@/services/duelApi');
-        setActiveDuels(await getActiveDuels(userId));
+        const duels = await getActiveDuels(userId);
+        // Compute live scores for active duels
+        if (duels.length > 0) {
+          const { computeDuelScores } = await import('@/services/duelScoring');
+          const scored = await Promise.all(duels.map(async (d: any) => {
+            if (d.status === 'ACTIVE' && d.opponent_id) {
+              const scores = await computeDuelScores(d.duel_type || 'xp', d.challenger_id, d.opponent_id, d.start_at, d.end_at);
+              return { ...d, challenger_score: scores.challengerScore, opponent_score: scores.opponentScore };
+            }
+            return d;
+          }));
+          setActiveDuels(scored);
+        } else {
+          setActiveDuels(duels);
+        }
       } catch { /* empty state */ }
       setLoading(false);
     })();
@@ -538,7 +552,7 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
               const timeLeft = Math.max(0, duel.end_at - Date.now() / 1000);
               const daysLeft = Math.floor(timeLeft / 86400);
               const isPending = duel.status === 'PENDING';
-              const typeLabels: Record<string, string> = { xp: '⚡ XP', volume: '🏋️ Volume', distance: '🏃 Distance', sessions: '📅 Sessions', rank_ups: '⬆ Ranks', prs: '★ PRs' };
+              const typeLabels: Record<string, string> = { xp: '⚡ XP', volume: '🏋️ Volume', distance: '🏃 Distance', sessions: '📅 Sessions', steps: '👟 Steps', active_minutes: '⏱ Minutes' };
               const typeLabel = typeLabels[duel.duel_type || 'xp'] || '⚡ XP';
               return (
                 <div key={duel.id} className={`border ${colors.border} bg-zinc-800/50 p-2`}>
@@ -668,6 +682,7 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
       <DuelModal
         isOpen={showDuelModal}
         userId={userId}
+        groupId={groupId}
         onClose={() => setShowDuelModal(false)}
         onCreated={async () => {
           const { getActiveDuels } = await import('@/services/duelApi');
