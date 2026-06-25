@@ -858,7 +858,7 @@ function ExerciseDetailSheet({ exerciseId, userId, exercises, onClose, colors, c
   return (
     <div className="fixed inset-0 z-50" onClick={onClose}>
       <div className="absolute inset-0 bg-black/70" />
-      <div className="absolute bottom-0 left-0 right-0 max-h-[60vh] bg-zinc-900 border-t-2 border-zinc-700 rounded-t-lg overflow-y-auto" onClick={e => e.stopPropagation()}>
+      <div className="absolute bottom-0 left-0 right-0 max-h-[80vh] bg-zinc-900 border-t-2 border-zinc-700 rounded-t-lg overflow-y-auto overscroll-contain" onClick={e => e.stopPropagation()}>
         <div className="p-4 space-y-3">
           {/* Header */}
           <div className="text-center">
