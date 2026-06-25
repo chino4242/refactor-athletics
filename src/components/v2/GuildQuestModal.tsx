@@ -15,7 +15,7 @@ interface Props {
 
 const METRICS: { key: ChallengeMetric; label: string; icon: string; unit: string; defaultTarget: number }[] = [
   { key: 'volume', label: 'WEIGHT LIFTED', icon: '🏋️', unit: 'lbs', defaultTarget: 20000 },
-  { key: 'sessions', label: 'WORKOUTS', icon: '⚔', unit: 'workouts', defaultTarget: 12 },
+  { key: 'xp', label: 'XP EARNED', icon: '⚡', unit: 'XP', defaultTarget: 1500 },
   { key: 'steps', label: 'STEPS', icon: '👟', unit: 'steps', defaultTarget: 25000 },
   { key: 'active_minutes', label: 'ACTIVE MIN', icon: '⏱', unit: 'min', defaultTarget: 300 },
 ];

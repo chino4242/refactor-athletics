@@ -1,6 +1,6 @@
 import { createClient } from '@/utils/supabase/client';
 
-export type ChallengeMetric = 'volume' | 'sessions' | 'steps' | 'active_minutes';
+export type ChallengeMetric = 'volume' | 'sessions' | 'steps' | 'active_minutes' | 'xp';
 export type ChallengeStatus = 'proposed' | 'active' | 'completed' | 'expired';
 
 export interface GroupChallengeWithProgress {
@@ -25,6 +25,7 @@ const METRIC_LABELS: Record<ChallengeMetric, string> = {
   sessions: 'workouts',
   steps: 'steps',
   active_minutes: 'active minutes',
+  xp: 'XP',
 };
 
 export function getMetricLabel(metric: ChallengeMetric): string {
@@ -272,12 +273,25 @@ async function computeContributions(
       .from('habit_logs')
       .select('user_id, value')
       .in('user_id', memberIds)
-      .eq('metric', 'active_minutes')
+      .eq('habit_id', 'habit_exercise_minutes')
       .gte('date', startDate)
       .lte('date', endDate);
 
     for (const h of data || []) {
       result[h.user_id] = (result[h.user_id] || 0) + (h.value || 0);
+    }
+  } else if (metric === 'xp') {
+    const startTs = new Date(startDate + 'T00:00:00').toISOString();
+    const endTs = new Date(endDate + 'T23:59:59').toISOString();
+    const { data } = await supabase
+      .from('xp_ledger')
+      .select('user_id, amount')
+      .in('user_id', memberIds)
+      .gte('created_at', startTs)
+      .lte('created_at', endTs);
+
+    for (const row of data || []) {
+      result[row.user_id] = (result[row.user_id] || 0) + (row.amount || 0);
     }
   }
 
