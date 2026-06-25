@@ -39,6 +39,7 @@ function DailyXpPill({ colors }: { colors: any }) {
 
 function LevelUpToast({ colors }: { colors: any }) {
   const [levelUp, setLevelUp] = useState<{ from: number; to: number } | null>(null);
+  const { currentTheme } = useTheme();
   useEffect(() => {
     (async () => {
       const { createClient } = await import('@/utils/supabase/client');
@@ -48,23 +49,52 @@ function LevelUpToast({ colors }: { colors: any }) {
       const { data } = await supabase.from('users').select('pending_level_up').eq('id', user.id).single();
       if (data?.pending_level_up) {
         setLevelUp(data.pending_level_up);
-        // Clear it
         await supabase.from('users').update({ pending_level_up: null }).eq('id', user.id);
       }
     })();
   }, []);
   if (!levelUp) return null;
+
   const narrativeBeat = levelUp.to >= 15 ? 'The tournament watchers have taken notice.' :
     levelUp.to >= 10 ? 'Legends in the rift speak of you.' :
     levelUp.to >= 7 ? 'The creatures no longer underestimate you.' :
     levelUp.to >= 5 ? 'The rift noticed you. Something shifted.' :
     levelUp.to >= 3 ? 'The creatures whisper your name.' :
     'Your awakening deepens.';
+
+  const isMilestone = levelUp.to % 5 === 0;
+
+  // Milestone: full-screen celebration
+  if (isMilestone) {
+    const tierIndex = Math.min(4, Math.floor((levelUp.to - 1) / 5));
+    const sex = 'male'; // TODO: read from profile
+    const avatarSrc = currentTheme !== 'athlete' ? `/avatars/${currentTheme}/${sex}_t${tierIndex}.png` : '';
+    return (
+      <div className="fixed inset-0 z-[70] flex items-center justify-center" onClick={() => setLevelUp(null)}>
+        <div className="absolute inset-0 bg-black/90" />
+        <div className="relative text-center space-y-4 px-8 animate-in fade-in zoom-in duration-500">
+          <p className={`text-[10px] ${colors.secondary} uppercase tracking-widest`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            ⚡ LEVEL UP
+          </p>
+          {avatarSrc && (
+            <img src={avatarSrc} alt="" className="w-16 h-16 mx-auto" style={{ imageRendering: 'pixelated' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+          )}
+          <p className="text-4xl text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            LV {levelUp.to}
+          </p>
+          <p className="text-[10px] text-zinc-400 italic">{narrativeBeat}</p>
+          <p className="text-[8px] text-zinc-700 mt-6">tap to continue</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Non-milestone: small toast (auto-dismiss after 4s)
   return (
-    <div className="fixed top-12 left-4 right-4 z-[60] flex justify-center animate-in slide-in-from-top-4">
+    <div className="fixed top-12 left-4 right-4 z-[60] flex justify-center animate-in slide-in-from-top-4" onClick={() => setLevelUp(null)}>
       <div className={`border-2 ${colors.primary} bg-zinc-900 px-5 py-3 text-center`} style={{ boxShadow: colors.glow }}>
         <p className={`text-[12px] ${colors.secondary} font-bold`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-          ⚡ LEVEL UP! LV{levelUp.from} → LV{levelUp.to}
+          ⚡ LV {levelUp.to}
         </p>
         <p className="text-[9px] text-zinc-400 italic mt-1">{narrativeBeat}</p>
       </div>
