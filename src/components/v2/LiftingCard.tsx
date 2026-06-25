@@ -163,10 +163,27 @@ export default function LiftingCard({ card, isActive, colors, currentTheme, weig
       {/* HP Bar (shown here only for athlete mode or superset — combat non-superset has it above) */}
       {(!combat || isSuperset) && <PixelBar current={card.completedSets} max={card.totalSets} inverted={combat} />}
 
-      {/* Rank indicator — current level + gap to next */}
+      {/* Rank indicator + progressive overload suggestion */}
       {card.currentLevel !== undefined && !isSuperset && card.catalogItem?.standards && (
         <p className="text-[8px] text-zinc-600 text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-          LV{card.currentLevel}{card.nextThreshold ? ` · ${Math.round(card.nextThreshold - (card.bestValue || 0))} lbs to LV${card.currentLevel + 1}` : card.bestValue ? ` · Best ${Math.round(card.bestValue)} lbs` : ''}
+          {(() => {
+            const isLower = ['squat', 'deadlift', 'rdl', 'leg'].some(k => card.exerciseId.includes(k));
+            const increment = isLower ? 10 : 5;
+            const lastW = card.lastWeight || 0;
+            const targetReps = card.targetReps || 8;
+            const suggestion = lastW > 0 ? Math.round((lastW + increment) / 5) * 5 : 0;
+            const nextT = card.nextThreshold || 0;
+
+            if (card.currentLevel >= 5) return 'LV5 · MAX RANK';
+            if (suggestion > 0 && nextT > 0) {
+              // Don't suggest more than threshold
+              const safeSuggestion = Math.min(suggestion, Math.round(nextT / (1 + targetReps / 30) / 5) * 5);
+              return `LV${card.currentLevel} · Next: ${safeSuggestion} × ${targetReps} → LV${card.currentLevel + 1}`;
+            }
+            if (nextT > 0) return `LV${card.currentLevel} · ${Math.round(nextT - (card.bestValue || 0))} lbs to LV${card.currentLevel + 1}`;
+            if (card.bestValue) return `LV${card.currentLevel} · Best ${Math.round(card.bestValue)} lbs`;
+            return `LV${card.currentLevel}`;
+          })()}
         </p>
       )}
 
