@@ -24,6 +24,7 @@ interface BattleCard {
   bestValue?: number;
   lastThree?: number[];
   currentLevel?: number;
+  nextThreshold?: number;
   threatLevel?: 'guardian' | 'trickster' | 'titan' | 'spark';
 }
 
@@ -161,6 +162,13 @@ export default function LiftingCard({ card, isActive, colors, currentTheme, weig
 
       {/* HP Bar (shown here only for athlete mode or superset — combat non-superset has it above) */}
       {(!combat || isSuperset) && <PixelBar current={card.completedSets} max={card.totalSets} inverted={combat} />}
+
+      {/* Rank indicator — current level + gap to next */}
+      {card.currentLevel !== undefined && !isSuperset && card.catalogItem?.standards && (
+        <p className="text-[8px] text-zinc-600 text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          LV{card.currentLevel}{card.nextThreshold ? ` · ${Math.round(card.nextThreshold - (card.bestValue || 0))} lbs to LV${card.currentLevel + 1}` : card.bestValue ? ` · Best ${Math.round(card.bestValue)} lbs` : ''}
+        </p>
+      )}
 
       {/* PR Flash */}
       {prFlash && (

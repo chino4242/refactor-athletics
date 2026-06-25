@@ -245,6 +245,21 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
             const bestValue = Math.max(...exHistory.map((h: any) => h.raw_value || 0), 0);
             const lastThree = exHistory.slice(0, 3).map((h: any) => h.raw_value || 0).reverse();
 
+            // Compute next threshold from catalog standards
+            let nextThreshold: number | undefined;
+            if (catItem?.standards?.brackets) {
+              const sex = (profile?.sex || 'male').toLowerCase() === 'female' ? 'female' : 'male';
+              const age = profile?.age || 30;
+              const bw = profile?.bodyweight || 180;
+              const brackets = catItem.standards.brackets[sex] || [];
+              const bracket = brackets.find((b: any) => age >= b.min && age <= b.max);
+              if (bracket?.levels && currentLevel < bracket.levels.length) {
+                const nextLevel = bracket.levels[currentLevel];
+                if (catItem.standards.unit === 'xBW') nextThreshold = Math.round(nextLevel * bw);
+                else nextThreshold = Math.round(nextLevel);
+              }
+            }
+
             return [{
               id: uuidv4(),
               name: b.name || exId.replace(/_/g, ' '),
@@ -261,6 +276,7 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
               lastWeight,
               currentLevel,
               bestValue,
+              nextThreshold,
               lastThree,
             }];
           });
