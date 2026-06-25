@@ -151,6 +151,7 @@ export async function getGroupChallengeWithProgress(groupId: string): Promise<Gr
   let memberContributions: { userId: string; displayName: string; contribution: number }[] = [];
   let total = 0;
 
+  let justCompleted = false;
   if (challenge.status === 'active' && memberIds.length > 0) {
     const contributions = await computeContributions(
       memberIds,
@@ -168,7 +169,6 @@ export async function getGroupChallengeWithProgress(groupId: string): Promise<Gr
     total = memberContributions.reduce((sum, m) => sum + m.contribution, 0);
 
     // Auto-complete if target reached
-    let justCompleted = false;
     if (total >= challenge.target && challenge.status === 'active') {
       await supabase
         .from('group_challenges')
