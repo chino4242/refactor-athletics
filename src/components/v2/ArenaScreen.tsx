@@ -289,6 +289,7 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
   const colors = getV2Theme(currentTheme);
   const [bounties, setBounties] = useState<BountyWithProgress[]>([]);
   const [guildQuest, setGuildQuest] = useState<GroupChallengeWithProgress | null>(null);
+  const [questCelebration, setQuestCelebration] = useState<GroupChallengeWithProgress | null>(null);
   const [groupId, setGroupId] = useState<string | null>(null);
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -325,6 +326,21 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
         setBounties(bountyData);
         setGuildQuest(questResult?.quest || null);
         setGroupId(questResult?.groupId || null);
+
+        // Guild Quest celebration: just completed OR recently completed (pending celebration)
+        if (questResult?.quest?.justCompleted) {
+          setQuestCelebration(questResult.quest);
+        } else if (!questResult?.quest && questResult?.groupId) {
+          // Check for recently completed quest user hasn't celebrated yet
+          const { createClient: getClient3 } = await import('@/utils/supabase/client');
+          const sb3 = getClient3();
+          const celebKey = 'guild_quest_celebrated';
+          const { data: recent } = await sb3.from('group_challenges').select('id, name, results').eq('group_id', questResult.groupId).eq('status', 'completed').order('completed_at', { ascending: false }).limit(1);
+          if (recent?.[0] && localStorage.getItem(celebKey) !== recent[0].id) {
+            localStorage.setItem(celebKey, recent[0].id);
+            setQuestCelebration({ name: recent[0].name, members: recent[0].results?.contributions || [], target: 0, current: 0 } as any);
+          }
+        }
         // Fetch invite code for sharing
         if (questResult?.groupId) {
           const { createClient: getClient2 } = await import('@/utils/supabase/client');
@@ -676,6 +692,43 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
           setActiveDuels(await getActiveDuels(userId));
         }}
       />
+      {/* Guild Quest Celebration */}
+      {questCelebration && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center" onClick={() => setQuestCelebration(null)}>
+          <div className="absolute inset-0 bg-black/90" />
+          <div className="relative text-center space-y-4 px-8 animate-in fade-in zoom-in duration-500">
+            <p className="text-[10px] text-amber-400 uppercase tracking-widest" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              ⚔ QUEST COMPLETE ⚔
+            </p>
+            <p className="text-lg text-white font-bold" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              {questCelebration.name}
+            </p>
+            <div className="flex items-center justify-center gap-4 my-4">
+              {questCelebration.members?.map((m: any) => (
+                <div key={m.userId} className="text-center">
+                  <div className="w-10 h-10 bg-zinc-800 border border-amber-600 rounded-full flex items-center justify-center mx-auto mb-1">
+                    <span className="text-lg">⚔</span>
+                  </div>
+                  <p className="text-[8px] text-zinc-300">{m.displayName}</p>
+                  <p className="text-[7px] text-zinc-500">{m.contribution?.toLocaleString()}</p>
+                </div>
+              ))}
+            </div>
+            <p className={`text-[11px] ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              +150 XP each
+            </p>
+            <p className="text-[9px] text-zinc-500 italic mt-2">
+              {currentTheme === 'samurai' ? '"The company moved as one. That\'s how legends form."' :
+               currentTheme === 'dragon' ? '"Two flames merged into one blaze."' :
+               currentTheme === 'viking' ? '"The shield wall held. Together, unbreakable."' :
+               currentTheme === 'dinosaur' ? '"The pack hunts better in numbers. Always."' :
+               '"Stronger together than apart."'}
+            </p>
+            <p className="text-[8px] text-zinc-700 mt-6">tap to continue</p>
+          </div>
+        </div>
+      )}
+
       {toast && (
         <div className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-zinc-700 text-zinc-100 text-xs px-4 py-2 rounded shadow-lg z-50 animate-fade-in" onAnimationEnd={() => setTimeout(() => setToast(null), 1500)}>{toast}</div>
       )}

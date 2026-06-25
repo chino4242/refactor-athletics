@@ -17,6 +17,7 @@ export interface GroupChallengeWithProgress {
   createdBy: string;
   members: { userId: string; displayName: string; contribution: number }[];
   daysLeft: number;
+  justCompleted?: boolean;
 }
 
 const METRIC_LABELS: Record<ChallengeMetric, string> = {
@@ -167,12 +168,22 @@ export async function getGroupChallengeWithProgress(groupId: string): Promise<Gr
     total = memberContributions.reduce((sum, m) => sum + m.contribution, 0);
 
     // Auto-complete if target reached
+    let justCompleted = false;
     if (total >= challenge.target && challenge.status === 'active') {
       await supabase
         .from('group_challenges')
         .update({ status: 'completed', completed: true, completed_at: new Date().toISOString(), results: { contributions: memberContributions, total } })
         .eq('id', challenge.id);
       challenge.status = 'completed';
+      justCompleted = true;
+
+      // Award 150 XP to each member
+      try {
+        const { awardXp } = await import('@/utils/xp-service');
+        for (const mid of memberIds) {
+          await awardXp(supabase, mid, { type: 'workout', level: 3, volumeXp: 0 } as any, `Guild Quest: ${challenge.name}`);
+        }
+      } catch {}
     }
   }
 
@@ -200,6 +211,7 @@ export async function getGroupChallengeWithProgress(groupId: string): Promise<Gr
     createdBy: challenge.created_by,
     members: memberContributions.sort((a, b) => b.contribution - a.contribution),
     daysLeft,
+    justCompleted,
   };
 }
 
