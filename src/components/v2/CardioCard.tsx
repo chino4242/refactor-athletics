@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
+import { useTheme } from '@/context/ThemeContext';
 
 interface BattleCard {
   id: string;
@@ -32,6 +33,7 @@ export interface CardioCardProps {
 }
 
 export default function CardioCard({ card, isActive, colors, onComplete }: CardioCardProps) {
+  const { currentTheme } = useTheme();
   const [engineChoice, setEngineChoice] = useState<'hiit' | 'zone2' | null>(null);
   const [zone2Duration, setZone2Duration] = useState(30);
   const intervals = engineChoice === 'zone2'
@@ -106,7 +108,11 @@ export default function CardioCard({ card, isActive, colors, onComplete }: Cardi
     return (
       <div className={`border-2 ${isActive ? colors.primary : colors.border} bg-zinc-900 p-4 space-y-3`}>
         <p className={`text-[10px] ${colors.headerText} text-center uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-          PICK YOUR ENGINE
+          {currentTheme === 'samurai' ? 'CHOOSE YOUR PATH' :
+           currentTheme === 'dragon' ? 'FEED THE FLAME' :
+           currentTheme === 'viking' ? 'ROW OR RAID' :
+           currentTheme === 'dinosaur' ? 'HUNT OR STALK' :
+           'CHOOSE YOUR CARDIO'}
         </p>
         <button onClick={() => setEngineChoice('hiit')} className={`w-full p-3 border ${colors.border} bg-zinc-800 text-left hover:bg-zinc-700 transition-colors`}>
           <span className="text-sm">🔥</span>
