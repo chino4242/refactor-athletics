@@ -85,11 +85,11 @@ export const acceptChallenge = async (duelId: string, opponentId: string): Promi
     return true;
 };
 
-export const finalizeDuel = async (duelId: string, challengerXp: number, opponentXp: number, winnerId: string | null): Promise<boolean> => {
+export const finalizeDuel = async (duelId: string, challengerScore: number, opponentScore: number, winnerId: string | null): Promise<boolean> => {
     const supabase = createClient();
     const { error } = await supabase.from('duels').update({
-        challenger_xp: challengerXp,
-        opponent_xp: opponentXp,
+        challenger_score: challengerScore,
+        opponent_score: opponentScore,
         winner_id: winnerId,
         status: 'COMPLETED'
     }).eq('id', duelId);
