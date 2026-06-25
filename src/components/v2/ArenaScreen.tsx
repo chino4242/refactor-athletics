@@ -290,6 +290,7 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
   const [bounties, setBounties] = useState<BountyWithProgress[]>([]);
   const [guildQuest, setGuildQuest] = useState<GroupChallengeWithProgress | null>(null);
   const [questCelebration, setQuestCelebration] = useState<GroupChallengeWithProgress | null>(null);
+  const [duelResult, setDuelResult] = useState<{ won: boolean; tied: boolean; myScore: number; theirScore: number; type: string } | null>(null);
   const [groupId, setGroupId] = useState<string | null>(null);
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -374,17 +375,30 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
         // Fetch duels
         const { getActiveDuels } = await import('@/services/duelApi');
         const duels = await getActiveDuels(userId);
-        // Compute live scores for active duels
+        // Compute live scores + auto-finalize expired duels
         if (duels.length > 0) {
           const { computeDuelScores } = await import('@/services/duelScoring');
+          const { finalizeDuel } = await import('@/services/duelApi');
+          const now = Date.now() / 1000;
           const scored = await Promise.all(duels.map(async (d: any) => {
             if (d.status === 'ACTIVE' && d.opponent_id) {
               const scores = await computeDuelScores(d.duel_type || 'xp', d.challenger_id, d.opponent_id, d.start_at, d.end_at);
+              // Auto-finalize if expired
+              if (d.end_at < now) {
+                const winnerId = scores.challengerScore > scores.opponentScore ? d.challenger_id :
+                  scores.opponentScore > scores.challengerScore ? d.opponent_id : null;
+                await finalizeDuel(d.id, scores.challengerScore, scores.opponentScore, winnerId);
+                // Show result celebration
+                const isWinner = winnerId === userId;
+                const isTie = !winnerId;
+                setDuelResult({ won: isWinner, tied: isTie, myScore: d.challenger_id === userId ? scores.challengerScore : scores.opponentScore, theirScore: d.challenger_id === userId ? scores.opponentScore : scores.challengerScore, type: d.duel_type || 'xp' });
+                return { ...d, status: 'COMPLETED', challenger_score: scores.challengerScore, opponent_score: scores.opponentScore };
+              }
               return { ...d, challenger_score: scores.challengerScore, opponent_score: scores.opponentScore };
             }
             return d;
           }));
-          setActiveDuels(scored);
+          setActiveDuels(scored.filter((d: any) => d.status !== 'COMPLETED'));
         } else {
           setActiveDuels(duels);
         }
@@ -692,6 +706,27 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
           setActiveDuels(await getActiveDuels(userId));
         }}
       />
+      {/* Duel Result */}
+      {duelResult && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center" onClick={() => setDuelResult(null)}>
+          <div className="absolute inset-0 bg-black/90" />
+          <div className="relative text-center space-y-4 px-8 animate-in fade-in zoom-in duration-500">
+            <p className={`text-[10px] uppercase tracking-widest ${duelResult.won ? 'text-amber-400' : duelResult.tied ? 'text-zinc-400' : 'text-zinc-500'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              {duelResult.won ? '⚔ VICTORY ⚔' : duelResult.tied ? '⚔ DRAW ⚔' : '⚔ DUEL COMPLETE ⚔'}
+            </p>
+            <p className="text-3xl text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              {duelResult.myScore.toLocaleString()} - {duelResult.theirScore.toLocaleString()}
+            </p>
+            <p className="text-[9px] text-zinc-500 italic">
+              {duelResult.won ? '"You proved yourself the stronger. The rift remembers."' :
+               duelResult.tied ? '"Evenly matched. A rare thing."' :
+               '"You fought hard. The next challenge awaits."'}
+            </p>
+            <p className="text-[8px] text-zinc-700 mt-6">tap to continue</p>
+          </div>
+        </div>
+      )}
+
       {/* Guild Quest Celebration */}
       {questCelebration && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center" onClick={() => setQuestCelebration(null)}>
