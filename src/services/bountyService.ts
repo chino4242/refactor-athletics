@@ -170,9 +170,11 @@ async function computeProgress(userId: string, weekStart: string, bounties: any[
   const supabase = createClient();
   const weekEnd = new Date(new Date(weekStart).getTime() + 6 * 24 * 60 * 60 * 1000).toLocaleDateString('en-CA');
 
-  const [{ data: workouts }, { data: nutrition }] = await Promise.all([
+  const [{ data: workouts }, { data: nutrition }, { data: completedDuels }, { data: completedQuests }] = await Promise.all([
     supabase.from('workouts').select('date, raw_value, sets, level').eq('user_id', userId).gte('date', weekStart),
     supabase.from('nutrition_logs').select('date').eq('user_id', userId).gte('date', weekStart),
+    supabase.from('duels').select('id').or(`challenger_id.eq.${userId},opponent_id.eq.${userId}`).eq('status', 'COMPLETED').gte('end_at', Math.floor(new Date(weekStart).getTime() / 1000)),
+    supabase.from('group_challenges').select('id').eq('status', 'completed').gte('completed_at', weekStart),
   ]);
 
   const workoutDates = new Set((workouts || []).map(w => w.date));
@@ -207,7 +209,7 @@ async function computeProgress(userId: string, weekStart: string, bounties: any[
         current = nutritionDates.size;
         break;
       case 'arena':
-        current = 0; // TODO: track challenge/duel completions
+        current = (completedDuels?.length || 0) + (completedQuests?.length || 0);
         break;
     }
 
