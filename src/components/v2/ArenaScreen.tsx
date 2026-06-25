@@ -385,9 +385,12 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
               const scores = await computeDuelScores(d.duel_type || 'xp', d.challenger_id, d.opponent_id, d.start_at, d.end_at);
               // Auto-finalize if expired
               if (d.end_at < now) {
+                const celebKey = `duel_celebrated_${d.id}`;
+                if (localStorage.getItem(celebKey)) return { ...d, status: 'COMPLETED' };
                 const winnerId = scores.challengerScore > scores.opponentScore ? d.challenger_id :
                   scores.opponentScore > scores.challengerScore ? d.opponent_id : null;
                 await finalizeDuel(d.id, scores.challengerScore, scores.opponentScore, winnerId);
+                localStorage.setItem(celebKey, '1');
                 // Show result celebration
                 const isWinner = winnerId === userId;
                 const isTie = !winnerId;
