@@ -284,16 +284,13 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
       } catch {
         setData({ powerLevel: 0, maxPossible: 60, exercises: [], expiringExercises: [], closestRankUps: [], recentPRs: [] });
       }
-      // Fetch player level
+      // Fetch player level (single source of truth)
       try {
         const { createClient } = await import('@/utils/supabase/client');
         const supabase = createClient();
-        const { data: ledger } = await supabase.from('xp_ledger').select('amount').eq('user_id', userId);
-        const totalXp = (ledger || []).reduce((s: number, r: any) => s + (r.amount || 0), 0);
-        let level = 1; let xpNeeded = 1000;
-        let xpAccum = 0;
-        while (xpAccum + xpNeeded <= totalXp) { xpAccum += xpNeeded; level++; xpNeeded = Math.round(1000 * Math.pow(1.08, level - 1)); }
-        setPlayerLevel({ level, xp: totalXp - xpAccum, xpForNext: xpNeeded });
+        const { getPlayerLevel } = await import('@/utils/getPlayerLevel');
+        const pl = await getPlayerLevel(supabase, userId);
+        setPlayerLevel({ level: pl.level, xp: pl.xpInLevel, xpForNext: pl.xpForNext });
       } catch {}
 
       // Fetch narrator state (streak, today XP, daily target, PRs, yesterday)

@@ -9,17 +9,12 @@ import { calculateXp, awardXp } from "@/utils/xp-service";
 /** After granting XP, check if user leveled up and set pending flag */
 async function maybeSetLevelUp(supabase: any, userId: string, xpEarned: number, sourceType: string) {
     try {
-        const [{ data: w }, { data: n }, { data: h }, { data: m }] = await Promise.all([
-            supabase.from('workouts').select('xp').eq('user_id', userId),
-            supabase.from('nutrition_logs').select('xp').eq('user_id', userId),
-            supabase.from('habit_logs').select('xp').eq('user_id', userId),
-            supabase.from('body_measurements').select('xp').eq('user_id', userId),
-        ]);
-        const totalXp = [...(w || []), ...(n || []), ...(h || []), ...(m || [])].reduce((s, r) => s + (r.xp || 0), 0);
+        const { data: ledger } = await supabase.from('xp_ledger').select('amount').eq('user_id', userId);
+        const totalXp = (ledger || []).reduce((s: number, r: any) => s + (r.amount || 0), 0);
         const result = checkLevelUp(totalXp - xpEarned, xpEarned);
         if (result) {
             await supabase.from('users').update({
-                pending_level_up: { level: result.newLevel, timestamp: Math.floor(Date.now() / 1000), source: sourceType },
+                pending_level_up: { from: result.newLevel - 1, to: result.newLevel, timestamp: Math.floor(Date.now() / 1000), source: sourceType },
                 unseen_xp: 0,
             }).eq('id', userId);
         }
