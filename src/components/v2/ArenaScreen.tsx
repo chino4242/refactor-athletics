@@ -432,6 +432,25 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
       {/* Party Status */}
       <PartyStatusStrip userId={userId} />
 
+      {/* Welcome card for brand-new users */}
+      {!groupId && !campaign && activeDuels.length === 0 && bounties.length === 0 && !localStorage.getItem('arena_welcomed') && (
+        <PixelBox highlight className="p-5 mb-4">
+          <p className={`text-[11px] ${colors.secondary} text-center mb-3`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            ⚔ WELCOME TO THE ARENA
+          </p>
+          <p className="text-[10px] text-zinc-400 text-center mb-4">The Arena is where you compete, challenge, and grow with others.</p>
+          <div className="space-y-2">
+            <button onClick={() => { setShowDuelModal(true); localStorage.setItem('arena_welcomed', '1'); }} className={`w-full text-left px-3 py-2 border ${colors.border} bg-zinc-800/50 hover:bg-zinc-700/50 transition-colors`}>
+              <span className="text-[9px] text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>⚡ Challenge a friend to a duel</span>
+            </button>
+            <button onClick={() => { setShowCampaignModal(true); localStorage.setItem('arena_welcomed', '1'); }} className={`w-full text-left px-3 py-2 border ${colors.border} bg-zinc-800/50 hover:bg-zinc-700/50 transition-colors`}>
+              <span className="text-[9px] text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>★ Start a 75-day campaign</span>
+            </button>
+          </div>
+          <button onClick={() => localStorage.setItem('arena_welcomed', '1')} className="w-full text-center text-[8px] text-zinc-600 mt-3">dismiss</button>
+        </PixelBox>
+      )}
+
       {/* Active Campaign / CTA */}
       <PixelBox highlight={!!campaign} className="p-4 mb-4">
         <p className={`text-[10px] ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
