@@ -490,13 +490,14 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
         setXpPop(result.xp_earned);
         setTimeout(() => setXpPop(null), 900);
       }
-      // PR detection — compare estimated 1RM of this set to historical best 1RM
-      const estimated1RM = w * (1 + r / 30);
-      if (w > 0 && estimated1RM > (card.bestValue || 0)) {
+      // PR detection — reps-based exercises compare raw reps; weight exercises use Epley
+      const isRepsBased = card.catalogItem?.standards?.unit === 'Reps';
+      const currentValue = isRepsBased ? r : w * (1 + r / 30);
+      if (currentValue > 0 && currentValue > (card.bestValue || 0)) {
         setPrFlash(true);
         setTimeout(() => setPrFlash(false), 1500);
-        // Update bestValue so subsequent sets at same weight don't re-trigger
-        setCards(prev => prev.map(c => c.id === card.id ? { ...c, bestValue: estimated1RM } : c));
+        // Update bestValue so subsequent sets at same level don't re-trigger
+        setCards(prev => prev.map(c => c.id === card.id ? { ...c, bestValue: currentValue } : c));
         // Mark PR for defeat overlay
         if (card.completedSets + 1 >= card.totalSets) {
           setDefeatedOverlay(prev => prev ? { ...prev, isPr: true } : prev);

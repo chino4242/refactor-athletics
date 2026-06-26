@@ -167,16 +167,29 @@ export default function LiftingCard({ card, isActive, colors, currentTheme, weig
       {card.currentLevel !== undefined && !isSuperset && card.catalogItem?.standards && (
         <p className="text-[8px] text-zinc-600 text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>
           {(() => {
+            const unit = card.catalogItem?.standards?.unit;
+            const isRepsBased = unit === 'Reps';
+            const nextT = card.nextThreshold || 0;
+
+            if (card.currentLevel >= 5) return 'LV5 · MAX RANK';
+
+            // Reps-based exercises (push-ups, pull-ups, dips)
+            if (isRepsBased) {
+              const bestReps = Math.round(card.bestValue || 0);
+              const suggestion = bestReps + 2;
+              if (nextT > 0) return `LV${card.currentLevel} · Next: ${Math.min(suggestion, nextT)} reps → LV${card.currentLevel + 1}`;
+              if (bestReps > 0) return `LV${card.currentLevel} · Best ${bestReps} reps`;
+              return `LV${card.currentLevel}`;
+            }
+
+            // Weight-based exercises
             const isLower = ['squat', 'deadlift', 'rdl', 'leg'].some(k => card.exerciseId.includes(k));
             const increment = isLower ? 10 : 5;
             const lastW = card.lastWeight || 0;
             const targetReps = card.targetReps || 8;
             const suggestion = lastW > 0 ? Math.round((lastW + increment) / 5) * 5 : 0;
-            const nextT = card.nextThreshold || 0;
 
-            if (card.currentLevel >= 5) return 'LV5 · MAX RANK';
             if (suggestion > 0 && nextT > 0) {
-              // Don't suggest more than threshold
               const safeSuggestion = Math.min(suggestion, Math.round(nextT / (1 + targetReps / 30) / 5) * 5);
               return `LV${card.currentLevel} · Next: ${safeSuggestion} × ${targetReps} → LV${card.currentLevel + 1}`;
             }
