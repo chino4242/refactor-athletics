@@ -302,15 +302,18 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
   const [loading, setLoading] = useState(true);
   const [showQR, setShowQR] = useState(false);
   const [bountyReveal, setBountyReveal] = useState(() => {
-    const key = `bounty_reveal_${new Date().toLocaleDateString('en-CA')}`;
-    const isMonday = new Date().getDay() === 1;
-    return isMonday && !localStorage.getItem(key);
+    // Fire reveal on first Arena visit of the week (not just Monday at midnight)
+    const weekStart = (() => { const d = new Date(); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d.toLocaleDateString('en-CA'); })();
+    const key = `bounty_reveal_week_${weekStart}`;
+    return !localStorage.getItem(key);
   });
+  const isSunday = new Date().getDay() === 0;
 
   // Dismiss reveal after animation
   useEffect(() => {
     if (bountyReveal) {
-      const key = `bounty_reveal_${new Date().toLocaleDateString('en-CA')}`;
+      const weekStart = (() => { const d = new Date(); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d.toLocaleDateString('en-CA'); })();
+      const key = `bounty_reveal_week_${weekStart}`;
       setTimeout(() => { localStorage.setItem(key, '1'); setBountyReveal(false); }, 3000);
     }
   }, [bountyReveal]);
@@ -494,7 +497,13 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
             ★ WEEKLY BOUNTIES
           </p>
           <span className="text-[11px] text-zinc-500">
-            {bounties.filter(b => b.completed).length}/{bounties.length}
+            {bountyReveal ? (
+              <span className="text-amber-400 animate-pulse" style={{ fontFamily: "var(--font-pixel), monospace" }}>NEW WEEK</span>
+            ) : isSunday && bounties.some(b => !b.completed) ? (
+              <span className="text-red-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>LAST DAY</span>
+            ) : (
+              `${bounties.filter(b => b.completed).length}/${bounties.length}`
+            )}
           </span>
         </div>
         {bounties.length > 0 && bounties.every(b => b.completed) ? (
