@@ -426,6 +426,7 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
 
   // Track which sub-exercise we're on for supersets
   const [subExerciseIdx, setSubExerciseIdx] = useState(0);
+  const [subWeights, setSubWeights] = useState<Record<number, string>>({});
   const [showEndConfirm, setShowEndConfirm] = useState(false);
   const [rankUpToast, setRankUpToast] = useState<{ name: string; level: number; rankName: string; nextThreshold?: string; isRecruitment?: boolean } | null>(null);
   const [sessionXp, setSessionXp] = useState(0);
@@ -525,14 +526,18 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
     // Superset: advance to next sub-exercise, only count a "set" when all exercises in the superset are done
     if (isSuperset) {
       const nextSub = subExerciseIdx + 1;
+      // Save current weight for this sub-exercise
+      setSubWeights(prev => ({ ...prev, [subExerciseIdx]: weight }));
       if (nextSub < card.exercises!.length) {
-        // More exercises in this round — advance sub, no rest yet
+        // More exercises in this round — advance sub, restore its last weight
         setSubExerciseIdx(nextSub);
+        setWeight(subWeights[nextSub] || '');
         setReps(String(card.exercises![nextSub].targetReps || 8));
         return;
       }
       // All exercises done for this round — count as 1 set complete
       setSubExerciseIdx(0);
+      setWeight(subWeights[0] || weight);
       setReps(String(card.exercises![0].targetReps || 8));
     }
 
