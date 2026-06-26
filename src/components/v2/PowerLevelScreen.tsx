@@ -9,6 +9,7 @@ import WeeklyRecapCard from './WeeklyRecapCard';
 import HealthSync from './HealthSync';
 import PushRegistration from './PushRegistration';
 import CreatureNarrator from './CreatureNarrator';
+import DailySummary from './DailySummary';
 
 interface PowerLevelScreenProps {
   userId: string;
@@ -258,6 +259,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
   const [showLoreLadder, setShowLoreLadder] = useState(false);
   const [showXray, setShowXray] = useState(false);
   const [avatarSex, setAvatarSex] = useState<'male' | 'female'>('male');
+  const [showDailySummary, setShowDailySummary] = useState(false);
   const [narratorState, setNarratorState] = useState<{ streak: number; todayXp: number; dailyTarget: number; hasPrToday: boolean; missedYesterday: boolean }>({ streak: 0, todayXp: 0, dailyTarget: 0, hasPrToday: false, missedYesterday: false });
   const [thresholdToast, setThresholdToast] = useState(false);
   const [bountyTeaser, setBountyTeaser] = useState<{ description: string; current: number; target: number; completed: boolean } | null>(null);
@@ -339,6 +341,14 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
 
       // Fetch nearest bounty for teaser
       try {
+
+        // Daily Summary trigger: show on first open if not dismissed today
+        const today = new Date().toLocaleDateString('en-CA');
+        const summaryKey = `daily_summary_dismissed_${today}`;
+        if (!localStorage.getItem(summaryKey)) {
+          setShowDailySummary(true);
+        }
+
         const { getWeeklyBounties } = await import('@/services/bountyService');
         const bounties = await getWeeklyBounties(userId);
         // Pick the closest-to-completion incomplete bounty
@@ -409,6 +419,14 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
     <ScreenWrapper onRefresh={async () => { setRefreshKey(k => k + 1); }}>
       <HealthSync userId={userId} refreshKey={refreshKey} onSyncComplete={() => setRefreshKey(k => k + 1)} onSyncStatus={setHealthStatus} />
       <PushRegistration userId={userId} />
+
+      {/* Daily Summary (yesterday's recap — fires on first open) */}
+      {showDailySummary && (
+        <DailySummary userId={userId} onDismiss={() => {
+          setShowDailySummary(false);
+          localStorage.setItem(`daily_summary_dismissed_${new Date().toLocaleDateString('en-CA')}`, '1');
+        }} />
+      )}
 
       {/* Health Sync Status Banner */}
       {healthStatus === 'unavailable' && (

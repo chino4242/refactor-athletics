@@ -489,8 +489,12 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
       {/* Yesterday + Tomorrow context */}
       {(yesterday || tomorrow) && (
         <div className="mb-4 px-1 space-y-1">
-          {yesterday && <p className="text-[11px] text-zinc-500">Yesterday: {yesterday}</p>}
-          {tomorrow && <p className="text-[11px] text-zinc-600">Tomorrow: {tomorrow}</p>}
+          {yesterday && (
+            <div className={`px-3 py-2 border ${colors.border} bg-zinc-900/30`}>
+              <p className="text-[9px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>YESTERDAY: {yesterday}</p>
+            </div>
+          )}
+          {tomorrow && <p className="text-[11px] text-zinc-600 px-3">Tomorrow: {tomorrow}</p>}
         </div>
       )}
 
