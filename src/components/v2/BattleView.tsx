@@ -756,6 +756,16 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
               <span className="text-[10px] text-zinc-300">{cards.reduce((s, c) => s + c.completedSets, 0)} total sets</span>
             </div>
           </div>
+
+          {/* What moved forward */}
+          <div className="border-t border-zinc-800 pt-3 space-y-1">
+            <p className="text-[8px] text-zinc-600 uppercase" style={{ fontFamily: "var(--font-pixel), monospace" }}>ADVANCED</p>
+            <div className="flex flex-wrap gap-2">
+              <span className="text-[9px] text-emerald-400 px-2 py-0.5 bg-emerald-950/30 border border-emerald-900" style={{ fontFamily: "var(--font-pixel), monospace" }}>✓ Streak</span>
+              <span className="text-[9px] text-blue-400 px-2 py-0.5 bg-blue-950/30 border border-blue-900" style={{ fontFamily: "var(--font-pixel), monospace" }}>✓ Bounties</span>
+              <span className="text-[9px] text-purple-400 px-2 py-0.5 bg-purple-950/30 border border-purple-900" style={{ fontFamily: "var(--font-pixel), monospace" }}>✓ Campaign</span>
+            </div>
+          </div>
         </div>
 
         <button
