@@ -494,6 +494,8 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
       if (w > 0 && estimated1RM > (card.bestValue || 0)) {
         setPrFlash(true);
         setTimeout(() => setPrFlash(false), 1500);
+        // Update bestValue so subsequent sets at same weight don't re-trigger
+        setCards(prev => prev.map(c => c.id === card.id ? { ...c, bestValue: estimated1RM } : c));
         // Mark PR for defeat overlay
         if (card.completedSets + 1 >= card.totalSets) {
           setDefeatedOverlay(prev => prev ? { ...prev, isPr: true } : prev);
