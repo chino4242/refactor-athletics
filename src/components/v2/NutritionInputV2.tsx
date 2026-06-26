@@ -218,7 +218,7 @@ export default function NutritionInputV2({ userId }: Props) {
           </div>
         </div>
       )}
-      <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={handlePhoto} className="hidden" />
+      <input ref={fileRef} type="file" accept="image/*" onChange={handlePhoto} className="hidden" />
 
       {/* Quick-log favorites */}
       {!pending && !loading && recentMeals.length > 0 && (
