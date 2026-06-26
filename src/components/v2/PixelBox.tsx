@@ -85,9 +85,14 @@ export function ScreenWrapper({ children, onRefresh }: { children: React.ReactNo
     >
       {/* Pull indicator */}
       {(pulling || refreshing) && (
-        <div className="flex justify-center py-2 -mt-2 mb-2">
-          <span className={`text-[8px] ${colors.secondary} ${refreshing ? 'animate-pulse' : ''}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-            {refreshing ? 'SYNCING...' : '↓ RELEASE TO REFRESH'}
+        <div className="flex items-center justify-center gap-2 py-3 -mt-2 mb-2">
+          {refreshing ? (
+            <div className={`w-4 h-4 border-2 ${colors.primary} border-t-transparent rounded-full animate-spin`} />
+          ) : (
+            <span className={`text-sm ${colors.secondary}`}>↓</span>
+          )}
+          <span className={`text-[9px] ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            {refreshing ? 'SYNCING...' : 'RELEASE'}
           </span>
         </div>
       )}
