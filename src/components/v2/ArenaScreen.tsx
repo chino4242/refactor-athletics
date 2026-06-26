@@ -369,8 +369,8 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
             return (Date.now() - failedAt.getTime()) < 7 * 86400000;
           });
         setCampaign(active || null);
-
-        // Check for joinable campaigns from group
+        if (active) localStorage.setItem('has_active_campaign', '1');
+        else localStorage.removeItem('has_active_campaign');
         if (!active && campaignData?.joinable?.length > 0) {
           setCampaign({ _joinable: true, ...campaignData.joinable[0] });
         }
