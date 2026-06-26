@@ -654,6 +654,18 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
       const newCompleted = c.completedSets + 1;
       return { ...c, completedSets: newCompleted, defeated: newCompleted >= c.totalSets, poofing: newCompleted >= c.totalSets };
     }));
+
+    // PR detection for time-based exercises
+    if (card.bestValue && card.bestValue > 0 && seconds > 0) {
+      const scoring = card.catalogItem?.standards?.scoring;
+      const isLowerBetter = scoring === 'lower_is_better';
+      const isPr = isLowerBetter ? seconds < card.bestValue : seconds > card.bestValue;
+      if (isPr) {
+        setPrFlash(true);
+        setTimeout(() => setPrFlash(false), 1500);
+        setCards(prev => prev.map(c => c.id === card.id ? { ...c, bestValue: seconds } : c));
+      }
+    }
   };
 
   const undoLastAttack = async () => {

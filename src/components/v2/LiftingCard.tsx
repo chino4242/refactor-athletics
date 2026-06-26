@@ -182,6 +182,23 @@ export default function LiftingCard({ card, isActive, colors, currentTheme, weig
               return `LV${card.currentLevel}`;
             }
 
+            // Time-based exercises (plank, dead hang, runs)
+            if (unit === 'Sec') {
+              const bestSec = Math.round(card.bestValue || 0);
+              const isLowerBetter = card.catalogItem?.standards?.scoring === 'lower_is_better';
+              if (nextT > 0) {
+                const gap = isLowerBetter ? bestSec - nextT : nextT - bestSec;
+                const fmtTarget = nextT >= 60 ? `${Math.floor(nextT / 60)}:${String(Math.round(nextT % 60)).padStart(2, '0')}` : `${nextT}s`;
+                if (gap > 0) return `LV${card.currentLevel} · ${isLowerBetter ? '-' : '+'}${Math.round(gap)}s to LV${card.currentLevel + 1}`;
+                return `LV${card.currentLevel} · Target: ${fmtTarget} → LV${card.currentLevel + 1}`;
+              }
+              if (bestSec > 0) {
+                const fmt = bestSec >= 60 ? `${Math.floor(bestSec / 60)}:${String(Math.round(bestSec % 60)).padStart(2, '0')}` : `${bestSec}s`;
+                return `LV${card.currentLevel} · Best ${fmt}`;
+              }
+              return `LV${card.currentLevel}`;
+            }
+
             // Weight-based exercises
             const isLower = ['squat', 'deadlift', 'rdl', 'leg'].some(k => card.exerciseId.includes(k));
             const increment = isLower ? 10 : 5;
