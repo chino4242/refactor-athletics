@@ -927,7 +927,16 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
                 subExerciseIdx={idx === activeIndex ? subExerciseIdx : 0}
                 catalog={catalogItems}
                 onSwap={(newExId, newName) => {
-                  setCards(prev => prev.map(c => c.id === card.id ? { ...c, exerciseId: newExId, name: newName } : c));
+                  setCards(prev => prev.map(c => {
+                    if (c.id !== card.id) return c;
+                    // For supersets, update the specific sub-exercise
+                    if (c.exercises?.length) {
+                      const updated = [...c.exercises];
+                      updated[subExerciseIdx % updated.length] = { ...updated[subExerciseIdx % updated.length], exerciseId: newExId, name: newName };
+                      return { ...c, exercises: updated };
+                    }
+                    return { ...c, exerciseId: newExId, name: newName };
+                  }));
                 }}
                 restEvent={idx === activeIndex ? restEvent : null}
                 onShowHistory={showExerciseHistory}
