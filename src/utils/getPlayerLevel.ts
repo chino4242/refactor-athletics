@@ -17,14 +17,14 @@ export async function getPlayerLevel(supabase: SupabaseClient, userId: string): 
 
   const totalXp = (ledger || []).reduce((s, r: any) => s + (r.amount || 0), 0);
 
-  // Exponential curve: 1000 × 1.08^level per level
+  // Exponential curve: 1500 × 1.15^level per level
   let level = 1;
   let xpAccum = 0;
-  let xpNeeded = 1000;
+  let xpNeeded = 1500;
   while (xpAccum + xpNeeded <= totalXp) {
     xpAccum += xpNeeded;
     level++;
-    xpNeeded = Math.round(1000 * Math.pow(1.08, level - 1));
+    xpNeeded = Math.round(1500 * Math.pow(1.15, level - 1));
   }
 
   return {

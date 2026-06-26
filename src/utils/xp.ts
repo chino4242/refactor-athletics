@@ -11,12 +11,12 @@ export function stepsToXp(steps: number): number {
   return xp;
 }
 
-/** Calculate player level from total XP (exponential curve: 1000 × 1.08^level per level) */
+/** Calculate player level from total XP (exponential curve: 1500 × 1.15^level per level) */
 export function xpToLevel(totalXp: number): { level: number; progress: number } {
   let cumulative = 0;
   let level = 1;
   while (true) {
-    const needed = Math.floor(1000 * Math.pow(1.08, level));
+    const needed = Math.round(1500 * Math.pow(1.15, level - 1));
     if (cumulative + needed > totalXp) {
       return { level, progress: (totalXp - cumulative) / needed };
     }

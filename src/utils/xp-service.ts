@@ -58,7 +58,7 @@ export async function awardXp(
       const { data: ledger } = await supabase.from('xp_ledger').select('amount').eq('user_id', userId);
       const totalXp = (ledger || []).reduce((s: number, r: any) => s + (r.amount || 0), 0);
       const prevXp = totalXp - xp;
-      const getLevel = (xp: number) => { let lv = 1, needed = 1000, acc = 0; while (acc + needed <= xp) { acc += needed; lv++; needed = Math.round(1000 * Math.pow(1.08, lv - 1)); } return lv; };
+      const getLevel = (xp: number) => { let lv = 1, needed = 1500, acc = 0; while (acc + needed <= xp) { acc += needed; lv++; needed = Math.round(1500 * Math.pow(1.15, lv - 1)); } return lv; };
       const prevLevel = getLevel(prevXp);
       const newLevel = getLevel(totalXp);
       if (newLevel > prevLevel) {
