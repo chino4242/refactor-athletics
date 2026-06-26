@@ -541,7 +541,7 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
     if (isDefeated) {
       // Show defeat overlay — card marks defeated when user taps to continue
       setDefeatedOverlay({
-        name: card.name,
+        name: card.exercises?.length ? card.exercises.map(e => e.name).join(' + ') : card.name,
         xp: sessionXp,
         lastThree: card.lastThree || [],
         isPr: false, // will be set by PR detection below
