@@ -64,7 +64,11 @@ export default function HealthSync({ userId, refreshKey, onSyncComplete, onSyncS
         }
         if (data.caloriesYesterday > 0 && !hasWhoop) {
           const noon = Math.floor(new Date(data.yesterdayDate + 'T12:00:00').getTime() / 1000);
-          promises.push(logHabitAction(userId, 'macro_calories_burned', data.caloriesYesterday, undefined, 'Calories Burned', noon));
+          // Only backfill yesterday if no value exists yet (don't overwrite finalized day)
+          const { createClient: gc2 } = await import('@/utils/supabase/client');
+          const sb2 = gc2();
+          const { data: existing } = await sb2.from('nutrition_logs').select('id').eq('user_id', userId).eq('date', data.yesterdayDate).eq('macro_type', 'calories_burned').limit(1);
+          if (!existing?.length) promises.push(logHabitAction(userId, 'macro_calories_burned', data.caloriesYesterday, undefined, 'Calories Burned', noon));
         }
         if (data.sleep > 0 && !hasWhoop) promises.push(logHabitAction(userId, 'habit_sleep', data.sleep, undefined, 'Sleep (Sync)'));
         if (data.exerciseMinutes > 0) promises.push(logHabitAction(userId, 'habit_exercise_minutes', data.exerciseMinutes, undefined, 'Exercise Minutes (Sync)'));

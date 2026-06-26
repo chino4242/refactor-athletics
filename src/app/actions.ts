@@ -59,8 +59,20 @@ export async function logHabitAction(
             if (habitId === getDailyPowerUp(todayStr)) xp *= 2;
         }
 
-        // "Set" mode for calories_burned: replace today's entries instead of adding
+        // "Set" mode for calories_burned: only replace if new value is higher
         if (macroType === 'calories_burned') {
+            const { data: existing } = await supabase
+                .from('nutrition_logs')
+                .select('amount')
+                .eq('user_id', userId)
+                .eq('date', dateStr)
+                .eq('macro_type', macroType)
+                .order('amount', { ascending: false })
+                .limit(1)
+                .single();
+            if (existing && existing.amount >= value) {
+                return { xp_earned: 0, timestamp: ts };
+            }
             await supabase
                 .from('nutrition_logs')
                 .delete()
