@@ -260,6 +260,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
   const [showXray, setShowXray] = useState(false);
   const [avatarSex, setAvatarSex] = useState<'male' | 'female'>('male');
   const [showDailySummary, setShowDailySummary] = useState(false);
+  const [partyActivity, setPartyActivity] = useState<string | null>(null);
   const [narratorState, setNarratorState] = useState<{ streak: number; todayXp: number; dailyTarget: number; hasPrToday: boolean; missedYesterday: boolean }>({ streak: 0, todayXp: 0, dailyTarget: 0, hasPrToday: false, missedYesterday: false });
   const [thresholdToast, setThresholdToast] = useState(false);
   const [bountyTeaser, setBountyTeaser] = useState<{ description: string; current: number; target: number; completed: boolean } | null>(null);
@@ -348,6 +349,24 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
         if (!localStorage.getItem(summaryKey)) {
           setShowDailySummary(true);
         }
+
+        // Party activity — what did your partner do today?
+        try {
+          const { createClient: gc } = await import('@/utils/supabase/client');
+          const sbp = gc();
+          const { data: myGroups } = await sbp.from('group_members').select('group_id').eq('user_id', userId).limit(1);
+          if (myGroups?.[0]) {
+            const { data: members } = await sbp.from('group_members').select('user_id, users(display_name)').eq('group_id', myGroups[0].group_id).neq('user_id', userId).limit(1);
+            if (members?.[0]) {
+              const partnerId = members[0].user_id;
+              const partnerName = (members[0] as any).users?.display_name || 'Ally';
+              const todayStart = new Date(today + 'T00:00:00').toISOString();
+              const { data: partnerXp } = await sbp.from('xp_ledger').select('amount').eq('user_id', partnerId).gte('created_at', todayStart);
+              const xp = (partnerXp || []).reduce((s: number, r: any) => s + (r.amount || 0), 0);
+              if (xp > 0) setPartyActivity(`${partnerName} earned ${xp} XP today`);
+            }
+          }
+        } catch {}
 
         const { getWeeklyBounties } = await import('@/services/bountyService');
         const bounties = await getWeeklyBounties(userId);
@@ -509,6 +528,11 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
           expiringCount={data.expiringExercises.length}
           colors={colors}
         />
+      )}
+
+      {/* Party activity */}
+      {partyActivity && (
+        <p className="text-[8px] text-zinc-600 italic text-center mb-2 px-1">{partyActivity}</p>
       )}
 
       {/* Nutrition summary */}
