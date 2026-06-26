@@ -10,6 +10,16 @@
     @apply bg-zinc-950 text-white font-sans;
     overflow-x: hidden;
   }
+
+  /* Universal tap feedback for interactive elements */
+  button, a, [role="button"], [onclick] {
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.1s ease, opacity 0.1s ease;
+  }
+  button:active, a:active, [role="button"]:active {
+    transform: scale(0.97);
+    opacity: 0.8;
+  }
 }
 
 @layer utilities {
