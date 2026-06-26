@@ -399,11 +399,17 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
                 </span>
                 <a
                   href={`/train/active${selectedDay ? `?day=${selectedDay}` : ''}`}
-                  className={`text-[10px] px-4 py-2 border ${colors.primary} bg-zinc-800 ${colors.secondary} hover:bg-zinc-700 transition-colors`}
+                  onClick={() => localStorage.setItem('first_workout_started', '1')}
+                  className={`text-[10px] px-4 py-2 border ${colors.primary} bg-zinc-800 ${colors.secondary} hover:bg-zinc-700 transition-colors ${!localStorage.getItem('first_workout_started') ? 'ring-2 ring-offset-2 ring-offset-zinc-900 ring-amber-500 animate-pulse' : ''}`}
                   style={{ fontFamily: "var(--font-pixel), monospace" }}
                 >
                   {hasBattleSession ? '▸ RESUME' : '▸ START ALL'}
                 </a>
+                {!localStorage.getItem('first_workout_started') && (
+                  <p className="text-[8px] text-amber-400 text-center mt-2 animate-bounce" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                    ↑ Your first workout is ready. Tap to begin.
+                  </p>
+                )}
               </div>
             )}
           </>
