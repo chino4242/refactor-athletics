@@ -550,17 +550,6 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
           ))}
         </div>
       </PixelBox>
-      {/* Debug: Health Sync (tap to show) */}
-      <button onClick={() => {
-        const raw = localStorage.getItem('health_sync_debug');
-        if (raw) {
-          const d = JSON.parse(raw);
-          const ago = Math.round((Date.now() - d.ts) / 60000);
-          alert(`Sync ${ago}m ago\nStatus: ${d.status}\nSteps: ${d.steps || 0}\nCal: ${d.cal || 0}\nExercises: ${d.exercises?.length || 0}\n${(d.exercises || []).map((e: any) => `${e.type} ${e.dur}m @${e.start}`).join('\n')}`);
-        } else alert('No sync data yet');
-      }} className="w-full text-center text-[7px] text-zinc-700 py-2">
-        tap for sync debug
-      </button>
     </ScreenWrapper>
   );
 }

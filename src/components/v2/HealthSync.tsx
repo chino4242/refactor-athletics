@@ -26,7 +26,6 @@ export default function HealthSync({ userId, refreshKey, onSyncComplete, onSyncS
         const available = await isHealthAvailable();
         if (!available) {
           onSyncStatus?.('unavailable');
-          localStorage.setItem('health_sync_debug', JSON.stringify({ ts: Date.now(), status: 'not_native' }));
           localStorage.removeItem('health_sync_in_progress');
           return;
         }
@@ -74,18 +73,6 @@ export default function HealthSync({ userId, refreshKey, onSyncComplete, onSyncS
         onSyncComplete?.();
 
         // Exercise session auto-sync
-        console.log('[HealthSync] exercises from native:', data.exercises?.length || 0, data.exercises?.map((e: any) => e.workoutType || e.type || 'unknown').join(','));
-        localStorage.setItem('health_sync_debug', JSON.stringify({
-          ts: Date.now(),
-          status: 'ok',
-          steps: data.steps,
-          cal: data.caloriesBurned,
-          exercises: (data.exercises || []).map((e: any) => ({
-            type: e.workoutType || e.type || '?',
-            dur: Math.round((e.duration || 0) / 60),
-            start: (e.startDate || e.start_time || '').slice(11, 16),
-          })),
-        }));
         if (data.exercises?.length > 0) {
           const supabaseEx = (await import('@/utils/supabase/client')).createClient();
           const today = new Date().toLocaleDateString('en-CA');
