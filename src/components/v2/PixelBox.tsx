@@ -100,7 +100,9 @@ export function ScreenWrapper({ children, onRefresh }: { children: React.ReactNo
       <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-40" style={{
         backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 2px, ${colors.scanline} 2px, ${colors.scanline} 4px)`
       }} />
-      {children}
+      <div className="animate-in fade-in duration-300">
+        {children}
+      </div>
     </div>
   );
 }
