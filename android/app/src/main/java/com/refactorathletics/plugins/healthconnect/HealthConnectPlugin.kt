@@ -106,30 +106,32 @@ class HealthConnectPlugin : Plugin() {
                     else -> null
                 }
 
-                // Special handling for totalCalories: try TotalCaloriesBurnedRecord first (what Garmin writes to),
-                // fall back to active + basal sum
+                // Special handling for totalCalories: try all sources, take the highest
                 if (dataType == "totalCalories") {
-                    var total = 0.0
-                    // First try: TotalCaloriesBurnedRecord (Garmin writes full daily total here)
+                    var totalRecord = 0.0
+                    var activePlusBasal = 0.0
+
+                    // Source 1: TotalCaloriesBurnedRecord
                     try {
                         val totalReq = AggregateRequest(setOf(TotalCaloriesBurnedRecord.ENERGY_TOTAL), timeRange)
                         val totalResult = hc.aggregate(totalReq)
-                        total = totalResult[TotalCaloriesBurnedRecord.ENERGY_TOTAL]?.inKilocalories ?: 0.0
+                        totalRecord = totalResult[TotalCaloriesBurnedRecord.ENERGY_TOTAL]?.inKilocalories ?: 0.0
                     } catch (_: Exception) {}
-                    // Fallback: sum active + basal if TotalCaloriesBurned is empty
-                    if (total == 0.0) {
-                        try {
-                            val activeReq = AggregateRequest(setOf(ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL), timeRange)
-                            val activeResult = hc.aggregate(activeReq)
-                            total += activeResult[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]?.inKilocalories ?: 0.0
-                        } catch (_: Exception) {}
-                        try {
-                            val basalReq = AggregateRequest(setOf(BasalMetabolicRateRecord.BASAL_CALORIES_TOTAL), timeRange)
-                            val basalResult = hc.aggregate(basalReq)
-                            total += basalResult[BasalMetabolicRateRecord.BASAL_CALORIES_TOTAL]?.inKilocalories ?: 0.0
-                        } catch (_: Exception) {}
-                    }
-                    call.resolve(JSObject().put("value", total))
+
+                    // Source 2: Active + Basal sum
+                    try {
+                        val activeReq = AggregateRequest(setOf(ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL), timeRange)
+                        val activeResult = hc.aggregate(activeReq)
+                        activePlusBasal += activeResult[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]?.inKilocalories ?: 0.0
+                    } catch (_: Exception) {}
+                    try {
+                        val basalReq = AggregateRequest(setOf(BasalMetabolicRateRecord.BASAL_CALORIES_TOTAL), timeRange)
+                        val basalResult = hc.aggregate(basalReq)
+                        activePlusBasal += basalResult[BasalMetabolicRateRecord.BASAL_CALORIES_TOTAL]?.inKilocalories ?: 0.0
+                    } catch (_: Exception) {}
+
+                    // Take whichever is higher
+                    call.resolve(JSObject().put("value", maxOf(totalRecord, activePlusBasal)))
                     return@launch
                 }
 
