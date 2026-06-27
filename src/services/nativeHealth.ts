@@ -80,15 +80,9 @@ export async function getCaloriesBurned(startDate: string, endDate: string): Pro
       const active = await h.queryAggregated({ dataType: 'calories', startDate, endDate }).catch(() => ({ samples: [] }));
       return Math.round(sumAggregated(active));
     }
-    // Android: query both totalCalories and active calories, take whichever is higher
-    // Garmin may write to TotalCaloriesBurnedRecord (includes BMR) or just ActiveCaloriesBurnedRecord
-    const [totalResult, activeResult] = await Promise.all([
-      h.queryAggregated({ dataType: 'totalCalories', startDate, endDate }).catch(() => ({ value: 0 })),
-      h.queryAggregated({ dataType: 'calories', startDate, endDate }).catch(() => ({ value: 0 })),
-    ]);
-    const total = sumAggregated(totalResult);
-    const active = sumAggregated(activeResult);
-    return Math.round(Math.max(total, active));
+    // Android: custom plugin computes active + basal for totalCalories
+    const result = await h.queryAggregated({ dataType: 'totalCalories', startDate, endDate });
+    return Math.round(sumAggregated(result));
   } catch { return 0; }
 }
 

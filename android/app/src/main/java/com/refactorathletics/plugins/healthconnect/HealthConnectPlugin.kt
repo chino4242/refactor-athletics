@@ -101,9 +101,34 @@ class HealthConnectPlugin : Plugin() {
                 val metric = when (dataType) {
                     "steps" -> StepsRecord.COUNT_TOTAL
                     "calories" -> ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL
-                    "totalCalories" -> TotalCaloriesBurnedRecord.ENERGY_TOTAL
+                    "totalCalories" -> null // handled specially below
                     "sleep" -> SleepSessionRecord.SLEEP_DURATION_TOTAL
                     else -> null
+                }
+
+                // Special handling for totalCalories: sum active + basal
+                if (dataType == "totalCalories") {
+                    var total = 0.0
+                    try {
+                        val activeReq = AggregateRequest(setOf(ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL), timeRange)
+                        val activeResult = hc.aggregate(activeReq)
+                        total += activeResult[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]?.inKilocalories ?: 0.0
+                    } catch (_: Exception) {}
+                    try {
+                        val basalReq = AggregateRequest(setOf(BasalMetabolicRateRecord.BASAL_CALORIES_TOTAL), timeRange)
+                        val basalResult = hc.aggregate(basalReq)
+                        total += basalResult[BasalMetabolicRateRecord.BASAL_CALORIES_TOTAL]?.inKilocalories ?: 0.0
+                    } catch (_: Exception) {}
+                    // If active+basal is 0, try TotalCaloriesBurnedRecord as fallback
+                    if (total == 0.0) {
+                        try {
+                            val totalReq = AggregateRequest(setOf(TotalCaloriesBurnedRecord.ENERGY_TOTAL), timeRange)
+                            val totalResult = hc.aggregate(totalReq)
+                            total = totalResult[TotalCaloriesBurnedRecord.ENERGY_TOTAL]?.inKilocalories ?: 0.0
+                        } catch (_: Exception) {}
+                    }
+                    call.resolve(JSObject().put("value", total))
+                    return@launch
                 }
 
                 if (metric == null) {
