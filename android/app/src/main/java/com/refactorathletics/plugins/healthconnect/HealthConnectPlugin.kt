@@ -107,28 +107,39 @@ class HealthConnectPlugin : Plugin() {
                 }
 
                 // Special handling for totalCalories
-                // NOTE: BasalMetabolicRateRecord.BASAL_CALORIES_TOTAL returns full-day BMR (not prorated)
-                // so we only use TotalCaloriesBurnedRecord + ActiveCaloriesBurnedRecord
                 if (dataType == "totalCalories") {
                     var totalRecord = 0.0
                     var active = 0.0
 
-                    // Source 1: TotalCaloriesBurnedRecord (Garmin writes cumulative total here)
+                    // Source 1: TotalCaloriesBurnedRecord (Garmin writes full cumulative here, but syncs infrequently)
                     try {
                         val totalReq = AggregateRequest(setOf(TotalCaloriesBurnedRecord.ENERGY_TOTAL), timeRange)
                         val totalResult = hc.aggregate(totalReq)
                         totalRecord = totalResult[TotalCaloriesBurnedRecord.ENERGY_TOTAL]?.inKilocalories ?: 0.0
                     } catch (_: Exception) {}
 
-                    // Source 2: ActiveCaloriesBurnedRecord only
+                    // Source 2: ActiveCaloriesBurnedRecord
                     try {
                         val activeReq = AggregateRequest(setOf(ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL), timeRange)
                         val activeResult = hc.aggregate(activeReq)
                         active = activeResult[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]?.inKilocalories ?: 0.0
                     } catch (_: Exception) {}
 
-                    // Take whichever is higher (totalRecord includes basal when written correctly)
-                    call.resolve(JSObject().put("value", maxOf(totalRecord, active)))
+                    // Source 3: Prorated BMR estimate (for intraday before Garmin syncs TotalCalories)
+                    var estimatedTotal = active
+                    try {
+                        val basalReq = AggregateRequest(setOf(BasalMetabolicRateRecord.BASAL_CALORIES_TOTAL), timeRange)
+                        val basalResult = hc.aggregate(basalReq)
+                        val fullDayBmr = basalResult[BasalMetabolicRateRecord.BASAL_CALORIES_TOTAL]?.inKilocalories ?: 0.0
+                        if (fullDayBmr > 0) {
+                            val hoursElapsed = java.time.Duration.between(start, end.coerceAtMost(java.time.Instant.now())).toMinutes() / 60.0
+                            val proratedBmr = fullDayBmr * (hoursElapsed / 24.0)
+                            estimatedTotal = active + proratedBmr
+                        }
+                    } catch (_: Exception) {}
+
+                    // Take the highest: TotalCalories (when synced) vs estimated (active + prorated BMR)
+                    call.resolve(JSObject().put("value", maxOf(totalRecord, estimatedTotal)))
                     return@launch
                 }
 
