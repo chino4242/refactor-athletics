@@ -87,7 +87,7 @@ export default function FuelScreen({ userId }: Props) {
 
       {/* Nutrition Input */}
       <PixelBox className="p-4 mb-4">
-        <NutritionInputV2 userId={userId} />
+        <NutritionInputV2 userId={userId} onLog={() => setRefreshKey(k => k + 1)} />
       </PixelBox>
     </ScreenWrapper>
   );

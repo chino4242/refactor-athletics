@@ -8,6 +8,7 @@ import NutritionCoach from './NutritionCoach';
 
 interface Props {
   userId: string;
+  onLog?: () => void;
 }
 
 interface ParsedMeal {
@@ -33,7 +34,7 @@ function getAutoMealTag(): string {
   return 'dinner';
 }
 
-export default function NutritionInputV2({ userId }: Props) {
+export default function NutritionInputV2({ userId, onLog }: Props) {
   const { currentTheme } = useTheme();
   const colors = getV2Theme(currentTheme);
   const [text, setText] = useState('');
@@ -256,6 +257,7 @@ export default function NutritionInputV2({ userId }: Props) {
       return newCount;
     });
     fetchProgress();
+    onLog?.();
   };
 
   const dismiss = () => { setPending(null); setText(''); };
