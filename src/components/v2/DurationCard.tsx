@@ -22,6 +22,7 @@ interface BattleCard {
   bestValue?: number;
   lastThree?: number[];
   currentLevel?: number;
+  nextThreshold?: number;
   threatLevel?: 'guardian' | 'trickster' | 'titan' | 'spark';
 }
 
@@ -70,6 +71,27 @@ export default function DurationCard({ card, isActive, colors, currentTheme, onC
 
       {/* HP Bar */}
       <PixelBar current={card.completedSets} max={card.totalSets} />
+
+      {/* Progressive overload nudge */}
+      {card.currentLevel !== undefined && card.catalogItem?.standards && (
+        <p className="text-[8px] text-zinc-600 text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          {(() => {
+            if (card.currentLevel >= 5) return 'LV5 · MAX RANK';
+            const bestSec = Math.round(card.bestValue || 0);
+            const nextT = card.nextThreshold || 0;
+            const isLowerBetter = card.catalogItem?.standards?.scoring === 'lower_is_better';
+            if (nextT > 0 && bestSec > 0) {
+              const gap = isLowerBetter ? bestSec - nextT : nextT - bestSec;
+              return `LV${card.currentLevel} · ${gap > 0 ? (isLowerBetter ? '-' : '+') + Math.round(gap) + 's' : 'Hit it!'} to LV${card.currentLevel + 1}`;
+            }
+            if (bestSec > 0) {
+              const fmt = bestSec >= 60 ? `${Math.floor(bestSec / 60)}:${String(Math.round(bestSec % 60)).padStart(2, '0')}` : `${bestSec}s`;
+              return `LV${card.currentLevel} · Best ${fmt}`;
+            }
+            return `LV${card.currentLevel}`;
+          })()}
+        </p>
+      )}
 
       {/* Timer circle */}
       <div className="flex flex-col items-center py-6">

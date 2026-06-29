@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTheme } from '@/context/ThemeContext';
-import { getV2Theme } from '@/data/v2themes';
+import { getV2Theme, getDevotionName } from '@/data/v2themes';
 import PixelBox, { PixelBar, ScreenWrapper } from './PixelBox';
 import { PowerLevelSkeleton } from './Skeletons';
 import WeeklyRecapCard from './WeeklyRecapCard';
@@ -647,9 +647,29 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
             </div>
             <PixelBar current={data.powerLevel - tier.floor} max={tier.ceiling - tier.floor} />
             {playerLevel && (
-              <p className="text-[8px] text-zinc-500 text-center mt-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-                LV {playerLevel.level} · {playerLevel.xp.toLocaleString()}/{playerLevel.xpForNext.toLocaleString()} XP
-              </p>
+              <div className="mt-3 pt-3 border-t border-amber-900/30">
+                {(() => {
+                  const devotion = getDevotionName(currentTheme);
+                  const pct = Math.round((playerLevel.xp / playerLevel.xpForNext) * 100);
+                  const isClose = pct >= 85;
+                  return (
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px]">{devotion.icon}</span>
+                      <span className="text-[9px] text-amber-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                        {devotion.label} {playerLevel.level}
+                      </span>
+                      <div className="flex-1 h-[4px] bg-zinc-800 border border-zinc-700/50 flex">
+                        {Array.from({ length: 12 }).map((_, i) => (
+                          <div key={i} className={`flex-1 border-r border-zinc-900 ${i < Math.round(pct / 100 * 12) ? 'bg-amber-500' : ''}`} />
+                        ))}
+                      </div>
+                      <span className={`text-[8px] ${isClose ? 'text-amber-400 animate-pulse' : 'text-zinc-500'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                        {isClose ? `${(playerLevel.xpForNext - playerLevel.xp).toLocaleString()} XP left` : `${pct}%`}
+                      </span>
+                    </div>
+                  );
+                })()}
+              </div>
             )}
           </div>
         )}

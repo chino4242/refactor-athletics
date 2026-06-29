@@ -253,10 +253,11 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
     const keyExerciseIds = new Set(PATH_KEY_EXERCISES[userPath] || PATH_KEY_EXERCISES['hybrid']);
 
     // Query all tables for total XP
-    const [nutrition, habits, measurements] = await Promise.all([
+    const [nutrition, habits, measurements, { data: ledger }] = await Promise.all([
         supabase.from('nutrition_logs').select('xp').eq('user_id', userId),
         supabase.from('habit_logs').select('xp').eq('user_id', userId),
-        supabase.from('body_measurements').select('xp').eq('user_id', userId)
+        supabase.from('body_measurements').select('xp').eq('user_id', userId),
+        supabase.from('xp_ledger').select('amount').eq('user_id', userId),
     ]);
 
     // Build set of ranked catalog exercise IDs — only those with actual bracket thresholds
@@ -273,13 +274,11 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
             .map((c: any) => c.id)
     );
 
-    let totalXp = 0;
+    let totalXp = (ledger || []).reduce((s: number, r: any) => s + (r.amount || 0), 0);
     const maxLevelPerExercise: Record<string, number> = {};
 
     // Calculate Expertise from path key exercises only
     for (const item of workouts || []) {
-        totalXp += item.xp || 0;
-        
         const normalizedId = item.exercise_id?.replace(/^(five_rm_|one_rm_|est_1rm_)/, '');
         const matchesKey = keyExerciseIds.has(item.exercise_id) || keyExerciseIds.has(normalizedId);
         if (item.exercise_id && item.level > 0 && matchesKey) {
@@ -287,11 +286,6 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
                 maxLevelPerExercise[item.exercise_id] = item.level;
             }
         }
-    }
-
-    // Add XP from other sources
-    for (const item of [...(nutrition.data || []), ...(habits.data || []), ...(measurements.data || [])]) {
-        totalXp += item.xp || 0;
     }
 
     // Expertise = Sum of max_level for each ranked exercise the user has tested
@@ -303,12 +297,11 @@ export const getUserStats = async (userId: string): Promise<UserStats | null> =>
 
     const finalExpertise = expertiseScore > 0 ? expertiseScore : 0;
 
-    // XP scaling: 1000 * 1.08^level (fibonacci-ish curve)
-    const { xpToLevel } = await import('@/utils/xp');
+    // XP scaling: 1500 × 1.15^(level-1)
+    const { xpToLevel, xpForLevel } = await import('@/utils/xp');
     const levelData = xpToLevel(totalXp);
     const playerLevel = levelData.level;
     const level_progress_percent = levelData.progress * 100;
-    const xpForLevel = (lvl: number) => Math.floor(1000 * Math.pow(1.08, lvl));
     const xpNeeded = xpForLevel(playerLevel);
     const xpIntoLevel = Math.round(levelData.progress * xpNeeded);
 

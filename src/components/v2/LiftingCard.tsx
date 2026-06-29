@@ -263,6 +263,7 @@ export default function LiftingCard({ card, isActive, colors, currentTheme, weig
       {/* Weight + Reps inputs */}
       {(() => {
         const isRunExercise = ['run_1_mile', 'run_400m', 'run_5k', 'run_2_mile'].some(k => card.exerciseId === k || card.exerciseId.includes(k));
+        const isRepsOnly = card.catalogItem?.standards?.unit === 'Reps';
         if (isRunExercise) {
           return (
             <div className="grid grid-cols-2 gap-3">
@@ -274,6 +275,25 @@ export default function LiftingCard({ card, isActive, colors, currentTheme, weig
                 <input type="number" inputMode="numeric" value={reps} onChange={e => onRepsChange(e.target.value)} className="w-full bg-transparent text-center text-3xl text-white outline-none placeholder:text-zinc-600" style={{ fontFamily: "var(--font-pixel), monospace" }} placeholder="00" />
                 <p className="text-[8px] text-zinc-500 mt-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>SEC</p>
               </div>
+            </div>
+          );
+        }
+        if (isRepsOnly) {
+          return (
+            <div className="max-w-[160px] mx-auto">
+              <button onClick={() => { if (!reps) onRepsChange(String(card.targetReps || 8)); }} className={`w-full border ${colors.border} bg-zinc-800 p-4 text-center`}>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  value={reps}
+                  onChange={e => onRepsChange(e.target.value)}
+                  onClick={e => e.stopPropagation()}
+                  className="w-full bg-transparent text-center text-3xl text-white outline-none placeholder:text-zinc-600"
+                  style={{ fontFamily: "var(--font-pixel), monospace" }}
+                  placeholder={String(card.targetReps || 8)}
+                />
+                <p className="text-[8px] text-zinc-500 mt-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>MAX REPS</p>
+              </button>
             </div>
           );
         }

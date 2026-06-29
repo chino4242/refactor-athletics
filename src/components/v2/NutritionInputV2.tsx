@@ -47,6 +47,7 @@ export default function NutritionInputV2({ userId }: Props) {
   const [targets, setTargets] = useState({ protein: 170, carbs: 250, fat: 65, calories: 2000 });
   const [recentMeals, setRecentMeals] = useState<string[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
 
   // Fetch daily totals + weekly dots
   const fetchProgress = async () => {
@@ -149,11 +150,22 @@ export default function NutritionInputV2({ userId }: Props) {
     } catch { /* silent */ }
     setLoading(false);
     if (fileRef.current) fileRef.current.value = '';
+    if (cameraRef.current) cameraRef.current.value = '';
   };
 
   const confirmLog = async () => {
     if (!pending) return;
     import('@/utils/haptics').then(m => m.haptic('success'));
+
+    // Optimistic update
+    setDailyTotals(prev => ({
+      ...prev,
+      protein: prev.protein + pending.protein,
+      carbs: prev.carbs + pending.carbs,
+      fat: prev.fat + pending.fat,
+      calsIn: prev.calsIn + pending.calories,
+    }));
+
     await Promise.all([
       logHabitAction(userId, 'macro_protein', pending.protein, undefined, mealTag),
       logHabitAction(userId, 'macro_carbs', pending.carbs, undefined, mealTag),
@@ -211,14 +223,18 @@ export default function NutritionInputV2({ userId }: Props) {
               <button onClick={handleSubmit} disabled={!text.trim() || loading} className={`flex-1 border ${colors.primary} bg-zinc-800 px-3 hover:bg-zinc-700 transition-colors disabled:opacity-50`}>
                 <span className="text-sm">▸</span>
               </button>
-              <button onClick={() => fileRef.current?.click()} disabled={loading} className={`flex-1 border ${colors.border} bg-zinc-800 px-3 hover:bg-zinc-700 transition-colors disabled:opacity-50`}>
+              <button onClick={() => cameraRef.current?.click()} disabled={loading} className={`flex-1 border ${colors.border} bg-zinc-800 px-3 hover:bg-zinc-700 transition-colors disabled:opacity-50`}>
                 <span className="text-sm">📷</span>
+              </button>
+              <button onClick={() => fileRef.current?.click()} disabled={loading} className={`flex-1 border ${colors.border} bg-zinc-800 px-3 hover:bg-zinc-700 transition-colors disabled:opacity-50`}>
+                <span className="text-sm">🖼️</span>
               </button>
             </div>
           </div>
         </div>
       )}
       <input ref={fileRef} type="file" accept="image/*" onChange={handlePhoto} className="hidden" />
+      <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handlePhoto} className="hidden" />
 
       {/* Quick-log favorites */}
       {!pending && !loading && recentMeals.length > 0 && (

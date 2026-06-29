@@ -7,7 +7,7 @@ const mockFrom = vi.fn();
 
 function createChain(resolveValue: any = { data: null, error: null }) {
     const chain: any = {};
-    const methods = ['select', 'insert', 'delete', 'eq', 'match', 'order', 'limit', 'single', 'gte', 'lte', 'neq', 'in', 'is', 'like'];
+    const methods = ['select', 'insert', 'update', 'delete', 'eq', 'match', 'order', 'limit', 'single', 'gte', 'lte', 'neq', 'in', 'is', 'like'];
     methods.forEach(m => {
         chain[m] = vi.fn(() => chain);
     });
@@ -102,7 +102,7 @@ describe('logTrainingAction', () => {
 
         // 350 / 200 = 1.75 xBW -> passes thresholds 1.0, 1.5 (level 2)
         expect(result.level).toBe(2);
-        expect(result.rank_name).toBe('Amateur');
+        expect(result.rank_name).toBe('Contender');
         expect(result.raw_value).toBe(350);
 
         // XP = level * 50 + sets XP
@@ -124,7 +124,7 @@ describe('logTrainingAction', () => {
 
         // 175 / 150 = 1.17 xBW -> passes 0.75, 1.0 (level 2)
         expect(result.level).toBe(2);
-        expect(result.rank_name).toBe('Amateur');
+        expect(result.rank_name).toBe('Contender');
     });
 
     it('calculates level 0 when no thresholds passed', async () => {
@@ -139,7 +139,7 @@ describe('logTrainingAction', () => {
         );
 
         expect(result.level).toBe(0);
-        expect(result.rank_name).toBe('Peasant');
+        expect(result.rank_name).toBe('Unranked');
         expect(result.xp_earned).toBe(11); // 0 rank XP + floor((150/200)*1*10*1.5) = 11
     });
 
@@ -155,7 +155,7 @@ describe('logTrainingAction', () => {
         );
 
         expect(result.level).toBe(5);
-        expect(result.rank_name).toBe('Champion');
+        expect(result.rank_name).toBe('Legend');
         expect(result.xp_earned).toBe(175); // 250 rank XP + floor((600/200)*1*10*1.5) = 45
     });
 
@@ -196,7 +196,7 @@ describe('logTrainingAction', () => {
 
         // 12 reps -> passes 5, 10 (level 2)
         expect(result.level).toBe(2);
-        expect(result.rank_name).toBe('Amateur');
+        expect(result.rank_name).toBe('Contender');
         expect(result.raw_value).toBe(12);
     });
 
@@ -232,7 +232,7 @@ describe('logTrainingAction', () => {
         );
 
         expect(result.level).toBe(2);
-        expect(result.rank_name).toBe('Amateur');
+        expect(result.rank_name).toBe('Contender');
     });
 
     it('handles weighted pullup by adding bodyweight', async () => {
@@ -268,7 +268,7 @@ describe('logTrainingAction', () => {
 
         // (52.5 + 180) / 180 = 1.29 xBW -> passes 1.0, 1.25 (level 2)
         expect(result.level).toBe(2);
-        expect(result.rank_name).toBe('Amateur');
+        expect(result.rank_name).toBe('Contender');
     });
 
     it('handles 5RM exercises without Epley formula', async () => {
@@ -304,7 +304,7 @@ describe('logTrainingAction', () => {
 
         // 275 lbs -> passes 200, 250 (level 2)
         expect(result.level).toBe(2);
-        expect(result.rank_name).toBe('Amateur');
+        expect(result.rank_name).toBe('Contender');
         expect(result.raw_value).toBe(275);
         expect(result.value).toContain('lbs');
     });

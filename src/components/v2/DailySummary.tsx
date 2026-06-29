@@ -35,11 +35,16 @@ export default function DailySummary({ userId, onDismiss }: Props) {
       const yesterdayStart = new Date(yesterday + 'T00:00:00').toISOString();
       const yesterdayEnd = new Date(yesterday + 'T23:59:59').toISOString();
 
+      const weekStart = new Date(yesterday);
+      const day = weekStart.getDay();
+      weekStart.setDate(weekStart.getDate() - ((day + 6) % 7));
+      const weekStartStr = weekStart.toLocaleDateString('en-CA');
+
       const [{ data: xpData }, { data: workouts }, { data: habits }, { data: bounties }] = await Promise.all([
         supabase.from('xp_ledger').select('amount').eq('user_id', userId).gte('created_at', yesterdayStart).lte('created_at', yesterdayEnd),
         supabase.from('workouts').select('level, exercise_id').eq('user_id', userId).eq('date', yesterday),
         supabase.from('habit_logs').select('habit_id, value').eq('user_id', userId).eq('date', yesterday),
-        supabase.from('weekly_bounties').select('completed').eq('user_id', userId),
+        supabase.from('weekly_bounties').select('completed').eq('user_id', userId).eq('week_start', weekStartStr),
       ]);
 
       const xp = (xpData || []).reduce((s, r: any) => s + (r.amount || 0), 0);

@@ -102,3 +102,15 @@ export const THEME_IDENTITY: Record<string, { emoji: string; name: string }> = {
 export function getThemeIdentity(themeKey: string) {
   return THEME_IDENTITY[themeKey] || THEME_IDENTITY.athlete;
 }
+
+export const DEVOTION_NAMES: Record<string, { label: string; icon: string; levelUp: string }> = {
+  dragon: { label: 'Hoard', icon: '🔥', levelUp: 'Your hoard grows' },
+  samurai: { label: 'Legacy', icon: '⚔️', levelUp: 'Your legacy deepens' },
+  viking: { label: 'Saga', icon: 'ᚱ', levelUp: 'Another verse in your saga' },
+  dinosaur: { label: 'Lineage', icon: '🐾', levelUp: 'The lineage strengthens' },
+  athlete: { label: 'Legacy', icon: '★', levelUp: 'Your legacy grows' },
+};
+
+export function getDevotionName(themeKey: string) {
+  return DEVOTION_NAMES[themeKey] || DEVOTION_NAMES.athlete;
+}

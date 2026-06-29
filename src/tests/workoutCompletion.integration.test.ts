@@ -7,7 +7,7 @@ const mockFrom = vi.fn();
 
 function createChain(resolveValue: any = { data: null, error: null }) {
     const chain: any = {};
-    const methods = ['select', 'insert', 'delete', 'eq', 'match', 'order', 'limit', 'single', 'gte', 'lte', 'neq', 'in', 'is', 'like'];
+    const methods = ['select', 'insert', 'update', 'delete', 'eq', 'match', 'order', 'limit', 'single', 'gte', 'lte', 'neq', 'in', 'is', 'like'];
     methods.forEach(m => { chain[m] = vi.fn(() => chain); });
     chain.then = (resolve: any) => resolve(resolveValue);
     return chain;
@@ -69,7 +69,7 @@ describe('Workout Completion Flow — Integration', () => {
         // 315 * (1 + 5/30) = 367.5 e1RM
         // 367.5 / 200 = 1.8375 xBW → passes 1.0, 1.5 (level 2)
         expect(result.level).toBe(2);
-        expect(result.rank_name).toBe('Amateur');
+        expect(result.rank_name).toBe('Contender');
         expect(result.raw_value).toBe(367.5);
 
         // XP = level*50 + set volume XP
@@ -84,7 +84,7 @@ describe('Workout Completion Flow — Integration', () => {
                 user_id: 'user-123',
                 exercise_id: 'back_squat',
                 level: 2,
-                rank_name: 'Amateur',
+                rank_name: 'Contender',
                 raw_value: 367.5,
             })
         );
@@ -101,7 +101,7 @@ describe('Workout Completion Flow — Integration', () => {
         );
 
         expect(result.level).toBe(3);
-        expect(result.rank_name).toBe('Contender');
+        expect(result.rank_name).toBe('Pro');
         expect(result.raw_value).toBeCloseTo(445.5, 1);
     });
 
@@ -123,7 +123,7 @@ describe('Workout Completion Flow — Integration', () => {
 
         // Best reps = 18 → passes 5, 10, 15 (level 3)
         expect(result.level).toBe(3);
-        expect(result.rank_name).toBe('Contender');
+        expect(result.rank_name).toBe('Pro');
         expect(result.raw_value).toBe(18);
     });
 
@@ -149,7 +149,7 @@ describe('Workout Completion Flow — Integration', () => {
         );
 
         expect(result.level).toBe(0);
-        expect(result.rank_name).toBe('Peasant');
+        expect(result.rank_name).toBe('Unranked');
     });
 
     it('full flow: time-based exercise (lower is better)', async () => {
@@ -170,7 +170,7 @@ describe('Workout Completion Flow — Integration', () => {
         );
 
         expect(result.level).toBe(2);
-        expect(result.rank_name).toBe('Amateur');
+        expect(result.rank_name).toBe('Contender');
     });
 
     it('full flow: weighted pullup adds bodyweight before xBW comparison', async () => {
@@ -194,6 +194,6 @@ describe('Workout Completion Flow — Integration', () => {
         );
 
         expect(result.level).toBe(3);
-        expect(result.rank_name).toBe('Contender');
+        expect(result.rank_name).toBe('Pro');
     });
 });

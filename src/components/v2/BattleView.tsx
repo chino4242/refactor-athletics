@@ -362,6 +362,28 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
           const flexCards: BattleCard[] = items.map((c: CatalogItem) => {
             const isHold = ['plank', 'dead_hang', 'l_sit', 'deep_squat_hold'].some(k => c.id.includes(k));
             const isRun = ['run_1_mile', 'run_400m', 'run_5k', 'run_2_mile'].some(k => c.id === k);
+
+            // Populate from history
+            const exHistory = historyArr.filter((h: any) => (h.exercise_id || '').toLowerCase() === c.id.toLowerCase()).sort((a: any, b: any) => (b.timestamp || 0) - (a.timestamp || 0));
+            const lastLog = exHistory[0];
+            const lastWeight = lastLog?.data?.[0]?.weight || 0;
+            const currentLevel = Math.max(...exHistory.map((h: any) => h.level || 0), 0);
+            const bestValue = Math.max(...exHistory.map((h: any) => h.raw_value || 0), 0);
+            const lastThree = exHistory.slice(0, 3).map((h: any) => h.raw_value || 0).reverse();
+
+            let nextThreshold: number | undefined;
+            if (c.standards?.brackets) {
+              const sex = (profile?.sex || 'male').toLowerCase() === 'female' ? 'female' : 'male';
+              const age = profile?.age || 30;
+              const bw = profile?.bodyweight || 180;
+              const brackets = c.standards.brackets[sex] || [];
+              const bracket = brackets.find((b: any) => age >= b.min && age <= b.max);
+              if (bracket?.levels && currentLevel < bracket.levels.length) {
+                const nextLevel = bracket.levels[currentLevel];
+                nextThreshold = c.standards.unit === 'xBW' ? Math.round(nextLevel * bw) : Math.round(nextLevel);
+              }
+            }
+
             return {
             id: uuidv4(),
             name: c.name || c.id.replace(/_/g, ' '),
@@ -374,7 +396,11 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
             defeated: false,
             poofing: false,
             catalogItem: c,
-            lastWeight: 0,
+            lastWeight,
+            bestValue,
+            currentLevel,
+            nextThreshold,
+            lastThree,
           }; });
           setCards(flexCards);
         }

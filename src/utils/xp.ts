@@ -11,6 +11,11 @@ export function stepsToXp(steps: number): number {
   return xp;
 }
 
+/** XP required for a given level (1500 × 1.15^(level-1)) */
+export function xpForLevel(level: number): number {
+  return Math.round(1500 * Math.pow(1.15, level - 1));
+}
+
 /** Calculate player level from total XP (exponential curve: 1500 × 1.15^level per level) */
 export function xpToLevel(totalXp: number): { level: number; progress: number } {
   let cumulative = 0;

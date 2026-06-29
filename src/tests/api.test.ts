@@ -245,7 +245,7 @@ describe('API Functions', () => {
             return chain;
         };
 
-        const makeSelectMock = (workoutsData: any[], xpSources?: { nutrition?: any[]; habits?: any[]; measurements?: any[] }) => {
+        const makeSelectMock = (workoutsData: any[], xpSources?: { nutrition?: any[]; habits?: any[]; measurements?: any[]; ledger?: any[] }) => {
             let callCount = 0;
             return () => {
                 callCount++;
@@ -262,6 +262,9 @@ describe('API Functions', () => {
                     // nutrition (4), habits (5), measurements (6)
                     const sources = [xpSources?.nutrition || [], xpSources?.habits || [], xpSources?.measurements || []];
                     return { eq: vi.fn().mockResolvedValue({ data: sources[callCount - 4], error: null }) };
+                } else if (callCount === 7) {
+                    // xp_ledger
+                    return { eq: vi.fn().mockResolvedValue({ data: xpSources?.ledger || workoutsData.map(w => ({ amount: w.xp || 0 })), error: null }) };
                 } else {
                     // alcohol/vice streak queries - chainable .eq().eq().gte()
                     return { eq: vi.fn().mockReturnValue(chainableEq([])) };
@@ -290,20 +293,20 @@ describe('API Functions', () => {
 
             const result = await getUserStats('user-123');
 
-            expect(result?.player_level).toBe(3); // 2500 XP: L1=1080, L2=1166 (cum 2246), working on L3
-            expect(result?.level_progress_percent).toBeCloseTo(20.17, 0);
-            expect(result?.xp_to_next_level).toBe(1005);
+            expect(result?.player_level).toBe(2); // 2500 XP: L1=1500, working on L2 (needs 1725)
+            expect(result?.level_progress_percent).toBeCloseTo(57.97, 0);
+            expect(result?.xp_to_next_level).toBe(725);
         });
 
         it('includes XP from all sources', async () => {
             mockSelect.mockImplementation(makeSelectMock(
                 [{ exercise_id: 'bench_press', level: 1, xp: 100 }],
-                { nutrition: [{ xp: 50 }], habits: [{ xp: 30 }], measurements: [{ xp: 20 }] }
+                { nutrition: [{ xp: 50 }], habits: [{ xp: 30 }], measurements: [{ xp: 20 }], ledger: [{ amount: 100 }, { amount: 50 }, { amount: 30 }, { amount: 20 }] }
             ));
 
             const result = await getUserStats('user-123');
 
-            expect(result?.total_career_xp).toBe(200); // 100 + 50 + 30 + 20
+            expect(result?.total_career_xp).toBe(200); // 100 + 50 + 30 + 20 from ledger
         });
 
         it('returns minimum power level of 1', async () => {
