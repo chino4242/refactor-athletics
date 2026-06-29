@@ -257,6 +257,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
   const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
   const [tierUp, setTierUp] = useState<{ name: string; prev: string } | null>(null);
   const [showLoreLadder, setShowLoreLadder] = useState(false);
+  const [showLegacyInfo, setShowLegacyInfo] = useState(false);
   const [showXray, setShowXray] = useState(false);
   const [avatarSex, setAvatarSex] = useState<'male' | 'female'>('male');
   const [showDailySummary, setShowDailySummary] = useState(false);
@@ -646,34 +647,48 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
               {tier.next && <span>{tier.ceiling - data.powerLevel} more to {tier.next}</span>}
             </div>
             <PixelBar current={data.powerLevel - tier.floor} max={tier.ceiling - tier.floor} />
-            {playerLevel && (
-              <div className="mt-3 pt-3 border-t border-amber-900/30">
-                {(() => {
-                  const devotion = getDevotionName(currentTheme);
-                  const pct = Math.round((playerLevel.xp / playerLevel.xpForNext) * 100);
-                  const isClose = pct >= 85;
-                  return (
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px]">{devotion.icon}</span>
-                      <span className="text-[9px] text-amber-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-                        {devotion.label} {playerLevel.level}
-                      </span>
-                      <div className="flex-1 h-[4px] bg-zinc-800 border border-zinc-700/50 flex">
-                        {Array.from({ length: 12 }).map((_, i) => (
-                          <div key={i} className={`flex-1 border-r border-zinc-900 ${i < Math.round(pct / 100 * 12) ? 'bg-amber-500' : ''}`} />
-                        ))}
-                      </div>
-                      <span className={`text-[8px] ${isClose ? 'text-amber-400 animate-pulse' : 'text-zinc-500'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-                        {isClose ? `${(playerLevel.xpForNext - playerLevel.xp).toLocaleString()} XP left` : `${pct}%`}
-                      </span>
-                    </div>
-                  );
-                })()}
-              </div>
-            )}
           </div>
         )}
       </PixelBox>
+
+      {/* Legacy / Commitment strip — separate from Power Level */}
+      {playerLevel && (
+        <div className="relative mb-4">
+          <div className="flex items-center gap-2 px-1">
+            {(() => {
+              const devotion = getDevotionName(currentTheme);
+              const pct = Math.round((playerLevel.xp / playerLevel.xpForNext) * 100);
+              const xpLeft = playerLevel.xpForNext - playerLevel.xp;
+              const isClose = pct >= 85;
+              return (
+                <>
+                  <span className="text-[10px]">{devotion.icon}</span>
+                  <span className="text-[9px] text-amber-300 whitespace-nowrap" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                    {devotion.label} {playerLevel.level} → {playerLevel.level + 1}
+                  </span>
+                  <div className="flex-1 h-[4px] bg-zinc-800 border border-zinc-700/50 flex">
+                    {Array.from({ length: 12 }).map((_, i) => (
+                      <div key={i} className={`flex-1 border-r border-zinc-900 ${i < Math.round(pct / 100 * 12) ? 'bg-amber-500' : ''}`} />
+                    ))}
+                  </div>
+                  <span className={`text-[8px] whitespace-nowrap ${isClose ? 'text-amber-400 animate-pulse' : 'text-zinc-500'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                    {xpLeft.toLocaleString()} XP to go
+                  </span>
+                  <button onClick={() => setShowLegacyInfo(prev => !prev)} className="text-[9px] text-zinc-600 hover:text-zinc-400">
+                    ⓘ
+                  </button>
+                </>
+              );
+            })()}
+          </div>
+          {showLegacyInfo && (
+            <div className={`mt-2 mx-1 p-3 border ${colors.border} bg-zinc-900 text-[10px] text-zinc-300 leading-relaxed`}>
+              <p>Your <span className="text-amber-300">{getDevotionName(currentTheme).label}</span> grows every time you train, track food, or complete challenges. It never goes down — it&apos;s your permanent record of commitment.</p>
+              <button onClick={() => setShowLegacyInfo(false)} className="mt-2 text-[8px] text-zinc-500 uppercase" style={{ fontFamily: "var(--font-pixel), monospace" }}>GOT IT</button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Player Level merged into PL box below */}
 

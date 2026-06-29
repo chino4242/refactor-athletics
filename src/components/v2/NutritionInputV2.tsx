@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useTheme } from '@/context/ThemeContext';
 import { getV2Theme } from '@/data/v2themes';
 import { logHabitAction } from '@/app/actions';
+import NutritionCoach from './NutritionCoach';
 
 interface Props {
   userId: string;
@@ -42,6 +43,9 @@ export default function NutritionInputV2({ userId }: Props) {
   const [expanded, setExpanded] = useState(false);
   const [mealCount, setMealCount] = useState(0);
   const [xpPop, setXpPop] = useState<number | null>(null);
+  const [showCoach, setShowCoach] = useState(false);
+  const [coachInitialMsg, setCoachInitialMsg] = useState<string | undefined>();
+  const [nudge, setNudge] = useState<string | null>(null);
   const [dailyTotals, setDailyTotals] = useState<{ protein: number; carbs: number; fat: number; calsIn: number; burned: number; meals: { tag: string; cals: number }[] }>({ protein: 0, carbs: 0, fat: 0, calsIn: 0, burned: 0, meals: [] });
   const [weeklyDots, setWeeklyDots] = useState<boolean[]>([]);
   const [targets, setTargets] = useState({ protein: 170, carbs: 250, fat: 65, calories: 2000 });
@@ -55,13 +59,18 @@ export default function NutritionInputV2({ userId }: Props) {
     const supabase = createClient();
     const today = new Date().toLocaleDateString('en-CA');
 
-    const [{ data: logs }, { data: profile }] = await Promise.all([
+    const [{ data: logs }, { data: profile }, { data: recentBurn }] = await Promise.all([
       supabase.from('nutrition_logs').select('macro_type, amount, timestamp').eq('user_id', userId).eq('date', today),
-      supabase.from('users').select('nutrition_targets').eq('id', userId).single(),
+      supabase.from('users').select('nutrition_targets, body_composition_goals').eq('id', userId).single(),
+      supabase.from('nutrition_logs').select('amount').eq('user_id', userId).eq('macro_type', 'calories_burned').order('date', { ascending: false }).limit(1),
     ]);
 
     const totals: Record<string, number> = {};
     for (const l of logs || []) totals[l.macro_type] = (totals[l.macro_type] || 0) + (l.amount || 0);
+    // If no burn data for today, use most recent synced value
+    if (!totals['calories_burned'] && recentBurn?.[0]?.amount) {
+      totals['calories_burned'] = recentBurn[0].amount;
+    }
 
     if (profile?.nutrition_targets) {
       const t = profile.nutrition_targets;
@@ -100,6 +109,73 @@ export default function NutritionInputV2({ userId }: Props) {
     const { data: recentLogs } = await supabase.from('nutrition_logs').select('label').eq('user_id', userId).gte('date', twoWeeksAgo).eq('macro_type', 'calories').not('label', 'is', null).order('timestamp', { ascending: false }).limit(20);
     const labels = [...new Set((recentLogs || []).map((l: any) => l.label).filter(Boolean))].slice(0, 5);
     setRecentMeals(labels as string[]);
+
+    // Insights: rotating, celebrates wins, not just weight nagging
+    const dismissed = localStorage.getItem('coach_nudge_dismissed');
+    if (dismissed && Date.now() < Number(dismissed)) return;
+
+    const goals = profile?.body_composition_goals;
+    const insights: { text: string; type: 'celebrate' | 'suggest' }[] = [];
+
+    // Gather data for insights
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toLocaleDateString('en-CA');
+    const weekAgo = new Date(Date.now() - 7 * 86400000).toLocaleDateString('en-CA');
+    const [{ data: bodyData }, { data: weekNutrition }] = await Promise.all([
+      supabase.from('body_measurements').select('date, weight, body_fat_percentage, lean_body_mass').eq('user_id', userId).gte('date', thirtyDaysAgo).order('date', { ascending: false }),
+      supabase.from('nutrition_logs').select('date, macro_type, amount').eq('user_id', userId).gte('date', weekAgo),
+    ]);
+
+    // Lean mass gain (celebrate!)
+    if (bodyData && bodyData.length >= 2) {
+      const latest = bodyData[0];
+      const older = bodyData.find(d => d.date <= new Date(Date.now() - 14 * 86400000).toLocaleDateString('en-CA'));
+      if (older?.lean_body_mass && latest.lean_body_mass && latest.lean_body_mass > older.lean_body_mass) {
+        const gain = (latest.lean_body_mass - older.lean_body_mass).toFixed(1);
+        insights.push({ text: `💪 Your lean mass is up ${gain} lbs — muscle building is working!`, type: 'celebrate' });
+      }
+      // BF% drop (celebrate!)
+      if (older?.body_fat_percentage && latest.body_fat_percentage && latest.body_fat_percentage < older.body_fat_percentage) {
+        const drop = (older.body_fat_percentage - latest.body_fat_percentage).toFixed(1);
+        insights.push({ text: `🔥 Body fat down ${drop}% — your deficit is paying off!`, type: 'celebrate' });
+      }
+      // Weight loss toward goal (celebrate!)
+      if (older?.weight && latest.weight && latest.weight < older.weight && goals?.target_weight) {
+        const lost = (older.weight - latest.weight).toFixed(1);
+        insights.push({ text: `📉 Down ${lost} lbs — getting closer to your ${goals.target_weight} lb goal!`, type: 'celebrate' });
+      }
+      // Weight gain only if significant AND no lean mass gain to explain it
+      if (older?.weight && latest.weight && latest.weight - older.weight >= 3) {
+        const noLeanGain = !older.lean_body_mass || !latest.lean_body_mass || latest.lean_body_mass <= older.lean_body_mass;
+        if (noLeanGain) {
+          insights.push({ text: `📊 Weight shifted — want Coach to check if targets need adjusting?`, type: 'suggest' });
+        }
+      }
+    }
+
+    // Protein consistency (celebrate hitting target)
+    if (weekNutrition && weekNutrition.length > 0) {
+      const proteinByDay: Record<string, number> = {};
+      for (const n of weekNutrition) {
+        if (n.macro_type === 'protein') proteinByDay[n.date] = (proteinByDay[n.date] || 0) + (n.amount || 0);
+      }
+      const proteinDays = Object.values(proteinByDay);
+      const targetP = profile?.nutrition_targets?.protein || 170;
+      const daysHit = proteinDays.filter(p => p >= targetP * 0.9).length;
+      if (daysHit >= 5) {
+        insights.push({ text: `🎯 Hit your protein target ${daysHit}/7 days this week — consistency wins!`, type: 'celebrate' });
+      } else if (daysHit <= 2 && proteinDays.length >= 5) {
+        insights.push({ text: `🥩 Protein has been low this week — Coach can suggest easier ways to hit 175g`, type: 'suggest' });
+      }
+    }
+
+    // Pick one insight — prioritize celebrations, then cycle by day
+    if (insights.length > 0) {
+      const celebrations = insights.filter(i => i.type === 'celebrate');
+      const pick = celebrations.length > 0
+        ? celebrations[new Date().getDate() % celebrations.length]
+        : insights[new Date().getDate() % insights.length];
+      setNudge(pick.text);
+    }
   };
 
   useEffect(() => { fetchProgress(); }, [userId]);
@@ -189,6 +265,26 @@ export default function NutritionInputV2({ userId }: Props) {
 
   return (
     <div className="space-y-2">
+      {/* Coach overlay */}
+      {showCoach && <NutritionCoach userId={userId} onClose={() => { setShowCoach(false); fetchProgress(); }} initialMessage={coachInitialMsg} />}
+
+      {/* Nudge banner (16-7) */}
+      {nudge && !showCoach && (
+        <button onClick={() => { setCoachInitialMsg(nudge); setShowCoach(true); setNudge(null); }} className={`w-full border ${colors.border} bg-zinc-800/80 p-2 flex items-center gap-2 text-left`}>
+          <span className="text-sm">📊</span>
+          <span className="text-[10px] text-zinc-300 flex-1">{nudge}</span>
+          <span className="text-[8px] text-zinc-500" onClick={(e) => { e.stopPropagation(); setNudge(null); localStorage.setItem('coach_nudge_dismissed', String(Date.now() + 7 * 86400000)); }}>✕</span>
+        </button>
+      )}
+
+      {/* Coach button */}
+      {!showCoach && !loading && !pending && (
+        <button onClick={() => { setCoachInitialMsg(undefined); setShowCoach(true); }} className={`w-full border ${colors.border} bg-zinc-800/50 p-2 flex items-center gap-2`}>
+          <span className="text-sm">🧠</span>
+          <span className="text-[10px] text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>COACH — adjust targets with AI</span>
+        </button>
+      )}
+
       {/* Loading state */}
       {loading && (
         <div className={`border ${colors.border} bg-zinc-800 p-3 animate-pulse flex items-center gap-3`}>

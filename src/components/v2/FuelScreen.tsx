@@ -23,14 +23,17 @@ export default function FuelScreen({ userId }: Props) {
       const supabase = createClient();
       const today = new Date().toLocaleDateString('en-CA');
 
-      const [{ data: logs }, { data: user }] = await Promise.all([
+      const [{ data: logs }, { data: user }, { data: todayHabitBurn }] = await Promise.all([
         supabase.from('nutrition_logs').select('macro_type, amount').eq('user_id', userId).eq('date', today),
         supabase.from('users').select('nutrition_targets').eq('id', userId).single(),
+        supabase.from('habit_logs').select('value').eq('user_id', userId).eq('habit_id', 'habit_calories_burned').eq('date', today),
       ]);
 
       const t: Record<string, number> = {};
       for (const l of logs || []) t[l.macro_type] = (t[l.macro_type] || 0) + (l.amount || 0);
-      let burned = Math.round(t['calories_burned'] || 0);
+      // Only use burn data if it's actually from today (not stale fallback)
+      const todayHabitBurnVal = (todayHabitBurn || []).reduce((s: number, h: any) => s + (h.value || 0), 0);
+      let burned = Math.round(t['calories_burned'] || todayHabitBurnVal || 0);
 
       // Read calories burned directly from native plugin (more accurate than DB)
       try {
@@ -63,10 +66,16 @@ export default function FuelScreen({ userId }: Props) {
       <PixelBox className="p-3 mb-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs text-zinc-300">IN {totals.calsIn.toLocaleString()}</span>
-          <span className={`text-sm font-bold ${net < 0 ? 'text-green-400' : net > 200 ? 'text-amber-400' : 'text-zinc-300'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-            NET {net > 0 ? '+' : ''}{net}
-          </span>
-          <span className="text-xs text-zinc-500">BURNED {totals.burned.toLocaleString()}</span>
+          {totals.burned > 0 ? (
+            <span className={`text-sm font-bold ${net < 0 ? 'text-green-400' : net > 200 ? 'text-amber-400' : 'text-zinc-300'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              NET {net > 0 ? '+' : ''}{net}
+            </span>
+          ) : (
+            <span className="text-[9px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              NET — sync for burn
+            </span>
+          )}
+          <span className="text-xs text-zinc-500">BURNED {totals.burned > 0 ? totals.burned.toLocaleString() : '—'}</span>
         </div>
         {/* Macro progress bars */}
         <div className="space-y-1.5">
