@@ -10,6 +10,7 @@ import HealthSync from './HealthSync';
 import PushRegistration from './PushRegistration';
 import CreatureNarrator from './CreatureNarrator';
 import DailySummary from './DailySummary';
+import GuildQuestRally from './GuildQuestRally';
 
 interface PowerLevelScreenProps {
   userId: string;
@@ -261,6 +262,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
   const [showXray, setShowXray] = useState(false);
   const [avatarSex, setAvatarSex] = useState<'male' | 'female'>('male');
   const [showDailySummary, setShowDailySummary] = useState(false);
+  const [questRally, setQuestRally] = useState<string | null>(null);
   const [partyActivity, setPartyActivity] = useState<string | null>(null);
   const [narratorState, setNarratorState] = useState<{ streak: number; todayXp: number; dailyTarget: number; hasPrToday: boolean; missedYesterday: boolean }>({ streak: 0, todayXp: 0, dailyTarget: 0, hasPrToday: false, missedYesterday: false });
   const [thresholdToast, setThresholdToast] = useState(false);
@@ -350,6 +352,30 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
         if (!localStorage.getItem(summaryKey)) {
           setShowDailySummary(true);
         }
+
+        // Guild Quest failure rally: check for recently failed quest user hasn't seen
+        try {
+          const { createClient: gcRally } = await import('@/utils/supabase/client');
+          const sbRally = gcRally();
+          const { data: myGroup } = await sbRally.from('group_members').select('group_id').eq('user_id', userId).limit(1);
+          if (myGroup?.[0]) {
+            const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+            const { data: failedQuests } = await sbRally.from('group_challenges')
+              .select('id, name, status, completed_at')
+              .eq('group_id', myGroup[0].group_id)
+              .eq('status', 'failed')
+              .gte('completed_at', sevenDaysAgo)
+              .order('completed_at', { ascending: false })
+              .limit(1);
+            if (failedQuests?.[0]) {
+              const rallyKey = `quest_rally_seen_${failedQuests[0].id}`;
+              if (!localStorage.getItem(rallyKey)) {
+                localStorage.setItem(rallyKey, '1');
+                setQuestRally(failedQuests[0].name);
+              }
+            }
+          }
+        } catch {}
 
         // Party activity — what did your partner do today?
         try {
@@ -446,6 +472,11 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
           setShowDailySummary(false);
           localStorage.setItem(`daily_summary_dismissed_${new Date().toLocaleDateString('en-CA')}`, '1');
         }} />
+      )}
+
+      {/* Guild Quest failure rally */}
+      {questRally && !showDailySummary && (
+        <GuildQuestRally questName={questRally} onDismiss={() => setQuestRally(null)} />
       )}
 
       {/* Health Sync Status Banner */}
