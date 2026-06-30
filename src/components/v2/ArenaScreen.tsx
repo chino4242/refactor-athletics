@@ -303,6 +303,7 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
   const [showQR, setShowQR] = useState(false);
   const [bountyReveal, setBountyReveal] = useState(() => {
     // Fire reveal on first Arena visit of the week (not just Monday at midnight)
+    if (typeof window === 'undefined') return false;
     const weekStart = (() => { const d = new Date(); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d.toLocaleDateString('en-CA'); })();
     const key = `bounty_reveal_week_${weekStart}`;
     return !localStorage.getItem(key);
