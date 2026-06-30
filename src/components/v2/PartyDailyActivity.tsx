@@ -6,6 +6,7 @@ import { getV2Theme } from '@/data/v2themes';
 
 interface Props {
   userId: string;
+  refreshKey?: number;
 }
 
 interface MemberActivity {
@@ -20,7 +21,7 @@ interface MemberActivity {
   activeMinutes: number | null;
 }
 
-export default function PartyDailyActivity({ userId }: Props) {
+export default function PartyDailyActivity({ userId, refreshKey = 0 }: Props) {
   const { currentTheme } = useTheme();
   const colors = getV2Theme(currentTheme);
   const [members, setMembers] = useState<MemberActivity[]>([]);
@@ -86,7 +87,7 @@ export default function PartyDailyActivity({ userId }: Props) {
     setLoading(false);
   };
 
-  useEffect(() => { fetchActivity(); }, [userId]);
+  useEffect(() => { fetchActivity(); }, [userId, refreshKey]);
 
   if (loading || members.length < 2) return null;
 

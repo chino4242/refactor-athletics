@@ -438,7 +438,7 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
       <PartyStatusStrip userId={userId} />
 
       {/* Party Daily Activity */}
-      <PartyDailyActivity userId={userId} />
+      <PartyDailyActivity userId={userId} refreshKey={refreshKey} />
 
       {/* Welcome card for brand-new users */}
       {!groupId && !campaign && activeDuels.length === 0 && bounties.length === 0 && !localStorage.getItem('arena_welcomed') && (
