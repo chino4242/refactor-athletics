@@ -284,7 +284,6 @@ export default function NutritionInputV2({ userId, onLog }: Props) {
 
   const dismiss = () => { setPending(null); setText(''); };
 
-  const net = dailyTotals.calsIn - dailyTotals.burned;
   const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
   return (
@@ -452,8 +451,8 @@ export default function NutritionInputV2({ userId, onLog }: Props) {
         <span className="text-[8px] text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>
           P:{dailyTotals.protein}/{targets.protein} C:{dailyTotals.carbs}/{targets.carbs} F:{dailyTotals.fat}/{targets.fat}
         </span>
-        <span className={`text-[8px] ${net <= 0 ? 'text-green-400' : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-          NET:{net > 0 ? '+' : ''}{net} {expanded ? '▴' : '▾'}
+        <span className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          {expanded ? '▴' : '▾'}
         </span>
       </button>
 
