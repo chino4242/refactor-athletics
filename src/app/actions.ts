@@ -756,3 +756,35 @@ export async function assignDefaultProgram(userId: string, trainingPath: string,
 
     revalidatePath('/train');
 }
+
+// ─── Meal Favorites ───────────────────────────────────────────────────────────
+
+export async function saveMealFavoriteAction(
+    userId: string,
+    name: string,
+    items: { name: string; protein: number; carbs: number; fat: number; calories: number }[],
+    totals: { protein: number; carbs: number; fat: number; calories: number },
+    mealTag?: string,
+) {
+    const supabase = await createClient();
+    const { error } = await supabase.from('meal_favorites').insert({
+        user_id: userId,
+        name,
+        items,
+        total_protein: totals.protein,
+        total_carbs: totals.carbs,
+        total_fat: totals.fat,
+        total_calories: totals.calories,
+        meal_tag: mealTag || null,
+        use_count: 1,
+    });
+    if (error) throw new Error(`Error saving favorite: ${error.message}`);
+    return { success: true };
+}
+
+export async function deleteMealFavoriteAction(userId: string, favoriteId: string) {
+    const supabase = await createClient();
+    const { error } = await supabase.from('meal_favorites').delete().eq('id', favoriteId).eq('user_id', userId);
+    if (error) throw new Error(`Error deleting favorite: ${error.message}`);
+    return { success: true };
+}

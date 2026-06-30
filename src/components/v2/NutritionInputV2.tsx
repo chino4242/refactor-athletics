@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTheme } from '@/context/ThemeContext';
 import { getV2Theme } from '@/data/v2themes';
-import { logHabitAction } from '@/app/actions';
+import { logHabitAction, saveMealFavoriteAction, deleteMealFavoriteAction } from '@/app/actions';
 import NutritionCoach from './NutritionCoach';
 
 interface Props {
@@ -50,7 +50,10 @@ export default function NutritionInputV2({ userId, onLog }: Props) {
   const [dailyTotals, setDailyTotals] = useState<{ protein: number; carbs: number; fat: number; calsIn: number; burned: number; meals: { tag: string; cals: number }[] }>({ protein: 0, carbs: 0, fat: 0, calsIn: 0, burned: 0, meals: [] });
   const [weeklyDots, setWeeklyDots] = useState<boolean[]>([]);
   const [targets, setTargets] = useState({ protein: 170, carbs: 250, fat: 65, calories: 2000 });
-  const [recentMeals, setRecentMeals] = useState<string[]>([]);
+  const [favorites, setFavorites] = useState<{ id: string; name: string; items: any[]; total_protein: number; total_carbs: number; total_fat: number; total_calories: number; meal_tag: string | null }[]>([]);
+  const [showSavePrompt, setShowSavePrompt] = useState(false);
+  const [lastLoggedMeal, setLastLoggedMeal] = useState<{ name: string; items: any[]; totals: { protein: number; carbs: number; fat: number; calories: number }; mealTag: string } | null>(null);
+  const [loggedFromFavorite, setLoggedFromFavorite] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
 
@@ -105,11 +108,9 @@ export default function NutritionInputV2({ userId, onLog }: Props) {
     }
     setWeeklyDots(dots);
 
-    // Load recent meals for quick-log
-    const twoWeeksAgo = new Date(Date.now() - 14 * 86400000).toLocaleDateString('en-CA');
-    const { data: recentLogs } = await supabase.from('nutrition_logs').select('label').eq('user_id', userId).gte('date', twoWeeksAgo).eq('macro_type', 'calories').not('label', 'is', null).order('timestamp', { ascending: false }).limit(20);
-    const labels = [...new Set((recentLogs || []).map((l: any) => l.label).filter(Boolean))].slice(0, 5);
-    setRecentMeals(labels as string[]);
+    // Load meal favorites
+    const { data: favData } = await supabase.from('meal_favorites').select('id, name, items, total_protein, total_carbs, total_fat, total_calories, meal_tag').eq('user_id', userId).order('use_count', { ascending: false }).limit(8);
+    setFavorites(favData || []);
 
     // Insights: rotating, celebrates wins, not just weight nagging
     const dismissed = localStorage.getItem('coach_nudge_dismissed');
@@ -249,8 +250,29 @@ export default function NutritionInputV2({ userId, onLog }: Props) {
       logHabitAction(userId, 'macro_fat', pending.fat, undefined, mealTag),
       logHabitAction(userId, 'macro_calories', pending.calories, undefined, mealTag),
     ]);
+
+    // If logged from a favorite, increment use_count
+    if (loggedFromFavorite && (pending as any)._favoriteId) {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const favId = (pending as any)._favoriteId;
+      const fav = favorites.find(f => f.id === favId);
+      if (fav) await supabase.from('meal_favorites').update({ use_count: (fav as any).use_count + 1 || 2 }).eq('id', favId);
+    }
+
+    // Show save prompt if this was a new AI-parsed meal (not from favorites)
+    if (!loggedFromFavorite && text.trim()) {
+      const mealName = text.trim();
+      const alreadyFavorited = favorites.some(f => f.name.toLowerCase() === mealName.toLowerCase());
+      if (!alreadyFavorited) {
+        setLastLoggedMeal({ name: mealName, items: pending.items || [], totals: { protein: pending.protein, carbs: pending.carbs, fat: pending.fat, calories: pending.calories }, mealTag });
+        setShowSavePrompt(true);
+      }
+    }
+
     setPending(null);
     setText('');
+    setLoggedFromFavorite(false);
     setMealCount(prev => {
       const newCount = prev + 1;
       if (newCount >= 3) { setXpPop(50); setTimeout(() => setXpPop(null), 2000); }
@@ -334,14 +356,48 @@ export default function NutritionInputV2({ userId, onLog }: Props) {
       <input ref={fileRef} type="file" accept="image/*" onChange={handlePhoto} className="hidden" />
       <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handlePhoto} className="hidden" />
 
-      {/* Quick-log favorites */}
-      {!pending && !loading && recentMeals.length > 0 && (
+      {/* Favorites — one-tap re-log */}
+      {!pending && !loading && favorites.length > 0 && (
         <div className="flex gap-1 flex-wrap">
-          {recentMeals.map((meal, i) => (
-            <button key={i} onClick={() => { setText(meal); }} className="text-[8px] px-2 py-1 border border-zinc-700 bg-zinc-800 text-zinc-400 hover:text-white rounded-sm truncate max-w-[120px]">
-              {meal}
+          {favorites.map(fav => (
+            <button
+              key={fav.id}
+              onClick={() => {
+                setLoggedFromFavorite(true);
+                setPending({ protein: fav.total_protein, carbs: fav.total_carbs, fat: fav.total_fat, calories: fav.total_calories, items: fav.items, _favoriteId: fav.id } as any);
+                setMealTag(fav.meal_tag || getAutoMealTag());
+              }}
+              onContextMenu={async (e) => {
+                e.preventDefault();
+                if (confirm(`Remove "${fav.name}" from favorites?`)) {
+                  await deleteMealFavoriteAction(userId, fav.id);
+                  setFavorites(prev => prev.filter(f => f.id !== fav.id));
+                }
+              }}
+              className="text-[8px] px-2 py-1 border border-zinc-700 bg-zinc-800 text-zinc-400 hover:text-white rounded-sm truncate max-w-[120px]"
+            >
+              ★ {fav.name}
             </button>
           ))}
+        </div>
+      )}
+
+      {/* Save to favorites prompt */}
+      {showSavePrompt && lastLoggedMeal && (
+        <div className={`w-full border ${colors.border} bg-zinc-800/50 p-2 flex items-center gap-2`}>
+          <button
+            onClick={async () => {
+              await saveMealFavoriteAction(userId, lastLoggedMeal.name, lastLoggedMeal.items, lastLoggedMeal.totals, lastLoggedMeal.mealTag);
+              setShowSavePrompt(false);
+              setLastLoggedMeal(null);
+              fetchProgress();
+            }}
+            className="flex items-center gap-1 flex-1"
+          >
+            <span className="text-sm">★</span>
+            <span className="text-[10px] text-amber-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>Save &ldquo;{lastLoggedMeal.name.slice(0, 25)}&rdquo; to favorites</span>
+          </button>
+          <button onClick={() => { setShowSavePrompt(false); setLastLoggedMeal(null); }} className="text-[9px] text-zinc-600 px-1">✕</button>
         </div>
       )}
 
