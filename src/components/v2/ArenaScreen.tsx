@@ -12,6 +12,7 @@ import CampaignModal from './CampaignModal';
 import DuelModal from './DuelModal';
 import QRInviteModal from './QRInviteModal';
 import PartyStatusStrip from './PartyStatusStrip';
+import PartyDailyActivity from './PartyDailyActivity';
 
 interface ArenaScreenProps {
   userId: string;
@@ -435,6 +436,9 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
 
       {/* Party Status */}
       <PartyStatusStrip userId={userId} />
+
+      {/* Party Daily Activity */}
+      <PartyDailyActivity userId={userId} />
 
       {/* Welcome card for brand-new users */}
       {!groupId && !campaign && activeDuels.length === 0 && bounties.length === 0 && !localStorage.getItem('arena_welcomed') && (
