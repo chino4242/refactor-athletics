@@ -353,25 +353,25 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
           setShowDailySummary(true);
         }
 
-        // Guild Quest failure rally: check for recently failed quest user hasn't seen
+        // Guild Quest failure rally: check for recently expired (failed) quest user hasn't seen
         try {
           const { createClient: gcRally } = await import('@/utils/supabase/client');
           const sbRally = gcRally();
           const { data: myGroup } = await sbRally.from('group_members').select('group_id').eq('user_id', userId).limit(1);
           if (myGroup?.[0]) {
             const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString();
-            const { data: failedQuests } = await sbRally.from('group_challenges')
-              .select('id, name, status, completed_at')
+            const { data: expiredQuests } = await sbRally.from('group_challenges')
+              .select('id, name, status, end_date')
               .eq('group_id', myGroup[0].group_id)
-              .eq('status', 'failed')
-              .gte('completed_at', sevenDaysAgo)
-              .order('completed_at', { ascending: false })
+              .eq('status', 'expired')
+              .gte('end_date', new Date(Date.now() - 7 * 86400000).toLocaleDateString('en-CA'))
+              .order('end_date', { ascending: false })
               .limit(1);
-            if (failedQuests?.[0]) {
-              const rallyKey = `quest_rally_seen_${failedQuests[0].id}`;
+            if (expiredQuests?.[0]) {
+              const rallyKey = `quest_rally_seen_${expiredQuests[0].id}`;
               if (!localStorage.getItem(rallyKey)) {
                 localStorage.setItem(rallyKey, '1');
-                setQuestRally(failedQuests[0].name);
+                setQuestRally(expiredQuests[0].name);
               }
             }
           }
