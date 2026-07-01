@@ -941,6 +941,9 @@ function ExerciseDetailSheet({ exerciseId, userId, exercises, onClose, colors, c
   const [currentValue, setCurrentValue] = useState(0);
   const [unit, setUnit] = useState('lbs');
   const [bodyweight, setBodyweight] = useState(180);
+  const [userAge, setUserAge] = useState(30);
+  const [isXBW, setIsXBW] = useState(false);
+  const [xbwThresholds, setXbwThresholds] = useState<number[]>([]);
   const ex = exercises.find((e: any) => e.exerciseId === exerciseId);
 
   useEffect(() => {
@@ -971,17 +974,20 @@ function ExerciseDetailSheet({ exerciseId, userId, exercises, onClose, colors, c
         // Find the correct age bracket for the user
         const { data: userProfile } = await supabase.from('users').select('age, sex').eq('id', userId).single();
         const userAge = userProfile?.age || 30;
+        setUserAge(userAge);
         const sexKey = (userProfile?.sex || 'male').toLowerCase() === 'female' ? 'female' : 'male';
         const sexBrackets = standards.brackets[sexKey] || standards.brackets.male || [];
         const bracket = sexBrackets.find((b: any) => userAge >= (b.min || 0) && userAge <= (b.max || 100)) || sexBrackets[0];
         if (!bracket?.levels) { setThresholds([]); return; }
         const levels = bracket.levels;
-        const isXBW = standards.unit === 'xBW';
+        const isXBWunit = standards.unit === 'xBW';
+        setIsXBW(isXBWunit);
+        if (isXBWunit) setXbwThresholds(levels.map((l: number) => l));
         const isTime = standards.unit?.toLowerCase() === 'sec' || standards.unit?.toLowerCase() === 'seconds' || standards.scoring === 'lower_is_better';
         const isReps = standards.unit === 'reps' || standards.unit === 'Reps';
         const isLowerBetter = standards.scoring === 'lower_is_better';
         setUnit(isTime ? (isLowerBetter ? 'time-lower' : 'time') : isReps ? 'reps' : 'lbs');
-        setThresholds(levels.map((l: number) => isXBW ? Math.round(l * bw) : Math.round(l)));
+        setThresholds(levels.map((l: number) => isXBWunit ? Math.round(l * bw) : Math.round(l)));
       }
 
       // Get recent history
@@ -1042,6 +1048,25 @@ function ExerciseDetailSheet({ exerciseId, userId, exercises, onClose, colors, c
           {thresholds.length > 0 && (
             <div className="space-y-1">
               <p className="text-[8px] text-zinc-500 uppercase" style={{ fontFamily: "var(--font-pixel), monospace" }}>THRESHOLDS</p>
+
+              {/* Context: explain how thresholds are calculated */}
+              <div className="px-2 py-2 bg-zinc-800/50 border border-zinc-800 mb-2">
+                <p className="text-[8px] text-zinc-400 leading-relaxed">
+                  {isXBW ? (
+                    <>Based on your weight ({bodyweight} lbs) and age ({userAge}). Thresholds are multiples of your bodyweight — e.g., {xbwThresholds[(ex?.level || 0)]?.toFixed(2)}× = {thresholds[(ex?.level || 0)]} lbs estimated 1RM.</>
+                  ) : unit === 'reps' ? (
+                    <>Based on your age ({userAge}). Hit the rep count in a single set to rank up.</>
+                  ) : (unit === 'time' || unit === 'time-lower') ? (
+                    <>Based on your age ({userAge}). {unit === 'time-lower' ? 'Beat the target time to rank up.' : 'Hold longer than the target to rank up.'}</>
+                  ) : null}
+                </p>
+                {isXBW && currentValue > 0 && (
+                  <p className="text-[8px] text-zinc-500 mt-1">
+                    Your best estimated 1RM: <span className="text-white">{Math.round(currentValue)} lbs</span> (calculated from your heaviest set using the Epley formula: weight × (1 + reps÷30))
+                  </p>
+                )}
+              </div>
+
               {thresholds.map((t, i) => {
                 const level = i + 1;
                 const achieved = (ex?.level || 0) >= level;

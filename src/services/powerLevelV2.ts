@@ -142,7 +142,7 @@ export async function getPowerLevelV2(userId: string): Promise<PowerLevelV2Data>
     if (unit === 'xbw') {
       const targetLbs = Math.round(nextThreshold * userBw);
       const diff = targetLbs - Math.round(ex.bestValue || 0);
-      gap = diff > 0 ? `${diff} lbs to ${targetLbs}` : 'Ready!';
+      gap = diff > 0 ? `est. 1RM ${Math.round(ex.bestValue || 0)} → ${targetLbs}` : 'Ready!';
     } else if (unit === 'sec' && catItem.standards.scoring === 'lower_is_better') {
       const diff = Math.round((ex.bestValue || 9999) - nextThreshold);
       const targetSec = Math.round(nextThreshold);
