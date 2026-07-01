@@ -6,6 +6,7 @@ import { getV2Theme } from '@/data/v2themes';
 import PixelBox, { ScreenWrapper } from './PixelBox';
 import ActivityConfirmModal from './ActivityConfirmModal';
 import { TrainSkeleton } from './Skeletons';
+import DailyWorkoutReport from './DailyWorkoutReport';
 
 interface TrainScreenProps {
   userId: string;
@@ -549,6 +550,14 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
             </a>
           ))}
         </div>
+      </PixelBox>
+
+      {/* Daily Workout Report — for WHOOP upload */}
+      <PixelBox className="p-4 mb-4">
+        <p className={`text-[10px] ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          📋 WORKOUT REPORT
+        </p>
+        <DailyWorkoutReport userId={userId} />
       </PixelBox>
     </ScreenWrapper>
   );
