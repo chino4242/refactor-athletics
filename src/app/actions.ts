@@ -788,3 +788,15 @@ export async function deleteMealFavoriteAction(userId: string, favoriteId: strin
     if (error) throw new Error(`Error deleting favorite: ${error.message}`);
     return { success: true };
 }
+
+export async function deleteMealByTimestampAction(userId: string, timestamp: number) {
+    const supabase = await createClient();
+    const { error } = await supabase
+        .from('nutrition_logs')
+        .delete()
+        .eq('user_id', userId)
+        .gte('timestamp', timestamp)
+        .lte('timestamp', timestamp + 5);
+    if (error) throw new Error(`Error deleting meal: ${error.message}`);
+    return { success: true };
+}

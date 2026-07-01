@@ -5,6 +5,7 @@ import { useTheme } from '@/context/ThemeContext';
 import { getV2Theme } from '@/data/v2themes';
 import PixelBox, { ScreenWrapper } from './PixelBox';
 import NutritionInputV2 from './NutritionInputV2';
+import TodaysMeals from './TodaysMeals';
 
 interface Props {
   userId: string;
@@ -89,6 +90,21 @@ export default function FuelScreen({ userId }: Props) {
       <PixelBox className="p-4 mb-4">
         <NutritionInputV2 userId={userId} onLog={() => setRefreshKey(k => k + 1)} />
       </PixelBox>
+
+      {/* Food Journal */}
+      <TodaysMeals
+        userId={userId}
+        refreshKey={refreshKey}
+        onDelete={(meal) => {
+          setTotals(prev => ({
+            ...prev,
+            protein: Math.max(0, prev.protein - meal.protein),
+            carbs: Math.max(0, prev.carbs - meal.carbs),
+            fat: Math.max(0, prev.fat - meal.fat),
+            calsIn: Math.max(0, prev.calsIn - meal.calories),
+          }));
+        }}
+      />
     </ScreenWrapper>
   );
 }

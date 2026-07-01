@@ -244,11 +244,12 @@ export default function NutritionInputV2({ userId, onLog }: Props) {
       calsIn: prev.calsIn + pending.calories,
     }));
 
+    const sharedTs = Math.floor(Date.now() / 1000);
     await Promise.all([
-      logHabitAction(userId, 'macro_protein', pending.protein, undefined, mealTag),
-      logHabitAction(userId, 'macro_carbs', pending.carbs, undefined, mealTag),
-      logHabitAction(userId, 'macro_fat', pending.fat, undefined, mealTag),
-      logHabitAction(userId, 'macro_calories', pending.calories, undefined, mealTag),
+      logHabitAction(userId, 'macro_protein', pending.protein, undefined, text.trim() || mealTag, sharedTs),
+      logHabitAction(userId, 'macro_carbs', pending.carbs, undefined, text.trim() || mealTag, sharedTs),
+      logHabitAction(userId, 'macro_fat', pending.fat, undefined, text.trim() || mealTag, sharedTs),
+      logHabitAction(userId, 'macro_calories', pending.calories, undefined, text.trim() || mealTag, sharedTs),
     ]);
 
     // If logged from a favorite, increment use_count
