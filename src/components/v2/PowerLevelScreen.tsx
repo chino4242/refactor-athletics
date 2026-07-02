@@ -263,6 +263,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
   const [avatarSex, setAvatarSex] = useState<'male' | 'female'>('male');
   const [showDailySummary, setShowDailySummary] = useState(false);
   const [questRally, setQuestRally] = useState<string | null>(null);
+  const [questRallyId, setQuestRallyId] = useState<string | null>(null);
   const [partyActivity, setPartyActivity] = useState<string | null>(null);
   const [narratorState, setNarratorState] = useState<{ streak: number; todayXp: number; dailyTarget: number; hasPrToday: boolean; missedYesterday: boolean }>({ streak: 0, todayXp: 0, dailyTarget: 0, hasPrToday: false, missedYesterday: false });
   const [thresholdToast, setThresholdToast] = useState(false);
@@ -359,19 +360,19 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
           const sbRally = gcRally();
           const { data: myGroup } = await sbRally.from('group_members').select('group_id').eq('user_id', userId).limit(1);
           if (myGroup?.[0]) {
-            const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+            const twoDaysAgo = new Date(Date.now() - 2 * 86400000).toLocaleDateString('en-CA');
             const { data: expiredQuests } = await sbRally.from('group_challenges')
-              .select('id, name, status, end_date')
+              .select('id, name, status, end_date, results')
               .eq('group_id', myGroup[0].group_id)
               .eq('status', 'expired')
-              .gte('end_date', new Date(Date.now() - 7 * 86400000).toLocaleDateString('en-CA'))
+              .gte('end_date', twoDaysAgo)
               .order('end_date', { ascending: false })
               .limit(1);
             if (expiredQuests?.[0]) {
-              const rallyKey = `quest_rally_seen_${expiredQuests[0].id}`;
-              if (!localStorage.getItem(rallyKey)) {
-                localStorage.setItem(rallyKey, '1');
+              const seenBy: string[] = expiredQuests[0].results?.rally_seen_by || [];
+              if (!seenBy.includes(userId)) {
                 setQuestRally(expiredQuests[0].name);
+                setQuestRallyId(expiredQuests[0].id);
               }
             }
           }
@@ -519,7 +520,22 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
 
       {/* Guild Quest failure rally */}
       {questRally && !showDailySummary && (
-        <GuildQuestRally questName={questRally} onDismiss={() => setQuestRally(null)} />
+        <GuildQuestRally questName={questRally} onDismiss={async () => {
+          setQuestRally(null);
+          if (questRallyId) {
+            try {
+              const { createClient: gcDismiss } = await import('@/utils/supabase/client');
+              const sbDismiss = gcDismiss();
+              const { data: current } = await sbDismiss.from('group_challenges').select('results').eq('id', questRallyId).single();
+              const results = current?.results || {};
+              const seenBy: string[] = results.rally_seen_by || [];
+              if (!seenBy.includes(userId)) {
+                seenBy.push(userId);
+                await sbDismiss.from('group_challenges').update({ results: { ...results, rally_seen_by: seenBy } }).eq('id', questRallyId);
+              }
+            } catch {}
+          }
+        }} />
       )}
 
       {/* Health Sync Status Banner */}
