@@ -38,22 +38,25 @@ export default function BestiaryRadar({ exercises, accentColor = '#f97316' }: Pr
   }
 
   const axisValues = RADAR_AXES.map(axis => {
-    const { sum, count } = axisTotals[axis];
-    if (count === 0) return 0;
-    return sum / count; // 0.0 to 5.0
+    const { sum } = axisTotals[axis];
+    return sum; // Sum of levels per axis (shows where PL comes from)
   });
+
+  // Max possible per axis = count × 5 (all Lv5)
+  const axisMax = RADAR_AXES.map(axis => axisTotals[axis].count * 5);
+  const globalMax = Math.max(...axisMax, 1); // Use the largest axis as the scale
 
   // SVG geometry: 4 axes at 90° intervals (top, right, bottom, left)
   // Axes order: STR(top), END(right), PWR(bottom), MOB(left)
   const cx = 50;
   const cy = 50;
-  const maxR = 38; // max radius for level 5
+  const maxR = 38; // max radius
 
   // Angles: STR=top(-90°), END=right(0°), PWR=bottom(90°), MOB=left(180°)
   const angles = [-90, 0, 90, 180];
 
   const getPoint = (angleIdx: number, value: number) => {
-    const r = (value / 5) * maxR;
+    const r = (value / globalMax) * maxR;
     const rad = (angles[angleIdx] * Math.PI) / 180;
     return {
       x: cx + r * Math.cos(rad),
@@ -69,20 +72,21 @@ export default function BestiaryRadar({ exercises, accentColor = '#f97316' }: Pr
     })
     .join(' ');
 
-  // Grid rings at level 1, 3, 5
-  const gridLevels = [1, 3, 5];
+  // Grid rings at 33% and 66% of max
+  const gridLevels = [Math.round(globalMax * 0.33), Math.round(globalMax * 0.66), globalMax];
 
-  // Axis labels with values
-  const labelPositions: { axis: string; x: number; y: number; anchor: 'start' | 'middle' | 'end' }[] = [
-    { axis: 'STR', x: cx, y: 6, anchor: 'middle' },
-    { axis: 'END', x: 96, y: cy + 3, anchor: 'start' },
-    { axis: 'PWR', x: cx, y: 97, anchor: 'middle' },
-    { axis: 'MOB', x: 4, y: cy + 3, anchor: 'end' },
+  // Axis labels with values - positioned outside the chart area
+  // STR (top) and PWR (bottom) horizontal, END (right) and MOB (left) vertical
+  const labelPositions: { axis: string; fullName: string; x: number; y: number; anchor: 'start' | 'middle' | 'end'; rotate?: number }[] = [
+    { axis: 'STR', fullName: 'Strength', x: cx, y: -4, anchor: 'middle' },
+    { axis: 'END', fullName: 'Endurance', x: 97, y: cx, anchor: 'middle', rotate: 90 },
+    { axis: 'PWR', fullName: 'Power', x: cx, y: 108, anchor: 'middle' },
+    { axis: 'MOB', fullName: 'Mobility', x: 3, y: cx, anchor: 'middle', rotate: -90 },
   ];
 
   return (
     <div className="flex justify-center py-2">
-      <svg viewBox="0 0 100 100" className="w-32 h-32" preserveAspectRatio="xMidYMid meet">
+      <svg viewBox="-15 -15 130 130" className="w-44 h-44" preserveAspectRatio="xMidYMid meet">
         {/* Grid rings */}
         {gridLevels.map(level => {
           const r = (level / 5) * maxR;
@@ -145,17 +149,29 @@ export default function BestiaryRadar({ exercises, accentColor = '#f97316' }: Pr
 
         {/* Labels */}
         {labelPositions.map((lp, i) => (
-          <text
-            key={lp.axis}
-            x={lp.x}
-            y={lp.y}
-            fontSize="5"
-            fill="#71717a"
-            textAnchor={lp.anchor}
-            style={{ fontFamily: 'var(--font-pixel), monospace' }}
-          >
-            {lp.axis} {axisValues[i].toFixed(1)}
-          </text>
+          <g key={lp.axis} transform={lp.rotate ? `rotate(${lp.rotate}, ${lp.x}, ${lp.y})` : undefined}>
+            <text
+              x={lp.x}
+              y={lp.y}
+              fontSize="5.5"
+              fill="#e4e4e7"
+              textAnchor={lp.anchor}
+              fontWeight="bold"
+              style={{ fontFamily: 'var(--font-pixel), monospace' }}
+            >
+              {lp.fullName}
+            </text>
+            <text
+              x={lp.x}
+              y={lp.y + 7}
+              fontSize="5"
+              fill={accentColor}
+              textAnchor={lp.anchor}
+              style={{ fontFamily: 'var(--font-pixel), monospace' }}
+            >
+              {axisValues[i].toFixed(1)}
+            </text>
+          </g>
         ))}
       </svg>
     </div>

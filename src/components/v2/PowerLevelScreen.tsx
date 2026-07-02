@@ -12,6 +12,7 @@ import CreatureNarrator from './CreatureNarrator';
 import DailySummary from './DailySummary';
 import GuildQuestRally from './GuildQuestRally';
 import BestiaryRadar from './BestiaryRadar';
+import PathSwitchSheet from './PathSwitchSheet';
 
 interface PowerLevelScreenProps {
   userId: string;
@@ -262,6 +263,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
   const [showLoreLadder, setShowLoreLadder] = useState(false);
   const [showLegacyInfo, setShowLegacyInfo] = useState(false);
   const [showXray, setShowXray] = useState(false);
+  const [showPathSwitch, setShowPathSwitch] = useState(false);
   const [avatarSex, setAvatarSex] = useState<'male' | 'female'>('male');
   const [showDailySummary, setShowDailySummary] = useState(false);
   const [questRally, setQuestRally] = useState<string | null>(null);
@@ -683,9 +685,14 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
                 {currentTheme === 'athlete' ? 'RANKED EXERCISES' : 'BESTIARY'}
               </p>
               {/* Path label */}
-              <p className="text-[8px] text-zinc-500 mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-                PATH: {(data.userPath || 'hybrid').toUpperCase()} · 8 core + 4 specialty
-              </p>
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                  PATH: {(data.userPath || 'hybrid').toUpperCase()} · 8 core + 4 specialty
+                </p>
+                <button onClick={(e) => { e.stopPropagation(); setShowPathSwitch(true); }} className={`text-[7px] px-2 py-0.5 border ${colors.border} ${colors.secondary} bg-zinc-800`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                  SWITCH
+                </button>
+              </div>
               {currentTheme !== 'athlete' && (
                 <p className="text-[8px] text-zinc-500 mb-2">
                   {data.exercises.filter(ex => ex.level > 0 && !ex.expired).length}/12 Allied
@@ -722,9 +729,19 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
                   const state = ex.level === 0 ? 'unmet' : ex.expired ? 'dormant' : 'allied';
                   const spriteTier = ex.level >= 4 ? 2 : ex.level >= 2 ? 1 : 0;
                   const spriteSrc = `/enemies/${currentTheme}/${normalized}_t${spriteTier}.png`;
+                  // State pips
+                  const isExpiring = data.expiringExercises.some(e => e.exerciseId === ex.exerciseId);
+                  const isClosest = data.closestRankUps.some(r => r.exerciseId === ex.exerciseId);
                   return (
                   <div key={ex.exerciseId} onClick={(e) => { e.stopPropagation(); setSelectedExercise(ex.exerciseId); }} className="flex flex-col items-center gap-1 cursor-pointer">
                     <div className={`relative w-8 h-8 border ${borderClass} ${state === 'dormant' ? 'opacity-40' : state === 'unmet' ? 'opacity-25' : ''} flex items-center justify-center bg-zinc-800 overflow-hidden`}>
+                      {/* State pip */}
+                      {isExpiring && (
+                        <span className="absolute top-0 left-0.5 text-[6px] text-amber-400 z-10">⚠</span>
+                      )}
+                      {!isExpiring && isClosest && (
+                        <span className="absolute top-0 left-0.5 text-[6px] text-green-400 z-10">↑</span>
+                      )}
                       {currentTheme !== 'athlete' ? (
                         <img src={spriteSrc} alt="" className="w-7 h-7" style={{ imageRendering: 'pixelated' }} onError={(e) => { (e.target as HTMLImageElement).src = `/themes/${currentTheme}/v2/level${ex.level}.png`; }} />
                       ) : (
@@ -830,44 +847,6 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
       )}
 
       {/* Player Level merged into PL box below */}
-
-      {/* ─── Detail Sections ─── */}
-      {(data.expiringExercises.length > 0 || data.recentPRs.length > 0) && (
-        <div className="border-t border-zinc-800 mt-2 mb-4 pt-1">
-          <p className="text-[7px] text-zinc-700 text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>DETAILS</p>
-        </div>
-      )}
-
-      {/* Expiring exercises */}
-      {data.expiringExercises.length > 0 && (
-        <PixelBox className="p-4 mb-4">
-          <p className="text-[10px] text-amber-400 mb-3 uppercase" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-            {currentTheme === 'athlete' ? '⚠ EXPIRING' : '⚠ GROWING RESTLESS'}
-          </p>
-          <div className="space-y-2">
-            {data.expiringExercises.map((ex) => {
-              const normalized = ex.exerciseId.replace(/^(barbell|dumbbell|smith_machine|cable|machine)_/, '');
-              const creature = currentTheme !== 'athlete' ? ENEMY_NAMES_PL[currentTheme]?.[normalized] : null;
-              return (
-              <div key={ex.name}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <img src={`/themes/${currentTheme}/v2/level${ex.level}.png`} alt={`Level ${ex.level}`} className="w-6 h-6" style={{ imageRendering: 'pixelated' }} />
-                    <span className="text-xs text-zinc-200">{ex.name}</span>
-                  </div>
-                  <span className={`text-[8px] ${ex.daysLeft <= 3 ? 'text-red-400' : ex.daysLeft <= 7 ? 'text-amber-400' : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>{ex.daysLeft}D</span>
-                </div>
-                {creature && (
-                  <p className="text-[8px] text-zinc-600 italic ml-8 mt-0.5">
-                    {ex.daysLeft <= 3 ? `${creature} is drifting. Prove yourself again.` : `${creature} grows impatient. Don't let it sleep.`}
-                  </p>
-                )}
-              </div>
-              );
-            })}
-          </div>
-        </PixelBox>
-      )}
 
       {/* Physique Rank (below fold) */}
       {physique && (
@@ -977,6 +956,15 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
       {selectedExercise && (
         <ExerciseDetailSheet exerciseId={selectedExercise} userId={userId} exercises={data.exercises} onClose={() => setSelectedExercise(null)} colors={colors} currentTheme={currentTheme} />
       )}
+      {showPathSwitch && (
+        <PathSwitchSheet
+          userId={userId}
+          currentPath={data.userPath || 'hybrid'}
+          exercises={data.exercises}
+          onConfirm={() => { setShowPathSwitch(false); setRefreshKey(k => k + 1); }}
+          onClose={() => setShowPathSwitch(false)}
+        />
+      )}
     </ScreenWrapper>
   );
 }
@@ -1056,95 +1044,140 @@ function ExerciseDetailSheet({ exerciseId, userId, exercises, onClose, colors, c
   };
 
   return (
-    <div className="fixed inset-0 z-50" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/70" />
-      <div className="absolute bottom-0 left-0 right-0 max-h-[80vh] bg-zinc-900 border-t-2 border-zinc-700 rounded-t-lg overflow-y-auto overscroll-contain" onClick={e => e.stopPropagation()}>
-        <div className="p-4 space-y-3">
-          {/* Header */}
-          <div className="text-center">
-            {/* Creature sprite */}
-            {currentTheme !== 'athlete' && (() => {
-              const normalized = exerciseId.replace(/^(barbell|dumbbell|smith_machine|cable|machine)_/, '');
-              const spriteTier = (ex?.level || 0) >= 4 ? 2 : (ex?.level || 0) >= 2 ? 1 : 0;
-              return (
-                <div className="w-24 h-24 mx-auto mb-2 rounded-lg bg-zinc-950 border border-zinc-800 flex items-center justify-center overflow-hidden">
-                  <img src={`/enemies/${currentTheme}/${normalized}_t${spriteTier}.png`} alt="" className="w-20 h-20" style={{ imageRendering: 'pixelated' }} />
-                </div>
-              );
-            })()}
-            <p className="text-sm text-white font-medium">{ex?.name || exerciseId.replace(/_/g, ' ')}</p>
-            {(() => {
-              const normalized = exerciseId.replace(/^(barbell|dumbbell|smith_machine|cable|machine)_/, '');
-              const creature = ENEMY_NAMES_PL[currentTheme]?.[normalized];
-              const state = (ex?.level || 0) === 0 ? 'Unmet' : ex?.expired ? 'Dormant' : 'Allied';
-              if (creature && currentTheme !== 'athlete') return (
-                <p className="text-[9px] text-zinc-400 italic mt-0.5">{creature} · {state}</p>
-              );
-              return null;
-            })()}
-            <p className={`text-[10px] ${levelColors[ex?.level || 0]} mt-1`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-              LV {ex?.level || 0}
-            </p>
-          </div>
+    <div className="fixed inset-0 z-50 bg-zinc-950 overflow-y-auto overscroll-contain" onClick={onClose}>
+      <div className="min-h-full p-4 space-y-4" onClick={e => e.stopPropagation()}>
+        {/* Close button */}
+        <button onClick={onClose} className="absolute top-4 right-4 text-zinc-500 text-lg z-10">✕</button>
 
-          {/* Train button */}
-          <a href={`/train/active?exercise=${exerciseId}`} className={`w-full block text-center text-[10px] py-3 border ${colors.primary} ${colors.secondary} bg-zinc-800 hover:bg-zinc-700 transition-colors`} style={{ fontFamily: "var(--font-pixel), monospace" }}>▸ TRAIN</a>
-
-          {/* Threshold Table */}
-          {thresholds.length > 0 && (
-            <div className="space-y-1">
-              <p className="text-[8px] text-zinc-500 uppercase" style={{ fontFamily: "var(--font-pixel), monospace" }}>THRESHOLDS</p>
-
-              {/* Context: explain how thresholds are calculated */}
-              <div className="px-2 py-2 bg-zinc-800/50 border border-zinc-800 mb-2">
-                <p className="text-[8px] text-zinc-400 leading-relaxed">
-                  {isXBW ? (
-                    <>Based on your weight ({bodyweight} lbs) and age ({userAge}). Thresholds are multiples of your bodyweight — e.g., {xbwThresholds[(ex?.level || 0)]?.toFixed(2)}× = {thresholds[(ex?.level || 0)]} lbs estimated 1RM.</>
-                  ) : unit === 'reps' ? (
-                    <>Based on your age ({userAge}). Hit the rep count in a single set to rank up.</>
-                  ) : (unit === 'time' || unit === 'time-lower') ? (
-                    <>Based on your age ({userAge}). {unit === 'time-lower' ? 'Beat the target time to rank up.' : 'Hold longer than the target to rank up.'}</>
-                  ) : null}
-                </p>
-                {isXBW && currentValue > 0 && (
-                  <p className="text-[8px] text-zinc-500 mt-1">
-                    Your best estimated 1RM: <span className="text-white">{Math.round(currentValue)} lbs</span> (calculated from your heaviest set using the Epley formula: weight × (1 + reps÷30))
-                  </p>
-                )}
+        {/* Header */}
+        <div className="text-center pt-2">
+          {currentTheme !== 'athlete' && (() => {
+            const normalized = exerciseId.replace(/^(barbell|dumbbell|smith_machine|cable|machine)_/, '');
+            const spriteTier = (ex?.level || 0) >= 4 ? 2 : (ex?.level || 0) >= 2 ? 1 : 0;
+            return (
+              <div className="w-24 h-24 mx-auto mb-2 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden">
+                <img src={`/enemies/${currentTheme}/${normalized}_t${spriteTier}.png`} alt="" className="w-20 h-20" style={{ imageRendering: 'pixelated' }} />
               </div>
+            );
+          })()}
+          <p className="text-sm text-white font-medium">{ex?.name || exerciseId.replace(/_/g, ' ')}</p>
+          {(() => {
+            const normalized = exerciseId.replace(/^(barbell|dumbbell|smith_machine|cable|machine)_/, '');
+            const creature = ENEMY_NAMES_PL[currentTheme]?.[normalized];
+            const state = (ex?.level || 0) === 0 ? 'Unmet' : ex?.expired ? 'Dormant' : 'Allied';
+            if (creature && currentTheme !== 'athlete') return (
+              <p className="text-[9px] text-zinc-400 italic mt-0.5">{creature} · {state}</p>
+            );
+            return null;
+          })()}
+          <p className={`text-[10px] ${levelColors[ex?.level || 0]} mt-1`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            LV {ex?.level || 0}
+          </p>
+        </div>
 
-              {thresholds.map((t, i) => {
-                const level = i + 1;
-                const achieved = (ex?.level || 0) >= level;
-                const isNext = (ex?.level || 0) === level - 1;
-                const gap = isNext && currentValue > 0 ? (unit === 'time-lower' ? currentValue - t : t - currentValue) : null;
-                return (
-                  <div key={i} className={`flex items-center justify-between px-2 py-1 rounded-sm ${achieved ? 'bg-zinc-800/50' : ''} ${isNext ? `border ${colors.border}` : ''}`}>
+        {/* YOUR NUMBERS section */}
+        {currentValue > 0 && (
+          <div className={`border ${colors.border} bg-zinc-900 p-3 space-y-1.5`}>
+            <p className="text-[8px] text-zinc-500 uppercase" style={{ fontFamily: "var(--font-pixel), monospace" }}>YOUR NUMBERS</p>
+            {isXBW ? (
+              <>
+                <div className="flex justify-between text-[10px]">
+                  <span className="text-zinc-400">Bodyweight</span>
+                  <span className="text-white">{bodyweight} lbs</span>
+                </div>
+                <p className="text-[7px] text-zinc-600">Thresholds scale with your bodyweight — update weight in profile if changed.</p>
+                <div className="flex justify-between text-[10px]">
+                  <span className="text-zinc-400">Your best (est. 1RM)</span>
+                  <span className="text-white">{Math.round(currentValue)} lbs ({(currentValue / bodyweight).toFixed(2)}×BW)</span>
+                </div>
+                {(ex?.level || 0) < 5 && thresholds[(ex?.level || 0)] && (
+                  <>
+                    <div className="border-t border-zinc-800 my-1.5" />
+                    <div className="flex justify-between text-[10px]">
+                      <span className="text-zinc-400">Next level needs</span>
+                      <span className={colors.secondary}>{xbwThresholds[(ex?.level || 0)]?.toFixed(2)}×BW = {thresholds[(ex?.level || 0)]} lbs</span>
+                    </div>
+                    <p className="text-[9px] text-zinc-300 mt-1">
+                      Hit: <span className={`${colors.secondary} font-medium`}>{Math.round(thresholds[(ex?.level || 0)] / (1 + 5/30))}×5</span> or <span className={`${colors.secondary} font-medium`}>{Math.round(thresholds[(ex?.level || 0)] / (1 + 8/30))}×8</span>
+                    </p>
+                  </>
+                )}
+              </>
+            ) : (
+              <>
+                <div className="flex justify-between text-[10px]">
+                  <span className="text-zinc-400">Your best</span>
+                  <span className="text-white">{formatValue(currentValue)}</span>
+                </div>
+                {(ex?.level || 0) < 5 && thresholds[(ex?.level || 0)] && (
+                  <div className="flex justify-between text-[10px]">
+                    <span className="text-zinc-400">Next level needs</span>
+                    <span className={colors.secondary}>{formatValue(thresholds[(ex?.level || 0)])}</span>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Train button */}
+        <a href={`/train/active?exercise=${exerciseId}`} className={`w-full block text-center text-[10px] py-3 border ${colors.primary} ${colors.secondary} bg-zinc-800 hover:bg-zinc-700 transition-colors`} style={{ fontFamily: "var(--font-pixel), monospace" }}>▸ TRAIN</a>
+
+        {/* Threshold Table with progress bar */}
+        {thresholds.length > 0 && (
+          <div className="space-y-1">
+            <p className="text-[8px] text-zinc-500 uppercase" style={{ fontFamily: "var(--font-pixel), monospace" }}>THRESHOLDS</p>
+
+            {thresholds.map((t, i) => {
+              const level = i + 1;
+              const achieved = (ex?.level || 0) >= level;
+              const isNext = (ex?.level || 0) === level - 1;
+              // Progress bar: show % between previous threshold and next threshold
+              const prevThreshold = i > 0 ? thresholds[i - 1] : 0;
+              const range = t - prevThreshold;
+              const progress = isNext && currentValue > 0 && range > 0
+                ? Math.min(Math.max(((unit === 'time-lower' ? prevThreshold - currentValue : currentValue - prevThreshold) / range) * 100, 0), 100)
+                : null;
+
+              return (
+                <div key={i}>
+                  <div className={`flex items-center justify-between px-2 py-1.5 rounded-sm ${achieved ? 'bg-zinc-800/50' : ''} ${isNext ? `border ${colors.border}` : ''}`}>
                     <span className={`text-[10px] ${achieved ? levelColors[level] : 'text-zinc-600'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                       {achieved ? '✓' : '○'} LV {level}
                     </span>
                     <div className="flex items-center gap-2">
-                      <span className={`text-[10px] ${achieved ? 'text-zinc-300' : 'text-zinc-600'}`}>{formatValue(t)}</span>
-                      {isNext && gap && gap > 0 && <span className={`text-[8px] ${colors.secondary}`}>{unit === 'time-lower' ? `${formatValue(gap)} faster` : unit === 'time' ? `+${formatValue(gap)} more` : unit === 'reps' ? `+${gap} more` : `+${gap} lbs`}</span>}
+                      <span className={`text-[10px] ${achieved ? 'text-zinc-300' : 'text-zinc-600'}`}>
+                        {formatValue(t)}
+                        {isXBW && <span className="text-[8px] text-zinc-600 ml-1">({xbwThresholds[i]?.toFixed(2)}×)</span>}
+                      </span>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          )}
+                  {/* Progress bar for next level */}
+                  {isNext && progress !== null && (
+                    <div className="mx-2 mt-1 mb-1">
+                      <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                        <div className={`h-full ${colors.barFill} rounded-full transition-all`} style={{ width: `${progress}%` }} />
+                      </div>
+                      <p className="text-[7px] text-zinc-600 text-right mt-0.5" style={{ fontFamily: "var(--font-pixel), monospace" }}>{Math.round(progress)}% → LV {level}</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
 
-          {/* Recent History */}
-          {history.length > 0 && (
-            <div>
-              <p className="text-[8px] text-zinc-500 uppercase mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>RECENT</p>
-              <p className="text-[10px] text-zinc-400">
-                {history.map(v => formatValue(v)).join(' → ')} {history.length >= 2 && (history[history.length - 1] > history[0] ? '↑' : history[history.length - 1] < history[0] ? '↓' : '→')}
-              </p>
-            </div>
-          )}
+        {/* Recent History */}
+        {history.length > 0 && (
+          <div>
+            <p className="text-[8px] text-zinc-500 uppercase mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>RECENT</p>
+            <p className="text-[10px] text-zinc-400">
+              {history.map(v => formatValue(v)).join(' → ')} {history.length >= 2 && (history[history.length - 1] > history[0] ? '↑' : history[history.length - 1] < history[0] ? '↓' : '→')}
+            </p>
+          </div>
+        )}
 
-          <button onClick={onClose} className="w-full text-center text-[8px] text-zinc-600 py-2">tap to close</button>
-        </div>
+        <div className="h-8" />
       </div>
     </div>
   );
