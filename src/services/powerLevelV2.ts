@@ -25,6 +25,7 @@ export interface PowerLevelV2Data {
   expiringExercises: RankedExercise[];
   closestRankUps: { name: string; exerciseId: string; currentLevel: number; gap: string }[];
   recentPRs: { name: string; value: string; date: string }[];
+  userPath: string;
 }
 
 export async function getPowerLevelV2(userId: string): Promise<PowerLevelV2Data> {
@@ -141,24 +142,43 @@ export async function getPowerLevelV2(userId: string): Promise<PowerLevelV2Data>
     let gap: string;
     if (unit === 'xbw') {
       const targetLbs = Math.round(nextThreshold * userBw);
-      const diff = targetLbs - Math.round(ex.bestValue || 0);
-      gap = diff > 0 ? `est. 1RM ${Math.round(ex.bestValue || 0)} → ${targetLbs}` : 'Ready!';
+      const currentLbs = Math.round(ex.bestValue || 0);
+      if (currentLbs === 0) { gap = 'untested'; }
+      else {
+        // Reverse Epley: find weight × reps combos that hit the target 1RM
+        // Epley: 1RM = weight × (1 + reps/30), so weight = 1RM / (1 + reps/30)
+        const w5 = Math.round(targetLbs / (1 + 5 / 30));
+        const w8 = Math.round(targetLbs / (1 + 8 / 30));
+        gap = `${w5}×5 or ${w8}×8`;
+      }
     } else if (unit === 'sec' && catItem.standards.scoring === 'lower_is_better') {
-      const diff = Math.round((ex.bestValue || 9999) - nextThreshold);
+      const currentSec = Math.round(ex.bestValue || 0);
       const targetSec = Math.round(nextThreshold);
-      const min = Math.floor(targetSec / 60);
-      const sec = targetSec % 60;
-      const targetStr = min > 0 ? `${min}:${String(sec).padStart(2, '0')}` : `${targetSec}s`;
-      gap = diff > 0 ? `need ${targetStr}` : 'Ready!';
+      if (currentSec === 0 || currentSec >= 9999) { gap = 'untested'; }
+      else {
+        const fmtTime = (s: number) => { const m = Math.floor(s / 60); const sec = s % 60; return m > 0 ? `${m}:${String(sec).padStart(2, '0')}` : `${s}s`; };
+        gap = `${fmtTime(currentSec)} → ${fmtTime(targetSec)}`;
+      }
     } else if (unit === 'sec') {
-      const diff = Math.round(nextThreshold - (ex.bestValue || 0));
-      gap = diff > 0 ? `need ${Math.round(nextThreshold)}s` : 'Ready!';
+      const currentSec = Math.round(ex.bestValue || 0);
+      const targetSec = Math.round(nextThreshold);
+      if (currentSec === 0) { gap = 'untested'; }
+      else {
+        const fmtTime = (s: number) => { const m = Math.floor(s / 60); const sec = s % 60; return m > 0 ? `${m}:${String(sec).padStart(2, '0')}` : `${s}s`; };
+        gap = `${fmtTime(currentSec)} → ${fmtTime(targetSec)}`;
+      }
     } else {
-      const diff = Math.round(nextThreshold - (ex.bestValue || 0));
-      gap = diff > 0 ? `need ${Math.round(nextThreshold)} reps` : 'Ready!';
+      const currentReps = Math.round(ex.bestValue || 0);
+      const targetReps = Math.round(nextThreshold);
+      if (currentReps === 0) { gap = 'untested'; }
+      else {
+        gap = `${currentReps} → ${targetReps} reps`;
+      }
     }
 
-    closestRankUps.push({ name: ex.name, exerciseId: ex.exerciseId, currentLevel: ex.level, gap });
+    if (gap !== 'untested') {
+      closestRankUps.push({ name: ex.name, exerciseId: ex.exerciseId, currentLevel: ex.level, gap });
+    }
   }
 
   // Sort by closest to ranking up (smallest gap first) — limit to 3
@@ -210,5 +230,6 @@ export async function getPowerLevelV2(userId: string): Promise<PowerLevelV2Data>
     expiringExercises,
     closestRankUps: closestRankUps.slice(0, 3),
     recentPRs,
+    userPath,
   };
 }

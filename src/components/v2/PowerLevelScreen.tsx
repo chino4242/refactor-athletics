@@ -11,6 +11,7 @@ import PushRegistration from './PushRegistration';
 import CreatureNarrator from './CreatureNarrator';
 import DailySummary from './DailySummary';
 import GuildQuestRally from './GuildQuestRally';
+import BestiaryRadar from './BestiaryRadar';
 
 interface PowerLevelScreenProps {
   userId: string;
@@ -23,6 +24,7 @@ interface PowerLevelData {
   expiringExercises: { exerciseId: string; name: string; level: number; daysLeft: number }[];
   closestRankUps: { name: string; exerciseId: string; currentLevel: number; gap: string }[];
   recentPRs: { name: string; value: string; date: string }[];
+  userPath: string;
 }
 
 const TIER_NAMES: Record<string, string[]> = {
@@ -287,9 +289,10 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
           })),
           closestRankUps: result.closestRankUps,
           recentPRs: result.recentPRs,
+          userPath: result.userPath,
         });
       } catch {
-        setData({ powerLevel: 0, maxPossible: 60, exercises: [], expiringExercises: [], closestRankUps: [], recentPRs: [] });
+        setData({ powerLevel: 0, maxPossible: 60, exercises: [], expiringExercises: [], closestRankUps: [], recentPRs: [], userPath: 'hybrid' });
       }
       // Fetch player level (single source of truth)
       try {
@@ -679,11 +682,23 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
               <p className={`text-[10px] ${colors.headerText} mb-1 uppercase tracking-wider`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                 {currentTheme === 'athlete' ? 'RANKED EXERCISES' : 'BESTIARY'}
               </p>
+              {/* Path label */}
+              <p className="text-[8px] text-zinc-500 mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                PATH: {(data.userPath || 'hybrid').toUpperCase()} · 8 core + 4 specialty
+              </p>
               {currentTheme !== 'athlete' && (
-                <p className="text-[8px] text-zinc-500 mb-3">
+                <p className="text-[8px] text-zinc-500 mb-2">
                   {data.exercises.filter(ex => ex.level > 0 && !ex.expired).length}/12 Allied
                 </p>
               )}
+              {/* Shape Radar */}
+              <BestiaryRadar exercises={data.exercises} accentColor={
+                currentTheme === 'dragon' ? '#ef4444' :
+                currentTheme === 'samurai' ? '#ec4899' :
+                currentTheme === 'viking' ? '#38bdf8' :
+                currentTheme === 'dinosaur' ? '#22c55e' :
+                '#a1a1aa'
+              } />
               <div className="grid grid-cols-4 gap-2">
                 {data.exercises.map(ex => {
                   const levelColors: Record<number, string> = {
@@ -737,6 +752,40 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
               {tier.next && <span>{tier.ceiling - data.powerLevel} more to {tier.next}</span>}
             </div>
             <PixelBar current={data.powerLevel - tier.floor} max={tier.ceiling - tier.floor} />
+            {/* Bestiary preview — top 3 actionable exercises */}
+            <div className="mt-3 space-y-1.5">
+              {(() => {
+                const slots: { icon: string; name: string; detail: string; color: string }[] = [];
+                // Priority 1: expiring exercises
+                for (const ex of data.expiringExercises.slice(0, 2)) {
+                  slots.push({ icon: '⚠', name: ex.name, detail: `${ex.daysLeft}d left`, color: ex.daysLeft <= 3 ? 'text-red-400' : 'text-amber-400' });
+                }
+                // Priority 2: closest rank-ups
+                for (const ex of data.closestRankUps) {
+                  if (slots.length >= 3) break;
+                  if (slots.find(s => s.name === ex.name)) continue;
+                  slots.push({ icon: '↑', name: ex.name, detail: ex.gap, color: colors.secondary });
+                }
+                // Priority 3: recent PRs
+                for (const pr of data.recentPRs) {
+                  if (slots.length >= 3) break;
+                  if (slots.find(s => s.name === pr.name)) continue;
+                  slots.push({ icon: '★', name: pr.name, detail: 'NEW PR', color: 'text-amber-300' });
+                }
+                if (slots.length === 0) {
+                  return <p className="text-[8px] text-zinc-600 text-center">Complete a ranked exercise to fill your Bestiary</p>;
+                }
+                return slots.map((s, i) => (
+                  <div key={i} className="flex items-center justify-between">
+                    <span className={`text-[9px] ${s.color}`}>{s.icon} <span className="text-zinc-300">{s.name}</span></span>
+                    <span className={`text-[8px] ${s.color}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>{s.detail}</span>
+                  </div>
+                ));
+              })()}
+            </div>
+            <p className="text-[7px] text-zinc-600 text-center mt-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              tap for full bestiary →
+            </p>
           </div>
         )}
       </PixelBox>
@@ -783,7 +832,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
       {/* Player Level merged into PL box below */}
 
       {/* ─── Detail Sections ─── */}
-      {(data.expiringExercises.length > 0 || data.closestRankUps.length > 0 || data.recentPRs.length > 0) && (
+      {(data.expiringExercises.length > 0 || data.recentPRs.length > 0) && (
         <div className="border-t border-zinc-800 mt-2 mb-4 pt-1">
           <p className="text-[7px] text-zinc-700 text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>DETAILS</p>
         </div>
@@ -868,25 +917,6 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
       )}
 
       {/* Closest rank-ups */}
-      {data.closestRankUps.length > 0 && (
-        <PixelBox className="p-4 mb-4">
-          <p className={`text-[10px] ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-            ▲ RANK UP
-          </p>
-          <div className="space-y-2">
-            {data.closestRankUps.map((ex) => (
-              <a key={ex.name} href={`/train/active?exercise=${ex.exerciseId}`} className="flex items-center justify-between hover:bg-zinc-800/50 -mx-1 px-1 py-0.5 transition-colors">
-                <div className="flex items-center gap-2">
-                  <img src={`/themes/${currentTheme}/v2/level${ex.currentLevel}.png`} alt={`Level ${ex.currentLevel}`} className="w-6 h-6" style={{ imageRendering: 'pixelated' }} />
-                  <span className="text-xs text-zinc-200">{ex.name}</span>
-                </div>
-                <span className={`text-[8px] ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>{ex.gap} ▸</span>
-              </a>
-            ))}
-          </div>
-        </PixelBox>
-      )}
-
       {/* Recent PRs */}
       {data.recentPRs.length > 0 && (
         <PixelBox className="p-4 mb-4">
