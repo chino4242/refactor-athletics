@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTheme } from '@/context/ThemeContext';
 import { getV2Theme } from '@/data/v2themes';
 import { PATH_KEY_EXERCISES } from '@/data/pathExercises';
@@ -55,15 +55,41 @@ export default function PathSwitchSheet({ userId, currentPath, exercises, onConf
   // What you gain (in target but not current)
   const gains = targetSpecialty.filter(id => !currentSpecialty.includes(id));
 
+  const isSamePath = targetPath === currentPath;
+
+  // Fetch levels for gained exercises (they may have historical data)
+  const [gainedLevels, setGainedLevels] = useState<Record<string, number>>({});
+  useEffect(() => {
+    if (gains.length === 0 || isSamePath) { setGainedLevels({}); return; }
+    (async () => {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const ninetyDaysAgo = new Date(Date.now() - 90 * 86400000).toLocaleDateString('en-CA');
+      const { data } = await supabase
+        .from('workouts')
+        .select('exercise_id, level')
+        .eq('user_id', userId)
+        .in('exercise_id', gains)
+        .gte('date', ninetyDaysAgo);
+      // Get max level per exercise
+      const maxLevels: Record<string, number> = {};
+      for (const w of data || []) {
+        if ((w.level || 0) > (maxLevels[w.exercise_id] || 0)) {
+          maxLevels[w.exercise_id] = w.level;
+        }
+      }
+      setGainedLevels(maxLevels);
+    })();
+  }, [targetPath, userId]);
+
   // Calculate PL impact
   const currentPL = exercises.filter(ex => !ex.expired).reduce((sum, ex) => sum + ex.level, 0);
   const lostLevels = loses.reduce((sum, id) => {
     const ex = exercises.find(e => e.exerciseId === id);
     return sum + (ex && !ex.expired ? ex.level : 0);
   }, 0);
-  const projectedPL = currentPL - lostLevels;
-
-  const isSamePath = targetPath === currentPath;
+  const gainedLevelsTotal = gains.reduce((sum, id) => sum + (gainedLevels[id] || 0), 0);
+  const projectedPL = currentPL - lostLevels + gainedLevelsTotal;
 
   const handleConfirm = async () => {
     if (isSamePath) { onClose(); return; }
@@ -71,7 +97,23 @@ export default function PathSwitchSheet({ userId, currentPath, exercises, onConf
     try {
       const { createClient } = await import('@/utils/supabase/client');
       const supabase = createClient();
+
+      // 1. Update path
       await supabase.from('users').update({ selected_path: targetPath }).eq('id', userId);
+
+      // 2. Remove user's custom programs so default path programs take over
+      const { data: userPrograms } = await supabase
+        .from('workout_programs')
+        .select('id')
+        .eq('user_id', userId)
+        .neq('is_default', true);
+
+      if (userPrograms && userPrograms.length > 0) {
+        const programIds = userPrograms.map(p => p.id);
+        // Delete programs — program_blocks cascade via FK
+        await supabase.from('workout_programs').delete().in('id', programIds);
+      }
+
       onConfirm();
     } catch {
       setConfirming(false);
@@ -180,7 +222,9 @@ export default function PathSwitchSheet({ userId, currentPath, exercises, onConf
                 {gains.map(id => (
                   <div key={id} className="flex justify-between text-[9px] py-0.5">
                     <span className="text-zinc-300">{getExerciseName(id, exercises)}</span>
-                    <span className="text-zinc-600">unranked</span>
+                    <span className={gainedLevels[id] ? 'text-green-400' : 'text-zinc-600'}>
+                      {gainedLevels[id] ? `Lv${gainedLevels[id]} ★` : 'unranked'}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -190,6 +234,11 @@ export default function PathSwitchSheet({ userId, currentPath, exercises, onConf
 
         {/* Confirm */}
         <div className="pt-4 pb-8">
+          {!isSamePath && (
+            <p className="text-[8px] text-zinc-500 text-center mb-3">
+              Your daily workouts will switch to the {PATH_OPTIONS.find(p => p.key === targetPath)?.label} default programs.
+            </p>
+          )}
           <button
             onClick={handleConfirm}
             disabled={isSamePath || confirming}

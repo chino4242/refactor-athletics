@@ -689,9 +689,9 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
                 <p className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
                   PATH: {(data.userPath || 'hybrid').toUpperCase()} · 8 core + 4 specialty
                 </p>
-                <button onClick={(e) => { e.stopPropagation(); setShowPathSwitch(true); }} className={`text-[7px] px-2 py-0.5 border ${colors.border} ${colors.secondary} bg-zinc-800`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                <span role="button" onClick={(e) => { e.stopPropagation(); setShowPathSwitch(true); }} className={`text-[7px] px-2 py-0.5 border ${colors.border} ${colors.secondary} bg-zinc-800 cursor-pointer`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                   SWITCH
-                </button>
+                </span>
               </div>
               {currentTheme !== 'athlete' && (
                 <p className="text-[8px] text-zinc-500 mb-2">
