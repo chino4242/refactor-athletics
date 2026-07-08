@@ -153,7 +153,7 @@ export default function GroupChallengeModal({ isOpen, groupId, userId, onClose, 
                         <Trophy size={32} className="text-white" />
                     </div>
                     <h2 className="text-2xl font-black italic text-white uppercase tracking-tight">Group Challenge</h2>
-                    <p className="text-zinc-400 text-sm mt-1">Work together to hit the goal</p>
+                    <p className="text-zinc-400 text-base mt-1">Work together to hit the goal</p>
                 </div>
 
                 {/* Scrollable Content */}
@@ -166,7 +166,7 @@ export default function GroupChallengeModal({ isOpen, groupId, userId, onClose, 
                             value={name}
                             onChange={e => setName(e.target.value)}
                             placeholder={`${preset.emoji} ${preset.label} Challenge`}
-                            className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-white text-sm"
+                            className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-white text-base"
                         />
                     </div>
 
@@ -200,9 +200,9 @@ export default function GroupChallengeModal({ isOpen, groupId, userId, onClose, 
                             inputMode="numeric"
                             value={target}
                             onChange={e => setTarget(e.target.value)}
-                            className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-white text-sm font-bold"
+                            className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-white text-base font-bold"
                         />
-                        <p className="text-[10px] text-zinc-600 mt-1">Combined total across all group members</p>
+                        <p className="text-xs text-zinc-600 mt-1">Combined total across all group members</p>
                     </div>
 
                     {/* Time Window */}
@@ -225,7 +225,7 @@ export default function GroupChallengeModal({ isOpen, groupId, userId, onClose, 
                                         <div className={`text-xs font-bold uppercase mb-0.5 ${!isCustomDate && selectedPresetIdx === idx ? 'text-emerald-400' : 'text-zinc-300'}`}>
                                             {dur.label}
                                         </div>
-                                        <div className="text-zinc-500 text-[10px] font-mono">
+                                        <div className="text-zinc-500 text-xs font-mono">
                                             {dates.start.toLocaleDateString()} – {dates.end.toLocaleDateString()}
                                         </div>
                                     </button>
@@ -241,7 +241,7 @@ export default function GroupChallengeModal({ isOpen, groupId, userId, onClose, 
                             }`}
                         >
                             <div className={`text-xs font-bold uppercase mb-0.5 ${isCustomDate ? 'text-emerald-400' : 'text-zinc-300'}`}>Custom Range</div>
-                            <div className="text-zinc-500 text-[10px] font-mono">
+                            <div className="text-zinc-500 text-xs font-mono">
                                 {customStartDate && customEndDate
                                     ? `${customStartDate.toLocaleDateString()} – ${customEndDate.toLocaleDateString()}`
                                     : 'Pick your dates'}
@@ -259,7 +259,7 @@ export default function GroupChallengeModal({ isOpen, groupId, userId, onClose, 
                                         }`}
                                     >
                                         <div className={`text-xs font-bold uppercase mb-0.5 ${activeDateField === 'start' || customStartDate ? 'text-emerald-400' : 'text-zinc-300'}`}>Start Date</div>
-                                        <div className="text-zinc-500 text-[10px] font-mono truncate">
+                                        <div className="text-zinc-500 text-xs font-mono truncate">
                                             {customStartDate ? customStartDate.toLocaleDateString() : 'Select'}
                                         </div>
                                     </button>
@@ -274,7 +274,7 @@ export default function GroupChallengeModal({ isOpen, groupId, userId, onClose, 
                                         }`}
                                     >
                                         <div className={`text-xs font-bold uppercase mb-0.5 ${activeDateField === 'end' || customEndDate ? 'text-emerald-400' : 'text-zinc-300'}`}>End Date</div>
-                                        <div className="text-zinc-500 text-[10px] font-mono truncate">
+                                        <div className="text-zinc-500 text-xs font-mono truncate">
                                             {customEndDate ? customEndDate.toLocaleDateString() : 'Select'}
                                         </div>
                                     </button>
@@ -298,7 +298,7 @@ export default function GroupChallengeModal({ isOpen, groupId, userId, onClose, 
                                                 }
                                             }}
                                         />
-                                        <p className="text-[10px] text-zinc-500 text-center mt-1">*Midnight to Midnight (Local Time)</p>
+                                        <p className="text-xs text-zinc-500 text-center mt-1">*Midnight to Midnight (Local Time)</p>
                                     </div>
                                 )}
                             </div>

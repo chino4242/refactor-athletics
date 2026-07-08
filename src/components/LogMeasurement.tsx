@@ -83,7 +83,7 @@ export default function LogMeasurement({ isOpen, onClose, userId, bodyweight, sy
       <div className="bg-zinc-900 border border-zinc-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-scale-in max-h-[85vh] flex flex-col">
         {/* Header */}
         <div className="flex justify-between items-center p-4 border-b border-zinc-800 shrink-0">
-          <h2 className="text-sm font-black italic text-white uppercase tracking-tight">Log Measurement</h2>
+          <h2 className="text-base font-black italic text-white uppercase tracking-tight">Log Measurement</h2>
           <button onClick={onClose} className="text-zinc-500 hover:text-white p-1"><X size={18} /></button>
         </div>
 
@@ -93,7 +93,7 @@ export default function LogMeasurement({ isOpen, onClose, userId, bodyweight, sy
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="text-xs font-bold text-zinc-400 uppercase">Weight</label>
-              {weightSynced && <span className="text-[9px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded font-bold">🔗 Synced</span>}
+              {weightSynced && <span className="text-xs bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded font-bold">🔗 Synced</span>}
             </div>
             <div className="flex gap-2 items-center">
               <input
@@ -104,7 +104,7 @@ export default function LogMeasurement({ isOpen, onClose, userId, bodyweight, sy
                 placeholder={String(bodyweight || '')}
                 className="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white text-center font-bold focus:border-zinc-500 outline-none"
               />
-              <span className="text-xs text-zinc-500 font-bold">lbs</span>
+              <span className="text-sm text-zinc-500 font-bold">lbs</span>
             </div>
           </div>
 
@@ -113,7 +113,7 @@ export default function LogMeasurement({ isOpen, onClose, userId, bodyweight, sy
             <button onClick={() => setCompOpen(!compOpen)} className="w-full flex items-center justify-between p-3 hover:bg-zinc-800/50 transition">
               <span className="text-xs font-bold text-zinc-400 uppercase">Body Fat & Composition</span>
               <div className="flex items-center gap-2">
-                {(bodyFatSynced || leanMassSynced) && <span className="text-[9px] text-emerald-400">🔗</span>}
+                {(bodyFatSynced || leanMassSynced) && <span className="text-xs text-emerald-400">🔗</span>}
                 {compOpen ? <ChevronDown size={14} className="text-zinc-500" /> : <ChevronRight size={14} className="text-zinc-500" />}
               </div>
             </button>
@@ -121,16 +121,16 @@ export default function LogMeasurement({ isOpen, onClose, userId, bodyweight, sy
               <div className="p-3 pt-0 space-y-3 border-t border-zinc-800/50">
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="text-[10px] text-zinc-500">Body Fat %</label>
-                    {bodyFatSynced && <span className="text-[8px] text-emerald-400">synced</span>}
+                    <label className="text-xs text-zinc-500">Body Fat %</label>
+                    {bodyFatSynced && <span className="text-xs text-emerald-400">synced</span>}
                   </div>
                   <input type="number" inputMode="decimal" value={bodyFat} onChange={e => setBodyFat(e.target.value)} placeholder="—"
                     className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white text-center focus:border-zinc-500 outline-none" />
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="text-[10px] text-zinc-500">Lean Body Mass (lbs)</label>
-                    {leanMassSynced && <span className="text-[8px] text-emerald-400">synced</span>}
+                    <label className="text-xs text-zinc-500">Lean Body Mass (lbs)</label>
+                    {leanMassSynced && <span className="text-xs text-emerald-400">synced</span>}
                   </div>
                   <input type="number" inputMode="decimal" value={leanMass} onChange={e => setLeanMass(e.target.value)} placeholder="—"
                     className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white text-center focus:border-zinc-500 outline-none" />
@@ -144,7 +144,7 @@ export default function LogMeasurement({ isOpen, onClose, userId, bodyweight, sy
             <button onClick={() => setCircOpen(!circOpen)} className="w-full flex items-center justify-between p-3 hover:bg-zinc-800/50 transition">
               <div>
                 <span className="text-xs font-bold text-zinc-400 uppercase">Circumferences</span>
-                {lastCircumferenceDate && <span className="text-[9px] text-zinc-600 ml-2">last: {lastCircumferenceDate}</span>}
+                {lastCircumferenceDate && <span className="text-xs text-zinc-600 ml-2">last: {lastCircumferenceDate}</span>}
               </div>
               {circOpen ? <ChevronDown size={14} className="text-zinc-500" /> : <ChevronRight size={14} className="text-zinc-500" />}
             </button>
@@ -158,7 +158,7 @@ export default function LogMeasurement({ isOpen, onClose, userId, bodyweight, sy
                   { label: 'Shoulders', val: shoulders, set: setShoulders },
                 ].map(({ label, val, set }) => (
                   <div key={label}>
-                    <label className="text-[10px] text-zinc-500 mb-0.5 block">{label} (in)</label>
+                    <label className="text-xs text-zinc-500 mb-0.5 block">{label} (in)</label>
                     <input type="number" inputMode="decimal" value={val} onChange={e => set(e.target.value)} placeholder="—"
                       className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white text-center focus:border-zinc-500 outline-none" />
                   </div>

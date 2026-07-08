@@ -85,7 +85,7 @@ export default function StatsTab({ userId, stats }: StatsTabProps) {
             {/* Weekly Summary */}
             <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
                 <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-1">This Week</h3>
-                <p className="text-[10px] text-zinc-600 mb-3">Compared to last week</p>
+                <p className="text-xs text-zinc-600 mb-3">Compared to last week</p>
                 <div className="grid grid-cols-3 gap-3">
                     {[
                         { label: isClassic ? 'Points' : 'XP', value: weekly.xpThis.toLocaleString(), prev: weekly.xpLast, current: weekly.xpThis },
@@ -97,9 +97,9 @@ export default function StatsTab({ userId, stats }: StatsTabProps) {
                         const isDown = d.startsWith('↓');
                         return (
                             <div key={s.label} className="bg-zinc-800/50 rounded-lg p-3 text-center">
-                                <div className="text-[10px] text-zinc-500 uppercase mb-1">{s.label}</div>
+                                <div className="text-xs text-zinc-500 uppercase mb-1">{s.label}</div>
                                 <div className="text-xl font-black text-white">{s.value}</div>
-                                {d && <div className={`text-[10px] font-bold mt-0.5 ${isUp ? 'text-emerald-400' : isDown ? 'text-red-400' : 'text-zinc-600'}`}>{d}</div>}
+                                {d && <div className={`text-xs font-bold mt-0.5 ${isUp ? 'text-emerald-400' : isDown ? 'text-red-400' : 'text-zinc-600'}`}>{d}</div>}
                             </div>
                         );
                     })}
@@ -112,11 +112,11 @@ export default function StatsTab({ userId, stats }: StatsTabProps) {
                     <div className="flex items-center gap-3">
                         {rankImage && <Image src={rankImage} alt={rankName} width={48} height={48} className="object-contain" />}
                         <div>
-                            <div className="text-[10px] text-zinc-500 uppercase">Power Level</div>
+                            <div className="text-xs text-zinc-500 uppercase">Power Level</div>
                             <div className={`text-2xl font-black italic bg-gradient-to-r ${theme.progressGradient || 'from-orange-500 to-red-500'} bg-clip-text text-transparent leading-none`}>
-                                {powerLevel} <span className="text-sm text-zinc-500 font-bold">/ {maxPower}</span>
+                                {powerLevel} <span className="text-base text-zinc-500 font-bold">/ {maxPower}</span>
                             </div>
-                            <div className="text-[10px] text-zinc-500 mt-0.5">{rankName}</div>
+                            <div className="text-xs text-zinc-500 mt-0.5">{rankName}</div>
                         </div>
                     </div>
                     <ChevronRight size={16} className="text-zinc-600" />
@@ -150,10 +150,10 @@ export default function StatsTab({ userId, stats }: StatsTabProps) {
                         <div className="space-y-2">
                             {prs.map((pr, i) => (
                                 <div key={i} className="flex items-center justify-between">
-                                    <span className="text-sm text-white font-medium truncate flex-1">{pr.name}</span>
+                                    <span className="text-base text-white font-medium truncate flex-1">{pr.name}</span>
                                     <div className="text-right shrink-0 ml-2">
-                                        <span className="text-sm font-bold text-yellow-400">{pr.value}</span>
-                                        <span className="text-[10px] text-zinc-600 ml-1.5">{new Date(pr.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                                        <span className="text-base font-bold text-yellow-400">{pr.value}</span>
+                                        <span className="text-xs text-zinc-600 ml-1.5">{new Date(pr.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                                     </div>
                                 </div>
                             ))}
@@ -166,12 +166,12 @@ export default function StatsTab({ userId, stats }: StatsTabProps) {
             <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-3">
                     <h3 className="text-sm font-bold text-white uppercase tracking-wider">Recent Activity</h3>
-                    <Link href="/track" className="text-[10px] text-zinc-300 hover:text-white font-bold flex items-center gap-0.5">
+                    <Link href="/track" className="text-xs text-zinc-300 hover:text-white font-bold flex items-center gap-0.5">
                         View All <ChevronRight size={12} />
                     </Link>
                 </div>
                 {loading ? (
-                    <p className="text-sm text-zinc-500">Loading...</p>
+                    <p className="text-base text-zinc-500">Loading...</p>
                 ) : recent.length > 0 ? (
                     <div className="space-y-2">
                         {recent.map((item, idx) => {
@@ -180,16 +180,16 @@ export default function StatsTab({ userId, stats }: StatsTabProps) {
                             return (
                                 <div key={idx} className="flex items-center justify-between py-1.5">
                                     <div className="min-w-0">
-                                        <p className="text-xs font-bold text-white truncate">{name}</p>
-                                        {item.xp > 0 && <span className="text-[10px] text-zinc-600">+{item.xp} {isClassic ? 'pts' : 'XP'}</span>}
+                                        <p className="text-sm font-bold text-white truncate">{name}</p>
+                                        {item.xp > 0 && <span className="text-xs text-zinc-600">+{item.xp} {isClassic ? 'pts' : 'XP'}</span>}
                                     </div>
-                                    <span className="text-[10px] text-zinc-600 flex-shrink-0 ml-2">{new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                                    <span className="text-xs text-zinc-600 flex-shrink-0 ml-2">{new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                                 </div>
                             );
                         })}
                     </div>
                 ) : (
-                    <p className="text-xs text-zinc-500">No activity yet — start logging to see your history here</p>
+                    <p className="text-sm text-zinc-500">No activity yet — start logging to see your history here</p>
                 )}
             </div>
 
@@ -199,19 +199,19 @@ export default function StatsTab({ userId, stats }: StatsTabProps) {
                     <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-2">Lifetime</h3>
                     <div className="grid grid-cols-2 gap-2">
                         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-center">
-                            <div className="text-[10px] text-zinc-500 uppercase mb-0.5">Exercises Logged</div>
+                            <div className="text-xs text-zinc-500 uppercase mb-0.5">Exercises Logged</div>
                             <div className="text-2xl font-black text-white">{(stats.exercises_tracked || 0).toLocaleString()}</div>
                         </div>
                         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-center">
-                            <div className="text-[10px] text-zinc-500 uppercase mb-0.5">Total {isClassic ? 'Points' : 'XP'}</div>
+                            <div className="text-xs text-zinc-500 uppercase mb-0.5">Total {isClassic ? 'Points' : 'XP'}</div>
                             <div className="text-2xl font-black text-white">{(stats.total_career_xp || 0).toLocaleString()}</div>
                         </div>
                         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-center">
-                            <div className="text-[10px] text-zinc-500 uppercase mb-0.5">Player Level</div>
+                            <div className="text-xs text-zinc-500 uppercase mb-0.5">Player Level</div>
                             <div className="text-2xl font-black text-white">{stats.player_level || 1}</div>
                         </div>
                         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-center">
-                            <div className="text-[10px] text-zinc-500 uppercase mb-0.5">Best Rank</div>
+                            <div className="text-xs text-zinc-500 uppercase mb-0.5">Best Rank</div>
                             <div className="text-2xl font-black text-white">Lv.{stats.highest_level_achieved || 0}</div>
                         </div>
                     </div>

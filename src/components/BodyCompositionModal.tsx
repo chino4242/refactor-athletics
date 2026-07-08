@@ -134,13 +134,13 @@ export default function BodyCompositionModal({
                         </div>
                         <div>
                             <h2 className="text-xl font-black italic tracking-tighter uppercase text-white">Body Composition</h2>
-                            <p className="text-zinc-400 text-xs">Track your evolution.</p>
+                            <p className="text-zinc-400 text-sm">Track your evolution.</p>
                         </div>
                     </div>
 
                     {/* BODY COMPOSITION CARD */}
                     <div className="bg-zinc-800/50 px-4 py-2 rounded-xl border border-zinc-700 flex flex-col items-center">
-                        <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold">💪 Body Composition</span>
+                        <span className="text-xs text-zinc-400 uppercase tracking-widest font-bold">💪 Body Composition</span>
                         <div className={`text-2xl font-black ${physiquePoints > 0 ? 'text-emerald-400' : physiquePoints < 0 ? 'text-rose-400' : 'text-zinc-500'}`}>
                             {isLoadingHistory ? '...' : (physiquePoints > 0 ? '+' : '') + physiquePoints}
                         </div>
@@ -156,7 +156,7 @@ export default function BodyCompositionModal({
                                 await saveProfile(updated);
                                 loadHistory();
                             }}
-                            className={`px-3 py-1.5 text-[10px] font-bold uppercase rounded transition-all ${mode === 'tape' ? 'bg-zinc-700 text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
+                            className={`px-3 py-1.5 text-xs font-bold uppercase rounded transition-all ${mode === 'tape' ? 'bg-zinc-700 text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
                         >
                             📏 Tape
                         </button>
@@ -168,7 +168,7 @@ export default function BodyCompositionModal({
                                 await saveProfile(updated);
                                 loadHistory();
                             }}
-                            className={`px-3 py-1.5 text-[10px] font-bold uppercase rounded transition-all ${mode === 'scale' ? 'bg-zinc-700 text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
+                            className={`px-3 py-1.5 text-xs font-bold uppercase rounded transition-all ${mode === 'scale' ? 'bg-zinc-700 text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
                         >
                             ⚖️ Scale
                         </button>
@@ -287,7 +287,7 @@ export default function BodyCompositionModal({
                                                             placeholder={f.placeholder !== '0' ? f.placeholder : '0.0'}
                                                             className="w-full bg-zinc-950 rounded-lg p-2 text-sm text-white text-center outline-none border border-zinc-800 focus:border-zinc-600 transition font-bold placeholder:text-zinc-700"
                                                         />
-                                                        <span className="absolute right-3 top-2.5 text-[10px] text-zinc-600 font-bold pointer-events-none uppercase">{f.unit}</span>
+                                                        <span className="absolute right-3 top-2.5 text-xs text-zinc-600 font-bold pointer-events-none uppercase">{f.unit}</span>
                                                     </div>
                                                 </div>
                                             ))}
@@ -305,7 +305,7 @@ export default function BodyCompositionModal({
                                                                 placeholder={getLatestValue(r.muscle) !== '0' ? getLatestValue(r.muscle) : '0.0'}
                                                                 className="w-full bg-zinc-950 rounded-lg p-2 text-sm text-white text-center outline-none border border-zinc-800 focus:border-zinc-600 transition font-bold placeholder:text-zinc-700"
                                                             />
-                                                            <span className="absolute right-2 top-2.5 text-[10px] text-zinc-600 font-bold pointer-events-none">lbs</span>
+                                                            <span className="absolute right-2 top-2.5 text-xs text-zinc-600 font-bold pointer-events-none">lbs</span>
                                                         </div>
                                                         <div className="relative">
                                                             <input
@@ -316,7 +316,7 @@ export default function BodyCompositionModal({
                                                                 placeholder={getLatestValue(r.fat) !== '0' ? getLatestValue(r.fat) : '0.0'}
                                                                 className="w-full bg-zinc-950 rounded-lg p-2 text-sm text-white text-center outline-none border border-zinc-800 focus:border-zinc-600 transition font-bold placeholder:text-zinc-700"
                                                             />
-                                                            <span className="absolute right-2 top-2.5 text-[10px] text-zinc-600 font-bold pointer-events-none">fat%</span>
+                                                            <span className="absolute right-2 top-2.5 text-xs text-zinc-600 font-bold pointer-events-none">fat%</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -375,7 +375,7 @@ export default function BodyCompositionModal({
 
                                 return (
                                     <div key={metric} className="bg-zinc-900/80 p-4 rounded-xl border border-zinc-800">
-                                        <h4 className="text-sm font-bold text-zinc-400 uppercase mb-4 tracking-wider">{metric} History</h4>
+                                        <h4 className="text-base font-bold text-zinc-400 uppercase mb-4 tracking-wider">{metric} History</h4>
                                         <div className="h-32 w-full">
                                             <ResponsiveContainer width="100%" height="100%">
                                                 <LineChart data={chartData}>
@@ -418,30 +418,30 @@ export default function BodyCompositionModal({
                             {history.length > 0 && (
                                 <div className="bg-zinc-900/80 p-4 rounded-xl border border-zinc-800">
                                     <div className="flex items-center justify-between mb-3">
-                                        <h4 className="text-sm font-bold text-zinc-400 uppercase tracking-wider">History</h4>
+                                        <h4 className="text-base font-bold text-zinc-400 uppercase tracking-wider">History</h4>
                                         {!confirmReset ? (
                                             <button
                                                 onClick={() => setConfirmReset(true)}
-                                                className="text-[10px] text-red-500/60 hover:text-red-400 uppercase tracking-wider font-bold transition"
+                                                className="text-xs text-red-500/60 hover:text-red-400 uppercase tracking-wider font-bold transition"
                                             >
                                                 Reset All
                                             </button>
                                         ) : (
                                             <div className="flex items-center gap-2">
-                                                <span className="text-[10px] text-red-400">Delete all data?</span>
+                                                <span className="text-xs text-red-400">Delete all data?</span>
                                                 <button
                                                     onClick={async () => {
                                                         await deleteAllBodyMeasurementsAction(localProfile.user_id);
                                                         setConfirmReset(false);
                                                         await loadHistory();
                                                     }}
-                                                    className="text-[10px] bg-red-600 hover:bg-red-500 text-white px-2 py-1 rounded font-bold uppercase transition"
+                                                    className="text-xs bg-red-600 hover:bg-red-500 text-white px-2 py-1 rounded font-bold uppercase transition"
                                                 >
                                                     Confirm
                                                 </button>
                                                 <button
                                                     onClick={() => setConfirmReset(false)}
-                                                    className="text-[10px] text-zinc-500 hover:text-white px-2 py-1 font-bold uppercase transition"
+                                                    className="text-xs text-zinc-500 hover:text-white px-2 py-1 font-bold uppercase transition"
                                                 >
                                                     Cancel
                                                 </button>
@@ -451,7 +451,7 @@ export default function BodyCompositionModal({
                                     <div className="space-y-1 max-h-60 overflow-y-auto custom-scrollbar">
                                         {[...history].reverse().map((entry) => (
                                             <div key={entry.id || entry.date} className="flex items-center justify-between py-1.5 px-2 rounded hover:bg-zinc-800/50 group">
-                                                <div className="flex items-center gap-3 text-xs">
+                                                <div className="flex items-center gap-3 text-sm">
                                                     <span className="text-zinc-500 font-mono w-20">{entry.date}</span>
                                                     <span className="text-zinc-300">
                                                         {[

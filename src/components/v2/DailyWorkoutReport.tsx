@@ -161,7 +161,7 @@ export default function DailyWorkoutReport({ userId }: Props) {
           onChange={e => setSelectedDate(e.target.value)}
           className="flex-1 bg-zinc-800 border border-zinc-700 px-3 py-2 text-sm text-white outline-none"
         />
-        <button onClick={generateReport} disabled={loading} className={`px-4 py-2 border ${colors.primary} bg-zinc-800 text-[10px] text-white uppercase disabled:opacity-50`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+        <button onClick={generateReport} disabled={loading} className={`px-4 py-2 border ${colors.primary} bg-zinc-800 text-xs text-white uppercase disabled:opacity-50`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
           {loading ? '...' : 'Generate'}
         </button>
       </div>
@@ -169,14 +169,14 @@ export default function DailyWorkoutReport({ userId }: Props) {
       {/* Report output */}
       {report && (
         <div className={`border ${colors.border} bg-zinc-900 p-3 space-y-3`}>
-          <pre className="text-[10px] text-zinc-300 whitespace-pre-wrap leading-relaxed font-mono max-h-[400px] overflow-y-auto">
+          <pre className="text-xs text-zinc-300 whitespace-pre-wrap leading-relaxed font-mono max-h-[400px] overflow-y-auto">
             {report}
           </pre>
           <div className="flex gap-2">
-            <button onClick={handleCopy} className={`flex-1 py-2 border ${colors.border} bg-zinc-800 text-[9px] text-white uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <button onClick={handleCopy} className={`flex-1 py-2 border ${colors.border} bg-zinc-800 text-xs text-white uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
               {copied ? '✓ Copied' : '📋 Copy'}
             </button>
-            <button onClick={handleShare} className={`flex-1 py-2 border ${colors.primary} bg-zinc-800 text-[9px] text-white uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <button onClick={handleShare} className={`flex-1 py-2 border ${colors.primary} bg-zinc-800 text-xs text-white uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
               📤 Share
             </button>
           </div>

@@ -145,9 +145,9 @@ export default function FlexibleWorkoutView({ workoutData, completedIndices, onC
           return (
             <div key={idx} className={`rounded-xl border p-3 ${isCompleted ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-zinc-900 border-zinc-800'}`}>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-white font-medium">{block.name}</span>
+                <span className="text-base text-white font-medium">{block.name}</span>
                 {isCompleted ? <Check size={16} className="text-emerald-400" /> : (
-                  <button onClick={() => onCompleteBlock(idx)} className="text-[10px] text-orange-400 font-bold">Mark Done</button>
+                  <button onClick={() => onCompleteBlock(idx)} className="text-xs text-orange-400 font-bold">Mark Done</button>
                 )}
               </div>
             </div>
@@ -169,15 +169,15 @@ export default function FlexibleWorkoutView({ workoutData, completedIndices, onC
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 {isCompleted && <Check size={14} className="text-emerald-400 shrink-0" />}
                 <div className="min-w-0">
-                  <span className={`text-sm font-medium truncate block ${isCompleted ? 'text-emerald-400 line-through' : 'text-white'}`}>
+                  <span className={`text-base font-medium truncate block ${isCompleted ? 'text-emerald-400 line-through' : 'text-white'}`}>
                     {block.type === 'superset' ? exercises.map(e => e.name).join(' + ') : block.name || 'Exercise'}
                   </span>
                   {block.type === 'superset' && !isExpanded && (
-                    <span className="text-[10px] text-zinc-600">Superset · {exercises.length} exercises</span>
+                    <span className="text-xs text-zinc-600">Superset · {exercises.length} exercises</span>
                   )}
                 </div>
                 {!isCompleted && totalCompleted > 0 && (
-                  <span className="text-[10px] text-orange-400 font-bold shrink-0">{totalCompleted}/{totalSets}</span>
+                  <span className="text-xs text-orange-400 font-bold shrink-0">{totalCompleted}/{totalSets}</span>
                 )}
               </div>
               {!isCompleted && (
@@ -194,18 +194,18 @@ export default function FlexibleWorkoutView({ workoutData, completedIndices, onC
                   return (
                     <div key={ex.id}>
                       {exercises.length > 1 && (
-                        <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5">{ex.name} — {ex.sets}×{ex.repsPerSet}</div>
+                        <div className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1.5">{ex.name} — {ex.sets}×{ex.repsPerSet}</div>
                       )}
                       <div className="space-y-1.5">
                         {Array.from({ length: ex.sets }).map((_, i) => {
                           const isDone = state.completed.includes(i);
                           return (
                             <div key={i} className={`flex items-center gap-2 p-2 rounded-lg border ${isDone ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-zinc-800/50 border-zinc-700/50'}`}>
-                              <span className="text-[10px] text-zinc-500 w-8">S{i + 1}</span>
+                              <span className="text-xs text-zinc-500 w-8">S{i + 1}</span>
                               <input type="text" inputMode="decimal" placeholder="lbs" value={state.weights[i] || ''}
                                 onChange={e => updateExState(idx, ex.id, ex.sets, prev => { const w = [...prev.weights]; w[i] = e.target.value; return { ...prev, weights: w }; })}
                                 className="w-14 bg-zinc-900 border border-zinc-700 rounded px-1.5 py-1 text-xs text-white text-center focus:border-zinc-500 outline-none" />
-                              <span className="text-zinc-600 text-[10px]">×</span>
+                              <span className="text-zinc-600 text-xs">×</span>
                               <input type="text" inputMode="numeric" placeholder={ex.repsPerSet} value={state.reps[i] || ''}
                                 onChange={e => updateExState(idx, ex.id, ex.sets, prev => { const r = [...prev.reps]; r[i] = e.target.value; return { ...prev, reps: r }; })}
                                 className="w-12 bg-zinc-900 border border-zinc-700 rounded px-1.5 py-1 text-xs text-white text-center focus:border-zinc-500 outline-none" />
@@ -225,7 +225,7 @@ export default function FlexibleWorkoutView({ workoutData, completedIndices, onC
                     className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase ${totalCompleted === totalSets ? 'bg-orange-600 text-white' : totalCompleted > 0 ? 'bg-zinc-800 text-orange-400 border border-orange-500/30' : 'bg-zinc-800 text-zinc-600 cursor-not-allowed'}`}>
                     Complete Block
                   </button>
-                  <button onClick={() => onSkipBlock(idx)} className="px-3 py-2 text-[10px] text-zinc-600 hover:text-red-400">Skip</button>
+                  <button onClick={() => onSkipBlock(idx)} className="px-3 py-2 text-xs text-zinc-600 hover:text-red-400">Skip</button>
                 </div>
               </div>
             )}

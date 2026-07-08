@@ -23,7 +23,7 @@ export default function RestTimerBar({ restTime, totalRest, onSkip }: RestTimerB
           <span className="text-xs font-bold text-white/80 uppercase">Rest</span>
         </div>
         <span className="text-xl font-mono font-black text-white">{Math.floor(restTime / 60)}:{(restTime % 60).toString().padStart(2, '0')}</span>
-        <button onClick={onSkip} className="text-[10px] font-bold text-white/70 hover:text-white px-3 py-1.5 rounded bg-white/15 hover:bg-white/25 transition">SKIP</button>
+        <button onClick={onSkip} className="text-xs font-bold text-white/70 hover:text-white px-3 py-1.5 rounded bg-white/15 hover:bg-white/25 transition">SKIP</button>
       </div>
       <div className="h-1 bg-blue-900">
         <div className="h-full bg-blue-300 transition-all duration-1000" style={{ width: `${progress}%` }} />

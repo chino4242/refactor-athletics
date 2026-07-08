@@ -149,7 +149,7 @@ export default function NutritionInput({ onFoodsFound, onSearchResults, onPhotoF
       </div>
       <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={handlePhoto} className="hidden" />
       {isDescriptive(query) && query.trim().length > 5 && (
-        <p className="text-[10px] text-zinc-500 px-1">⚡ AI will estimate macros for your full meal</p>
+        <p className="text-xs text-zinc-500 px-1">⚡ AI will estimate macros for your full meal</p>
       )}
     </div>
   );

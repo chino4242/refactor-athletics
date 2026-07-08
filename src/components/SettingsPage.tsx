@@ -174,16 +174,16 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <Palette size={16} className="text-zinc-500" />
-                            <span className="text-sm text-zinc-400">Customize Theme</span>
+                            <span className="text-base text-zinc-400">Customize Theme</span>
                         </div>
-                        <span className="text-xs text-zinc-600">Optional</span>
+                        <span className="text-sm text-zinc-600">Optional</span>
                     </div>
                 </button>
                 ) : (
                 <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
                     <div className="flex items-center gap-2 mb-5">
                         <Palette size={16} className="text-purple-400" />
-                        <h2 className="text-sm font-black uppercase tracking-widest">Theme</h2>
+                        <h2 className="text-base font-black uppercase tracking-widest">Theme</h2>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                         {Object.entries(THEMES).map(([key, theme]) => (
@@ -224,7 +224,7 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                 <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
                     <div className="flex items-center gap-2 mb-4">
                         <span className="text-sm">⚔️</span>
-                        <h2 className="text-sm font-black uppercase tracking-widest">Training Path</h2>
+                        <h2 className="text-base font-black uppercase tracking-widest">Training Path</h2>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                         {[
@@ -245,7 +245,7 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                                     'border-zinc-800 bg-zinc-900 opacity-50 cursor-not-allowed'
                                 }`}>
                                 <div className="text-lg mb-1">{p.emoji}</div>
-                                <div className="text-xs font-bold text-white">{p.name}</div>
+                                <div className="text-sm font-bold text-white">{p.name}</div>
                             </button>
                         ))}
                     </div>
@@ -253,7 +253,7 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
 
                 {/* Cardio Equipment */}
                 <div className="mt-4">
-                    <label className="text-[10px] font-bold text-zinc-500 uppercase mb-2 block">Preferred Cardio</label>
+                    <label className="text-xs font-bold text-zinc-500 uppercase mb-2 block">Preferred Cardio</label>
                     <div className="grid grid-cols-4 gap-2">
                         {[
                             { key: 'treadmill', emoji: '🏃', name: 'Treadmill' },
@@ -271,7 +271,7 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                                     'border-zinc-700 bg-zinc-800 hover:border-zinc-600'
                                 }`}>
                                 <div className="text-lg">{c.emoji}</div>
-                                <div className="text-[9px] font-bold text-white">{c.name}</div>
+                                <div className="text-xs font-bold text-white">{c.name}</div>
                             </button>
                         ))}
                     </div>
@@ -281,7 +281,7 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                 <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
                     <div className="flex items-center gap-2 mb-5">
                         <User size={16} className="text-emerald-400" />
-                        <h2 className="text-sm font-black uppercase tracking-widest">Profile</h2>
+                        <h2 className="text-base font-black uppercase tracking-widest">Profile</h2>
                     </div>
                     <div className="space-y-4">
                         <div>
@@ -332,7 +332,7 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                 <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
                     <div className="flex items-center gap-2 mb-5">
                         <Target size={16} className="text-orange-400" />
-                        <h2 className="text-sm font-black uppercase tracking-widest">Daily Targets</h2>
+                        <h2 className="text-base font-black uppercase tracking-widest">Daily Targets</h2>
                     </div>
                     <div className="space-y-4">
                         {[
@@ -358,9 +358,9 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                                     value={targets[key]}
                                     onChange={e => setTargets(prev => ({ ...prev, [key]: Number(e.target.value) }))}
                                     disabled={isHidden}
-                                    className="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-emerald-500 transition-colors font-mono text-sm disabled:text-zinc-600"
+                                    className="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-emerald-500 transition-colors font-mono text-base disabled:text-zinc-600"
                                 />
-                                <span className="text-zinc-500 text-xs w-10">{unit}</span>
+                                <span className="text-zinc-500 text-sm w-10">{unit}</span>
                             </div>
                             );
                         })}
@@ -371,9 +371,9 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                 <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
                     <div className="flex items-center gap-2 mb-2">
                         <Dumbbell size={16} className="text-purple-400" />
-                        <h2 className="text-sm font-black uppercase tracking-widest">Equipment</h2>
+                        <h2 className="text-base font-black uppercase tracking-widest">Equipment</h2>
                     </div>
-                    <p className="text-[10px] text-zinc-600 mb-4">Workouts adapt to what you have access to. Uncheck items when traveling.</p>
+                    <p className="text-xs text-zinc-600 mb-4">Workouts adapt to what you have access to. Uncheck items when traveling.</p>
                     <div className="grid grid-cols-2 gap-2">
                         {[
                             { id: 'barbell', label: 'Barbell', emoji: '🏋️' },
@@ -394,7 +394,7 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                             const selected = equipment.includes(item.id);
                             return (
                                 <button key={item.id} onClick={() => setEquipment(prev => selected ? prev.filter(e => e !== item.id) : [...prev, item.id])}
-                                    className={`p-2.5 rounded-lg border text-left flex items-center gap-2 transition-all text-xs ${selected ? 'border-purple-500/50 bg-purple-500/10 text-white' : 'border-zinc-800 bg-zinc-950 text-zinc-500'}`}>
+                                    className={`p-2.5 rounded-lg border text-left flex items-center gap-2 transition-all text-sm ${selected ? 'border-purple-500/50 bg-purple-500/10 text-white' : 'border-zinc-800 bg-zinc-950 text-zinc-500'}`}>
                                     <span>{item.emoji}</span>
                                     <span className="font-bold">{item.label}</span>
                                 </button>
@@ -407,20 +407,20 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                 <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
                     <div className="flex items-center gap-2 mb-2">
                         <Link2 size={16} className="text-blue-400" />
-                        <h2 className="text-sm font-black uppercase tracking-widest">Integrations</h2>
+                        <h2 className="text-base font-black uppercase tracking-widest">Integrations</h2>
                     </div>
-                    <p className="text-[10px] text-zinc-500 mb-4">Wearables sync to Health Connect every 15–30 min. For the latest reading, open your wearable&apos;s app then pull to refresh.</p>
+                    <p className="text-xs text-zinc-500 mb-4">Wearables sync to Health Connect every 15–30 min. For the latest reading, open your wearable&apos;s app then pull to refresh.</p>
 
                     {/* WHOOP */}
                     <div className="mb-4">
                         <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
                                 <span className="text-lg">⌚</span>
-                                <span className="text-sm font-bold text-white">WHOOP</span>
+                                <span className="text-base font-bold text-white">WHOOP</span>
                             </div>
-                            {whoopConnected && <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-bold">Connected</span>}
+                            {whoopConnected && <span className="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-bold">Connected</span>}
                         </div>
-                        <p className="text-zinc-500 text-xs mb-3">Auto-sync strain, recovery, sleep, and HRV.</p>
+                        <p className="text-zinc-500 text-sm mb-3">Auto-sync strain, recovery, sleep, and HRV.</p>
                         {whoopConnected ? (
                             <>
                             <div className="flex gap-2">
@@ -433,12 +433,12 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                                 </button>
                                 <button
                                     onClick={() => { setWhoopConnected(false); }}
-                                    className="px-3 py-2.5 bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-red-400 text-xs font-bold rounded-xl transition"
+                                    className="px-3 py-2.5 bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-red-400 text-sm font-bold rounded-xl transition"
                                 >
                                     Disconnect
                                 </button>
                             </div>
-                            {lastWhoopSync && <p className="text-[10px] text-zinc-600 mt-2 text-center">Last synced: {lastWhoopSync}</p>}
+                            {lastWhoopSync && <p className="text-xs text-zinc-600 mt-2 text-center">Last synced: {lastWhoopSync}</p>}
                             </>
                         ) : (
                             <a
@@ -457,11 +457,11 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                         <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
                                 <span className="text-lg">💚</span>
-                                <span className="text-sm font-bold text-white">Fitbit / Google Health</span>
+                                <span className="text-base font-bold text-white">Fitbit / Google Health</span>
                             </div>
-                            {googleConnected && <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-bold">Connected</span>}
+                            {googleConnected && <span className="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-bold">Connected</span>}
                         </div>
-                        <p className="text-zinc-500 text-xs mb-3">Auto-sync steps, sleep, calories, and weight from Fitbit or Pixel Watch.</p>
+                        <p className="text-zinc-500 text-sm mb-3">Auto-sync steps, sleep, calories, and weight from Fitbit or Pixel Watch.</p>
                         {googleConnected ? (
                             <button
                                 onClick={syncGoogle}
@@ -486,21 +486,21 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                     <div>
                         <div className="flex items-center gap-2 mb-2">
                             <span className="text-lg">📱</span>
-                            <span className="text-sm font-bold text-white">Health Connect / Apple Health</span>
+                            <span className="text-base font-bold text-white">Health Connect / Apple Health</span>
                         </div>
-                        <p className="text-zinc-500 text-xs mb-3">Auto-sync steps, sleep, calories, and weight from your phone.</p>
+                        <p className="text-zinc-500 text-sm mb-3">Auto-sync steps, sleep, calories, and weight from your phone.</p>
 
                     {syncToken ? (
                         <div className="space-y-3">
                             <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-3">
-                                <span className="text-[10px] text-zinc-600 uppercase font-bold">Your Webhook URL</span>
+                                <span className="text-xs text-zinc-600 uppercase font-bold">Your Webhook URL</span>
                                 <div className="flex gap-1.5 mt-1">
-                                    <code className="flex-1 text-[11px] text-zinc-300 bg-zinc-900 px-2 py-1.5 rounded break-all">{typeof window !== 'undefined' ? `${window.location.origin}/api/sync/health-connect?token=${syncToken}` : ''}</code>
+                                    <code className="flex-1 text-xs text-zinc-300 bg-zinc-900 px-2 py-1.5 rounded break-all">{typeof window !== 'undefined' ? `${window.location.origin}/api/sync/health-connect?token=${syncToken}` : ''}</code>
                                     <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/api/sync/health-connect?token=${syncToken}`); toast.success('URL copied!'); }} className="px-2 py-1 bg-zinc-800 rounded hover:bg-zinc-700 transition shrink-0 self-start">
                                         <Copy size={12} className="text-zinc-400" />
                                     </button>
                                 </div>
-                                <p className="text-zinc-600 text-[10px] mt-2">Paste this as the webhook URL in HC Webhook. No headers needed.</p>
+                                <p className="text-zinc-600 text-xs mt-2">Paste this as the webhook URL in HC Webhook. No headers needed.</p>
                             </div>
                             <a
                                 href="https://play.google.com/store/apps/details?id=com.hcwebhook.app"
@@ -510,7 +510,7 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                             >
                                 Get HC Webhook (Android)
                             </a>
-                            <p className="text-zinc-600 text-[10px] text-center">Paste the URL above into HC Webhook → Webhooks. Select Steps, Sleep, Calories, Weight.</p>
+                            <p className="text-zinc-600 text-xs text-center">Paste the URL above into HC Webhook → Webhooks. Select Steps, Sleep, Calories, Weight.</p>
                             <div className="flex gap-2">
                                 <a href="/sync/setup" className="flex-1 text-center py-2 bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition">
                                     Full Guide
@@ -524,7 +524,7 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                         <button
                             onClick={generateSyncToken}
                             disabled={generatingToken}
-                            className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase tracking-wider text-sm rounded-xl transition disabled:opacity-50"
+                            className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase tracking-wider text-base rounded-xl transition disabled:opacity-50"
                         >
                             {generatingToken ? 'Generating...' : 'Enable Health Sync'}
                         </button>
@@ -561,7 +561,7 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                     >
                         Reset Profile & Restart Onboarding
                     </button>
-                    <p className="text-[10px] text-zinc-700 text-center mt-1">Wipes all data and restarts setup. Your account stays intact.</p>
+                    <p className="text-xs text-zinc-700 text-center mt-1">Wipes all data and restarts setup. Your account stays intact.</p>
                 </div>
 
                 {/* Delete Account */}
@@ -583,7 +583,7 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                     >
                         Delete Account
                     </button>
-                    <p className="text-[10px] text-zinc-700 text-center mt-1">Permanently deletes all your data. This cannot be undone.</p>
+                    <p className="text-xs text-zinc-700 text-center mt-1">Permanently deletes all your data. This cannot be undone.</p>
                 </div>
             </div>
         </div>

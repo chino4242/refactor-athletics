@@ -68,7 +68,7 @@ export default function GearShop({ userId, careerXp, powerLevel, onUnlock }: Gea
             <div className="flex items-center justify-between bg-zinc-800/50 rounded-lg p-3">
                 <div className="flex items-center gap-2">
                     <Zap size={16} className="text-orange-500" />
-                    <span className="text-sm font-bold text-white">Career XP</span>
+                    <span className="text-base font-bold text-white">Career XP</span>
                 </div>
                 <span className="text-lg font-black text-orange-500">{careerXp.toLocaleString()}</span>
             </div>
@@ -114,18 +114,18 @@ export default function GearShop({ userId, careerXp, powerLevel, onUnlock }: Gea
 
                             {/* Info */}
                             <p className="text-xs font-bold text-white truncate">{item.name}</p>
-                            <p className={`text-[10px] font-bold uppercase ${rarityClass.split(' ')[0]}`}>{item.rarity}</p>
+                            <p className={`text-xs font-bold uppercase ${rarityClass.split(' ')[0]}`}>{item.rarity}</p>
 
                             {/* Action */}
                             {item.unlocked ? (
-                                <div className="mt-2 flex items-center gap-1 text-emerald-400 text-[10px] font-bold">
+                                <div className="mt-2 flex items-center gap-1 text-emerald-400 text-xs font-bold">
                                     <Check size={12} /> Owned
                                 </div>
                             ) : (
                                 <button
                                     onClick={() => handleUnlock(item)}
                                     disabled={!canUnlock || unlocking === item.id}
-                                    className={`mt-2 w-full py-1.5 rounded text-[10px] font-bold uppercase transition ${
+                                    className={`mt-2 w-full py-1.5 rounded text-xs font-bold uppercase transition ${
                                         canUnlock
                                             ? 'bg-orange-600 text-white hover:bg-orange-500'
                                             : 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
@@ -144,7 +144,7 @@ export default function GearShop({ userId, careerXp, powerLevel, onUnlock }: Gea
             </div>
 
             {filtered.length === 0 && (
-                <div className="text-center py-8 text-zinc-600 text-sm">No gear available</div>
+                <div className="text-center py-8 text-zinc-600 text-base">No gear available</div>
             )}
         </div>
     );

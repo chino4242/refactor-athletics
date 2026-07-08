@@ -62,9 +62,9 @@ export default function DurationCard({ card, isActive, colors, currentTheme, onC
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <img src={`/themes/${currentTheme}/v2/level0.png`} alt="" className="w-5 h-5" style={{ imageRendering: 'pixelated' }} />
-          <p className="text-xs text-white font-medium">{card.name}</p>
+          <p className="text-sm text-white font-medium">{card.name}</p>
         </div>
-        <span className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+        <span className="text-xs text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
           SET {card.completedSets + 1}/{card.totalSets}
         </span>
       </div>
@@ -74,7 +74,7 @@ export default function DurationCard({ card, isActive, colors, currentTheme, onC
 
       {/* Progressive overload nudge */}
       {card.currentLevel !== undefined && card.catalogItem?.standards && (
-        <p className="text-[8px] text-zinc-600 text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+        <p className="text-xs text-zinc-600 text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>
           {(() => {
             if (card.currentLevel >= 5) return 'LV5 · MAX RANK';
             const bestSec = Math.round(card.bestValue || 0);
@@ -105,7 +105,7 @@ export default function DurationCard({ card, isActive, colors, currentTheme, onC
             {running ? (targetSec - elapsed) : targetSec}
           </span>
         </div>
-        <p className="text-[8px] text-zinc-500 mt-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+        <p className="text-xs text-zinc-500 mt-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>
           {running ? 'HOLD...' : 'TAP TO START'}
         </p>
       </div>
@@ -118,7 +118,7 @@ export default function DurationCard({ card, isActive, colors, currentTheme, onC
         }}
         className={`w-full py-4 border-2 ${running ? 'border-red-500' : colors.primary} bg-zinc-800 text-center transition-colors hover:bg-zinc-700`}
       >
-        <span className={`text-[10px] ${running ? 'text-red-400' : colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+        <span className={`text-xs ${running ? 'text-red-400' : colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
           {running ? '■ STOP' : '▶ START HOLD'}
         </span>
       </button>

@@ -101,12 +101,12 @@ export default function WorkoutHistory({ userId }: { userId: string }) {
             <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 mb-4">
                 <div className="flex items-center justify-between mb-3">
                     <button onClick={() => setMonthOffset(m => m - 1)} className="p-1 text-zinc-400 hover:text-white"><ChevronLeft size={18} /></button>
-                    <span className="text-sm font-bold text-white">{monthName}</span>
+                    <span className="text-base font-bold text-white">{monthName}</span>
                     <button onClick={() => setMonthOffset(m => Math.min(m + 1, 0))} className="p-1 text-zinc-400 hover:text-white" disabled={monthOffset >= 0}><ChevronRight size={18} /></button>
                 </div>
                 <div className="grid grid-cols-7 gap-1 text-center">
                     {['S','M','T','W','T','F','S'].map((d, i) => (
-                        <div key={i} className="text-[9px] text-zinc-600 font-bold py-1">{d}</div>
+                        <div key={i} className="text-xs text-zinc-600 font-bold py-1">{d}</div>
                     ))}
                     {Array.from({ length: firstDayOfWeek }).map((_, i) => <div key={`e${i}`} />)}
                     {Array.from({ length: daysInMonth }).map((_, i) => {
@@ -135,10 +135,10 @@ export default function WorkoutHistory({ userId }: { userId: string }) {
             {selectedDayData && (
                 <div className="space-y-2">
                     <div className="flex items-center justify-between px-1 mb-2">
-                        <h2 className="text-sm font-bold text-white">
+                        <h2 className="text-base font-bold text-white">
                             {new Date(selectedDay + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
                         </h2>
-                        <span className="text-[10px] text-amber-400 font-bold">+{selectedDayData.totalXp} XP</span>
+                        <span className="text-xs text-amber-400 font-bold">+{selectedDayData.totalXp} XP</span>
                     </div>
                     {selectedDayData.exercises.map((ex, i) => {
                         const catItem = catalog.find(c => c.id === ex.exercise_id);
@@ -160,12 +160,12 @@ export default function WorkoutHistory({ userId }: { userId: string }) {
                                 className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-left hover:border-zinc-700 transition active:scale-[0.98]"
                             >
                                 <div className="flex items-center justify-between mb-1">
-                                    <span className="text-sm font-bold text-white capitalize">{ex.name}</span>
+                                    <span className="text-base font-bold text-white capitalize">{ex.name}</span>
                                     {ex.rank_name && (
-                                        <span className={`text-[10px] font-bold ${rankColors[ex.rank_name] || 'text-zinc-500'}`}>{ex.rank_name}</span>
+                                        <span className={`text-xs font-bold ${rankColors[ex.rank_name] || 'text-zinc-500'}`}>{ex.rank_name}</span>
                                     )}
                                 </div>
-                                <div className="flex items-center gap-3 text-[11px] text-zinc-500">
+                                <div className="flex items-center gap-3 text-xs text-zinc-500">
                                     {bestSet && bestSet.weight > 0 && (
                                         <span>Best: {bestSet.weight} × {bestSet.reps}</span>
                                     )}
@@ -175,7 +175,7 @@ export default function WorkoutHistory({ userId }: { userId: string }) {
                                 {ex.sets.length > 0 && ex.sets[0]?.weight > 0 && (
                                     <div className="flex gap-1.5 mt-2 flex-wrap">
                                         {ex.sets.map((s: any, si: number) => (
-                                            <span key={si} className="text-[9px] bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded font-mono">
+                                            <span key={si} className="text-xs bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded font-mono">
                                                 {s.weight}×{s.reps}
                                             </span>
                                         ))}
@@ -190,7 +190,7 @@ export default function WorkoutHistory({ userId }: { userId: string }) {
             {days.length === 0 && (
                 <div className="text-center py-12">
                     <div className="text-3xl mb-2">🏋️</div>
-                    <p className="text-sm text-zinc-500">No workout history yet</p>
+                    <p className="text-base text-zinc-500">No workout history yet</p>
                 </div>
             )}
 

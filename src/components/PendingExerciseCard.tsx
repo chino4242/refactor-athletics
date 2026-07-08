@@ -106,14 +106,14 @@ export default function PendingExerciseCard({ userId }: { userId: string }) {
               <div className="flex items-center gap-2">
                 <span className="text-lg">✅</span>
                 <div>
-                  <span className="text-xs font-bold text-emerald-400">+{result.xp_earned} XP</span>
-                  {result.rank_name && <span className="text-[10px] text-zinc-400 ml-2">→ {result.rank_name}</span>}
+                  <span className="text-sm font-bold text-emerald-400">+{result.xp_earned} XP</span>
+                  {result.rank_name && <span className="text-xs text-zinc-400 ml-2">→ {result.rank_name}</span>}
                 </div>
               </div>
               <button onClick={() => setExercises(prev => prev.filter(e => e.id !== ex.id))} className="text-zinc-600 text-xs">Done</button>
             </div>
             {(result.quest_progress || result.challenge_progress) && (
-              <div className="mt-1.5 flex gap-2 text-[10px]">
+              <div className="mt-1.5 flex gap-2 text-xs">
                 {result.quest_progress && <span className="text-orange-400">⚔️ {result.quest_progress}</span>}
                 {result.challenge_progress && <span className="text-blue-400">🎯 {result.challenge_progress}</span>}
               </div>
@@ -126,13 +126,13 @@ export default function PendingExerciseCard({ userId }: { userId: string }) {
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <span className="text-sm">📡</span>
-                <span className="text-[10px] font-bold text-orange-400 uppercase">Activity Detected</span>
+                <span className="text-xs font-bold text-orange-400 uppercase">Activity Detected</span>
               </div>
               <button onClick={() => dismiss(ex.id)} className="text-zinc-600 hover:text-zinc-400 text-xs">Skip</button>
             </div>
 
             {/* Show available data — hide zeros */}
-            <div className="flex gap-3 mb-3 text-xs text-zinc-300">
+            <div className="flex gap-3 mb-3 text-sm text-zinc-300">
               {miles && <span>📍 {miles} mi</span>}
               {mins > 0 && <span>⏱️ {mins} min</span>}
               {ex.calories && ex.calories > 0 && <span>🔥 {ex.calories} cal</span>}
@@ -149,11 +149,11 @@ export default function PendingExerciseCard({ userId }: { userId: string }) {
                 </div>
                 {searchResults.map(r => (
                   <button key={r.id} onClick={() => confirm(ex.id, r.id, r.id)}
-                    className="w-full text-left px-3 py-2 bg-zinc-800/50 rounded-lg hover:bg-zinc-800 transition text-xs text-white">
+                    className="w-full text-left px-3 py-2 bg-zinc-800/50 rounded-lg hover:bg-zinc-800 transition text-sm text-white">
                     {r.name} <span className="text-zinc-600 ml-1">{r.category}</span>
                   </button>
                 ))}
-                <button onClick={() => { setSearchOpen(null); setSearchQuery(''); }} className="text-[10px] text-zinc-500 w-full text-center">Cancel</button>
+                <button onClick={() => { setSearchOpen(null); setSearchQuery(''); }} className="text-xs text-zinc-500 w-full text-center">Cancel</button>
               </div>
             ) : (
               <div className="flex gap-2">
@@ -161,13 +161,13 @@ export default function PendingExerciseCard({ userId }: { userId: string }) {
                 <button onClick={() => confirm(ex.id, suggestion.id)} disabled={confirming === ex.id}
                   className="flex-1 bg-orange-500/15 border border-orange-500/30 hover:bg-orange-500/25 rounded-lg py-2.5 text-center transition">
                   <div className="text-base">{suggestion.emoji}</div>
-                  <div className="text-[10px] font-bold text-orange-400">{confirming === ex.id ? '...' : `Log as ${suggestion.label}`}</div>
+                  <div className="text-xs font-bold text-orange-400">{confirming === ex.id ? '...' : `Log as ${suggestion.label}`}</div>
                 </button>
                 {/* Search for something else */}
                 <button onClick={() => setSearchOpen(ex.id)}
                   className="px-4 bg-zinc-800 border border-zinc-700 hover:border-zinc-600 rounded-lg text-center transition">
                   <Search size={14} className="text-zinc-400 mx-auto" />
-                  <div className="text-[9px] text-zinc-500 mt-0.5">Other</div>
+                  <div className="text-xs text-zinc-500 mt-0.5">Other</div>
                 </button>
               </div>
             )}

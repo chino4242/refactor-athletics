@@ -143,8 +143,8 @@ export default function RefactorScoreCard({ userId, profile }: RefactorScoreCard
 
   if (!score) return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-      <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Refactor Score</div>
-      <div className="text-xs text-zinc-600 mt-1">Loading...</div>
+      <div className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Refactor Score</div>
+      <div className="text-sm text-zinc-600 mt-1">Loading...</div>
     </div>
   );
 
@@ -159,16 +159,16 @@ export default function RefactorScoreCard({ userId, profile }: RefactorScoreCard
       {/* Power-Up Banner */}
       {powerUp && (
         <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2 flex items-center justify-between">
-          <span className="text-[11px] font-bold text-amber-400">⚡ Daily Power-Up: {powerUp.emoji} {powerUp.label}</span>
-          <span className="text-[10px] text-amber-500/70">2x XP</span>
+          <span className="text-xs font-bold text-amber-400">⚡ Daily Power-Up: {powerUp.emoji} {powerUp.label}</span>
+          <span className="text-xs text-amber-500/70">2x XP</span>
         </div>
       )}
 
       {/* Composite Score */}
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Refactor Score</div>
-          <div className="text-[9px] text-zinc-600 mt-0.5">14-day rolling fitness health</div>
+          <div className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Refactor Score</div>
+          <div className="text-xs text-zinc-600 mt-0.5">14-day rolling fitness health</div>
           <div className="text-3xl font-black text-white">{score.total}<span className="text-lg text-zinc-500">/100</span></div>
         </div>
         <div className="w-16 h-16 rounded-full border-4 border-zinc-700 flex items-center justify-center relative">
@@ -185,9 +185,9 @@ export default function RefactorScoreCard({ userId, profile }: RefactorScoreCard
         {score.subScores.map((sub: any) => (
           <div key={sub.label} className="text-center">
             <div className="text-sm mb-0.5">{sub.emoji}</div>
-            <div className="text-[11px] font-bold text-white">{sub.score}</div>
+            <div className="text-xs font-bold text-white">{sub.score}</div>
             <div className="flex justify-center"><TrendIcon trend={sub.trend} /></div>
-            <div className="text-[8px] text-zinc-500 mt-0.5">{sub.label}</div>
+            <div className="text-xs text-zinc-500 mt-0.5">{sub.label}</div>
           </div>
         ))}
       </div>

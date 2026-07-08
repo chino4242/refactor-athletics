@@ -243,14 +243,14 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate, sect
         <button onClick={() => setViewMode('HUB')} className="text-left cursor-pointer">
           <div className="flex items-center gap-1.5">
             <span className="text-zinc-500 text-sm">‹</span>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-orange-400">
+            <span className="text-xs font-bold uppercase tracking-widest text-orange-400">
               Block {completedIndices.length + 1} of {workoutData.length}
             </span>
           </div>
         </button>
         <div className="flex bg-zinc-800 rounded-lg p-0.5">
-          <button onClick={() => setWorkoutMode('guided')} className={`px-2.5 py-1 rounded text-[10px] font-bold transition ${workoutMode === 'guided' ? 'bg-zinc-700 text-white' : 'text-zinc-500'}`}>Guided</button>
-          <button onClick={() => setWorkoutMode('flexible')} className={`px-2.5 py-1 rounded text-[10px] font-bold transition ${workoutMode === 'flexible' ? 'bg-zinc-700 text-white' : 'text-zinc-500'}`}>Flexible</button>
+          <button onClick={() => setWorkoutMode('guided')} className={`px-2.5 py-1 rounded text-xs font-bold transition ${workoutMode === 'guided' ? 'bg-zinc-700 text-white' : 'text-zinc-500'}`}>Guided</button>
+          <button onClick={() => setWorkoutMode('flexible')} className={`px-2.5 py-1 rounded text-xs font-bold transition ${workoutMode === 'flexible' ? 'bg-zinc-700 text-white' : 'text-zinc-500'}`}>Flexible</button>
         </div>
       </div>
 
@@ -277,7 +277,7 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate, sect
 
       {/* End Workout */}
       <div className="mt-3 text-center">
-        <button onClick={() => setShowEndConfirm(true)} className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest hover:text-red-500 transition-colors py-2">End Workout</button>
+        <button onClick={() => setShowEndConfirm(true)} className="text-zinc-600 text-xs font-bold uppercase tracking-widest hover:text-red-500 transition-colors py-2">End Workout</button>
       </div>
 
       {/* End Workout Confirmation */}
@@ -286,10 +286,10 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate, sect
           <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 max-w-sm w-full text-center">
             <div className="text-3xl mb-3">🏁</div>
             <h3 className="text-lg font-black text-white mb-2">End Workout?</h3>
-            <p className="text-sm text-zinc-400 mb-6">Completed blocks are already saved. You can always come back and finish later.</p>
+            <p className="text-base text-zinc-400 mb-6">Completed blocks are already saved. You can always come back and finish later.</p>
             <div className="flex gap-3">
-              <button onClick={() => setShowEndConfirm(false)} className="flex-1 py-3 bg-zinc-800 border border-zinc-700 text-zinc-300 font-bold text-sm rounded-xl hover:bg-zinc-700 transition">Keep Going</button>
-              <button onClick={() => { setShowEndConfirm(false); setIsComplete(true); localStorage.removeItem(progressKey); }} className="flex-1 py-3 bg-red-600 hover:bg-red-500 text-white font-bold text-sm rounded-xl transition">End Workout</button>
+              <button onClick={() => setShowEndConfirm(false)} className="flex-1 py-3 bg-zinc-800 border border-zinc-700 text-zinc-300 font-bold text-base rounded-xl hover:bg-zinc-700 transition">Keep Going</button>
+              <button onClick={() => { setShowEndConfirm(false); setIsComplete(true); localStorage.removeItem(progressKey); }} className="flex-1 py-3 bg-red-600 hover:bg-red-500 text-white font-bold text-base rounded-xl transition">End Workout</button>
             </div>
           </div>
         </div>
@@ -301,7 +301,7 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate, sect
           <div className="bg-zinc-900 rounded-2xl max-w-md w-full max-h-[80vh] overflow-hidden border border-zinc-700 flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="p-6 border-b border-zinc-700 shrink-0">
               <h2 className="text-2xl font-black italic text-white">Workout Library</h2>
-              <p className="text-zinc-400 text-sm mt-1">Select a past workout</p>
+              <p className="text-zinc-400 text-base mt-1">Select a past workout</p>
             </div>
             <div className="overflow-y-auto p-4 space-y-2 flex-1">
               <div className="flex p-1 bg-zinc-800 rounded-xl mb-4">
@@ -316,7 +316,7 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate, sect
                         <div className="font-bold capitalize text-white">{day.day}</div>
                         <ChevronRight size={16} />
                       </div>
-                      <div className="text-xs text-zinc-500 mt-1 truncate">{day.title}</div>
+                      <div className="text-sm text-zinc-500 mt-1 truncate">{day.title}</div>
                     </button>
                   ))}
                 </div>
@@ -324,7 +324,7 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate, sect
                 <div className="space-y-2">
                   <button onClick={() => handlePreviewWorkout()} className={`w-full p-4 rounded-xl text-left transition ${(!selectedDate && !briefingData) ? 'bg-orange-600 text-white' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'}`}>
                     <div className="font-bold">Today</div>
-                    <div className="text-xs opacity-70">Latest workout</div>
+                    <div className="text-sm opacity-70">Latest workout</div>
                   </button>
                   {workoutDates.map((date) => (
                     <button key={date} onClick={() => handlePreviewWorkout(date)} className={`w-full p-4 rounded-xl text-left transition ${selectedDate === date ? 'bg-orange-600 text-white' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'}`}>
@@ -344,8 +344,8 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate, sect
           <div className="bg-zinc-900 border-t border-zinc-700 rounded-t-2xl w-full max-w-lg max-h-[70vh] flex flex-col" onClick={e => e.stopPropagation()}>
             <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-bold text-white">Swap Exercise</h3>
-                <p className="text-[10px] text-zinc-500">Replacing: {swapTarget.name}</p>
+                <h3 className="text-base font-bold text-white">Swap Exercise</h3>
+                <p className="text-xs text-zinc-500">Replacing: {swapTarget.name}</p>
               </div>
               <button onClick={() => setSwapTarget(null)} className="text-zinc-500 hover:text-white text-xs font-bold px-3 py-1 rounded bg-zinc-800">✕</button>
             </div>
@@ -355,14 +355,14 @@ export default function ActiveWorkout({ userId, onLogComplete, initialDate, sect
                 .sort((a, b) => a.name.localeCompare(b.name))
                 .map(c => (
                   <button key={c.id} onClick={() => { setExerciseSwaps(prev => ({ ...prev, [`${swapTarget.blockIdx}-${swapTarget.exIdx}`]: { name: c.name, catalogItem: c } })); setSwapTarget(null); }} className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-zinc-800 transition flex items-center justify-between">
-                    <span className="text-sm text-white">{c.name}</span>
+                    <span className="text-base text-white">{c.name}</span>
                     {c.required_equipment && c.required_equipment.length > 0 && (
-                      <span className="text-[9px] text-zinc-600">{c.required_equipment.join(', ')}</span>
+                      <span className="text-xs text-zinc-600">{c.required_equipment.join(', ')}</span>
                     )}
                   </button>
                 ))}
               {catalog.filter(c => c.swap_group === swapTarget.swapGroup && c.name.toLowerCase() !== swapTarget.name.toLowerCase()).length === 0 && (
-                <p className="text-center text-zinc-500 text-xs py-4">No alternatives available</p>
+                <p className="text-center text-zinc-500 text-sm py-4">No alternatives available</p>
               )}
             </div>
           </div>

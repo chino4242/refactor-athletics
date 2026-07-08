@@ -60,11 +60,11 @@ export default function WeightTracker({ currentWeight, goalWeight, weightHistory
     return (
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex flex-col justify-between relative shadow-lg overflow-hidden">
             <div className="flex flex-col sm:flex-row justify-between items-start mb-2 gap-2 w-full">
-                <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest shrink-0">Body Comp</h4>
+                <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-widest shrink-0">Body Comp</h4>
                 {goalWeight > 0 && diff && (
                     <div className="flex flex-col items-end gap-0.5 sm:gap-0 self-end sm:self-auto max-w-full">
-                        <span className="text-[10px] bg-zinc-800 text-zinc-400 px-2 py-1 rounded-full mb-0 sm:mb-1 break-words text-right max-w-full">Target: {goalWeight}</span>
-                        <span className={`text-[10px] font-bold ${getProximityColor(currentWeight, goalWeight)} break-words text-right max-w-full`}>
+                        <span className="text-xs bg-zinc-800 text-zinc-400 px-2 py-1 rounded-full mb-0 sm:mb-1 break-words text-right max-w-full">Target: {goalWeight}</span>
+                        <span className={`text-xs font-bold ${getProximityColor(currentWeight, goalWeight)} break-words text-right max-w-full`}>
                             {diff} lbs to go
                         </span>
                     </div>
@@ -75,7 +75,7 @@ export default function WeightTracker({ currentWeight, goalWeight, weightHistory
                 <div className="w-full h-16 relative">
                     {renderWeightSparkline()}
                     {weightHistory.length < 2 && (
-                        <div className="absolute inset-0 flex items-center justify-center text-[10px] text-zinc-700 text-center leading-tight">
+                        <div className="absolute inset-0 flex items-center justify-center text-xs text-zinc-700 text-center leading-tight">
                             Log weight twice<br />to see trend
                         </div>
                     )}
@@ -83,7 +83,7 @@ export default function WeightTracker({ currentWeight, goalWeight, weightHistory
             </div>
 
             <div className="mt-2 pt-2 border-t border-zinc-800 flex justify-between items-center">
-                <div className="text-xs text-zinc-400">Current</div>
+                <div className="text-base text-zinc-400">Current</div>
                 <div className="font-mono font-bold text-white">{currentWeight} lbs</div>
             </div>
         </div>

@@ -52,7 +52,7 @@ export default function MilestoneTable({ userId, age, sex, bodyweight }: Props) 
         }
     };
 
-    if (loading) return <div className="text-zinc-500 animate-pulse font-mono text-sm">LOADING MILESTONES...</div>;
+    if (loading) return <div className="text-zinc-500 animate-pulse font-mono text-base">LOADING MILESTONES...</div>;
 
     return (
         <div className="space-y-4 animate-fade-in-up">
@@ -68,8 +68,8 @@ export default function MilestoneTable({ userId, age, sex, bodyweight }: Props) 
                         >
                             <div className="flex items-center gap-3">
                                 <div className={`w-1 h-5 rounded-full transition-colors ${isOpen ? 'bg-orange-500' : 'bg-zinc-600'}`}></div>
-                                <h3 className={`text-sm font-bold uppercase tracking-widest text-left ${isOpen ? 'text-white' : 'text-zinc-400'}`}>
-                                    {category} <span className="text-zinc-600 text-[10px] ml-2 font-mono">({count})</span>
+                                <h3 className={`text-base font-bold uppercase tracking-widest text-left ${isOpen ? 'text-white' : 'text-zinc-400'}`}>
+                                    {category} <span className="text-zinc-600 text-xs ml-2 font-mono">({count})</span>
                                 </h3>
                             </div>
 
@@ -89,7 +89,7 @@ export default function MilestoneTable({ userId, age, sex, bodyweight }: Props) 
                                         {/* Left: Exercise Info */}
                                         <div>
                                             <div className="font-bold text-zinc-200">{item.displayName}</div>
-                                            <div className="text-xs font-mono mt-1 flex items-center gap-2">
+                                            <div className="text-base font-mono mt-1 flex items-center gap-2">
                                                 <span className={item.current_level > 0 ? "text-emerald-500" : "text-zinc-600"}>
                                                     {item.current_level > 0 ? `LVL ${item.current_level}` : 'UNRANKED'}
                                                 </span>
@@ -106,7 +106,7 @@ export default function MilestoneTable({ userId, age, sex, bodyweight }: Props) 
                                             {item.next_milestone ? (
                                                 <>
                                                     <div>
-                                                        <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-0.5">Next Level Target</div>
+                                                        <div className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-0.5">Next Level Target</div>
                                                         <div className="font-black text-orange-500 text-lg md:text-xl tracking-tight leading-none">
                                                             {item.next_milestone}
                                                         </div>

@@ -34,7 +34,7 @@ export default function OnboardingChecklist({ quests, allComplete }: OnboardingC
         <div className="flex items-center gap-2">
           <span className="text-sm">🚀</span>
           <span className="text-xs font-bold text-white">Getting Started</span>
-          <span className="text-[10px] font-bold text-zinc-500 bg-zinc-800 px-1.5 py-0.5 rounded">
+          <span className="text-xs font-bold text-zinc-500 bg-zinc-800 px-1.5 py-0.5 rounded">
             {completedCount}/{quests.length}
           </span>
         </div>
@@ -60,11 +60,11 @@ export default function OnboardingChecklist({ quests, allComplete }: OnboardingC
                   {quest.emoji} {quest.title}
                 </div>
                 {!quest.isComplete && (
-                  <div className="text-[10px] text-zinc-500">{quest.description}</div>
+                  <div className="text-xs text-zinc-500">{quest.description}</div>
                 )}
               </div>
               {!quest.isComplete && quest.ctaHref && (
-                <Link href={quest.ctaHref} className="text-[10px] font-bold text-orange-400 shrink-0">
+                <Link href={quest.ctaHref} className="text-xs font-bold text-orange-400 shrink-0">
                   {quest.cta} →
                 </Link>
               )}

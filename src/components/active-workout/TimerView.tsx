@@ -209,9 +209,9 @@ export default function TimerView({ block, blockIndex, onComplete, engineChoice 
       <div className="w-full max-w-md mx-auto flex flex-col items-center justify-center gap-6 p-8">
         <div className="text-5xl">🏁</div>
         <h2 className="text-xl font-black text-white uppercase tracking-tight">Block Complete!</h2>
-        <p className="text-sm text-zinc-400 text-center">How far did you go? (optional)</p>
+        <p className="text-base text-zinc-400 text-center">How far did you go? (optional)</p>
         <div className="w-full max-w-[200px]">
-          <span className="text-[9px] text-zinc-500 uppercase block text-center mb-1">Miles</span>
+          <span className="text-xs text-zinc-500 uppercase block text-center mb-1">Miles</span>
           <input
             type="text"
             inputMode="decimal"
@@ -241,11 +241,11 @@ export default function TimerView({ block, blockIndex, onComplete, engineChoice 
             {block.name}
           </h2>
           <div className="flex items-center gap-2">
-            {earnedXp > 0 && <span className="text-xs font-bold text-yellow-400/90">XP: {earnedXp}</span>}
+            {earnedXp > 0 && <span className="text-sm font-bold text-yellow-400/90">XP: {earnedXp}</span>}
             <button onClick={toggleAudioMode} className={`p-1.5 rounded-lg transition ${audioMode ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-zinc-800/50 text-white/40 border border-white/10'}`} title={audioMode ? 'Audio cues on' : 'Audio cues off'}>
               {audioMode ? <Volume2 size={14} /> : <VolumeX size={14} />}
             </button>
-            <button onClick={() => setOutdoor(o => !o)} className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg transition ${outdoor ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-zinc-800/50 text-white/50 border border-white/10'}`}>
+            <button onClick={() => setOutdoor(o => !o)} className={`text-xs font-bold uppercase tracking-wider px-2 py-1 rounded-lg transition ${outdoor ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-zinc-800/50 text-white/50 border border-white/10'}`}>
               {outdoor ? '🌳 Out' : '🏃 In'}
             </button>
           </div>
@@ -254,7 +254,7 @@ export default function TimerView({ block, blockIndex, onComplete, engineChoice 
           <h1 className="text-white text-3xl font-black italic">
             {outdoor && currentInterval.outdoor_alternative ? currentInterval.outdoor_alternative : currentInterval.zone}
           </h1>
-          <span className="text-white/60 font-mono text-sm">
+          <span className="text-white/60 font-mono text-base">
             {intervalIndex + 1} / {block.intervals.length}
           </span>
         </div>
@@ -269,7 +269,7 @@ export default function TimerView({ block, blockIndex, onComplete, engineChoice 
       {/* CONTENT: GET READY / TIMER / CARD */}
       {getReady > 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-          <h3 className="text-white/60 font-bold uppercase tracking-widest text-sm mb-4">Get Ready</h3>
+          <h3 className="text-white/60 font-bold uppercase tracking-widest text-base mb-4">Get Ready</h3>
           <div className="text-[120px] font-black text-white leading-none font-mono animate-pulse">{getReady}</div>
         </div>
       ) : (
@@ -291,7 +291,7 @@ export default function TimerView({ block, blockIndex, onComplete, engineChoice 
               return m ? (
                 <div className="absolute top-4 right-4 bg-black/30 backdrop-blur-sm rounded-xl px-3 py-2 flex items-center gap-1">
                   <span className="text-2xl font-black text-white">{m[1]}%</span>
-                  <span className="text-[10px] text-white/60 uppercase font-bold">incline</span>
+                  <span className="text-xs text-white/60 uppercase font-bold">incline</span>
                 </div>
               ) : null;
             })()}
@@ -307,7 +307,7 @@ export default function TimerView({ block, blockIndex, onComplete, engineChoice 
               const remaining = timeLeft + block.intervals.slice(intervalIndex + 1).reduce((s: number, i: any) => s + (i.seconds || 0), 0);
               const mins = Math.floor(remaining / 60);
               const secs = remaining % 60;
-              return <p className="text-white/50 text-sm font-mono mt-2">{mins}:{secs < 10 ? '0' : ''}{secs} remaining</p>;
+              return <p className="text-white/50 text-base font-mono mt-2">{mins}:{secs < 10 ? '0' : ''}{secs} remaining</p>;
             })()}
           </>
         )}
@@ -317,11 +317,11 @@ export default function TimerView({ block, blockIndex, onComplete, engineChoice 
       {/* FOOTER */}
       <div className="bg-black/30 p-4 backdrop-blur-md shrink-0">
         <div className="flex items-center gap-3 mb-2">
-          <span className="text-[10px] font-bold bg-white/20 text-white px-2 py-1 rounded uppercase">Up Next</span>
+          <span className="text-xs font-bold bg-white/20 text-white px-2 py-1 rounded uppercase">Up Next</span>
           {nextInterval ? (
             <div className="flex items-center gap-2 min-w-0">
               <span className="text-base font-bold text-white truncate">{nextInterval.zone || nextInterval.text || 'Next'}</span>
-              {nextInterval.seconds && <span className="text-sm text-white/50 font-mono shrink-0">{Math.floor(nextInterval.seconds / 60)}:{nextInterval.seconds % 60 < 10 ? '0' : ''}{nextInterval.seconds % 60}</span>}
+              {nextInterval.seconds && <span className="text-base text-white/50 font-mono shrink-0">{Math.floor(nextInterval.seconds / 60)}:{nextInterval.seconds % 60 < 10 ? '0' : ''}{nextInterval.seconds % 60}</span>}
             </div>
           ) : (
             <span className="text-base font-bold text-white">Block Complete 🎉</span>

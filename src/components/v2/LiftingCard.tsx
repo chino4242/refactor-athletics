@@ -66,22 +66,22 @@ function PlateCalcInline({ onUse }: { onUse: (weight: number) => void }) {
       <div className="flex items-center justify-between">
         <div className="flex gap-1">
           {[45, 25].map(bw => (
-            <button key={bw} onClick={() => setBarWeight(bw)} className={`text-[7px] px-2 py-1 border ${barWeight === bw ? 'border-zinc-500 text-white' : 'border-zinc-700 text-zinc-500'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <button key={bw} onClick={() => setBarWeight(bw)} className={`text-xs px-2 py-1 border ${barWeight === bw ? 'border-zinc-500 text-white' : 'border-zinc-700 text-zinc-500'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
               {bw}lb BAR
             </button>
           ))}
         </div>
-        <span className="text-[9px] text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>{total} LBS</span>
+        <span className="text-xs text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>{total} LBS</span>
       </div>
       <div className="grid grid-cols-6 gap-1">
         {PLATES.map(p => (
           <div key={p} className="text-center">
-            <p className="text-[7px] text-zinc-500 mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>{p}</p>
+            <p className="text-xs text-zinc-500 mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>{p}</p>
             <div className="flex items-center justify-center">
               <button onClick={() => setPlates(prev => ({ ...prev, [p]: Math.max(0, (prev[p] || 0) - 1) }))} className="w-7 h-7 flex items-center justify-center border border-zinc-600 bg-zinc-900 text-zinc-300 active:bg-zinc-700">
                 <span className="text-sm">−</span>
               </button>
-              <span className="text-[9px] text-white w-5 text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>{plates[p] || 0}</span>
+              <span className="text-xs text-white w-5 text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>{plates[p] || 0}</span>
               <button onClick={() => setPlates(prev => ({ ...prev, [p]: (prev[p] || 0) + 1 }))} className="w-7 h-7 flex items-center justify-center border border-zinc-600 bg-zinc-900 text-zinc-300 active:bg-zinc-700">
                 <span className="text-sm">+</span>
               </button>
@@ -89,7 +89,7 @@ function PlateCalcInline({ onUse }: { onUse: (weight: number) => void }) {
           </div>
         ))}
       </div>
-      <button onClick={() => onUse(total)} className="w-full text-[8px] py-1.5 border border-zinc-600 bg-zinc-900 text-zinc-300 hover:text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+      <button onClick={() => onUse(total)} className="w-full text-xs py-1.5 border border-zinc-600 bg-zinc-900 text-zinc-300 hover:text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>
         USE {total} LBS
       </button>
     </div>
@@ -112,7 +112,7 @@ export default function LiftingCard({ card, isActive, colors, currentTheme, weig
       {combat && !isSuperset && <EnemySprite exerciseId={card.exerciseId} level={card.currentLevel || 0} defeated={card.defeated} theme={currentTheme} showName attackCount={card.completedSets} />}
       {/* Battle narration */}
       {combat && !isSuperset && (
-        <p className="text-[9px] text-zinc-500 italic text-center mb-1">
+        <p className="text-xs text-zinc-500 italic text-center mb-1">
           {getBattleNarration(card, currentTheme)}
         </p>
       )}
@@ -125,10 +125,10 @@ export default function LiftingCard({ card, isActive, colors, currentTheme, weig
           <div className="space-y-2">
             <EnemySprite exerciseId={card.exerciseId} level={card.currentLevel || 0} defeated={card.defeated} theme={currentTheme} showName={combat} attackCount={card.completedSets} />
             <div className="flex items-center justify-between">
-              <span className={`text-[8px] ${colors.secondary} tracking-wider`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              <span className={`text-xs ${colors.secondary} tracking-wider`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                 ⚔⚔ DUAL ENCOUNTER
               </span>
-              <span className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              <span className="text-xs text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
                 SET {card.completedSets + 1}/{card.totalSets}
               </span>
             </div>
@@ -137,10 +137,10 @@ export default function LiftingCard({ card, isActive, colors, currentTheme, weig
               const done = i < subExerciseIdx;
               return (
                 <div key={i} className={`flex items-center justify-between px-2 py-1.5 border ${active ? `${colors.border} bg-zinc-800` : 'border-transparent'}`}>
-                  <p className={`${active ? 'text-[10px] text-white' : 'text-[8px] text-zinc-600'} truncate max-w-[220px]`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                  <p className={`${active ? 'text-xs text-white' : 'text-xs text-zinc-600'} truncate max-w-[220px]`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                     {done ? '✓ ' : active ? '▸ ' : ''}{ex.name}
                   </p>
-                  <span className={`text-[8px] ${done ? 'text-green-500' : active ? colors.secondary : 'text-zinc-700'}`}>
+                  <span className={`text-xs ${done ? 'text-green-500' : active ? colors.secondary : 'text-zinc-700'}`}>
                     {done ? '✓' : active ? '⬤' : '○'}
                   </span>
                 </div>
@@ -151,9 +151,9 @@ export default function LiftingCard({ card, isActive, colors, currentTheme, weig
           <div className="flex items-center justify-between">
             <button onClick={() => onShowHistory(card.exerciseId)} className="flex items-center gap-2">
               {!combat && <img src={`/themes/${currentTheme}/v2/level${card.catalogItem?.standards ? '1' : '0'}.png`} alt="" className="w-5 h-5" style={{ imageRendering: 'pixelated' }} />}
-              <p className={`${combat ? 'text-[10px] text-zinc-400' : 'text-xs text-white font-medium'} truncate max-w-[200px] ${combat ? '' : 'underline decoration-zinc-700'}`}>{displayName}</p>
+              <p className={`${combat ? 'text-xs text-zinc-400' : 'text-xs text-white font-medium'} truncate max-w-[200px] ${combat ? '' : 'underline decoration-zinc-700'}`}>{displayName}</p>
             </button>
-            <span className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <span className="text-xs text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
               {card.completedSets + 1 === card.totalSets ? (combat ? '⚡ FINAL STRIKE' : '⚡ LAST SET') : combat ? `STRIKE ${card.completedSets + 1}/${card.totalSets}` : `SET ${card.completedSets + 1}/${card.totalSets}`}
             </span>
           </div>
@@ -165,7 +165,7 @@ export default function LiftingCard({ card, isActive, colors, currentTheme, weig
 
       {/* Rank indicator + progressive overload suggestion */}
       {card.currentLevel !== undefined && !isSuperset && card.catalogItem?.standards && (
-        <p className="text-[8px] text-zinc-600 text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+        <p className="text-xs text-zinc-600 text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>
           {(() => {
             const unit = card.catalogItem?.standards?.unit;
             const isRepsBased = unit === 'Reps';
@@ -219,7 +219,7 @@ export default function LiftingCard({ card, isActive, colors, currentTheme, weig
 
       {/* PR Flash */}
       {prFlash && (
-        <p className="text-center text-sm text-amber-400 font-bold animate-pulse" style={{ fontFamily: "var(--font-pixel), monospace" }}>★ NEW PR</p>
+        <p className="text-center text-base text-amber-400 font-bold animate-pulse" style={{ fontFamily: "var(--font-pixel), monospace" }}>★ NEW PR</p>
       )}
 
       {/* Equipment variants */}
@@ -229,11 +229,11 @@ export default function LiftingCard({ card, isActive, colors, currentTheme, weig
         if (variants.length === 0) return null;
         return (
           <div className="flex gap-1 flex-wrap">
-            <span className={`text-[8px] px-1.5 py-0.5 border ${colors.primary} bg-zinc-800 text-zinc-200`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <span className={`text-xs px-1.5 py-0.5 border ${colors.primary} bg-zinc-800 text-zinc-200`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
               {card.catalogItem?.required_equipment?.[0]?.toUpperCase()?.slice(0, 2) || 'BB'}
             </span>
             {variants.slice(0, 3).map(v => (
-              <button key={v.id} onClick={() => onSwap(v.id, v.name)} className="text-[8px] px-1.5 py-0.5 border border-zinc-700 bg-zinc-900 text-zinc-500 hover:text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              <button key={v.id} onClick={() => onSwap(v.id, v.name)} className="text-xs px-1.5 py-0.5 border border-zinc-700 bg-zinc-900 text-zinc-500 hover:text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>
                 {v.required_equipment?.[0]?.toUpperCase()?.slice(0, 2) || 'DB'}
               </button>
             ))}
@@ -254,7 +254,7 @@ export default function LiftingCard({ card, isActive, colors, currentTheme, weig
           const threshold = levels[i];
           if (currentWeight < threshold) {
             const diff = Math.round(threshold - currentWeight);
-            return <p className={`text-[8px] ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>▲ {diff} more for LV{i + 1}</p>;
+            return <p className={`text-xs ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>▲ {diff} more for LV{i + 1}</p>;
           }
         }
         return null;
@@ -269,11 +269,11 @@ export default function LiftingCard({ card, isActive, colors, currentTheme, weig
             <div className="grid grid-cols-2 gap-3">
               <div className={`border ${colors.border} bg-zinc-800 p-4 text-center`}>
                 <input type="number" inputMode="numeric" value={weight} onChange={e => onWeightChange(e.target.value)} className="w-full bg-transparent text-center text-3xl text-white outline-none placeholder:text-zinc-600" style={{ fontFamily: "var(--font-pixel), monospace" }} placeholder="0" />
-                <p className="text-[8px] text-zinc-500 mt-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>MIN</p>
+                <p className="text-xs text-zinc-500 mt-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>MIN</p>
               </div>
               <div className={`border ${colors.border} bg-zinc-800 p-4 text-center`}>
                 <input type="number" inputMode="numeric" value={reps} onChange={e => onRepsChange(e.target.value)} className="w-full bg-transparent text-center text-3xl text-white outline-none placeholder:text-zinc-600" style={{ fontFamily: "var(--font-pixel), monospace" }} placeholder="00" />
-                <p className="text-[8px] text-zinc-500 mt-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>SEC</p>
+                <p className="text-xs text-zinc-500 mt-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>SEC</p>
               </div>
             </div>
           );
@@ -292,7 +292,7 @@ export default function LiftingCard({ card, isActive, colors, currentTheme, weig
                   style={{ fontFamily: "var(--font-pixel), monospace" }}
                   placeholder={String(card.targetReps || 8)}
                 />
-                <p className="text-[8px] text-zinc-500 mt-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>MAX REPS</p>
+                <p className="text-xs text-zinc-500 mt-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>MAX REPS</p>
               </button>
             </div>
           );
@@ -310,7 +310,7 @@ export default function LiftingCard({ card, isActive, colors, currentTheme, weig
             style={{ fontFamily: "var(--font-pixel), monospace" }}
             placeholder={card.lastWeight ? String(card.lastWeight) : '0'}
           />
-          <p className="text-[8px] text-zinc-500 mt-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>LBS</p>
+          <p className="text-xs text-zinc-500 mt-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>LBS</p>
         </button>
         <button onClick={() => { if (!reps) onRepsChange(String(card.targetReps || 8)); }} className={`border ${colors.border} bg-zinc-800 p-4 text-center`}>
           <input
@@ -323,7 +323,7 @@ export default function LiftingCard({ card, isActive, colors, currentTheme, weig
             style={{ fontFamily: "var(--font-pixel), monospace" }}
             placeholder={String(card.targetReps || 8)}
           />
-          <p className="text-[8px] text-zinc-500 mt-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>REPS</p>
+          <p className="text-xs text-zinc-500 mt-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>REPS</p>
         </button>
       </div>
         );
@@ -341,15 +341,15 @@ export default function LiftingCard({ card, isActive, colors, currentTheme, weig
             <span className="text-3xl font-bold text-cyan-300 tabular-nums">
               {restSeconds}s
             </span>
-            <span className="text-[10px] text-cyan-400/80 tracking-wider" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <span className="text-xs text-cyan-400/80 tracking-wider" style={{ fontFamily: "var(--font-pixel), monospace" }}>
               ◷ RESTING — TAP TO SKIP
             </span>
-            {restEvent && <p className="text-[10px] text-zinc-500 mt-1 italic">{restEvent}</p>}
+            {restEvent && <p className="text-xs text-zinc-500 mt-1 italic">{restEvent}</p>}
           </div>
         </button>
         {canUndo && onUndo && (
           <button onClick={onUndo} className="w-full py-2 mt-1 border border-zinc-700 bg-zinc-900 text-center hover:bg-zinc-800">
-            <span className="text-[9px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>↩ UNDO LAST</span>
+            <span className="text-xs text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>↩ UNDO LAST</span>
           </button>
         )}
         </>
@@ -358,7 +358,7 @@ export default function LiftingCard({ card, isActive, colors, currentTheme, weig
           onClick={(e) => { (e.currentTarget as HTMLElement).style.animation = 'shake 200ms'; setTimeout(() => { (e.currentTarget as HTMLElement).style.animation = ''; }, 200); onLogAttack(); }}
           className={`w-full py-6 border-2 ${card.completedSets + 1 === card.totalSets && combat ? 'border-red-500 animate-pulse' : colors.primary} bg-zinc-800 text-center transition-colors hover:bg-zinc-700`}
         >
-          <span className={`text-sm ${card.completedSets + 1 === card.totalSets && combat ? 'text-red-400' : colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          <span className={`text-base ${card.completedSets + 1 === card.totalSets && combat ? 'text-red-400' : colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
             {combat
               ? (card.completedSets + 1 === card.totalSets ? '⚔ FINISH' : card.completedSets === 0 ? '⚔ ATTACK' : '⚔⚔ STRIKE')
               : (card.completedSets + 1 === card.totalSets ? '✓ COMPLETE' : '▸ LOG SET')
@@ -369,10 +369,10 @@ export default function LiftingCard({ card, isActive, colors, currentTheme, weig
 
       {/* Secondary tools */}
       <div className="flex items-center justify-between pt-1">
-        <button onClick={() => setShowSwap(!showSwap)} className="text-[8px] text-zinc-600 hover:text-zinc-400 transition-colors" style={{ fontFamily: "var(--font-pixel), monospace" }}>⟲ SWAP</button>
-        <button onClick={() => setShowPlate(!showPlate)} className="text-[8px] text-zinc-600 hover:text-zinc-400 transition-colors" style={{ fontFamily: "var(--font-pixel), monospace" }}>⊞ PLATE</button>
-        <button className="text-[8px] text-zinc-600 hover:text-zinc-400 transition-colors" style={{ fontFamily: "var(--font-pixel), monospace" }}>◷ {isCompound ? '90' : '60'}s</button>
-        <button className="text-[8px] text-zinc-600 hover:text-zinc-400 transition-colors" style={{ fontFamily: "var(--font-pixel), monospace" }}>⋯</button>
+        <button onClick={() => setShowSwap(!showSwap)} className="text-xs text-zinc-600 hover:text-zinc-400 transition-colors" style={{ fontFamily: "var(--font-pixel), monospace" }}>⟲ SWAP</button>
+        <button onClick={() => setShowPlate(!showPlate)} className="text-xs text-zinc-600 hover:text-zinc-400 transition-colors" style={{ fontFamily: "var(--font-pixel), monospace" }}>⊞ PLATE</button>
+        <button className="text-xs text-zinc-600 hover:text-zinc-400 transition-colors" style={{ fontFamily: "var(--font-pixel), monospace" }}>◷ {isCompound ? '90' : '60'}s</button>
+        <button className="text-xs text-zinc-600 hover:text-zinc-400 transition-colors" style={{ fontFamily: "var(--font-pixel), monospace" }}>⋯</button>
       </div>
 
       {/* Plate calculator inline */}
@@ -390,11 +390,11 @@ export default function LiftingCard({ card, isActive, colors, currentTheme, weig
         return (
           <div className="border border-zinc-700 bg-zinc-800 p-2 mt-1 max-h-32 overflow-y-auto">
             {alternatives.length > 0 ? alternatives.map(c => (
-              <button key={c.id} onClick={() => { onSwap(c.id, c.name); setShowSwap(false); }} className="w-full text-left px-2 py-1.5 text-[8px] text-zinc-300 hover:bg-zinc-700 transition-colors" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              <button key={c.id} onClick={() => { onSwap(c.id, c.name); setShowSwap(false); }} className="w-full text-left px-2 py-1.5 text-xs text-zinc-300 hover:bg-zinc-700 transition-colors" style={{ fontFamily: "var(--font-pixel), monospace" }}>
                 {c.name}
               </button>
             )) : (
-              <p className="text-[8px] text-zinc-600 text-center py-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>NO ALTERNATIVES</p>
+              <p className="text-xs text-zinc-600 text-center py-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>NO ALTERNATIVES</p>
             )}
           </div>
         );

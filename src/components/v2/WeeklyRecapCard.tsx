@@ -111,15 +111,15 @@ export default function WeeklyRecapCard({ userId }: Props) {
       <div className="grid grid-cols-3 gap-2 text-center">
         <div>
           <p className="text-lg text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>{recap.workoutDays}</p>
-          <p className="text-[7px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>DAYS</p>
+          <p className="text-xs text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>DAYS</p>
         </div>
         <div>
           <p className="text-lg text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>{recap.totalVolume.toLocaleString()}</p>
-          <p className="text-[7px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>LBS</p>
+          <p className="text-xs text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>LBS</p>
         </div>
         <div>
           <p className="text-lg text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>{recap.totalXp.toLocaleString()}</p>
-          <p className="text-[7px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>XP</p>
+          <p className="text-xs text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>XP</p>
         </div>
       </div>
     )},
@@ -129,7 +129,7 @@ export default function WeeklyRecapCard({ userId }: Props) {
     slides.push({ title: 'BEST LIFT', content: (
       <div className="text-center">
         <p className="text-2xl text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>{recap.bestLift.value} lbs</p>
-        <p className="text-[9px] text-zinc-400 mt-1 capitalize">{recap.bestLift.name}</p>
+        <p className="text-xs text-zinc-400 mt-1 capitalize">{recap.bestLift.name}</p>
       </div>
     )});
   }
@@ -138,7 +138,7 @@ export default function WeeklyRecapCard({ userId }: Props) {
     slides.push({ title: 'RANK UPS', content: (
       <div className="space-y-1 text-center">
         {recap.rankUps.slice(0, 3).map((r, i) => (
-          <p key={i} className="text-[10px] text-white capitalize">⬆ {r.name} → Lv.{r.level}</p>
+          <p key={i} className="text-xs text-white capitalize">⬆ {r.name} → Lv.{r.level}</p>
         ))}
       </div>
     )});
@@ -148,8 +148,8 @@ export default function WeeklyRecapCard({ userId }: Props) {
     slides.push({ title: 'PARTY', content: (
       <div className="text-center space-y-1">
         <p className="text-lg text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>{recap.partyTotal.toLocaleString()} lbs</p>
-        <p className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>PARTY TOTAL</p>
-        {recap.topMember && <p className="text-[8px] text-zinc-400">👑 {recap.topMember} led with {recap.topVolume.toLocaleString()}</p>}
+        <p className="text-xs text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>PARTY TOTAL</p>
+        {recap.topMember && <p className="text-xs text-zinc-400">👑 {recap.topMember} led with {recap.topVolume.toLocaleString()}</p>}
       </div>
     )});
   }
@@ -162,7 +162,7 @@ export default function WeeklyRecapCard({ userId }: Props) {
   return (
     <div className={`border ${colors.primary} bg-zinc-900 p-4 mb-4 relative`}>
       <div className="flex items-center justify-between mb-3">
-        <p className={`text-[8px] ${colors.secondary} uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>★ LAST WEEK · {slides[slide].title}</p>
+        <p className={`text-xs ${colors.secondary} uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>★ LAST WEEK · {slides[slide].title}</p>
         <button onClick={handleDismiss} className="text-zinc-600 text-xs">✕</button>
       </div>
 

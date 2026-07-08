@@ -108,8 +108,8 @@ export default function ProgramOverview({ userId, path }: { userId: string; path
                 <div className="flex items-center gap-3">
                     <span className="text-2xl">{pathData.emoji}</span>
                     <div>
-                        <h3 className="text-sm font-bold text-white uppercase tracking-wider">{pathData.name} Program</h3>
-                        <p className="text-[10px] text-zinc-500">{pathData.description}</p>
+                        <h3 className="text-base font-bold text-white uppercase tracking-wider">{pathData.name} Program</h3>
+                        <p className="text-xs text-zinc-500">{pathData.description}</p>
                     </div>
                 </div>
                 {expanded ? <ChevronUp size={16} className="text-zinc-500" /> : <ChevronDown size={16} className="text-zinc-500" />}
@@ -131,10 +131,10 @@ export default function ProgramOverview({ userId, path }: { userId: string; path
                                     className="w-full px-3 py-2.5 flex items-center justify-between text-left"
                                 >
                                     <div className="flex items-center gap-3">
-                                        <span className="text-[10px] font-bold text-zinc-500 w-8">{dayLabels[day.day]}</span>
-                                        <span className="text-xs font-bold text-white">{day.name}</span>
+                                        <span className="text-xs font-bold text-zinc-500 w-8">{dayLabels[day.day]}</span>
+                                        <span className="text-sm font-bold text-white">{day.name}</span>
                                     </div>
-                                    <span className={`text-[10px] font-bold uppercase ${typeColors[day.type] || 'text-zinc-500'}`}>{day.type}</span>
+                                    <span className={`text-xs font-bold uppercase ${typeColors[day.type] || 'text-zinc-500'}`}>{day.type}</span>
                                 </button>
 
                                 {expandedDay === day.day && day.exercises.length > 0 && (
@@ -143,11 +143,11 @@ export default function ProgramOverview({ userId, path }: { userId: string; path
                                             const sections = [...new Set(day.exercises.map(e => e.section))];
                                             return sections.map(section => (
                                                 <div key={section}>
-                                                    <div className="text-[9px] font-bold text-zinc-600 uppercase tracking-wider mt-2 mb-1">{section}</div>
+                                                    <div className="text-xs font-bold text-zinc-600 uppercase tracking-wider mt-2 mb-1">{section}</div>
                                                     {day.exercises.filter(e => e.section === section).map((ex, i) => (
                                                         <div key={i} className="flex items-center justify-between py-1">
-                                                            <span className="text-[11px] text-zinc-300">{ex.name}</span>
-                                                            <span className="text-[10px] text-zinc-500 font-mono">{ex.detail}</span>
+                                                            <span className="text-xs text-zinc-300">{ex.name}</span>
+                                                            <span className="text-xs text-zinc-500 font-mono">{ex.detail}</span>
                                                         </div>
                                                     ))}
                                                 </div>

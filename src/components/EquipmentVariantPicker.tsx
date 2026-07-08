@@ -41,7 +41,7 @@ export default function EquipmentVariantPicker({ variants, selectedId, onSelect 
           <button
             key={v.id}
             onClick={(e) => { e.stopPropagation(); onSelect(v); }}
-            className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition ${
+            className={`px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider transition ${
               v.id === selectedId
                 ? 'bg-orange-500 text-black'
                 : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'

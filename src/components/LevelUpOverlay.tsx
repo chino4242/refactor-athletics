@@ -110,7 +110,7 @@ export default function LevelUpOverlay({ level, onClose }: LevelUpOverlayProps) 
                                 <div className="text-6xl font-black text-emerald-400 drop-shadow-[0_0_15px_rgba(52,211,153,0.5)]">
                                     {level}
                                 </div>
-                                <div className="text-emerald-600/50 font-bold uppercase tracking-[0.5em] text-[10px] mt-2">
+                                <div className="text-emerald-600/50 font-bold uppercase tracking-[0.5em] text-xs mt-2">
                                     Current Level
                                 </div>
                             </motion.div>

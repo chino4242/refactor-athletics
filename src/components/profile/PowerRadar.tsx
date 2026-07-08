@@ -50,7 +50,7 @@ export default function PowerRadar({ stats, categoryStats }: PowerRadarProps) {
             </div>
 
             <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex flex-col items-center justify-center relative shadow-lg overflow-hidden">
-                <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest absolute top-4 left-4">Attribute Balance</h4>
+                <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-widest absolute top-4 left-4">Attribute Balance</h4>
                 <svg viewBox="-10 -10 120 120" className="w-full h-40 overflow-hidden mt-2" preserveAspectRatio="xMidYMid meet">
                     <polygon points="50,10 90,50 50,90 10,50" fill="none" stroke="#27272a" strokeWidth="1" />
                     <polygon points="50,30 70,50 50,70 30,50" fill="none" stroke="#27272a" strokeWidth="1" />

@@ -40,7 +40,7 @@ export default function RewardsTrack({ playerLevel }: RewardsTrackProps) {
               {/* Content */}
               <div className={`pb-4 flex-1 min-w-0 ${isFuture ? 'opacity-40' : ''}`}>
                 <div className="flex items-center gap-2">
-                  <span className={`text-[10px] font-bold ${earned ? 'text-orange-400' : isNext ? 'text-white' : 'text-zinc-500'}`}>
+                  <span className={`text-xs font-bold ${earned ? 'text-orange-400' : isNext ? 'text-white' : 'text-zinc-500'}`}>
                     Lv {reward.level}
                   </span>
                   {reward.title && (
@@ -50,7 +50,7 @@ export default function RewardsTrack({ playerLevel }: RewardsTrackProps) {
                   )}
                 </div>
                 {reward.unlock_label && (
-                  <div className={`text-[11px] mt-0.5 ${earned ? 'text-zinc-300' : 'text-zinc-500'}`}>
+                  <div className={`text-xs mt-0.5 ${earned ? 'text-zinc-300' : 'text-zinc-500'}`}>
                     {reward.version_gate ? `🔒 ${reward.unlock_label} (${reward.version_gate.toUpperCase()})` : (earned ? `✓ ${reward.unlock_label}` : reward.unlock_label)}
                   </div>
                 )}

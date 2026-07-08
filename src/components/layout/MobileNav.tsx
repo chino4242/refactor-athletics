@@ -37,7 +37,7 @@ export default function MobileNav() {
                     >
                         <span className="text-base">{tab.icon}</span>
                         <span
-                            className="text-[8px] uppercase tracking-wider"
+                            className="text-xs uppercase tracking-wider"
                             style={{ fontFamily: "var(--font-pixel), monospace" }}
                         >
                             {tab.label}

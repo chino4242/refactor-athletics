@@ -118,8 +118,8 @@ function StoryBeat({ powerLevel, playerLevel, streak, onVisible }: { powerLevel:
 
   return (
     <button onClick={() => { localStorage.setItem(`story_beat_${beat.key}`, '1'); setBeat(null); onVisible?.(false); }} className="w-full mb-4 p-4 border border-amber-700 bg-amber-950/20 text-center">
-      <p className="text-[9px] text-amber-400 italic">{beat.text}</p>
-      <p className="text-[7px] text-zinc-600 mt-1">tap to dismiss</p>
+      <p className="text-xs text-amber-400 italic">{beat.text}</p>
+      <p className="text-xs text-zinc-600 mt-1">tap to dismiss</p>
     </button>
   );
 }
@@ -196,12 +196,12 @@ function NutritionBar({ userId, colors, refreshKey }: { userId: string; colors: 
     <button onClick={() => setExpanded(!expanded)} className={`w-full text-left px-3 py-2 mb-4 hover:bg-zinc-800/50 transition-colors`}>
       {/* Collapsed: single line */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-[10px] text-zinc-500">
+        <div className="flex items-center gap-2 text-xs text-zinc-500">
           {data.steps > 0 && <span className="text-emerald-400">👟 {data.steps.toLocaleString()}</span>}
           {data.calsIn > 0 && <span>IN {data.calsIn.toLocaleString()}</span>}
           {data.burned > 0 && <span>BURN {data.burned.toLocaleString()}</span>}
         </div>
-        <span className={`text-[10px] font-bold ${net < 0 ? 'text-green-400' : net > 200 ? 'text-amber-400' : 'text-zinc-400'}`}>
+        <span className={`text-xs font-bold ${net < 0 ? 'text-green-400' : net > 200 ? 'text-amber-400' : 'text-zinc-400'}`}>
           NET {net > 0 ? '+' : ''}{net}
         </span>
       </div>
@@ -213,7 +213,7 @@ function NutritionBar({ userId, colors, refreshKey }: { userId: string; colors: 
             <span className="text-orange-400">C {data.carbs}g</span>
             <span className="text-yellow-400">F {data.fat}g</span>
           </div>
-          <span onClick={(e) => { e.stopPropagation(); openMealLog(); }} className="text-[8px] text-zinc-500 underline">meal log</span>
+          <span onClick={(e) => { e.stopPropagation(); openMealLog(); }} className="text-xs text-zinc-500 underline">meal log</span>
         </div>
       )}
     </button>
@@ -224,18 +224,18 @@ function NutritionBar({ userId, colors, refreshKey }: { userId: string; colors: 
         <div className="absolute inset-0 bg-black/60" />
         <div className="absolute bottom-0 left-0 right-0 max-h-[50vh] bg-zinc-900 border-t-2 border-zinc-700 rounded-t-lg overflow-y-auto" onClick={e => e.stopPropagation()}>
           <div className="p-4">
-            <p className={`text-[10px] ${colors.secondary} font-bold mb-3`} style={{ fontFamily: "var(--font-pixel), monospace" }}>TODAY&apos;S MEALS</p>
+            <p className={`text-xs ${colors.secondary} font-bold mb-3`} style={{ fontFamily: "var(--font-pixel), monospace" }}>TODAY&apos;S MEALS</p>
             {mealLog.length === 0 ? (
-              <p className="text-xs text-zinc-500 text-center py-4">No meals logged today</p>
+              <p className="text-sm text-zinc-500 text-center py-4">No meals logged today</p>
             ) : (
               <div className="space-y-1">
                 {mealLog.filter(l => l.macro_type === 'calories').map(l => (
                   <div key={l.id} className="flex items-center justify-between py-1.5 border-b border-zinc-800">
                     <div>
-                      <p className="text-[11px] text-zinc-300">{l.label || l.meal_tag || 'Meal'}</p>
-                      <p className="text-[9px] text-zinc-500">{l.amount} cal</p>
+                      <p className="text-xs text-zinc-300">{l.label || l.meal_tag || 'Meal'}</p>
+                      <p className="text-xs text-zinc-500">{l.amount} cal</p>
                     </div>
-                    <button onClick={() => deleteMealEntry(l.id)} className="text-[9px] text-red-500 px-2 py-1 border border-red-900 bg-zinc-800 hover:bg-red-950">DEL</button>
+                    <button onClick={() => deleteMealEntry(l.id)} className="text-xs text-red-500 px-2 py-1 border border-red-900 bg-zinc-800 hover:bg-red-950">DEL</button>
                   </div>
                 ))}
               </div>
@@ -547,13 +547,13 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
       {healthStatus === 'unavailable' && (
         <div className="mb-4 p-3 border border-amber-800 bg-amber-950/20 flex items-center gap-2">
           <span className="text-amber-400 text-sm">⚠️</span>
-          <p className="text-[9px] text-amber-300">Health sync unavailable — install the native app from TestFlight for automatic workout tracking.</p>
+          <p className="text-xs text-amber-300">Health sync unavailable — install the native app from TestFlight for automatic workout tracking.</p>
         </div>
       )}
       {healthStatus === 'needs_reconnect' && (
         <div className="mb-4 p-3 border border-red-800 bg-red-950/20 flex items-center gap-2">
           <span className="text-red-400 text-sm">⚠️</span>
-          <p className="text-[9px] text-red-300">Health sync failing — open Settings → Health → Refactor Athletics and re-enable permissions.</p>
+          <p className="text-xs text-red-300">Health sync failing — open Settings → Health → Refactor Athletics and re-enable permissions.</p>
         </div>
       )}
 
@@ -566,7 +566,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
               TIER ASCENSION
             </p>
             {tierUp.prev && (
-              <p className="text-sm text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              <p className="text-base text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
                 {tierUp.prev}
               </p>
             )}
@@ -574,14 +574,14 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
             <p className={`text-3xl ${tier.color} font-bold`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
               {tierUp.name.toUpperCase()}
             </p>
-            <p className="text-[10px] text-zinc-500 italic mt-4">
+            <p className="text-xs text-zinc-500 italic mt-4">
               {currentTheme === 'samurai' ? 'Your blade carries a new weight. The rift bows.' :
                currentTheme === 'dragon' ? 'The fire within burns brighter. You have evolved.' :
                currentTheme === 'viking' ? 'The sagas will remember this day.' :
                currentTheme === 'dinosaur' ? 'You are no longer prey. You are the apex.' :
                'A new chapter begins.'}
             </p>
-            <p className="text-[8px] text-zinc-700 mt-6">tap to continue</p>
+            <p className="text-xs text-zinc-700 mt-6">tap to continue</p>
           </div>
         </div>
       )}
@@ -592,8 +592,8 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
           <div className={`flex items-center gap-3 p-4 border ${colors.primary} bg-zinc-900 shadow-lg`}>
             <img src={`/enemies/${currentTheme === 'dragon' ? 'dragon' : 'samurai'}/back_squat_t1.png`} alt="" className="w-8 h-8" style={{ imageRendering: 'pixelated' }} />
             <div>
-              <p className={`text-[9px] ${colors.secondary} uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>★ DAY CLAIMED</p>
-              <p className="text-[10px] text-zinc-200 italic">&ldquo;{narratorState.todayXp} XP earned. The rift remembers this day.&rdquo;</p>
+              <p className={`text-xs ${colors.secondary} uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>★ DAY CLAIMED</p>
+              <p className="text-xs text-zinc-200 italic">&ldquo;{narratorState.todayXp} XP earned. The rift remembers this day.&rdquo;</p>
             </div>
           </div>
         </div>
@@ -628,7 +628,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
 
       {/* Party activity */}
       {partyActivity && (
-        <p className="text-[8px] text-zinc-600 italic text-center mb-2 px-1">{partyActivity}</p>
+        <p className="text-xs text-zinc-600 italic text-center mb-2 px-1">{partyActivity}</p>
       )}
 
       {/* Nutrition summary */}
@@ -667,12 +667,12 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
                     return (
                       <div key={i} className={`px-3 py-2 border ${isCurrent ? colors.primary + ' bg-zinc-800' : 'border-zinc-800'} ${isLocked ? 'opacity-40' : ''}`}>
                         <div className="flex items-center justify-between">
-                          <span className={`text-[9px] ${isCurrent ? colors.secondary : isLocked ? 'text-zinc-600' : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                          <span className={`text-xs ${isCurrent ? colors.secondary : isLocked ? 'text-zinc-600' : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                             {isCurrent ? '▸ ' : isLocked ? '○ ' : '✓ '}{name}
                           </span>
-                          <span className="text-[7px] text-zinc-600" style={{ fontFamily: "var(--font-pixel), monospace" }}>PL {TIER_FLOORS[i]}</span>
+                          <span className="text-xs text-zinc-600" style={{ fontFamily: "var(--font-pixel), monospace" }}>PL {TIER_FLOORS[i]}</span>
                         </div>
-                        <p className="text-[8px] text-zinc-500 italic mt-0.5">{lore}</p>
+                        <p className="text-xs text-zinc-500 italic mt-0.5">{lore}</p>
                       </div>
                     );
                   })}
@@ -686,15 +686,15 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
               </p>
               {/* Path label */}
               <div className="flex items-center justify-between mb-1">
-                <p className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                <p className="text-xs text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
                   PATH: {(data.userPath || 'hybrid').toUpperCase()} · 8 core + 4 specialty
                 </p>
-                <span role="button" onClick={(e) => { e.stopPropagation(); setShowPathSwitch(true); }} className={`text-[7px] px-2 py-0.5 border ${colors.border} ${colors.secondary} bg-zinc-800 cursor-pointer`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                <span role="button" onClick={(e) => { e.stopPropagation(); setShowPathSwitch(true); }} className={`text-xs px-2 py-0.5 border ${colors.border} ${colors.secondary} bg-zinc-800 cursor-pointer`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                   SWITCH
                 </span>
               </div>
               {currentTheme !== 'athlete' && (
-                <p className="text-[8px] text-zinc-500 mb-2">
+                <p className="text-xs text-zinc-500 mb-2">
                   {data.exercises.filter(ex => ex.level > 0 && !ex.expired).length}/12 Allied
                 </p>
               )}
@@ -748,23 +748,23 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
                         <img src={`/themes/${currentTheme}/v2/level${ex.level}.png`} alt="" className="w-6 h-6" style={{ imageRendering: 'pixelated' }} />
                       )}
                       {ex.level > 0 && !ex.expired && (
-                        <span className={`absolute bottom-0 right-0.5 text-[7px] font-bold ${levelTextColors[ex.level]}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>{ex.level}</span>
+                        <span className={`absolute bottom-0 right-0.5 text-xs font-bold ${levelTextColors[ex.level]}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>{ex.level}</span>
                       )}
                     </div>
-                    <span className={`text-[7px] ${state === 'allied' ? 'text-zinc-300' : 'text-zinc-600'} truncate max-w-[60px]`}>
+                    <span className={`text-xs ${state === 'allied' ? 'text-zinc-300' : 'text-zinc-600'} truncate max-w-[60px]`}>
                       {ex.name.split(' ').slice(0, 2).join(' ')}
                     </span>
                   </div>
                   );
                 })}
               </div>
-              <p className="text-[8px] text-zinc-600 mt-3">tap to close</p>
+              <p className="text-xs text-zinc-600 mt-3">tap to close</p>
             </>
           )}
         </button>
         {!showXray && (
           <div className="mt-4">
-            <div className="flex justify-between text-[8px] text-zinc-500 mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <div className="flex justify-between text-xs text-zinc-500 mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>
               <span>{data.powerLevel - tier.floor}/{tier.ceiling - tier.floor}</span>
               {tier.next && <span>{tier.ceiling - data.powerLevel} more to {tier.next}</span>}
             </div>
@@ -790,17 +790,17 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
                   slots.push({ icon: '★', name: pr.name, detail: 'NEW PR', color: 'text-amber-300' });
                 }
                 if (slots.length === 0) {
-                  return <p className="text-[8px] text-zinc-600 text-center">Complete a ranked exercise to fill your Bestiary</p>;
+                  return <p className="text-xs text-zinc-600 text-center">Complete a ranked exercise to fill your Bestiary</p>;
                 }
                 return slots.map((s, i) => (
                   <div key={i} className="flex items-center justify-between">
-                    <span className={`text-[9px] ${s.color}`}>{s.icon} <span className="text-zinc-300">{s.name}</span></span>
-                    <span className={`text-[8px] ${s.color}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>{s.detail}</span>
+                    <span className={`text-xs ${s.color}`}>{s.icon} <span className="text-zinc-300">{s.name}</span></span>
+                    <span className={`text-xs ${s.color}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>{s.detail}</span>
                   </div>
                 ));
               })()}
             </div>
-            <p className="text-[7px] text-zinc-600 text-center mt-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <p className="text-xs text-zinc-600 text-center mt-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>
               tap for full bestiary →
             </p>
           </div>
@@ -818,8 +818,8 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
               const isClose = pct >= 85;
               return (
                 <>
-                  <span className="text-[10px]">{devotion.icon}</span>
-                  <span className="text-[9px] text-amber-300 whitespace-nowrap" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                  <span className="text-xs">{devotion.icon}</span>
+                  <span className="text-xs text-amber-300 whitespace-nowrap" style={{ fontFamily: "var(--font-pixel), monospace" }}>
                     {devotion.label} {playerLevel.level} → {playerLevel.level + 1}
                   </span>
                   <div className="flex-1 h-[4px] bg-zinc-800 border border-zinc-700/50 flex">
@@ -827,10 +827,10 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
                       <div key={i} className={`flex-1 border-r border-zinc-900 ${i < Math.round(pct / 100 * 12) ? 'bg-amber-500' : ''}`} />
                     ))}
                   </div>
-                  <span className={`text-[8px] whitespace-nowrap ${isClose ? 'text-amber-400 animate-pulse' : 'text-zinc-500'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                  <span className={`text-xs whitespace-nowrap ${isClose ? 'text-amber-400 animate-pulse' : 'text-zinc-500'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                     {xpLeft.toLocaleString()} XP to go
                   </span>
-                  <button onClick={() => setShowLegacyInfo(prev => !prev)} className="text-[9px] text-zinc-600 hover:text-zinc-400">
+                  <button onClick={() => setShowLegacyInfo(prev => !prev)} className="text-xs text-zinc-600 hover:text-zinc-400">
                     ⓘ
                   </button>
                 </>
@@ -838,9 +838,9 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
             })()}
           </div>
           {showLegacyInfo && (
-            <div className={`mt-2 mx-1 p-3 border ${colors.border} bg-zinc-900 text-[10px] text-zinc-300 leading-relaxed`}>
+            <div className={`mt-2 mx-1 p-3 border ${colors.border} bg-zinc-900 text-xs text-zinc-300 leading-relaxed`}>
               <p>Your <span className="text-amber-300">{getDevotionName(currentTheme).label}</span> grows every time you train, track food, or complete challenges. It never goes down — it&apos;s your permanent record of commitment.</p>
-              <button onClick={() => setShowLegacyInfo(false)} className="mt-2 text-[8px] text-zinc-500 uppercase" style={{ fontFamily: "var(--font-pixel), monospace" }}>GOT IT</button>
+              <button onClick={() => setShowLegacyInfo(false)} className="mt-2 text-xs text-zinc-500 uppercase" style={{ fontFamily: "var(--font-pixel), monospace" }}>GOT IT</button>
             </div>
           )}
         </div>
@@ -854,14 +854,14 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
         <PixelBox className="p-3 mb-4">
           <div className="flex items-center justify-between">
             <div>
-              <span className={`text-[9px] ${colors.headerText} uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>PHYSIQUE LV {physique.rank}</span>
-              <div className="flex gap-3 mt-1 text-[10px]">
+              <span className={`text-xs ${colors.headerText} uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>PHYSIQUE LV {physique.rank}</span>
+              <div className="flex gap-3 mt-1 text-xs">
                 {physique.bodyFat !== null && <span className="text-zinc-300">BF {Number(physique.bodyFat).toFixed(1)}%</span>}
                 {physique.leanMass !== null && <span className="text-zinc-300">LEAN {Math.round(physique.leanMass)} lbs</span>}
               </div>
             </div>
             {physique.streak >= 2 && (
-              <span className="text-[9px] text-amber-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>🔥 {physique.streak}wk streak</span>
+              <span className="text-xs text-amber-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>🔥 {physique.streak}wk streak</span>
             )}
           </div>
           {showPhysique && physique.bodyFat !== null && (
@@ -883,7 +883,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
                 const isNext = physique.rank === t.lv - 1;
                 const gap = isNext && physique.bodyFat !== null ? (physique.bodyFat - t.target).toFixed(1) : null;
                 return (
-                  <div key={t.lv} className={`flex items-center justify-between text-[9px] ${current ? 'text-zinc-300' : 'text-zinc-600'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                  <div key={t.lv} className={`flex items-center justify-between text-xs ${current ? 'text-zinc-300' : 'text-zinc-600'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                     <span>{current ? '✓' : '○'} LV {t.lv} — {t.range}</span>
                     {isNext && gap && <span className={colors.secondary}>-{gap}% to go</span>}
                   </div>
@@ -899,14 +899,14 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
       {/* Recent PRs */}
       {data.recentPRs.length > 0 && (
         <PixelBox className="p-4 mb-4">
-          <p className={`text-[10px] ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          <p className={`text-xs ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
             ★ NEW RECORDS
           </p>
           <div className="space-y-2">
             {data.recentPRs.map((pr) => (
               <div key={pr.name + pr.date} className="flex items-center justify-between">
-                <span className="text-xs text-zinc-200">{pr.name}</span>
-                <span className={`text-[8px] ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>{pr.value}</span>
+                <span className="text-sm text-zinc-200">{pr.name}</span>
+                <span className={`text-xs ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>{pr.value}</span>
               </div>
             ))}
           </div>
@@ -916,11 +916,11 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
       {/* Bounty Teaser (footer nudge) */}
       {bountyTeaser && (
         <button onClick={() => { window.location.hash = 'arena'; }} className={`w-full flex items-center justify-between px-3 py-2 mb-4 ${bountyTeaser.completed ? 'text-green-400' : 'text-zinc-500'}`}>
-          <span className="text-[8px]" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          <span className="text-xs" style={{ fontFamily: "var(--font-pixel), monospace" }}>
             {bountyTeaser.completed ? '✓ BOUNTIES SWEPT' : `◎ ${bountyTeaser.description}`}
           </span>
           {!bountyTeaser.completed && (
-            <span className="text-[8px] text-zinc-600" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <span className="text-xs text-zinc-600" style={{ fontFamily: "var(--font-pixel), monospace" }}>
               {bountyTeaser.current}/{bountyTeaser.target}
             </span>
           )}
@@ -930,21 +930,21 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
       {/* Empty state */}
       {data.powerLevel === 0 && (
         <PixelBox highlight className="p-5 text-center">
-          <p className={`text-[10px] ${colors.secondary} mb-2`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          <p className={`text-xs ${colors.secondary} mb-2`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
             YOUR JOURNEY BEGINS
           </p>
-          <p className="text-xs text-zinc-400 mb-1">12 ranked exercises determine your Power Level.</p>
-          <p className="text-xs text-zinc-500 mb-4">Test one to discover your first rank.</p>
+          <p className="text-sm text-zinc-400 mb-1">12 ranked exercises determine your Power Level.</p>
+          <p className="text-sm text-zinc-500 mb-4">Test one to discover your first rank.</p>
           <a
             href="/train/active?mode=flexible&filter=strength"
-            className={`inline-block text-[10px] px-5 py-3 border-2 ${colors.primary} bg-zinc-800 text-white hover:bg-zinc-700 transition-colors`}
+            className={`inline-block text-xs px-5 py-3 border-2 ${colors.primary} bg-zinc-800 text-white hover:bg-zinc-700 transition-colors`}
             style={{ fontFamily: "var(--font-pixel), monospace" }}
           >
             ⚔ TEST YOUR STRENGTH
           </a>
           <a
             href="/train"
-            className="block mt-3 text-[8px] text-zinc-600 hover:text-zinc-400"
+            className="block mt-3 text-xs text-zinc-600 hover:text-zinc-400"
             style={{ fontFamily: "var(--font-pixel), monospace" }}
           >
             or start today&apos;s workout ▸
@@ -1060,17 +1060,17 @@ function ExerciseDetailSheet({ exerciseId, userId, exercises, onClose, colors, c
               </div>
             );
           })()}
-          <p className="text-sm text-white font-medium">{ex?.name || exerciseId.replace(/_/g, ' ')}</p>
+          <p className="text-base text-white font-medium">{ex?.name || exerciseId.replace(/_/g, ' ')}</p>
           {(() => {
             const normalized = exerciseId.replace(/^(barbell|dumbbell|smith_machine|cable|machine)_/, '');
             const creature = ENEMY_NAMES_PL[currentTheme]?.[normalized];
             const state = (ex?.level || 0) === 0 ? 'Unmet' : ex?.expired ? 'Dormant' : 'Allied';
             if (creature && currentTheme !== 'athlete') return (
-              <p className="text-[9px] text-zinc-400 italic mt-0.5">{creature} · {state}</p>
+              <p className="text-xs text-zinc-400 italic mt-0.5">{creature} · {state}</p>
             );
             return null;
           })()}
-          <p className={`text-[10px] ${levelColors[ex?.level || 0]} mt-1`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          <p className={`text-xs ${levelColors[ex?.level || 0]} mt-1`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
             LV {ex?.level || 0}
           </p>
         </div>
@@ -1078,26 +1078,26 @@ function ExerciseDetailSheet({ exerciseId, userId, exercises, onClose, colors, c
         {/* YOUR NUMBERS section */}
         {currentValue > 0 && (
           <div className={`border ${colors.border} bg-zinc-900 p-3 space-y-1.5`}>
-            <p className="text-[8px] text-zinc-500 uppercase" style={{ fontFamily: "var(--font-pixel), monospace" }}>YOUR NUMBERS</p>
+            <p className="text-xs text-zinc-500 uppercase" style={{ fontFamily: "var(--font-pixel), monospace" }}>YOUR NUMBERS</p>
             {isXBW ? (
               <>
-                <div className="flex justify-between text-[10px]">
+                <div className="flex justify-between text-xs">
                   <span className="text-zinc-400">Bodyweight</span>
                   <span className="text-white">{bodyweight} lbs</span>
                 </div>
-                <p className="text-[7px] text-zinc-600">Thresholds scale with your bodyweight — update weight in profile if changed.</p>
-                <div className="flex justify-between text-[10px]">
+                <p className="text-xs text-zinc-600">Thresholds scale with your bodyweight — update weight in profile if changed.</p>
+                <div className="flex justify-between text-xs">
                   <span className="text-zinc-400">Your best (est. 1RM)</span>
                   <span className="text-white">{Math.round(currentValue)} lbs ({(currentValue / bodyweight).toFixed(2)}×BW)</span>
                 </div>
                 {(ex?.level || 0) < 5 && thresholds[(ex?.level || 0)] && (
                   <>
                     <div className="border-t border-zinc-800 my-1.5" />
-                    <div className="flex justify-between text-[10px]">
+                    <div className="flex justify-between text-xs">
                       <span className="text-zinc-400">Next level needs</span>
                       <span className={colors.secondary}>{xbwThresholds[(ex?.level || 0)]?.toFixed(2)}×BW = {thresholds[(ex?.level || 0)]} lbs</span>
                     </div>
-                    <p className="text-[9px] text-zinc-300 mt-1">
+                    <p className="text-xs text-zinc-300 mt-1">
                       Hit: <span className={`${colors.secondary} font-medium`}>{Math.round(thresholds[(ex?.level || 0)] / (1 + 5/30))}×5</span> or <span className={`${colors.secondary} font-medium`}>{Math.round(thresholds[(ex?.level || 0)] / (1 + 8/30))}×8</span>
                     </p>
                   </>
@@ -1105,12 +1105,12 @@ function ExerciseDetailSheet({ exerciseId, userId, exercises, onClose, colors, c
               </>
             ) : (
               <>
-                <div className="flex justify-between text-[10px]">
+                <div className="flex justify-between text-xs">
                   <span className="text-zinc-400">Your best</span>
                   <span className="text-white">{formatValue(currentValue)}</span>
                 </div>
                 {(ex?.level || 0) < 5 && thresholds[(ex?.level || 0)] && (
-                  <div className="flex justify-between text-[10px]">
+                  <div className="flex justify-between text-xs">
                     <span className="text-zinc-400">Next level needs</span>
                     <span className={colors.secondary}>{formatValue(thresholds[(ex?.level || 0)])}</span>
                   </div>
@@ -1121,12 +1121,12 @@ function ExerciseDetailSheet({ exerciseId, userId, exercises, onClose, colors, c
         )}
 
         {/* Train button */}
-        <a href={`/train/active?exercise=${exerciseId}`} className={`w-full block text-center text-[10px] py-3 border ${colors.primary} ${colors.secondary} bg-zinc-800 hover:bg-zinc-700 transition-colors`} style={{ fontFamily: "var(--font-pixel), monospace" }}>▸ TRAIN</a>
+        <a href={`/train/active?exercise=${exerciseId}`} className={`w-full block text-center text-xs py-3 border ${colors.primary} ${colors.secondary} bg-zinc-800 hover:bg-zinc-700 transition-colors`} style={{ fontFamily: "var(--font-pixel), monospace" }}>▸ TRAIN</a>
 
         {/* Threshold Table with progress bar */}
         {thresholds.length > 0 && (
           <div className="space-y-1">
-            <p className="text-[8px] text-zinc-500 uppercase" style={{ fontFamily: "var(--font-pixel), monospace" }}>THRESHOLDS</p>
+            <p className="text-xs text-zinc-500 uppercase" style={{ fontFamily: "var(--font-pixel), monospace" }}>THRESHOLDS</p>
 
             {thresholds.map((t, i) => {
               const level = i + 1;
@@ -1142,13 +1142,13 @@ function ExerciseDetailSheet({ exerciseId, userId, exercises, onClose, colors, c
               return (
                 <div key={i}>
                   <div className={`flex items-center justify-between px-2 py-1.5 rounded-sm ${achieved ? 'bg-zinc-800/50' : ''} ${isNext ? `border ${colors.border}` : ''}`}>
-                    <span className={`text-[10px] ${achieved ? levelColors[level] : 'text-zinc-600'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                    <span className={`text-xs ${achieved ? levelColors[level] : 'text-zinc-600'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                       {achieved ? '✓' : '○'} LV {level}
                     </span>
                     <div className="flex items-center gap-2">
-                      <span className={`text-[10px] ${achieved ? 'text-zinc-300' : 'text-zinc-600'}`}>
+                      <span className={`text-xs ${achieved ? 'text-zinc-300' : 'text-zinc-600'}`}>
                         {formatValue(t)}
-                        {isXBW && <span className="text-[8px] text-zinc-600 ml-1">({xbwThresholds[i]?.toFixed(2)}×)</span>}
+                        {isXBW && <span className="text-xs text-zinc-600 ml-1">({xbwThresholds[i]?.toFixed(2)}×)</span>}
                       </span>
                     </div>
                   </div>
@@ -1158,7 +1158,7 @@ function ExerciseDetailSheet({ exerciseId, userId, exercises, onClose, colors, c
                       <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
                         <div className={`h-full ${colors.barFill} rounded-full transition-all`} style={{ width: `${progress}%` }} />
                       </div>
-                      <p className="text-[7px] text-zinc-600 text-right mt-0.5" style={{ fontFamily: "var(--font-pixel), monospace" }}>{Math.round(progress)}% → LV {level}</p>
+                      <p className="text-xs text-zinc-600 text-right mt-0.5" style={{ fontFamily: "var(--font-pixel), monospace" }}>{Math.round(progress)}% → LV {level}</p>
                     </div>
                   )}
                 </div>
@@ -1170,8 +1170,8 @@ function ExerciseDetailSheet({ exerciseId, userId, exercises, onClose, colors, c
         {/* Recent History */}
         {history.length > 0 && (
           <div>
-            <p className="text-[8px] text-zinc-500 uppercase mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>RECENT</p>
-            <p className="text-[10px] text-zinc-400">
+            <p className="text-xs text-zinc-500 uppercase mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>RECENT</p>
+            <p className="text-xs text-zinc-400">
               {history.map(v => formatValue(v)).join(' → ')} {history.length >= 2 && (history[history.length - 1] > history[0] ? '↑' : history[history.length - 1] < history[0] ? '↓' : '→')}
             </p>
           </div>

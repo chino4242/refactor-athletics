@@ -84,7 +84,7 @@ export default function ChallengeLanding({ currentUserId }: Props) {
                 <div className="text-center mb-8">
                     <div className="w-20 h-20 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-6 relative">
                         <Swords size={40} className="text-orange-500" />
-                        <div className="absolute -bottom-2 bg-zinc-950 px-3 py-1 rounded-full border border-zinc-800 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                        <div className="absolute -bottom-2 bg-zinc-950 px-3 py-1 rounded-full border border-zinc-800 text-xs font-bold text-zinc-400 uppercase tracking-wider">
                             VS
                         </div>
                     </div>
@@ -103,15 +103,15 @@ export default function ChallengeLanding({ currentUserId }: Props) {
                     <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <Clock size={20} className="text-zinc-500" />
-                            <span className="text-sm font-bold text-zinc-300">Duration</span>
+                            <span className="text-base font-bold text-zinc-300">Duration</span>
                         </div>
-                        <span className="text-orange-500 font-black uppercase text-sm">{days} Days</span>
+                        <span className="text-orange-500 font-black uppercase text-base">{days} Days</span>
                     </div>
                 </div>
 
                 {isMyChallenge ? (
                     <div className="text-center bg-zinc-800/50 p-4 rounded-xl border border-dashed border-zinc-700">
-                        <p className="text-sm text-zinc-400">Share the link via copy-paste to invite someone.</p>
+                        <p className="text-base text-zinc-400">Share the link via copy-paste to invite someone.</p>
                     </div>
                 ) : isOngoing ? (
                     <div className="text-center">

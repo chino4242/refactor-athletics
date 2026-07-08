@@ -99,7 +99,7 @@ export default function GuildQuestModal({ isOpen, groupId, userId, onClose, onCr
 
         {/* Header */}
         <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
-          <p className={`text-[10px] ${colors.headerText} uppercase tracking-wider`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          <p className={`text-xs ${colors.headerText} uppercase tracking-wider`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
             ⚔ RALLY YOUR PARTY
           </p>
           <button onClick={onClose} className="text-zinc-500 hover:text-white text-xs">✕</button>
@@ -109,7 +109,7 @@ export default function GuildQuestModal({ isOpen, groupId, userId, onClose, onCr
         <div className="p-4 space-y-4">
           {/* Metric */}
           <div>
-            <p className="text-[8px] text-zinc-500 uppercase mb-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>METRIC</p>
+            <p className="text-xs text-zinc-500 uppercase mb-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>METRIC</p>
             <div className="grid grid-cols-2 gap-2">
               {METRICS.map((m) => (
                 <button
@@ -118,7 +118,7 @@ export default function GuildQuestModal({ isOpen, groupId, userId, onClose, onCr
                   className={`p-2 border text-left transition-colors ${metric === m.key ? `${colors.primary} bg-zinc-800` : 'border-zinc-700 bg-zinc-900 hover:bg-zinc-800'}`}
                 >
                   <span className="text-sm">{m.icon}</span>
-                  <p className={`text-[8px] mt-1 ${metric === m.key ? colors.secondary : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                  <p className={`text-xs mt-1 ${metric === m.key ? colors.secondary : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                     {m.label}
                   </p>
                 </button>
@@ -128,7 +128,7 @@ export default function GuildQuestModal({ isOpen, groupId, userId, onClose, onCr
 
           {/* Target */}
           <div>
-            <p className="text-[8px] text-zinc-500 uppercase mb-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>TARGET ({metricInfo.unit})</p>
+            <p className="text-xs text-zinc-500 uppercase mb-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>TARGET ({metricInfo.unit})</p>
             <input
               type="number"
               inputMode="numeric"
@@ -137,14 +137,14 @@ export default function GuildQuestModal({ isOpen, groupId, userId, onClose, onCr
               className={`w-full bg-zinc-800 border ${colors.border} px-3 py-2 text-white text-sm`}
               style={{ fontFamily: "var(--font-pixel), monospace" }}
             />
-            <p className="text-[8px] text-zinc-500 mt-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <p className="text-xs text-zinc-500 mt-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>
               ~{perMember.toLocaleString()} {metricInfo.unit} per member ({memberCount} {memberCount === 1 ? 'member' : 'members'})
             </p>
           </div>
 
           {/* Duration */}
           <div>
-            <p className="text-[8px] text-zinc-500 uppercase mb-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>DURATION</p>
+            <p className="text-xs text-zinc-500 uppercase mb-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>DURATION</p>
             <div className="flex gap-2">
               {DURATIONS.map((d) => (
                 <button
@@ -152,7 +152,7 @@ export default function GuildQuestModal({ isOpen, groupId, userId, onClose, onCr
                   onClick={() => setDurationDays(d.days)}
                   className={`flex-1 py-2 border text-center transition-colors ${durationDays === d.days ? `${colors.primary} bg-zinc-800` : 'border-zinc-700 bg-zinc-900 hover:bg-zinc-800'}`}
                 >
-                  <p className={`text-[8px] ${durationDays === d.days ? colors.secondary : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                  <p className={`text-xs ${durationDays === d.days ? colors.secondary : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                     {d.label}
                   </p>
                 </button>
@@ -169,7 +169,7 @@ export default function GuildQuestModal({ isOpen, groupId, userId, onClose, onCr
             className={`w-full py-3 border-2 ${colors.primary} bg-zinc-800 text-white hover:bg-zinc-700 transition-colors disabled:opacity-50`}
             style={{ fontFamily: "var(--font-pixel), monospace" }}
           >
-            <span className="text-[10px] uppercase">{loading ? 'PROPOSING...' : '▸ PROPOSE QUEST'}</span>
+            <span className="text-xs uppercase">{loading ? 'PROPOSING...' : '▸ PROPOSE QUEST'}</span>
           </button>
         </div>
       </div>

@@ -375,7 +375,7 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
                         <div className="flex justify-between items-center">
                             <div>
                                 <h3 className="text-xs text-zinc-500 font-bold uppercase tracking-wider">Player Stats</h3>
-                                <p className="text-sm font-bold text-zinc-300">
+                                <p className="text-base font-bold text-zinc-300">
                                     {age > 0 ? `${age} yrs` : 'Age: --'} • <span className="capitalize">{sex}</span> • {bodyweight > 0 ? `${bodyweight} lbs` : 'Weight: --'}
                                 </p>
                             </div>
@@ -396,7 +396,7 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
                                     <button
                                         key={ex.id}
                                         onClick={() => handleSelectExercise(ex)}
-                                        className={`flex-shrink-0 px-3 py-2 rounded-lg text-xs font-bold transition-all border ${
+                                        className={`flex-shrink-0 px-3 py-2 rounded-lg text-sm font-bold transition-all border ${
                                             exerciseId === ex.id 
                                                 ? 'bg-orange-600 text-white border-orange-500' 
                                                 : 'bg-zinc-800 text-zinc-400 hover:text-white border-zinc-700 hover:border-zinc-600'
@@ -431,14 +431,14 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
                                             {category}
                                         </div>
                                         {items.map((ex) => (
-                                            <div key={ex.id} onClick={() => handleSelectExercise(ex)} className="px-4 py-3 text-sm font-medium text-zinc-300 hover:bg-zinc-800 hover:text-white cursor-pointer transition-colors">
+                                            <div key={ex.id} onClick={() => handleSelectExercise(ex)} className="px-4 py-3 text-base font-medium text-zinc-300 hover:bg-zinc-800 hover:text-white cursor-pointer transition-colors">
                                                 {ex.displayName || ex.name}
                                             </div>
                                         ))}
                                     </div>
                                 ))}
                                 {Object.keys(filteredGroups).length === 0 && (
-                                    <div className="px-4 py-3 text-sm text-zinc-500 text-center">No exercises found.</div>
+                                    <div className="px-4 py-3 text-base text-zinc-500 text-center">No exercises found.</div>
                                 )}
                             </div>
                         )}
@@ -454,11 +454,11 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
                                 {nextGoal || (exerciseId ? "Calculating..." : "Select Exercise")}
                             </div>
                             {exerciseStats?.pb ? (
-                                <div className="text-xs text-zinc-500 font-mono mt-1">
+                                <div className="text-sm text-zinc-500 font-mono mt-1">
                                     <span>Current PB: {exerciseStats.pb.value}</span>
                                 </div>
                             ) : (
-                                <div className="text-xs text-zinc-500 font-mono mt-1">No history yet.</div>
+                                <div className="text-sm text-zinc-500 font-mono mt-1">No history yet.</div>
                             )}
                         </div>
                     </div>
@@ -473,7 +473,7 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
                                     </label>
                                     <div className="flex gap-2 items-center">
                                         <input type="number" value={distanceValue || ''} onChange={(e) => setDistanceValue(Number(e.target.value))} placeholder="e.g. 1.0" className="flex-1 bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white text-lg font-mono focus:border-zinc-500 outline-none transition" />
-                                        <span className="text-sm font-bold text-zinc-500">{unitLabel === 'Distance' ? 'Mi/Km' : unitLabel === 'meters' ? 'm' : unitLabel}</span>
+                                        <span className="text-base font-bold text-zinc-500">{unitLabel === 'Distance' ? 'Mi/Km' : unitLabel === 'meters' ? 'm' : unitLabel}</span>
                                     </div>
                                 </div>
                                 <div>
@@ -481,12 +481,12 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
                                     <div className="flex gap-2">
                                         <div className="flex-1">
                                             <input type="number" value={minutes || ''} onChange={(e) => setMinutes(Number(e.target.value))} placeholder="Min" className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white text-lg font-mono focus:border-zinc-500 outline-none transition text-center" />
-                                            <span className="text-xs text-zinc-500 mt-1 block text-center">Minutes</span>
+                                            <span className="text-sm text-zinc-500 mt-1 block text-center">Minutes</span>
                                         </div>
                                         <div className="flex items-center text-xl font-bold text-zinc-600">:</div>
                                         <div className="flex-1">
                                             <input type="number" value={seconds || ''} onChange={(e) => setSeconds(Number(e.target.value))} placeholder="Sec" className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white text-lg font-mono focus:border-zinc-500 outline-none transition text-center" />
-                                            <span className="text-xs text-zinc-500 mt-1 block text-center">Seconds</span>
+                                            <span className="text-sm text-zinc-500 mt-1 block text-center">Seconds</span>
                                         </div>
                                     </div>
                                 </div>
@@ -502,7 +502,7 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
                                         <button
                                             key={amt}
                                             onClick={() => setSeconds(seconds + amt)}
-                                            className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white text-xs font-bold py-2 rounded transition-all"
+                                            className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white text-sm font-bold py-2 rounded transition-all"
                                         >
                                             +{amt}s
                                         </button>
@@ -518,7 +518,7 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
                                             placeholder="Min" 
                                             className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white text-lg font-mono focus:border-zinc-500 outline-none transition text-center" 
                                         />
-                                        <span className="text-xs text-zinc-500 mt-1 block text-center">Minutes</span>
+                                        <span className="text-sm text-zinc-500 mt-1 block text-center">Minutes</span>
                                     </div>
                                     <div className="flex items-center text-xl font-bold text-zinc-600">:</div>
                                     <div className="flex-1">
@@ -530,7 +530,7 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
                                             placeholder="Sec" 
                                             className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white text-lg font-mono focus:border-zinc-500 outline-none transition text-center" 
                                         />
-                                        <span className="text-xs text-zinc-500 mt-1 block text-center">Seconds</span>
+                                        <span className="text-sm text-zinc-500 mt-1 block text-center">Seconds</span>
                                     </div>
                                 </div>
                             </div>
@@ -560,7 +560,7 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
                                                 <button
                                                     key={amt}
                                                     onClick={() => setResultValue(resultValue + amt)}
-                                                    className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white text-xs font-bold py-2 rounded transition-all"
+                                                    className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white text-sm font-bold py-2 rounded transition-all"
                                                 >
                                                     +{amt}
                                                 </button>
@@ -572,7 +572,7 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
                                                 <button
                                                     key={amt}
                                                     onClick={() => setResultValue(resultValue + amt)}
-                                                    className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white text-xs font-bold py-2 rounded transition-all"
+                                                    className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white text-sm font-bold py-2 rounded transition-all"
                                                 >
                                                     +{amt}
                                                 </button>
@@ -650,12 +650,12 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
                                             <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wide border ${currentLog.level >= 3 ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' : currentLog.level >= 1 ? 'bg-zinc-800 text-zinc-400 border-zinc-700' : 'bg-zinc-900 text-zinc-600 border-zinc-800'}`}>
                                                 Level {currentLog.level}
                                             </span>
-                                            <span className="text-white font-bold text-sm">{currentLog.value}</span>
-                                            <span className="text-xs text-zinc-500">({formatDate(currentLog.date)})</span>
+                                            <span className="text-white font-bold text-base">{currentLog.value}</span>
+                                            <span className="text-sm text-zinc-500">({formatDate(currentLog.date)})</span>
                                         </div>
                                         <div className="flex items-baseline gap-1">
                                             <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider">All-Time Best:</span>
-                                            <span className="text-orange-400 font-bold text-xs">{exerciseStats.pb.value}</span>
+                                            <span className="text-orange-400 font-bold text-sm">{exerciseStats.pb.value}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -691,7 +691,7 @@ export default function Calculator({ userId, bodyweight, sex, age, exercises, on
                     !rankData && (
                         <div className="h-64 w-full border-2 border-dashed border-zinc-800 rounded-2xl flex flex-col items-center justify-center text-zinc-600 p-8 text-center">
                             <span className="text-4xl mb-4 opacity-50">⏱️</span>
-                            <p className="text-sm font-medium">Select an exercise to see your history.</p>
+                            <p className="text-base font-medium">Select an exercise to see your history.</p>
                         </div>
                     )
                 )}

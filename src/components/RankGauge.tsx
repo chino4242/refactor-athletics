@@ -159,7 +159,7 @@ export default function RankGauge({ exercise, value, age, sex, themeKey, bodywei
                     {value > 0 ? (
                         <span>{Math.round(value)} <span className="text-xs text-zinc-500">{unitLabel}</span></span>
                     ) : '--'}
-                    {isXBW && value > 0 && bodyweight > 0 && <span className="ml-1 text-[10px] text-zinc-600">({(value / bodyweight).toFixed(2)}x)</span>}
+                    {isXBW && value > 0 && bodyweight > 0 && <span className="ml-1 text-xs text-zinc-600">({(value / bodyweight).toFixed(2)}x)</span>}
                 </div>
             </div>
 
@@ -203,13 +203,13 @@ export default function RankGauge({ exercise, value, age, sex, themeKey, bodywei
                             <div className={`w-0.5 h-full z-10 transition-colors ${isAchieved ? 'bg-white' : 'bg-zinc-600'}`}></div>
 
                             {/* Top Label (Rank Name) - Cleaned Up */}
-                            <div className={`absolute bottom-full mb-2 text-[7px] font-bold uppercase tracking-wider whitespace-nowrap transition-all duration-300 items-center flex flex-col ${showRankName ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1 pointer-events-none'} ${isAchieved ? 'text-orange-400' : 'text-zinc-600'}`}>
+                            <div className={`absolute bottom-full mb-2 text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all duration-300 items-center flex flex-col ${showRankName ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1 pointer-events-none'} ${isAchieved ? 'text-orange-400' : 'text-zinc-600'}`}>
                                 <span>{themeRanks[i]}</span>
                                 {isNextGoal && <div className="w-1.5 h-1.5 rounded-full bg-orange-500 mt-0.5 animate-bounce"></div>}
                             </div>
 
                             {/* Bottom Label (Value) - Hidden on collision */}
-                            <div className={`absolute top-full mt-2 text-[9px] font-mono font-bold whitespace-nowrap transition-opacity ${isCloseToUser ? 'opacity-0' : 'opacity-100'} ${isAchieved ? 'text-white' : 'text-zinc-500'}`}>
+                            <div className={`absolute top-full mt-2 text-xs font-mono font-bold whitespace-nowrap transition-opacity ${isCloseToUser ? 'opacity-0' : 'opacity-100'} ${isAchieved ? 'text-white' : 'text-zinc-500'}`}>
                                 {formatValue(benchmarkVal)}
                             </div>
                         </div>
@@ -223,7 +223,7 @@ export default function RankGauge({ exercise, value, age, sex, themeKey, bodywei
                     animate={{ left: `${progressPercent}%` }}
                     transition={{ type: "spring", damping: 20 }}
                 >
-                    <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 text-[10px] font-bold bg-white text-black px-1 rounded z-30">YOU</div>
+                    <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 text-xs font-bold bg-white text-black px-1 rounded z-30">YOU</div>
                 </motion.div>
             </div>
         </div>

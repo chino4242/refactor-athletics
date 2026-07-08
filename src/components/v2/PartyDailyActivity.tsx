@@ -194,14 +194,14 @@ export default function PartyDailyActivity({ userId, refreshKey = 0 }: Props) {
 
   return (
     <div className={`border ${colors.border} bg-zinc-900/50 p-3 mb-4`}>
-      <p className="text-[10px] text-zinc-500 uppercase mb-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>TODAY&apos;S ACTIVITY</p>
+      <p className="text-xs text-zinc-500 uppercase mb-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>TODAY&apos;S ACTIVITY</p>
 
       {/* Both Trained Badge */}
       {allTrained && (
         <div className={`flex items-center justify-center gap-2 py-1.5 mb-2 border ${colors.border} bg-zinc-800/50`}>
-          <span className="text-[9px]">⚔</span>
-          <span className={`text-[8px] ${colors.secondary} uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>BOTH TRAINED TODAY</span>
-          <span className="text-[9px]">⚔</span>
+          <span className="text-xs">⚔</span>
+          <span className={`text-xs ${colors.secondary} uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>BOTH TRAINED TODAY</span>
+          <span className="text-xs">⚔</span>
         </div>
       )}
 
@@ -210,11 +210,11 @@ export default function PartyDailyActivity({ userId, refreshKey = 0 }: Props) {
           <div key={m.userId} className={`px-2 py-2 ${m.isYou ? `border ${colors.border} bg-zinc-800/50` : 'border border-zinc-800/30'}`}>
             {/* Name + Streak row */}
             <div className="flex items-center justify-between mb-1">
-              <p className={`text-[9px] ${m.isYou ? 'text-white' : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              <p className={`text-xs ${m.isYou ? 'text-white' : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                 {m.name}{m.isYou ? ' (YOU)' : ''}
               </p>
               {m.streak > 0 && (
-                <span className={`text-[8px] ${m.streak >= 7 ? 'text-amber-300' : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                <span className={`text-xs ${m.streak >= 7 ? 'text-amber-300' : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                   🏋️ {m.streak}d training streak
                 </span>
               )}
@@ -222,24 +222,24 @@ export default function PartyDailyActivity({ userId, refreshKey = 0 }: Props) {
 
             {/* Metrics row */}
             <div className="flex items-center gap-3 flex-wrap">
-              <span className="text-[8px] text-zinc-400">
+              <span className="text-xs text-zinc-400">
                 ⚡ <span className={m.xp ? 'text-amber-300' : 'text-zinc-600'}>{m.xp ?? '—'}</span>
               </span>
-              <span className="text-[8px] text-zinc-400">
+              <span className="text-xs text-zinc-400">
                 🥩 <span className={m.protein ? 'text-white' : 'text-zinc-600'}>
                   {m.protein ?? '—'}{m.proteinTarget ? `/${m.proteinTarget}g` : m.protein ? 'g' : ''}
                 </span>
               </span>
-              <span className="text-[8px] text-zinc-400">
+              <span className="text-xs text-zinc-400">
                 👣 <span className={m.steps ? 'text-white' : 'text-zinc-600'}>{m.steps ? m.steps.toLocaleString() : '—'}</span>
               </span>
               {m.activeMinutes !== null && m.activeMinutes > 0 && (
-                <span className="text-[8px] text-zinc-400">
+                <span className="text-xs text-zinc-400">
                   ⏱ <span className="text-white">{m.activeMinutes} min</span>
                 </span>
               )}
               {(m.activeMinutes === null || m.activeMinutes === 0) && (
-                <span className="text-[8px] text-zinc-400">
+                <span className="text-xs text-zinc-400">
                   ⏱ <span className="text-zinc-600">0 min</span>
                 </span>
               )}
@@ -255,7 +255,7 @@ export default function PartyDailyActivity({ userId, refreshKey = 0 }: Props) {
                   { key: 'mobility', label: 'MOB', done: m.sections.mobility },
                 ].filter(s => m.scheduledSections.includes(s.key)).map(s => (
                   <div key={s.key} className={`px-1.5 py-0.5 border ${s.done ? 'border-green-800 bg-green-950/30' : 'border-zinc-700 bg-zinc-800/30'}`}>
-                    <span className={`text-[7px] ${s.done ? 'text-green-400' : 'text-zinc-600'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                    <span className={`text-xs ${s.done ? 'text-green-400' : 'text-zinc-600'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                       {s.done ? '✓' : '○'} {s.label}
                     </span>
                   </div>
@@ -267,7 +267,7 @@ export default function PartyDailyActivity({ userId, refreshKey = 0 }: Props) {
             {m.rankUps && m.rankUps.length > 0 && (
               <div className="mt-1.5 space-y-0.5">
                 {m.rankUps.map((r, i) => (
-                  <p key={i} className={`text-[8px] ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                  <p key={i} className={`text-xs ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                     ↑ {r.exercise.replace(/_/g, ' ')} → Lv{r.level}
                   </p>
                 ))}

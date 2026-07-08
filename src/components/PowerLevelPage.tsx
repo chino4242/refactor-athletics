@@ -160,7 +160,7 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
     return (
         <div className="space-y-6 animate-fade-in">
             {/* Back nav */}
-            <Link href="/" className="text-xs text-zinc-500 hover:text-white transition flex items-center gap-1">
+            <Link href="/" className="text-sm text-zinc-500 hover:text-white transition flex items-center gap-1">
                 ← Dashboard
             </Link>
 
@@ -176,25 +176,25 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                 {/* Score overlay at bottom */}
                 <div className="relative px-4 pb-4 mt-2 text-center">
                     <div className="flex flex-col items-center">
-                        <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Power Level</div>
+                        <div className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Power Level</div>
                         <div className={`text-5xl font-black italic leading-none bg-gradient-to-r ${theme.progressGradient || 'from-orange-500 to-red-500'} bg-clip-text text-transparent`}>
                             {powerLevel}
                             <span className="text-xl text-zinc-500 font-bold ml-1">/ {maxPower}</span>
                             <span className="text-lg font-black text-zinc-400 ml-2">{letterGrade}</span>
                         </div>
-                        <div className={`text-sm font-black uppercase tracking-wider mt-1 bg-gradient-to-r ${theme.progressGradient || 'from-orange-500 to-red-500'} bg-clip-text text-transparent`}>
+                        <div className={`text-base font-black uppercase tracking-wider mt-1 bg-gradient-to-r ${theme.progressGradient || 'from-orange-500 to-red-500'} bg-clip-text text-transparent`}>
                             {rankName}
                         </div>
-                        <p className="text-[9px] text-zinc-500 mt-0.5 max-w-[240px]">{rankDesc}</p>
+                        <p className="text-xs text-zinc-500 mt-0.5 max-w-[240px]">{rankDesc}</p>
                         {percentile !== null && (
-                            <p className="text-[10px] font-bold text-orange-400 mt-2">Stronger than {percentile}% of athletes</p>
+                            <p className="text-xs font-bold text-orange-400 mt-2">Stronger than {percentile}% of athletes</p>
                         )}
                     </div>
 
                     {/* Progress to next tier */}
                     {nextTierThreshold && (
                         <div className="mt-3">
-                            <div className="flex justify-between text-[10px] text-zinc-500 mb-1">
+                            <div className="flex justify-between text-xs text-zinc-500 mb-1">
                                 <span>{rankName}</span>
                                 <span>{theme.ranks[`level${tier + 1}` as keyof typeof theme.ranks]?.name?.split(': ')[1] || 'Next'}</span>
                             </div>
@@ -204,13 +204,13 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                                     style={{ width: `${Math.min(tierProgress, 100)}%` }}
                                 />
                             </div>
-                            <div className="text-[10px] text-zinc-600 mt-1">
+                            <div className="text-xs text-zinc-600 mt-1">
                                 {nextTierThreshold - powerLevel} more to reach {theme.ranks[`level${tier + 1}` as keyof typeof theme.ranks]?.name?.split(': ')[1]}
                             </div>
                         </div>
                     )}
                     {!nextTierThreshold && powerLevel > 0 && (
-                        <div className="text-[10px] text-emerald-400 font-bold mt-3 uppercase">Max Tier Reached</div>
+                        <div className="text-xs text-emerald-400 font-bold mt-3 uppercase">Max Tier Reached</div>
                     )}
                 </div>
             </div>
@@ -218,7 +218,7 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
             {/* === POWER LEVEL TREND === */}
             {powerHistory.length >= 2 && (
                 <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4">
-                    <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Progress Over Time</div>
+                    <div className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Progress Over Time</div>
                     <div className="flex items-end gap-1 h-16">
                         {powerHistory.map((entry, i) => {
                             const maxVal = Math.max(...powerHistory.map(e => e.power_level), 1);
@@ -233,14 +233,14 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                             );
                         })}
                     </div>
-                    <div className="flex justify-between text-[8px] text-zinc-600 mt-1">
+                    <div className="flex justify-between text-xs text-zinc-600 mt-1">
                         <span>{new Date(powerHistory[0].week_start + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                         <span>{new Date(powerHistory[powerHistory.length - 1].week_start + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                     </div>
                     {powerHistory.length >= 2 && (() => {
                         const delta = powerHistory[powerHistory.length - 1].power_level - powerHistory[0].power_level;
                         return (
-                            <div className={`text-[10px] font-bold mt-1 ${delta > 0 ? 'text-emerald-400' : delta < 0 ? 'text-rose-400' : 'text-zinc-500'}`}>
+                            <div className={`text-xs font-bold mt-1 ${delta > 0 ? 'text-emerald-400' : delta < 0 ? 'text-rose-400' : 'text-zinc-500'}`}>
                                 {delta > 0 ? '↑' : delta < 0 ? '↓' : '→'} {delta > 0 ? '+' : ''}{delta} since {new Date(powerHistory[0].week_start + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                             </div>
                         );
@@ -251,11 +251,11 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
             {/* === EASIEST LEVEL-UP === */}
             {easiestLevelUp && (
                 <div className="bg-orange-500/5 border border-orange-500/20 rounded-xl p-4">
-                    <div className="text-[10px] font-bold text-orange-400 uppercase tracking-widest mb-1">⚡ Easiest Next Level-Up</div>
+                    <div className="text-xs font-bold text-orange-400 uppercase tracking-widest mb-1">⚡ Easiest Next Level-Up</div>
                     <div className="flex items-center justify-between">
                         <div>
-                            <div className="text-sm font-bold text-white">{easiestLevelUp.displayName}</div>
-                            <div className="text-[11px] text-zinc-400">
+                            <div className="text-base font-bold text-white">{easiestLevelUp.displayName}</div>
+                            <div className="text-xs text-zinc-400">
                                 Lv.{easiestLevelUp.currentLevel} → Lv.{easiestLevelUp.currentLevel + 1}
                                 {easiestLevelUp.gapToNext !== null && (
                                     <span className="text-orange-400 ml-1">
@@ -266,13 +266,13 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                         </div>
                         <div className="text-right">
                             <div className="text-lg font-black text-orange-400">{easiestLevelUp.progressToNext}%</div>
-                            <div className="text-[9px] text-zinc-500">to next level</div>
+                            <div className="text-xs text-zinc-500">to next level</div>
                         </div>
                     </div>
                     <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden mt-2">
                         <div className="h-full bg-gradient-to-r from-orange-600 to-amber-500 rounded-full" style={{ width: `${easiestLevelUp.progressToNext}%` }} />
                     </div>
-                    <div className="text-[9px] text-zinc-500 mt-1.5">
+                    <div className="text-xs text-zinc-500 mt-1.5">
                         If you hit this, Power Level goes from {powerLevel} → {powerLevel + 1}
                     </div>
                 </div>
@@ -280,8 +280,8 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
 
             {/* === RANK LADDER === */}
             <div>
-                <h2 className="text-sm font-black text-white uppercase tracking-wider mb-1">The Ranks</h2>
-                <p className="text-[10px] text-zinc-600 mb-3">Your Power Level measures relative strength across all ranked exercises. As it grows, you ascend through the ranks.</p>
+                <h2 className="text-base font-black text-white uppercase tracking-wider mb-1">The Ranks</h2>
+                <p className="text-xs text-zinc-600 mb-3">Your Power Level measures relative strength across all ranked exercises. As it grows, you ascend through the ranks.</p>
                 <div className="grid grid-cols-3 gap-2">
                     {[0, 1, 2, 3, 4, 5].map(lvl => {
                         const key = `level${lvl}` as keyof typeof theme.ranks;
@@ -301,8 +301,8 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                                 {img && (
                                     <Image src={img} alt={name} width={56} height={56} className={`object-contain mb-1.5 ${isLocked ? 'grayscale' : ''}`} />
                                 )}
-                                <span className={`text-[10px] font-black uppercase leading-tight ${isCurrent ? 'text-white' : isLocked ? 'text-zinc-600' : 'text-zinc-400'}`}>{name}</span>
-                                {isCurrent && <span className="text-[8px] font-bold text-orange-400 bg-orange-500/20 px-1.5 py-0.5 rounded mt-1">YOU</span>}
+                                <span className={`text-xs font-black uppercase leading-tight ${isCurrent ? 'text-white' : isLocked ? 'text-zinc-600' : 'text-zinc-400'}`}>{name}</span>
+                                {isCurrent && <span className="text-xs font-bold text-orange-400 bg-orange-500/20 px-1.5 py-0.5 rounded mt-1">YOU</span>}
                             </div>
                         );
                     })}
@@ -311,8 +311,8 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
 
             {/* === FULL BREAKDOWN === */}
             {exerciseData.length > 0 && <div>
-                <h2 className="text-sm font-black text-white uppercase tracking-wider mb-1">Path Exercises</h2>
-                <p className="text-[10px] text-zinc-600 mb-3">Your 12 ranked exercises by category</p>
+                <h2 className="text-base font-black text-white uppercase tracking-wider mb-1">Path Exercises</h2>
+                <p className="text-xs text-zinc-600 mb-3">Your 12 ranked exercises by category</p>
 
                 <div className="space-y-2">
                     {CATEGORIES.map(cat => {
@@ -344,7 +344,7 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                                         <span className="text-xs font-bold text-white uppercase">{cat}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${catScore > 0 ? 'bg-orange-500/20 text-orange-400' : 'bg-zinc-800 text-zinc-600'}`}>
+                                        <span className={`text-xs font-bold px-2 py-0.5 rounded ${catScore > 0 ? 'bg-orange-500/20 text-orange-400' : 'bg-zinc-800 text-zinc-600'}`}>
                                             {catScore}{catMax > 0 ? ` / ${catMax}` : ''}
                                         </span>
                                         <ChevronDown size={14} className={`text-zinc-600 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
@@ -381,15 +381,15 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                                                     <div className="flex items-center gap-2">
                                                         {exImage && <Image src={exImage} alt="" width={24} height={24} className="object-contain" />}
                                                         <div className="flex-1 min-w-0">
-                                                            <span className="text-[11px] text-white truncate block">{ex.displayName}</span>
+                                                            <span className="text-xs text-white truncate block">{ex.displayName}</span>
                                                             {targetCombos.length > 0 && (
-                                                                <span className="text-[9px] text-zinc-600">Hit {targetCombos.join(' or ')} to rank up</span>
+                                                                <span className="text-xs text-zinc-600">Hit {targetCombos.join(' or ')} to rank up</span>
                                                             )}
                                                         </div>
                                                         <div className="text-right">
-                                                            <span className="text-[10px] font-bold text-zinc-400">Lv.{ex.currentLevel}</span>
+                                                            <span className="text-xs font-bold text-zinc-400">Lv.{ex.currentLevel}</span>
                                                             {ex.currentLevel < 5 && (
-                                                                <div className="text-[8px] text-zinc-500">{ex.progressToNext}%</div>
+                                                                <div className="text-xs text-zinc-500">{ex.progressToNext}%</div>
                                                             )}
                                                         </div>
                                                     </div>
@@ -404,15 +404,15 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                                         })}
                                         {untestedInCat.length > 0 && (
                                             <div className="pt-1.5 border-t border-zinc-800/30">
-                                                <div className="text-[9px] text-zinc-600 uppercase font-bold mb-1">{untestedInCat.length} untested — up to +{untestedInCat.length * 5} potential</div>
+                                                <div className="text-xs text-zinc-600 uppercase font-bold mb-1">{untestedInCat.length} untested — up to +{untestedInCat.length * 5} potential</div>
                                                 {untestedInCat.slice(0, 5).map((c: any) => (
                                                     <div key={c.id} className="flex items-center gap-2 py-1">
-                                                        <span className="text-[10px] text-zinc-600 flex-1 truncate">{c.name || formatExerciseName(c.id)}</span>
-                                                        <Link href={`/test?exercise=${encodeURIComponent(c.id)}`} className="text-[9px] text-zinc-400 hover:text-white font-bold">Test</Link>
+                                                        <span className="text-xs text-zinc-600 flex-1 truncate">{c.name || formatExerciseName(c.id)}</span>
+                                                        <Link href={`/test?exercise=${encodeURIComponent(c.id)}`} className="text-xs text-zinc-400 hover:text-white font-bold">Test</Link>
                                                     </div>
                                                 ))}
                                                 {untestedInCat.length > 5 && (
-                                                    <div className="text-[9px] text-zinc-700">+{untestedInCat.length - 5} more</div>
+                                                    <div className="text-xs text-zinc-700">+{untestedInCat.length - 5} more</div>
                                                 )}
                                             </div>
                                         )}
@@ -427,9 +427,9 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
             {/* === THRESHOLDS REFERENCE === */}
             {exerciseData.length > 0 && (
                 <div>
-                    <h2 className="text-sm font-black text-white uppercase tracking-wider mb-1">Rank Thresholds</h2>
-                    <p className="text-[10px] text-zinc-600 mb-3">What you need to hit for each level (age {age}, {sex.toLowerCase() === 'female' ? 'female' : 'male'})</p>
-                    <p className="text-[9px] text-zinc-700 mb-4 italic">Your &quot;Best&quot; is calculated using the Epley formula: weight × (1 + reps/30). This estimates your 1RM from any set — so 185 lbs × 8 reps = 234 lbs estimated max.</p>
+                    <h2 className="text-base font-black text-white uppercase tracking-wider mb-1">Rank Thresholds</h2>
+                    <p className="text-xs text-zinc-600 mb-3">What you need to hit for each level (age {age}, {sex.toLowerCase() === 'female' ? 'female' : 'male'})</p>
+                    <p className="text-xs text-zinc-700 mb-4 italic">Your &quot;Best&quot; is calculated using the Epley formula: weight × (1 + reps/30). This estimates your 1RM from any set — so 185 lbs × 8 reps = 234 lbs estimated max.</p>
 
                     {/* Desktop table */}
                     <div className="hidden md:block overflow-x-auto">
@@ -461,10 +461,10 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                                         return (
                                             <tr key={ex.exerciseId} className="border-b border-zinc-800/50">
                                                 <td className="py-2 text-white font-medium">{ex.displayName}</td>
-                                                <td className="text-center py-2 text-orange-400 font-bold">{ex.bestValue ? (isXBW ? <><span>{Math.round(ex.bestValue)} lbs</span><div className="text-[8px] text-zinc-500 font-normal">e1RM</div></> : formatThreshold(ex.bestValue, unit, bw)) : '—'}</td>
+                                                <td className="text-center py-2 text-orange-400 font-bold">{ex.bestValue ? (isXBW ? <><span>{Math.round(ex.bestValue)} lbs</span><div className="text-xs text-zinc-500 font-normal">e1RM</div></> : formatThreshold(ex.bestValue, unit, bw)) : '—'}</td>
                                                 {levels.map((t: number, i: number) => (
                                                     <td key={i} className={`text-center py-2 font-mono ${ex.currentLevel > i ? 'text-emerald-400' : ex.currentLevel === i ? 'text-orange-400 font-bold' : 'text-zinc-600'}`}>
-                                                        {isXBW ? <><div>{Math.round(t * bw)}</div><div className="text-[9px] opacity-50">{t}x</div></> : formatThreshold(t, unit, bw)}
+                                                        {isXBW ? <><div>{Math.round(t * bw)}</div><div className="text-xs opacity-50">{t}x</div></> : formatThreshold(t, unit, bw)}
                                                     </td>
                                                 ))}
                                             </tr>
@@ -491,14 +491,14 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                                 return (
                                     <div key={ex.exerciseId} className="bg-zinc-900/50 border border-zinc-800/50 rounded-xl p-3">
                                         <div className="flex items-center justify-between mb-2">
-                                            <span className="text-xs font-bold text-white">{ex.displayName}</span>
-                                            <span className="text-[10px] text-orange-400 font-bold">{ex.bestValue ? (isXBW ? `e1RM: ${Math.round(ex.bestValue)} lbs` : formatThreshold(ex.bestValue, unit, bw)) : '—'}</span>
+                                            <span className="text-sm font-bold text-white">{ex.displayName}</span>
+                                            <span className="text-xs text-orange-400 font-bold">{ex.bestValue ? (isXBW ? `e1RM: ${Math.round(ex.bestValue)} lbs` : formatThreshold(ex.bestValue, unit, bw)) : '—'}</span>
                                         </div>
                                         <div className="grid grid-cols-5 gap-1">
                                             {levels.map((t: number, i: number) => (
-                                                <div key={i} className={`text-center py-1.5 rounded-lg text-[10px] font-mono ${ex.currentLevel > i ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : ex.currentLevel === i ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : 'bg-zinc-800/50 text-zinc-600 border border-zinc-800'}`}>
+                                                <div key={i} className={`text-center py-1.5 rounded-lg text-xs font-mono ${ex.currentLevel > i ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : ex.currentLevel === i ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : 'bg-zinc-800/50 text-zinc-600 border border-zinc-800'}`}>
                                                     <div className="font-bold">{isTime ? formatThreshold(t, unit) : isXBW ? Math.round(t * bw) : t}</div>
-                                                    <div className="text-[8px] opacity-60">{isXBW ? `${t}x` : `Lv.${i + 1}`}</div>
+                                                    <div className="text-xs opacity-60">{isXBW ? `${t}x` : `Lv.${i + 1}`}</div>
                                                 </div>
                                             ))}
                                         </div>
@@ -515,7 +515,7 @@ export default function PowerLevelPage({ userId, profile, history, catalog, stat
                 <div className="text-center py-8">
                     <div className="text-4xl mb-3">🏋️</div>
                     <h3 className="text-lg font-bold text-white mb-1">No Power Level Yet</h3>
-                    <p className="text-xs text-zinc-500 mb-4">Log a ranked exercise to start building your Power Level</p>
+                    <p className="text-sm text-zinc-500 mb-4">Log a ranked exercise to start building your Power Level</p>
                     <Link href="/train" className="inline-block px-6 py-3 bg-white text-black font-black rounded-xl text-xs uppercase tracking-wider hover:bg-zinc-200 transition">
                         Start Training
                     </Link>

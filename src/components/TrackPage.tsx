@@ -261,10 +261,10 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
           <span className="text-base font-bold">‹</span>
         </button>
         <button onClick={isToday ? undefined : goToToday} className="text-center px-4">
-          <span className="text-sm font-semibold text-white tracking-wide">
+          <span className="text-base font-semibold text-white tracking-wide">
             {isToday ? '📅 Today' : selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
           </span>
-          {!isToday && <span className="block text-[10px] text-orange-400 font-medium mt-0.5">Tap to return</span>}
+          {!isToday && <span className="block text-xs text-orange-400 font-medium mt-0.5">Tap to return</span>}
         </button>
         <button onClick={goToNextDay} disabled={isFuture} className={`w-9 h-9 flex items-center justify-center rounded-full transition active:scale-95 ${isFuture ? 'bg-zinc-900 text-zinc-800 cursor-not-allowed' : 'bg-zinc-800/60 text-zinc-400 hover:text-white hover:bg-zinc-700'}`}>
           <span className="text-base font-bold">›</span>
@@ -295,7 +295,7 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
               </defs>
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className={`text-sm font-black ${progressPercent >= 100 ? 'text-emerald-400' : ''}`} style={progressPercent < 100 ? { color: theme.accentHex } : {}}>{progressPercent}%</span>
+              <span className={`text-base font-black ${progressPercent >= 100 ? 'text-emerald-400' : ''}`} style={progressPercent < 100 ? { color: theme.accentHex } : {}}>{progressPercent}%</span>
             </div>
           </div>
           <div className="flex-1 min-w-0">
@@ -329,13 +329,13 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
         }
         return (
           <div className="mx-2 px-4 py-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800/40 flex items-center justify-between">
-            <div className="flex gap-3 text-[11px] font-bold">
+            <div className="flex gap-3 text-xs font-bold">
               <span className="text-red-400">{p}g P</span>
               <span className="text-orange-400">{c}g C</span>
               <span className="text-yellow-400">{f}g F</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-[11px] text-zinc-500 font-mono">{cal} cal</span>
+              <span className="text-xs text-zinc-500 font-mono">{cal} cal</span>
               {grade && <span className={`text-xs font-black ${gradeColor}`}>{grade}</span>}
             </div>
           </div>
@@ -380,7 +380,7 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
               <button
                 onClick={() => handleLog('habit_supplements', 1, 'Supplements')}
                 disabled={loading === 'habit_supplements'}
-                className={`w-full p-3.5 rounded-xl border text-left text-sm font-medium transition-all active:scale-[0.98] ${
+                className={`w-full p-3.5 rounded-xl border text-left text-base font-medium transition-all active:scale-[0.98] ${
                   (totals['habit_supplements'] || 0) > 0
                     ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 shadow-sm shadow-emerald-500/5'
                     : 'bg-zinc-900/60 border-zinc-700/40 text-zinc-400 hover:border-zinc-600 hover:bg-zinc-800/60'
@@ -394,7 +394,7 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
             {todayLog.length > 0 && (
               <div className="mt-2">
                 <button onClick={() => setShowTodayLog(!showTodayLog)} className="flex items-center justify-between w-full text-left px-3 py-2 rounded-lg bg-zinc-900/50 border border-zinc-800/50 hover:border-zinc-700 transition">
-                  <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Today&apos;s Log ({todayLog.length})</span>
+                  <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Today&apos;s Log ({todayLog.length})</span>
                   {showTodayLog ? <ChevronUp size={14} className="text-zinc-600" /> : <ChevronDown size={14} className="text-zinc-600" />}
                 </button>
                 {showTodayLog && (
@@ -403,7 +403,7 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
                       <div key={i} className="flex items-center justify-between px-3 py-2 bg-zinc-900/30 rounded-lg">
                         <div className="flex-1 min-w-0">
                           <div className="text-xs font-medium text-zinc-300 truncate capitalize">{item.name}</div>
-                          <div className="text-[10px] text-zinc-600">{item.value} · {item.xp || 0} XP</div>
+                          <div className="text-xs text-zinc-600">{item.value} · {item.xp || 0} XP</div>
                         </div>
                         <button
                           onClick={async () => {
@@ -474,7 +474,7 @@ export default function TrackPage({ userId, bodyweight, initialProfile, initialS
               <button
                 onClick={() => handleLog('habit_journaling', 1, 'Journaling')}
                 disabled={loading === 'habit_journaling'}
-                className={`w-full p-3.5 rounded-xl border text-left text-sm font-medium transition-all active:scale-[0.98] ${
+                className={`w-full p-3.5 rounded-xl border text-left text-base font-medium transition-all active:scale-[0.98] ${
                   (totals['habit_journaling'] || 0) > 0
                     ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 shadow-sm shadow-emerald-500/5'
                     : 'bg-zinc-900/60 border-zinc-700/40 text-zinc-400 hover:border-zinc-600 hover:bg-zinc-800/60'

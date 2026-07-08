@@ -18,13 +18,13 @@ export default function FirstSessionView({ userName, todayWorkoutName, todayWork
       <h1 className="text-2xl font-black text-white mb-2">
         {userName ? `Let's go, ${userName}` : "Let's go"}
       </h1>
-      <p className="text-sm text-zinc-400 mb-2 max-w-xs">
+      <p className="text-base text-zinc-400 mb-2 max-w-xs">
         {isClassic
           ? "Log your first lift to establish your baseline."
           : "Log one exercise to discover your rank and start building your Power Level."
         }
       </p>
-      <p className="text-[11px] text-zinc-600 mb-8 max-w-xs">
+      <p className="text-xs text-zinc-600 mb-8 max-w-xs">
         Your rank is based on how much you can lift relative to your age and weight. Even one set counts.
       </p>
 
@@ -34,10 +34,10 @@ export default function FirstSessionView({ userName, todayWorkoutName, todayWork
       >
         {todayWorkoutName ? (
           <>
-            <div className="text-[10px] uppercase tracking-widest text-white/60 font-bold mb-1">Today&apos;s Workout</div>
+            <div className="text-xs uppercase tracking-widest text-white/60 font-bold mb-1">Today&apos;s Workout</div>
             <div className="text-lg font-black">{todayWorkoutName}</div>
             {todayWorkoutPreview && todayWorkoutPreview.length > 0 && (
-              <div className="text-xs text-white/70 mt-2">{todayWorkoutPreview.slice(0, 3).join(' • ')}</div>
+              <div className="text-sm text-white/70 mt-2">{todayWorkoutPreview.slice(0, 3).join(' • ')}</div>
             )}
             <div className="mt-3 text-sm font-bold uppercase tracking-wider">Start Workout →</div>
           </>

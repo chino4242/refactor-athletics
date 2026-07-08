@@ -73,13 +73,13 @@ export default function OnboardingFlow({ userId }: Props) {
         {/* Step 1: Waiver */}
         {step === 1 && (
           <div className="border-2 border-zinc-700 bg-zinc-900 p-6 space-y-4">
-            <p className="text-[10px] text-zinc-400 uppercase tracking-widest text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <p className="text-xs text-zinc-400 uppercase tracking-widest text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>
               REFACTOR ATHLETICS
             </p>
-            <p className="text-xs text-zinc-300 text-center mt-4">
+            <p className="text-sm text-zinc-300 text-center mt-4">
               By continuing, you acknowledge that you are responsible for your own health and safety during exercise.
             </p>
-            <p className="text-[8px] text-zinc-500 text-center">
+            <p className="text-sm text-zinc-500 text-center">
               This app provides fitness tracking, not medical advice. Consult a physician before starting any exercise program.
             </p>
             <label className="flex items-center gap-3 mt-4 cursor-pointer">
@@ -89,7 +89,7 @@ export default function OnboardingFlow({ userId }: Props) {
                 onChange={e => setWaiverAccepted(e.target.checked)}
                 className="w-4 h-4 accent-red-500"
               />
-              <span className="text-[8px] text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>I ACCEPT</span>
+              <span className="text-xs text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>I ACCEPT</span>
             </label>
             <button
               onClick={() => setStep(2)}
@@ -97,7 +97,7 @@ export default function OnboardingFlow({ userId }: Props) {
               className="w-full py-3 mt-4 border-2 border-red-800 bg-zinc-800 text-white disabled:opacity-30 transition-colors hover:bg-zinc-700"
               style={{ fontFamily: "var(--font-pixel), monospace" }}
             >
-              <span className="text-[10px] text-red-400">NEXT ▸</span>
+              <span className="text-xs text-red-400">NEXT ▸</span>
             </button>
           </div>
         )}
@@ -105,10 +105,10 @@ export default function OnboardingFlow({ userId }: Props) {
         {/* Step 2: Theme */}
         {step === 2 && (
           <div className="border-2 border-zinc-700 bg-zinc-900 p-5 space-y-4">
-            <p className="text-[10px] text-zinc-400 uppercase tracking-widest text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <p className="text-xs text-zinc-400 uppercase tracking-widest text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>
               THE AWAKENING
             </p>
-            <p className="text-[9px] text-zinc-500 text-center italic">Something shifted. You see what others can&apos;t. The rift bleeds through — and a tradition calls to you.</p>
+            <p className="text-sm text-zinc-500 text-center italic">Something shifted. You see what others can&apos;t. The rift bleeds through — and a tradition calls to you.</p>
             <div className="space-y-2">
               {THEMES_LIST.map(t => (
                 <button
@@ -119,8 +119,8 @@ export default function OnboardingFlow({ userId }: Props) {
                   <div className="flex items-center gap-3">
                     <span className="text-xl">{t.emoji}</span>
                     <div>
-                      <p className={`text-[9px] ${theme === t.key ? 'text-white' : 'text-zinc-300'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>{t.name}</p>
-                      <p className="text-[8px] text-zinc-500">{t.desc}</p>
+                      <p className={`text-xs ${theme === t.key ? 'text-white' : 'text-zinc-300'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>{t.name}</p>
+                      <p className="text-sm text-zinc-500">{t.desc}</p>
                     </div>
                   </div>
                 </button>
@@ -128,10 +128,10 @@ export default function OnboardingFlow({ userId }: Props) {
             </div>
             <div className="flex gap-2 mt-4">
               <button onClick={() => setStep(1)} className="flex-1 py-3 border border-zinc-700 bg-zinc-800 text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-                <span className="text-[9px]">◂ BACK</span>
+                <span className="text-xs">◂ BACK</span>
               </button>
               <button onClick={() => setStep(3)} className="flex-1 py-3 border-2 border-red-800 bg-zinc-800 text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-                <span className="text-[10px] text-red-400">NEXT ▸</span>
+                <span className="text-xs text-red-400">NEXT ▸</span>
               </button>
             </div>
           </div>
@@ -140,44 +140,44 @@ export default function OnboardingFlow({ userId }: Props) {
         {/* Step 3: Personal Info */}
         {step === 3 && (
           <div className="border-2 border-zinc-700 bg-zinc-900 p-5 space-y-4">
-            <p className="text-[10px] text-zinc-400 uppercase tracking-widest text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <p className="text-xs text-zinc-400 uppercase tracking-widest text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>
               ABOUT YOU
             </p>
             <div>
-              <p className="text-[8px] text-zinc-500 uppercase mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>AGE</p>
+              <p className="text-xs text-zinc-500 uppercase mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>AGE</p>
               <input type="number" inputMode="numeric" value={age} onChange={e => setAge(e.target.value)} placeholder="25" className="w-full bg-zinc-800 border border-zinc-700 px-3 py-2 text-white text-sm" />
             </div>
             <div>
-              <p className="text-[8px] text-zinc-500 uppercase mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>SEX</p>
+              <p className="text-xs text-zinc-500 uppercase mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>SEX</p>
               <div className="flex gap-2">
                 {['male', 'female'].map(s => (
                   <button key={s} onClick={() => setSex(s)} className={`flex-1 py-2 border text-center ${sex === s ? 'border-red-700 bg-zinc-800' : 'border-zinc-700 bg-zinc-900'}`}>
-                    <span className={`text-[9px] ${sex === s ? 'text-red-400' : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>{s.toUpperCase()}</span>
+                    <span className={`text-xs ${sex === s ? 'text-red-400' : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>{s.toUpperCase()}</span>
                   </button>
                 ))}
               </div>
             </div>
             <div>
-              <p className="text-[8px] text-zinc-500 uppercase mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>BODYWEIGHT (LBS)</p>
+              <p className="text-xs text-zinc-500 uppercase mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>BODYWEIGHT (LBS)</p>
               <input type="number" inputMode="numeric" value={bodyweight} onChange={e => setBodyweight(e.target.value)} placeholder="180" className="w-full bg-zinc-800 border border-zinc-700 px-3 py-2 text-white text-sm" />
             </div>
             <div>
-              <p className="text-[8px] text-zinc-500 uppercase mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>GOAL</p>
+              <p className="text-xs text-zinc-500 uppercase mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>GOAL</p>
               <div className="flex gap-2">
                 {([['lose', 'CUT'], ['maintain', 'MAINTAIN'], ['gain', 'GAIN']] as [MacroGoal, string][]).map(([g, label]) => (
                   <button key={g} onClick={() => setGoal(g)} className={`flex-1 py-2 border text-center ${goal === g ? 'border-red-700 bg-zinc-800' : 'border-zinc-700 bg-zinc-900'}`}>
-                    <span className={`text-[9px] ${goal === g ? 'text-red-400' : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>{label}</span>
+                    <span className={`text-xs ${goal === g ? 'text-red-400' : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>{label}</span>
                   </button>
                 ))}
               </div>
             </div>
-            <p className="text-[7px] text-zinc-600 text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>Used for rank calculation + nutrition targets</p>
+            <p className="text-sm text-zinc-600 text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>Used for rank calculation + nutrition targets</p>
             <div className="flex gap-2 mt-4">
               <button onClick={() => setStep(2)} className="flex-1 py-3 border border-zinc-700 bg-zinc-800 text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-                <span className="text-[9px]">◂ BACK</span>
+                <span className="text-xs">◂ BACK</span>
               </button>
               <button onClick={() => setStep(4)} disabled={!age || !sex || !bodyweight} className="flex-1 py-3 border-2 border-red-800 bg-zinc-800 text-white disabled:opacity-30" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-                <span className="text-[10px] text-red-400">NEXT ▸</span>
+                <span className="text-xs text-red-400">NEXT ▸</span>
               </button>
             </div>
           </div>
@@ -186,10 +186,10 @@ export default function OnboardingFlow({ userId }: Props) {
         {/* Step 4: Path */}
         {step === 4 && (
           <div className="border-2 border-zinc-700 bg-zinc-900 p-5 space-y-4">
-            <p className="text-[10px] text-zinc-400 uppercase tracking-widest text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <p className="text-xs text-zinc-400 uppercase tracking-widest text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>
               YOUR DISCIPLINES
             </p>
-            <p className="text-[9px] text-zinc-500 text-center italic">Every Adventurer discovers 12 Disciplines — physical movements that resonate with the rift. Your focus determines your class.</p>
+            <p className="text-sm text-zinc-500 text-center italic">Every Adventurer discovers 12 Disciplines — physical movements that resonate with the rift. Your focus determines your class.</p>
             <div className="space-y-2">
               {PATHS_LIST.map(p => (
                 <button
@@ -200,8 +200,8 @@ export default function OnboardingFlow({ userId }: Props) {
                   <div className="flex items-center gap-3">
                     <span className="text-xl">{p.emoji}</span>
                     <div>
-                      <p className={`text-[9px] ${path === p.key ? 'text-white' : 'text-zinc-300'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>{p.name}</p>
-                      <p className="text-[8px] text-zinc-500">{p.description}</p>
+                      <p className={`text-xs ${path === p.key ? 'text-white' : 'text-zinc-300'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>{p.name}</p>
+                      <p className="text-sm text-zinc-500">{p.description}</p>
                     </div>
                   </div>
                 </button>
@@ -209,10 +209,10 @@ export default function OnboardingFlow({ userId }: Props) {
             </div>
             <div className="flex gap-2 mt-4">
               <button onClick={() => setStep(3)} className="flex-1 py-3 border border-zinc-700 bg-zinc-800 text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-                <span className="text-[9px]">◂ BACK</span>
+                <span className="text-xs">◂ BACK</span>
               </button>
               <button onClick={() => setStep(5)} className="flex-1 py-3 border-2 border-red-800 bg-zinc-800 text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-                <span className="text-[10px] text-red-400">NEXT ▸</span>
+                <span className="text-xs text-red-400">NEXT ▸</span>
               </button>
             </div>
           </div>
@@ -221,17 +221,17 @@ export default function OnboardingFlow({ userId }: Props) {
         {/* Step 5: Connect Wearable */}
         {step === 5 && (
           <div className="border-2 border-zinc-700 bg-zinc-900 p-5 space-y-4">
-            <p className="text-[10px] text-zinc-400 uppercase tracking-widest text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <p className="text-xs text-zinc-400 uppercase tracking-widest text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>
               CONNECT WEARABLE
             </p>
-            <p className="text-xs text-zinc-500 text-center">Sync steps, sleep, and activity automatically</p>
+            <p className="text-sm text-zinc-500 text-center">Sync steps, sleep, and activity automatically</p>
             <div className="space-y-2">
               <button onClick={async () => { const { requestPermissions } = await import('@/services/nativeHealth'); await requestPermissions(); }} className="w-full p-3 border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-left transition-colors">
                 <div className="flex items-center gap-3">
                   <span className="text-xl">⌚</span>
                   <div>
-                    <p className="text-[9px] text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>APPLE HEALTH</p>
-                    <p className="text-[8px] text-zinc-500">HealthKit (iOS)</p>
+                    <p className="text-xs text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>APPLE HEALTH</p>
+                    <p className="text-sm text-zinc-500">HealthKit (iOS)</p>
                   </div>
                 </div>
               </button>
@@ -239,8 +239,8 @@ export default function OnboardingFlow({ userId }: Props) {
                 <div className="flex items-center gap-3">
                   <span className="text-xl">💚</span>
                   <div>
-                    <p className="text-[9px] text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>HEALTH CONNECT</p>
-                    <p className="text-[8px] text-zinc-500">Android</p>
+                    <p className="text-xs text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>HEALTH CONNECT</p>
+                    <p className="text-sm text-zinc-500">Android</p>
                   </div>
                 </div>
               </button>
@@ -248,22 +248,22 @@ export default function OnboardingFlow({ userId }: Props) {
                 <div className="flex items-center gap-3">
                   <span className="text-xl">🟢</span>
                   <div>
-                    <p className="text-[9px] text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>WHOOP</p>
-                    <p className="text-[8px] text-zinc-500">OAuth connection</p>
+                    <p className="text-xs text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>WHOOP</p>
+                    <p className="text-sm text-zinc-500">OAuth connection</p>
                   </div>
                 </div>
               </button>
             </div>
             <div className="flex gap-2 mt-4">
               <button onClick={() => setStep(4)} className="flex-1 py-3 border border-zinc-700 bg-zinc-800 text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-                <span className="text-[9px]">◂ BACK</span>
+                <span className="text-xs">◂ BACK</span>
               </button>
               <button onClick={handleComplete} disabled={loading} className="flex-1 py-3 border-2 border-red-800 bg-zinc-800 text-white disabled:opacity-40" style={{ fontFamily: "var(--font-pixel), monospace" }}>
-                <span className="text-[10px] text-red-400">{loading ? 'LOADING...' : '⚔ BEGIN'}</span>
+                <span className="text-xs text-red-400">{loading ? 'LOADING...' : '⚔ BEGIN'}</span>
               </button>
             </div>
             <button onClick={handleComplete} disabled={loading} className="w-full text-center mt-2">
-              <span className="text-[8px] text-zinc-600 hover:text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>SKIP FOR NOW</span>
+              <span className="text-xs text-zinc-600 hover:text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>SKIP FOR NOW</span>
             </button>
           </div>
         )}

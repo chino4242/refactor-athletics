@@ -100,7 +100,7 @@ export default function ProfileCard({
                         <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight">
                             {displayName}
                         </h2>
-                        <span className="bg-orange-600 text-white text-[10px] md:text-xs font-black px-2 py-0.5 rounded border border-orange-500 shadow-lg shadow-orange-900/20">
+                        <span className="bg-orange-600 text-white text-xs md:text-xs font-black px-2 py-0.5 rounded border border-orange-500 shadow-lg shadow-orange-900/20">
                             LVL {level}
                         </span>
                     </div>
@@ -126,19 +126,19 @@ export default function ProfileCard({
                                             setIsEditing(true);
                                             setShowMenu(false);
                                         }}
-                                        className="w-full text-left px-4 py-3.5 text-sm font-bold text-zinc-300 hover:text-white hover:bg-zinc-800 flex items-center gap-2 border-b border-zinc-800"
+                                        className="w-full text-left px-4 py-3.5 text-base font-bold text-zinc-300 hover:text-white hover:bg-zinc-800 flex items-center gap-2 border-b border-zinc-800"
                                     >
                                         <Edit2 size={16} />
                                         Edit Stats
                                     </button>
                                     <Link href="/settings" onClick={() => setShowMenu(false)}>
-                                        <button className="w-full text-left px-4 py-3.5 text-sm font-bold text-zinc-300 hover:text-white hover:bg-zinc-800 flex items-center gap-2">
+                                        <button className="w-full text-left px-4 py-3.5 text-base font-bold text-zinc-300 hover:text-white hover:bg-zinc-800 flex items-center gap-2">
                                             <UserCog size={16} />
                                             App Settings
                                         </button>
                                     </Link>
                                     <form action={signout}>
-                                        <button className="w-full text-left px-4 py-3.5 text-sm font-bold text-red-500 hover:text-red-400 hover:bg-zinc-800 flex items-center gap-2 border-t border-zinc-800">
+                                        <button className="w-full text-left px-4 py-3.5 text-base font-bold text-red-500 hover:text-red-400 hover:bg-zinc-800 flex items-center gap-2 border-t border-zinc-800">
                                             Sign Out
                                         </button>
                                     </form>
@@ -152,27 +152,27 @@ export default function ProfileCard({
             {isEditing ? (
                 <div className="grid grid-cols-2 gap-4 relative z-10 bg-zinc-900/50 p-4 rounded-xl border border-zinc-700/50">
                     <div>
-                        <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">Sex</label>
-                        <select value={formSex} onChange={(e) => setFormSex(e.target.value)} className="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2 text-white text-sm outline-none focus:border-zinc-500 transition-colors">
+                        <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">Sex</label>
+                        <select value={formSex} onChange={(e) => setFormSex(e.target.value)} className="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2 text-white text-base outline-none focus:border-zinc-500 transition-colors">
                             <option value="male">Male</option>
                             <option value="female">Female</option>
                         </select>
                     </div>
                     <div>
-                        <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">Birth Date</label>
-                        <input type="date" value={formDob} onChange={(e) => handleDobChange(e.target.value)} className="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2 text-white text-sm outline-none focus:border-zinc-500 transition-colors" />
+                        <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">Birth Date</label>
+                        <input type="date" value={formDob} onChange={(e) => handleDobChange(e.target.value)} className="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2 text-white text-base outline-none focus:border-zinc-500 transition-colors" />
                     </div>
                     <div>
-                        <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">Current Weight</label>
-                        <input type="number" value={formWeight} onChange={(e) => setFormWeight(Number(e.target.value))} className="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2 text-white text-sm outline-none focus:border-zinc-500 transition-colors" />
+                        <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">Current Weight</label>
+                        <input type="number" value={formWeight} onChange={(e) => setFormWeight(Number(e.target.value))} className="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2 text-white text-base outline-none focus:border-zinc-500 transition-colors" />
                     </div>
                     <div>
-                        <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">Goal Weight</label>
-                        <input type="number" value={formGoalWeight} onChange={(e) => setFormGoalWeight(Number(e.target.value))} placeholder="Optional" className="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2 text-white text-sm outline-none focus:border-zinc-500 transition-colors" />
+                        <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">Goal Weight</label>
+                        <input type="number" value={formGoalWeight} onChange={(e) => setFormGoalWeight(Number(e.target.value))} placeholder="Optional" className="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2 text-white text-base outline-none focus:border-zinc-500 transition-colors" />
                     </div>
                     <div>
-                        <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">Body Tracking</label>
-                        <select value={formMeasurementMode} onChange={(e) => setFormMeasurementMode(e.target.value as 'tape' | 'scale')} className="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2 text-white text-sm outline-none focus:border-zinc-500 transition-colors">
+                        <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">Body Tracking</label>
+                        <select value={formMeasurementMode} onChange={(e) => setFormMeasurementMode(e.target.value as 'tape' | 'scale')} className="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2 text-white text-base outline-none focus:border-zinc-500 transition-colors">
                             <option value="tape">📏 Tape Measure</option>
                             <option value="scale">⚖️ Scale</option>
                         </select>
@@ -184,13 +184,13 @@ export default function ProfileCard({
                 </div>
             ) : (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 divide-y md:divide-y-0 md:divide-x divide-zinc-700/50 relative z-10 text-center">
-                    <div className="pt-2 md:pt-0"><span className="block text-[10px] text-zinc-500 uppercase font-bold tracking-wider mb-1">Age</span><span className="text-xl text-white font-mono font-bold">{calculatedAge}</span></div>
-                    <div className="pt-2 md:pt-0"><span className="block text-[10px] text-zinc-500 uppercase font-bold tracking-wider mb-1">Sex</span><span className="text-xl text-white font-mono font-bold capitalize">{sex}</span></div>
-                    <div className="pt-2 md:pt-0"><span className="block text-[10px] text-zinc-500 uppercase font-bold tracking-wider mb-1">Current</span><span className="text-xl text-white font-mono font-bold">{currentWeight} <span className="text-xs text-zinc-500">lbs</span></span></div>
+                    <div className="pt-2 md:pt-0"><span className="block text-xs text-zinc-500 uppercase font-bold tracking-wider mb-1">Age</span><span className="text-xl text-white font-mono font-bold">{calculatedAge}</span></div>
+                    <div className="pt-2 md:pt-0"><span className="block text-xs text-zinc-500 uppercase font-bold tracking-wider mb-1">Sex</span><span className="text-xl text-white font-mono font-bold capitalize">{sex}</span></div>
+                    <div className="pt-2 md:pt-0"><span className="block text-xs text-zinc-500 uppercase font-bold tracking-wider mb-1">Current</span><span className="text-xl text-white font-mono font-bold">{currentWeight} <span className="text-xs text-zinc-500">lbs</span></span></div>
 
                     {/* MERGED: Target Weight Display */}
                     <div className="pt-2 md:pt-0 flex flex-col items-center justify-center">
-                        <span className="block text-[10px] text-zinc-500 uppercase font-bold tracking-wider mb-1">Target</span>
+                        <span className="block text-xs text-zinc-500 uppercase font-bold tracking-wider mb-1">Target</span>
                         {goalWeight > 0 ? (
                             <>
                                 <span className="text-xl text-white font-mono font-bold">{goalWeight} <span className="text-xs text-zinc-500">lbs</span></span>
@@ -204,12 +204,12 @@ export default function ProfileCard({
                                     else if (percentage <= 20) color = 'text-orange-500';
 
                                     return (
-                                        <span className={`text-[10px] font-bold ${color} mt-0.5`}>{diff} lbs to go</span>
+                                        <span className={`text-xs font-bold ${color} mt-0.5`}>{diff} lbs to go</span>
                                     )
                                 })()}
                             </>
                         ) : (
-                            <span className="text-sm text-zinc-600 italic mt-1">None set</span>
+                            <span className="text-base text-zinc-600 italic mt-1">None set</span>
                         )}
                     </div>
                 </div>

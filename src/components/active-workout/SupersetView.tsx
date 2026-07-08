@@ -143,7 +143,7 @@ export default function SupersetView({ block, blockIndex, onComplete, fullHistor
         <h1 className="text-white text-2xl font-black italic leading-tight">
           {block.name.replace(/^\d+\.\s*/, '').replace(/Superset\s*/i, '').replace(/[()]/g, '')}
         </h1>
-        <p className="text-zinc-400 text-sm mt-1 font-mono">
+        <p className="text-zinc-400 text-base mt-1 font-mono">
           {block.sets} Rounds × {exercises.length} Exercises • {block.rest_seconds || 90}s Rest
         </p>
         <div className="flex flex-wrap gap-2 mt-2">
@@ -170,8 +170,8 @@ export default function SupersetView({ block, blockIndex, onComplete, fullHistor
               if (!cueData) return null;
               return (
                 <div key={i} className="flex items-start gap-2 bg-zinc-800/50 rounded-lg px-2.5 py-1.5">
-                  <span className="text-[10px] text-purple-400 font-bold shrink-0">{ex.name}:</span>
-                  <p className="text-[10px] text-zinc-500 leading-relaxed">{cueData.cue}</p>
+                  <span className="text-xs text-purple-400 font-bold shrink-0">{ex.name}:</span>
+                  <p className="text-xs text-zinc-500 leading-relaxed">{cueData.cue}</p>
                 </div>
               );
             })}
@@ -191,7 +191,7 @@ export default function SupersetView({ block, blockIndex, onComplete, fullHistor
             </div>
             <ul className="space-y-1">
               {block.tips.map((tip: string, i: number) => (
-                <li key={i} className="text-blue-100/80 text-sm flex gap-2">
+                <li key={i} className="text-blue-100/80 text-base flex gap-2">
                   <span className="text-blue-500">•</span>
                   {tip}
                 </li>
@@ -218,8 +218,8 @@ export default function SupersetView({ block, blockIndex, onComplete, fullHistor
               const summary = sets.map((s: any) => s.weight ? `${s.weight}×${s.reps}` : `${s.reps} reps`).join(', ');
               return (
                 <div key={exIdx} className="px-2 py-1 bg-zinc-800/50 border border-zinc-700/50 rounded-lg">
-                  <span className="text-[10px] text-zinc-500">{name}: </span>
-                  <span className="text-[10px] text-zinc-300 font-mono">{summary}</span>
+                  <span className="text-xs text-zinc-500">{name}: </span>
+                  <span className="text-xs text-zinc-300 font-mono">{summary}</span>
                 </div>
               );
             })}
@@ -271,7 +271,7 @@ export default function SupersetView({ block, blockIndex, onComplete, fullHistor
                       <div className="flex gap-1 shrink-0">
                         {!exIsRepsOnly && (
                         <div className="flex flex-col w-12">
-                          <span className="text-[8px] text-zinc-600 text-center mb-0.5">LBS</span>
+                          <span className="text-xs text-zinc-600 text-center mb-0.5">LBS</span>
                           <input
                             type="text"
                             inputMode="decimal"
@@ -284,7 +284,7 @@ export default function SupersetView({ block, blockIndex, onComplete, fullHistor
                         </div>
                         )}
                         <div className="flex flex-col w-10">
-                          <span className="text-[8px] text-zinc-600 text-center mb-0.5">REPS</span>
+                          <span className="text-xs text-zinc-600 text-center mb-0.5">REPS</span>
                           <input
                             type="text"
                             inputMode="numeric"
@@ -303,10 +303,10 @@ export default function SupersetView({ block, blockIndex, onComplete, fullHistor
                         className="flex-1 flex items-center justify-between text-left"
                       >
                         <div className="flex flex-col">
-                          <span className={`font-bold text-sm leading-tight ${isDone ? 'text-zinc-400 line-through' : 'text-white'}`}>
+                          <span className={`font-bold text-base leading-tight ${isDone ? 'text-zinc-400 line-through' : 'text-white'}`}>
                             {displayName}
                           </span>
-                          <span className="text-[10px] text-purple-400 font-mono mt-0.5">
+                          <span className="text-xs text-purple-400 font-mono mt-0.5">
                             {ex.reps_list?.[setIdx] != null ? `${ex.reps_list[setIdx]} reps` : ex.reps && ex.reps !== '10' ? `${ex.reps} reps` : ''}
                           </span>
                         </div>

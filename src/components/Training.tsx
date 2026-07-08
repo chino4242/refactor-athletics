@@ -128,13 +128,13 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
         <div className="max-w-md mx-auto pb-32 px-2">
           <button
             onClick={() => setShowActiveWorkout(false)}
-            className="flex items-center gap-2 text-zinc-400 hover:text-white text-sm font-medium px-2 py-3 transition"
+            className="flex items-center gap-2 text-zinc-400 hover:text-white text-base font-medium px-2 py-3 transition"
           >
             <span>‹</span> Back to schedule
           </button>
           <div className="text-center mb-6 mt-4">
             <h2 className="text-xs font-bold uppercase tracking-widest" style={{ color: theme.accentHex }}>Choose Your Focus</h2>
-            <p className="text-zinc-500 text-sm mt-1">What are you training today?</p>
+            <p className="text-zinc-500 text-base mt-1">What are you training today?</p>
           </div>
           <div className="space-y-3">
             {[
@@ -152,7 +152,7 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
                   <div className="text-3xl">{opt.emoji}</div>
                   <div className="flex-1">
                     <div className="text-white font-black uppercase text-sm">{opt.label}</div>
-                    <div className="text-zinc-500 text-xs mt-0.5">{opt.desc}</div>
+                    <div className="text-zinc-500 text-sm mt-0.5">{opt.desc}</div>
                   </div>
                   <ChevronDown size={18} className="text-zinc-600 group-hover:text-orange-500 transition -rotate-90" />
                 </div>
@@ -167,7 +167,7 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
       <div className="max-w-3xl mx-auto pb-32">
         <button
           onClick={() => { setSectionFilter(null); }}
-          className="flex items-center gap-2 text-zinc-400 hover:text-white text-sm font-medium px-2 py-3 transition"
+          className="flex items-center gap-2 text-zinc-400 hover:text-white text-base font-medium px-2 py-3 transition"
         >
           <span>‹</span> Back to focus selection
         </button>
@@ -204,8 +204,8 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
 
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: theme.accentHex }}>{theme.labels.todaysWorkout}</span>
-                <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${todayStyle.bg} ${todayStyle.text}`}>
+                <span className="text-xs font-bold uppercase tracking-widest" style={{ color: theme.accentHex }}>{theme.labels.todaysWorkout}</span>
+                <span className={`text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${todayStyle.bg} ${todayStyle.text}`}>
                   {today.plan.type}
                 </span>
               </div>
@@ -219,15 +219,15 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
                 <div className="mb-4">
                   <button onClick={() => setShowFullExercises(prev => !prev)} className="flex flex-wrap gap-1.5 text-left">
                     {today.plan.exercises.slice(0, showFullExercises ? undefined : 5).map((ex, i) => (
-                      <span key={i} className="text-[10px] px-2 py-1 rounded-md bg-zinc-800/80 text-zinc-400 border border-zinc-700/50">
+                      <span key={i} className="text-sm px-2 py-1 rounded-md bg-zinc-800/80 text-zinc-400 border border-zinc-700/50">
                         {ex}
                       </span>
                     ))}
                     {!showFullExercises && today.plan.exercises.length > 5 && (
-                      <span className="text-[10px] px-2 py-1 text-zinc-500 underline">+{today.plan.exercises.length - 5} more ▾</span>
+                      <span className="text-sm px-2 py-1 text-zinc-500 underline">+{today.plan.exercises.length - 5} more ▾</span>
                     )}
                     {showFullExercises && today.plan.exercises.length > 5 && (
-                      <span className="text-[10px] px-2 py-1 text-zinc-500 underline">show less ▴</span>
+                      <span className="text-sm px-2 py-1 text-zinc-500 underline">show less ▴</span>
                     )}
                   </button>
                 </div>
@@ -235,10 +235,10 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
 
               <div className="flex items-center gap-3">
                 {today.plan.xp > 0 && (
-                  <span className="text-xs text-zinc-500 font-medium">⚡ {today.plan.xp} XP</span>
+                  <span className="text-sm text-zinc-500 font-medium">⚡ {today.plan.xp} XP</span>
                 )}
                 {(today.plan.treadmillBlocks || 0) > 0 && (
-                  <span className="text-xs text-zinc-500 font-medium">🏃 Treadmill</span>
+                  <span className="text-sm text-zinc-500 font-medium">🏃 Treadmill</span>
                 )}
                 <button
                   onClick={() => { setSelectedDayStr(todayStr); setShowActiveWorkout(true); setSectionFilter(null); }}
@@ -263,8 +263,8 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
             <Zap size={16} className="text-orange-500" />
           </div>
           <div className="text-left">
-            <span className="text-sm font-bold text-white">Quick Log</span>
-            <p className="text-[10px] text-zinc-500">Log a run, lift, or any exercise outside your program</p>
+            <span className="text-base font-bold text-white">Quick Log</span>
+            <p className="text-sm text-zinc-500">Log a run, lift, or any exercise outside your program</p>
           </div>
         </button>
       </div>
@@ -284,7 +284,7 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
           </Link>
           {showWeekView && (
             <button onClick={() => { setSwapMode(!swapMode); setSwapFrom(null); }}
-              className={`text-[10px] font-bold px-2 py-1 rounded-lg transition ${swapMode ? 'bg-orange-500/20 text-orange-400' : 'text-zinc-500 hover:text-orange-400'}`}>
+              className={`text-xs font-bold px-2 py-1 rounded-lg transition ${swapMode ? 'bg-orange-500/20 text-orange-400' : 'text-zinc-500 hover:text-orange-400'}`}>
               Swap
             </button>
           )}
@@ -294,10 +294,10 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
           <div className="flex flex-col gap-1.5 animate-fade-in-up pb-2">
             {swapMode && (
               <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg px-3 py-2 flex items-center justify-between mb-1">
-                <span className="text-[11px] text-orange-400 font-bold">
+                <span className="text-sm text-orange-400 font-bold">
                   {swapFrom ? `Tap another day to swap with ${format(weekDays.find(d => d.dateStr === swapFrom)?.date || new Date(), 'EEEE')}` : 'Tap a day to swap'}
                 </span>
-                <button onClick={() => { setSwapMode(false); setSwapFrom(null); }} className="text-[10px] text-zinc-500">Cancel</button>
+                <button onClick={() => { setSwapMode(false); setSwapFrom(null); }} className="text-xs text-zinc-500">Cancel</button>
               </div>
             )}
             {weekDays.map(day => {
@@ -355,18 +355,18 @@ export default function Training({ userId, bodyweight, sex, age, initialHistory,
                 >
                   {/* Day */}
                   <div className="w-10 text-center shrink-0">
-                    <div className="text-[10px] font-bold uppercase text-zinc-500">{format(day.date, 'EEE')}</div>
-                    <div className={`text-sm font-black ${isToday ? '' : 'text-zinc-300'}`} style={isToday ? { color: theme.accentHex } : {}}>{format(day.date, 'd')}</div>
+                    <div className="text-xs font-bold uppercase text-zinc-500">{format(day.date, 'EEE')}</div>
+                    <div className={`text-base font-black ${isToday ? '' : 'text-zinc-300'}`} style={isToday ? { color: theme.accentHex } : {}}>{format(day.date, 'd')}</div>
                   </div>
 
                   {/* Type dot + Title */}
                   <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${style.dot}`} />
                   <div className="flex-1 min-w-0 text-left">
-                    <div className="text-sm font-semibold text-white truncate">{day.plan.title}</div>
+                    <div className="text-base font-semibold text-white truncate">{day.plan.title}</div>
                   </div>
 
                   {/* Type badge */}
-                  <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-md shrink-0 ${style.bg} ${style.text}`}>
+                  <span className={`text-xs font-bold uppercase px-2 py-0.5 rounded-md shrink-0 ${style.bg} ${style.text}`}>
                     {day.plan.type}
                   </span>
                 </button>

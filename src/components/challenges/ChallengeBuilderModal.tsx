@@ -147,17 +147,17 @@ export default function ChallengeBuilderModal({ isOpen, onClose, userId, onChall
                                 className="w-full accent-emerald-500 h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer"
                             />
                             <div className="relative w-full h-4 mt-1">
-                                <span className="absolute left-0 text-[10px] text-zinc-600 font-mono">7d</span>
-                                <span className="absolute left-[24.7%] -translate-x-1/2 text-[10px] text-zinc-600 font-mono">30d</span>
-                                <span className="absolute left-[73.1%] -translate-x-1/2 text-[10px] text-zinc-600 font-mono">75d</span>
-                                <span className="absolute right-0 text-[10px] text-zinc-600 font-mono">100d</span>
+                                <span className="absolute left-0 text-xs text-zinc-600 font-mono">7d</span>
+                                <span className="absolute left-[24.7%] -translate-x-1/2 text-xs text-zinc-600 font-mono">30d</span>
+                                <span className="absolute left-[73.1%] -translate-x-1/2 text-xs text-zinc-600 font-mono">75d</span>
+                                <span className="absolute right-0 text-xs text-zinc-600 font-mono">100d</span>
                             </div>
                         </div>
 
                         <div>
                             <div className="flex justify-between items-baseline mb-2">
                                 <label className="text-xs font-bold text-zinc-500 uppercase">Starting From</label>
-                                <span className="text-sm font-bold text-white">Day {startDay}</span>
+                                <span className="text-base font-bold text-white">Day {startDay}</span>
                             </div>
                             <input
                                 type="range"
@@ -167,11 +167,11 @@ export default function ChallengeBuilderModal({ isOpen, onClose, userId, onChall
                                 onChange={(e) => setStartDay(parseInt(e.target.value))}
                                 className="w-full accent-orange-500 h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer"
                             />
-                            <div className="flex justify-between text-[10px] text-zinc-600 font-mono mt-1">
+                            <div className="flex justify-between text-xs text-zinc-600 font-mono mt-1">
                                 <span>Day 1</span>
                                 <span>Day {duration}</span>
                             </div>
-                            <p className="text-[10px] text-zinc-500 mt-2">
+                            <p className="text-xs text-zinc-500 mt-2">
                                 Start from a later day if you've already been tracking. Past days will be marked as complete.
                             </p>
                         </div>
@@ -200,7 +200,7 @@ export default function ChallengeBuilderModal({ isOpen, onClose, userId, onChall
                                                 <button
                                                     key={opt.id}
                                                     onClick={() => addGoal(opt.id)}
-                                                    className="w-full text-left px-4 py-2 hover:bg-zinc-700 text-sm text-zinc-300 hover:text-white transition-colors border-b border-zinc-700/50 last:border-0"
+                                                    className="w-full text-left px-4 py-2 hover:bg-zinc-700 text-base text-zinc-300 hover:text-white transition-colors border-b border-zinc-700/50 last:border-0"
                                                 >
                                                     {opt.label}
                                                 </button>
@@ -222,26 +222,26 @@ export default function ChallengeBuilderModal({ isOpen, onClose, userId, onChall
 
                                 <div className="flex items-center gap-2 mb-2">
                                     <span className="font-bold text-white">{goal.label}</span>
-                                    <span className="text-xs text-zinc-500 bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-800">{goal.unit}</span>
+                                    <span className="text-sm text-zinc-500 bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-800">{goal.unit}</span>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
-                                        <label className="text-[10px] font-bold text-zinc-500 uppercase">Target</label>
+                                        <label className="text-xs font-bold text-zinc-500 uppercase">Target</label>
                                         <input
                                             type="number"
                                             value={goal.target_value}
                                             onChange={(e) => updateGoal(idx, 'target_value', parseFloat(e.target.value))}
-                                            className="w-full bg-zinc-900 border border-zinc-800 rounded px-2 py-1 text-sm text-white focus:border-emerald-500 focus:outline-none"
+                                            className="w-full bg-zinc-900 border border-zinc-800 rounded px-2 py-1 text-base text-white focus:border-emerald-500 focus:outline-none"
                                         />
                                     </div>
                                     <div>
-                                        <label className="text-[10px] font-bold text-zinc-500 uppercase">Tolerance (+/-)</label>
+                                        <label className="text-xs font-bold text-zinc-500 uppercase">Tolerance (+/-)</label>
                                         <input
                                             type="number"
                                             value={goal.tolerance}
                                             onChange={(e) => updateGoal(idx, 'tolerance', parseFloat(e.target.value))}
-                                            className="w-full bg-zinc-900 border border-zinc-800 rounded px-2 py-1 text-sm text-zinc-400 focus:text-white focus:border-emerald-500 focus:outline-none"
+                                            className="w-full bg-zinc-900 border border-zinc-800 rounded px-2 py-1 text-base text-zinc-400 focus:text-white focus:border-emerald-500 focus:outline-none"
                                         />
                                     </div>
                                 </div>
@@ -255,7 +255,7 @@ export default function ChallengeBuilderModal({ isOpen, onClose, userId, onChall
                 <div className="p-4 border-t border-zinc-800 bg-zinc-950">
                     <button
                         onClick={handleSubmit}
-                        className="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-black uppercase text-sm py-3 rounded-xl transition-all shadow-lg shadow-emerald-500/20"
+                        className="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-black uppercase text-base py-3 rounded-xl transition-all shadow-lg shadow-emerald-500/20"
                     >
                         Launch Challenge
                     </button>

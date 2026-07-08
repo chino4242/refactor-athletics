@@ -423,7 +423,7 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-black italic text-white uppercase tracking-tighter">Workouts</h1>
-                    <p className="text-sm text-zinc-400">Create custom workouts and view weekly schedule</p>
+                    <p className="text-base text-zinc-400">Create custom workouts and view weekly schedule</p>
                 </div>
                 <button
                     onClick={() => setShowCreateModal(true)}
@@ -440,7 +440,7 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
                     <div className="flex items-center justify-between mb-4">
                         <div>
                             <h2 className="text-lg font-black italic text-white uppercase tracking-tighter">Default Weekly Program</h2>
-                            <p className="text-xs text-zinc-500 mt-1">
+                            <p className="text-sm text-zinc-500 mt-1">
                                 {daySwapMode
                                     ? daySwapFirst ? `Now tap the day to swap with ${daySwapFirst}` : 'Tap the first day to swap'
                                     : 'This is the default schedule shown on the Train page'}
@@ -466,7 +466,7 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
                             >
                                 <div className="flex items-center justify-between mb-2">
                                     <span className="text-xs font-bold text-zinc-400 uppercase">{day.day}</span>
-                                    <span className={`text-[10px] px-2 py-0.5 rounded ${
+                                    <span className={`text-xs px-2 py-0.5 rounded ${
                                         day.type === 'Strength' ? 'bg-orange-900/30 text-orange-400' :
                                         day.type === 'Cardio' ? 'bg-blue-900/30 text-blue-400' :
                                         day.type === 'Hybrid' ? 'bg-purple-900/30 text-purple-400' :
@@ -475,15 +475,15 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
                                         {day.type}
                                     </span>
                                 </div>
-                                <h4 className="text-sm font-bold text-white mb-1 line-clamp-2">{day.title}</h4>
-                                <div className="text-xs text-zinc-500">
+                                <h4 className="text-base font-bold text-white mb-1 line-clamp-2">{day.title}</h4>
+                                <div className="text-sm text-zinc-500">
                                     ⚡ {day.xp} XP
                                 </div>
                             </button>
                         ))}
                     </div>
                     <div className="mt-4 p-3 bg-blue-950/20 border border-blue-900/30 rounded-lg">
-                        <p className="text-xs text-blue-400">
+                        <p className="text-sm text-blue-400">
                             💡 <strong>Tip:</strong> Click any day to view and edit the workout. Create custom workouts below to override the default plan for specific days.
                         </p>
                     </div>
@@ -500,7 +500,7 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
                     <div className="col-span-full bg-zinc-800/50 border border-zinc-700 rounded-xl p-12 text-center">
                         <Dumbbell size={48} className="mx-auto mb-4 text-zinc-600" />
                         <h3 className="text-lg font-bold text-zinc-400 mb-2">No Workouts Yet</h3>
-                        <p className="text-sm text-zinc-500 mb-4">Create your first workout</p>
+                        <p className="text-base text-zinc-500 mb-4">Create your first workout</p>
                         <button
                             onClick={() => setShowCreateModal(true)}
                             className="bg-zinc-700 hover:bg-zinc-600 text-white font-bold px-6 py-2.5 rounded-lg transition"
@@ -524,7 +524,7 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
                                 </button>
                             </div>
                             {workout.description && (
-                                <p className="text-sm text-zinc-400 mb-3 line-clamp-2">{workout.description}</p>
+                                <p className="text-base text-zinc-400 mb-3 line-clamp-2">{workout.description}</p>
                             )}
                             <div className="flex gap-2">
                                 <button
@@ -608,7 +608,7 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex-1 min-w-0">
                                 <h2 className="text-xl font-black italic text-white uppercase truncate">{selectedWorkout.name}</h2>
-                                <p className="text-sm text-zinc-400">Add exercises to your Workout</p>
+                                <p className="text-base text-zinc-400">Add exercises to your Workout</p>
                             </div>
                             <button
                                 onClick={() => setShowEditorModal(false)}
@@ -661,7 +661,7 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
                                             className="w-full text-left bg-zinc-800/50 hover:bg-zinc-700 border border-zinc-700 hover:border-zinc-600 rounded-lg px-3 py-2.5 transition group"
                                         >
                                             <div className="flex items-center justify-between gap-2">
-                                                <span className="text-sm font-bold text-white">{exercise.name}</span>
+                                                <span className="text-base font-bold text-white">{exercise.name}</span>
                                                 <Plus size={14} className="text-zinc-600 group-hover:text-orange-500 flex-shrink-0" />
                                             </div>
                                             {exercise.category && (
@@ -691,7 +691,7 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
                                 </div>
                                 {isSupersetMode && (
                                     <div className="mb-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-lg flex items-center justify-between">
-                                        <span className="text-xs text-zinc-400">Select exercises to group</span>
+                                        <span className="text-sm text-zinc-400">Select exercises to group</span>
                                         <button
                                             onClick={handleCreateSuperset}
                                             disabled={selectedForSuperset.size < 2}
@@ -705,7 +705,7 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
                                     {workoutBlocks.length === 0 ? (
                                         <div className="text-center py-12 border-2 border-dashed border-zinc-800 rounded-lg mt-2">
                                             <Dumbbell size={32} className="mx-auto mb-2 text-zinc-700" />
-                                            <p className="text-sm text-zinc-500">Add exercises from the left</p>
+                                            <p className="text-base text-zinc-500">Add exercises from the left</p>
                                         </div>
                                     ) : (
                                         workoutBlocks.map((block, idx) => {
@@ -749,16 +749,16 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
                                                         <div className="flex-1 min-w-0">
                                                             <div className="flex items-center gap-2 mb-1">
                                                                 <span className="text-xs font-bold text-zinc-500 flex-shrink-0">#{idx + 1}</span>
-                                                                <span className="text-sm font-bold text-white">
+                                                                <span className="text-base font-bold text-white">
                                                                     {exercise?.name || block.exercise_id}
                                                                 </span>
                                                                 {isSuperset && !isLinkedTop && (
-                                                                    <span className="text-[10px] font-bold tracking-wider text-orange-500 uppercase bg-orange-500/10 px-1.5 py-0.5 rounded">
+                                                                    <span className="text-xs font-bold tracking-wider text-orange-500 uppercase bg-orange-500/10 px-1.5 py-0.5 rounded">
                                                                         Superset {block.superset_group}
                                                                     </span>
                                                                 )}
                                                             </div>
-                                                            <div className="flex items-center gap-3 text-xs text-zinc-400 mt-1">
+                                                            <div className="flex items-center gap-3 text-sm text-zinc-400 mt-1">
                                                                 {block.block_type === 'treadmill' ? (
                                                                     <>
                                                                         {/* Duration in Minutes Input (backend deals with seconds) */}
@@ -901,7 +901,7 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
                             <div className="flex items-center justify-between">
                                 <div>
                                     <h2 className="text-xl font-black italic text-white uppercase">{selectedDefaultDay.day}</h2>
-                                    <p className="text-sm text-zinc-400 mt-1">{selectedDefaultDay.title}</p>
+                                    <p className="text-base text-zinc-400 mt-1">{selectedDefaultDay.title}</p>
                                 </div>
                                 <button
                                     onClick={() => setShowDefaultWorkoutModal(false)}
@@ -921,12 +921,12 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
                             {editorTab === 'exercises' ? (
                                 <div className="space-y-2">
                                     {extractedExercises.length === 0 ? (
-                                        <p className="text-sm text-zinc-500 text-center py-8">No exercises detected. Use the Raw Text tab to edit.</p>
+                                        <p className="text-base text-zinc-500 text-center py-8">No exercises detected. Use the Raw Text tab to edit.</p>
                                     ) : extractedExercises.map((ex, i) => (
                                         <div key={i} className="flex items-center gap-3 bg-zinc-800/50 border border-zinc-700 rounded-lg p-3">
                                             <div className="flex-1 min-w-0">
-                                                <span className="text-sm font-bold text-white">{ex.name}</span>
-                                                {ex.catalogItem?.category && <span className="text-[10px] text-zinc-500 ml-2 uppercase">{ex.catalogItem.category}</span>}
+                                                <span className="text-base font-bold text-white">{ex.name}</span>
+                                                {ex.catalogItem?.category && <span className="text-xs text-zinc-500 ml-2 uppercase">{ex.catalogItem.category}</span>}
                                             </div>
                                             {ex.catalogItem?.swap_group && (
                                                 <button
@@ -977,7 +977,7 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
                     <div className="bg-zinc-900 border border-zinc-700 rounded-2xl w-full max-w-sm p-6">
                         <h2 className="text-xl font-black italic text-white mb-2 uppercase">Schedule Workout</h2>
-                        <p className="text-sm text-zinc-400 mb-6 truncate">Assigning: <span className="font-bold text-white">{workoutToSchedule.name}</span></p>
+                        <p className="text-base text-zinc-400 mb-6 truncate">Assigning: <span className="font-bold text-white">{workoutToSchedule.name}</span></p>
 
                         <div className="space-y-4">
                             <div>
@@ -1020,8 +1020,8 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
                     <div className="bg-zinc-900 border-t border-zinc-700 rounded-t-2xl w-full max-w-lg max-h-[70vh] flex flex-col" onClick={e => e.stopPropagation()}>
                         <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
                             <div>
-                                <h3 className="text-sm font-bold text-white">Swap Exercise</h3>
-                                <p className="text-[10px] text-zinc-500">Replacing: {exerciseSwapTarget.name}</p>
+                                <h3 className="text-base font-bold text-white">Swap Exercise</h3>
+                                <p className="text-sm text-zinc-500">Replacing: {exerciseSwapTarget.name}</p>
                             </div>
                             <button onClick={() => setExerciseSwapTarget(null)} className="text-zinc-500 hover:text-white text-xs font-bold px-3 py-1 rounded bg-zinc-800">✕</button>
                         </div>
@@ -1040,9 +1040,9 @@ export default function WorkoutBuilder({ userId }: WorkoutBuilderProps) {
                                         }}
                                         className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-zinc-800 transition flex items-center justify-between"
                                     >
-                                        <span className="text-sm text-white">{c.name}</span>
+                                        <span className="text-base text-white">{c.name}</span>
                                         {c.required_equipment && c.required_equipment.length > 0 && (
-                                            <span className="text-[9px] text-zinc-600">{c.required_equipment.join(', ')}</span>
+                                            <span className="text-xs text-zinc-600">{c.required_equipment.join(', ')}</span>
                                         )}
                                     </button>
                                 ))}

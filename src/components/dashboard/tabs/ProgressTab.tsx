@@ -167,8 +167,8 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                         <span className="text-lg">📊</span>
                         <h3 className="text-sm font-bold text-white uppercase tracking-wider">Attribute Balance</h3>
                     </div>
-                    <p className="text-[10px] text-zinc-600 mt-1">How your training distributes across STR, END, PWR & MOB</p>
-                    <Link href="/profile" className="text-xs text-zinc-300 hover:text-white flex items-center gap-1">
+                    <p className="text-xs text-zinc-600 mt-1">How your training distributes across STR, END, PWR & MOB</p>
+                    <Link href="/profile" className="text-sm text-zinc-300 hover:text-white flex items-center gap-1">
                         View Profile
                         <ChevronRight size={14} />
                     </Link>
@@ -185,22 +185,22 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                         <span className="text-lg">💪</span>
                         <h3 className="text-sm font-bold text-white uppercase tracking-wider">{isClassic ? 'Performance Breakdown' : 'Power Level Contributors'}</h3>
                     </div>
-                    <p className="text-[10px] text-zinc-600 mt-1">Your best rank per exercise — log a ranked exercise to grow your score</p>
-                    <Link href="/profile" className="text-xs text-zinc-300 hover:text-white flex items-center gap-1">
+                    <p className="text-xs text-zinc-600 mt-1">Your best rank per exercise — log a ranked exercise to grow your score</p>
+                    <Link href="/profile" className="text-sm text-zinc-300 hover:text-white flex items-center gap-1">
                         {isClassic ? 'View All' : 'Trophy Case'}
                         <ChevronRight size={14} />
                     </Link>
                 </div>
                 {loading ? (
-                    <p className="text-sm text-zinc-500">Loading...</p>
+                    <p className="text-base text-zinc-500">Loading...</p>
                 ) : Object.values(groupedExercises).every(arr => arr.length === 0) ? (
                     <div className="text-center py-8">
                         <div className="text-5xl mb-4">🏆</div>
-                        <p className="text-sm text-zinc-400 mb-2">No exercises completed yet</p>
-                        <p className="text-xs text-zinc-500 mb-4">{isClassic ? 'Complete workouts to see your performance' : 'Complete workouts to build your Power Level'}</p>
+                        <p className="text-base text-zinc-400 mb-2">No exercises completed yet</p>
+                        <p className="text-sm text-zinc-500 mb-4">{isClassic ? 'Complete workouts to see your performance' : 'Complete workouts to build your Power Level'}</p>
                         <Link 
                             href="/train" 
-                            className="inline-flex items-center gap-1 text-xs text-zinc-300 hover:text-white font-semibold"
+                            className="inline-flex items-center gap-1 text-sm text-zinc-300 hover:text-white font-semibold"
                         >
                             Start Training
                             <ChevronRight size={14} />
@@ -222,7 +222,7 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                                             {category === 'Mobility' && '🧘'}
                                             {category}
                                         </h4>
-                                        <span className="text-xs font-bold bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded">
+                                        <span className="text-sm font-bold bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded">
                                             {categoryStats[category] || 0}
                                         </span>
                                     </div>
@@ -237,10 +237,10 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                                                         className="w-10 h-10 rounded object-cover border border-zinc-700 bg-zinc-800 shrink-0"
                                                     />
                                                     <div className="flex-1 min-w-0">
-                                                        <p className="text-sm font-bold text-white truncate">
+                                                        <p className="text-base font-bold text-white truncate">
                                                             {exercise.exercise_name}
                                                         </p>
-                                                        <p className="text-xs text-zinc-500">
+                                                        <p className="text-sm text-zinc-500">
                                                             {exercise.user_level > 0 ? (
                                                                 <span>Level {exercise.user_level}</span>
                                                             ) : (
@@ -251,7 +251,7 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                                                         </p>
                                                     </div>
                                                     <div className="text-right shrink-0">
-                                                        <p className={`text-sm font-bold ${exercise.user_level > 0 ? 'text-orange-500' : 'text-zinc-600'}`}>
+                                                        <p className={`text-base font-bold ${exercise.user_level > 0 ? 'text-orange-500' : 'text-zinc-600'}`}>
                                                             {exercise.user_level > 0 ? `+${exercise.contribution}` : '+0'}
                                                         </p>
                                                     </div>
@@ -274,18 +274,18 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                         <h3 className="text-sm font-bold text-white uppercase tracking-wider">Recent Activity</h3>
                     </div>
                     <div className="flex items-center gap-3">
-                        <Link href="/progress" className="text-xs text-zinc-300 hover:text-white flex items-center gap-1">
+                        <Link href="/progress" className="text-sm text-zinc-300 hover:text-white flex items-center gap-1">
                             Charts
                             <ChevronRight size={14} />
                         </Link>
-                        <Link href="/track" className="text-xs text-zinc-300 hover:text-white flex items-center gap-1">
+                        <Link href="/track" className="text-sm text-zinc-300 hover:text-white flex items-center gap-1">
                             View All
                             <ChevronRight size={14} />
                         </Link>
                     </div>
                 </div>
                 {loading ? (
-                    <p className="text-sm text-zinc-500">Loading...</p>
+                    <p className="text-base text-zinc-500">Loading...</p>
                 ) : recentHistory.length > 0 ? (
                     <div className="space-y-2">
                         {recentHistory.map((item, idx) => {
@@ -302,12 +302,12 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                                     .replace(/\b\w/g, (l: string) => l.toUpperCase());
                             
                             return (
-                                <div key={idx} className="flex items-center justify-between text-sm">
+                                <div key={idx} className="flex items-center justify-between text-base">
                                     <div>
                                         <p className="text-white font-medium">
                                             {displayName}
                                         </p>
-                                        <p className="text-xs text-zinc-500">
+                                        <p className="text-sm text-zinc-500">
                                             {item.type === 'workout' && item.details?.sets && (
                                                 <span>{item.details.sets.length} sets</span>
                                             )}
@@ -319,7 +319,7 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                                             )}
                                         </p>
                                     </div>
-                                    <div className="text-xs text-zinc-500">
+                                    <div className="text-sm text-zinc-500">
                                         {new Date(timestamp).toLocaleDateString()}
                                     </div>
                                 </div>
@@ -327,7 +327,7 @@ export default function ProgressTab({ userId, stats }: ProgressTabProps) {
                         })}
                     </div>
                 ) : (
-                    <p className="text-sm text-zinc-500">No recent activity</p>
+                    <p className="text-base text-zinc-500">No recent activity</p>
                 )}
             </div>
 

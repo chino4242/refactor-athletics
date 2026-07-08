@@ -85,7 +85,7 @@ export default function BarcodeScanner({ onResult, onClose }: Props) {
       <div className="flex items-center justify-between p-4 bg-black/80">
         <div className="flex items-center gap-2 text-white">
           <Camera size={18} />
-          <span className="text-sm font-bold">Scan Barcode</span>
+          <span className="text-base font-bold">Scan Barcode</span>
         </div>
         <button onClick={onClose} className="text-zinc-400 hover:text-white p-2">
           <X size={20} />
@@ -98,7 +98,7 @@ export default function BarcodeScanner({ onResult, onClose }: Props) {
 
       {looking && (
         <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-          <p className="text-white text-sm font-bold animate-pulse">Looking up product...</p>
+          <p className="text-white text-base font-bold animate-pulse">Looking up product...</p>
         </div>
       )}
 
@@ -109,7 +109,7 @@ export default function BarcodeScanner({ onResult, onClose }: Props) {
       )}
 
       <div className="p-4 bg-black/80">
-        <p className="text-zinc-500 text-[10px] text-center">Point camera at a product barcode</p>
+        <p className="text-zinc-500 text-xs text-center">Point camera at a product barcode</p>
       </div>
     </div>
   );

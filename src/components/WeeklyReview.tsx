@@ -238,7 +238,7 @@ export default function WeeklyReview({ userId, onClose }: WeeklyReviewProps) {
         const symbol = isPositive ? '▲' : isNegative ? '▼' : '−';
 
         return (
-            <div className={`text-[10px] font-bold ${color} flex items-center gap-1`}>
+            <div className={`text-xs font-bold ${color} flex items-center gap-1`}>
                 <span>{symbol} {Math.abs(trend.percentChange).toFixed(0)}%</span>
             </div>
         );
@@ -254,7 +254,7 @@ export default function WeeklyReview({ userId, onClose }: WeeklyReviewProps) {
                 <div className="bg-gradient-to-br from-zinc-800 to-zinc-900 p-6 border-b border-zinc-800 text-center z-10">
                     <div className="inline-block text-4xl mb-2">🗓️</div>
                     <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase">Weekly Report</h2>
-                    <p className="text-xs text-zinc-400 font-mono mt-1">{prevWeekLabel}</p>
+                    <p className="text-sm text-zinc-400 font-mono mt-1">{prevWeekLabel}</p>
                 </div>
 
                 {loading ? (
@@ -278,14 +278,14 @@ export default function WeeklyReview({ userId, onClose }: WeeklyReviewProps) {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="bg-zinc-800/50 rounded-xl p-4 border border-zinc-700/50">
                                 <span className="text-2xl block mb-1">👣</span>
-                                <div className="text-[10px] font-bold text-zinc-500 uppercase">Steps</div>
+                                <div className="text-xs font-bold text-zinc-500 uppercase">Steps</div>
                                 <div className="text-xl font-bold text-white">{stats.steps.value.toLocaleString()}</div>
                                 {renderTrend(stats.steps)}
                             </div>
                             <div className="bg-zinc-800/50 rounded-xl p-4 border border-zinc-700/50">
                                 <span className="text-2xl block mb-1">🏋️</span>
-                                <div className="text-[10px] font-bold text-zinc-500 uppercase">Workouts</div>
-                                <div className="text-xl font-bold text-white">{stats.workouts.value} <span className="text-xs text-zinc-600">Days</span></div>
+                                <div className="text-xs font-bold text-zinc-500 uppercase">Workouts</div>
+                                <div className="text-xl font-bold text-white">{stats.workouts.value} <span className="text-sm text-zinc-600">Days</span></div>
                                 {renderTrend(stats.workouts)}
                             </div>
                         </div>
@@ -296,27 +296,27 @@ export default function WeeklyReview({ userId, onClose }: WeeklyReviewProps) {
                             <div className="grid grid-cols-4 gap-2 text-center">
                                 <div>
                                     <div className="text-lg font-bold text-white">{stats.avgWeight > 0 ? stats.avgWeight.toFixed(1) : '-'}</div>
-                                    <div className="text-[9px] text-zinc-500 uppercase">Avg Lbs</div>
+                                    <div className="text-xs text-zinc-500 uppercase">Avg Lbs</div>
                                 </div>
                                 <div>
                                     <div className={`text-lg font-bold ${stats.weightDelta < 0 ? 'text-green-500' : 'text-zinc-400'}`}>
                                         {stats.weightDelta > 0 ? '+' : ''}{stats.weightDelta.toFixed(1)}
                                     </div>
-                                    <div className="text-[9px] text-zinc-500 uppercase">Delta</div>
+                                    <div className="text-xs text-zinc-500 uppercase">Delta</div>
                                 </div>
                                 <div className="group relative" tabIndex={0}>
                                     <div className={`text-lg font-bold ${stats.refactorDelta > 0 ? 'text-emerald-400' : stats.refactorDelta < 0 ? 'text-red-400' : 'text-zinc-500'}`}>
                                         {stats.refactorDelta > 0 ? '+' : ''}{stats.refactorDelta.toFixed(1)}
                                     </div>
-                                    <div className="text-[9px] text-zinc-500 uppercase border-b border-dotted border-zinc-700 inline-block cursor-help">Refactor</div>
+                                    <div className="text-xs text-zinc-500 uppercase border-b border-dotted border-zinc-700 inline-block cursor-help">Refactor</div>
                                     {/* Tooltip */}
-                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-32 bg-black text-[9px] text-zinc-300 p-2 rounded border border-zinc-700 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity pointer-events-none z-50">
+                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-32 bg-black text-xs text-zinc-300 p-2 rounded border border-zinc-700 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity pointer-events-none z-50">
                                         Net inches moved in target direction
                                     </div>
                                 </div>
                                 <div>
                                     <div className="text-lg font-bold text-blue-400">{stats.nutritionAdherence}/7</div>
-                                    <div className="text-[9px] text-zinc-500 uppercase">Protein Goal</div>
+                                    <div className="text-xs text-zinc-500 uppercase">Protein Goal</div>
                                 </div>
                             </div>
                         </div>
@@ -325,17 +325,17 @@ export default function WeeklyReview({ userId, onClose }: WeeklyReviewProps) {
                         <div className="grid grid-cols-3 gap-2">
                             <div className="bg-zinc-800/30 p-2 rounded-lg text-center border border-zinc-800">
                                 <span className="text-lg">💦</span>
-                                <div className="text-xs font-bold text-white">{stats.water.value} oz</div>
+                                <div className="text-sm font-bold text-white">{stats.water.value} oz</div>
                                 <div className="flex justify-center">{renderTrend(stats.water)}</div>
                             </div>
                             <div className="bg-zinc-800/30 p-2 rounded-lg text-center border border-zinc-800">
                                 <span className="text-lg">💤</span>
-                                <div className="text-xs font-bold text-white">{stats.sleep.value.toFixed(1)} hrs</div>
+                                <div className="text-sm font-bold text-white">{stats.sleep.value.toFixed(1)} hrs</div>
                                 <div className="flex justify-center">{renderTrend(stats.sleep)}</div>
                             </div>
                             <div className="bg-zinc-800/30 p-2 rounded-lg text-center border border-zinc-800">
                                 <span className="text-lg">⚔️</span>
-                                <div className="text-xs font-bold text-white">{stats.victories} Wins</div>
+                                <div className="text-sm font-bold text-white">{stats.victories} Wins</div>
                             </div>
                         </div>
 
@@ -346,7 +346,7 @@ export default function WeeklyReview({ userId, onClose }: WeeklyReviewProps) {
                                     <span className="text-xl">🏆</span>
                                     <div>
                                         <div className="text-xs font-bold text-yellow-500 uppercase">Strong Week</div>
-                                        <div className="text-sm text-zinc-300">You crushed <span className="text-white font-bold">{stats.prCount} heavy lifts</span>!</div>
+                                        <div className="text-base text-zinc-300">You crushed <span className="text-white font-bold">{stats.prCount} heavy lifts</span>!</div>
                                     </div>
                                 </div>
                             )}
@@ -356,7 +356,7 @@ export default function WeeklyReview({ userId, onClose }: WeeklyReviewProps) {
                                     <span className="text-xl">⭐</span>
                                     <div>
                                         <div className="text-xs font-bold text-zinc-500 uppercase">MVP Habit</div>
-                                        <div className="text-sm text-white font-bold">{stats.mvpHabit}</div>
+                                        <div className="text-base text-white font-bold">{stats.mvpHabit}</div>
                                     </div>
                                 </div>
                             )}
@@ -373,7 +373,7 @@ export default function WeeklyReview({ userId, onClose }: WeeklyReviewProps) {
                     >
                         Start Next Week
                     </button>
-                    <p className="text-center text-[10px] text-zinc-600 mt-2 italic">Result is choice.</p>
+                    <p className="text-center text-xs text-zinc-600 mt-2 italic">Result is choice.</p>
                 </div>
 
             </div>

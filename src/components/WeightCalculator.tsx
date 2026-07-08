@@ -50,7 +50,7 @@ export default function WeightCalculator({ onUse }: Props) {
 
         {/* Bar selection */}
         <div>
-          <span className="text-[10px] text-zinc-500 uppercase font-bold">Bar</span>
+          <span className="text-xs text-zinc-500 uppercase font-bold">Bar</span>
           <div className="flex gap-2 mt-1">
             {BAR_PRESETS.map(b => (
               <button key={b.label} onClick={() => setBarWeight(b.weight)}
@@ -65,11 +65,11 @@ export default function WeightCalculator({ onUse }: Props) {
 
         {/* Plates per side */}
         <div>
-          <span className="text-[10px] text-zinc-500 uppercase font-bold">Plates (per side)</span>
+          <span className="text-xs text-zinc-500 uppercase font-bold">Plates (per side)</span>
           <div className="space-y-2 mt-1">
             {PLATES.map(p => (
               <div key={p} className="flex items-center justify-between">
-                <span className="text-sm text-zinc-300 font-mono w-12">{p}</span>
+                <span className="text-base text-zinc-300 font-mono w-12">{p}</span>
                 <div className="flex items-center gap-3">
                   <button onClick={() => adjust(p, -1)} className="w-8 h-8 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white flex items-center justify-center transition">
                     <Minus size={14} />
@@ -87,7 +87,7 @@ export default function WeightCalculator({ onUse }: Props) {
         {/* Total + actions */}
         <div className="border-t border-zinc-800 pt-3 flex items-center justify-between">
           <div>
-            <span className="text-[10px] text-zinc-500 uppercase font-bold">Total</span>
+            <span className="text-xs text-zinc-500 uppercase font-bold">Total</span>
             <div className="text-2xl font-black text-white">{total} <span className="text-sm text-zinc-500">lbs</span></div>
           </div>
           <div className="flex gap-2">

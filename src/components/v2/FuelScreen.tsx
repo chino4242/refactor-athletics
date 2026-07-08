@@ -59,24 +59,24 @@ export default function FuelScreen({ userId }: Props) {
   return (
     <ScreenWrapper onRefresh={async () => setRefreshKey(k => k + 1)}>
       {/* Header */}
-      <p className={`text-[10px] ${colors.headerText} uppercase tracking-widest mb-4`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+      <p className={`text-xs ${colors.headerText} uppercase tracking-widest mb-4`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
         FUEL
       </p>
 
       {/* Net Calories + Macros Summary */}
       <PixelBox className="p-3 mb-4">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs text-zinc-300">IN {totals.calsIn.toLocaleString()}</span>
+          <span className="text-sm text-zinc-300">IN {totals.calsIn.toLocaleString()}</span>
           {totals.burned > 0 ? (
-            <span className={`text-sm font-bold ${net < 0 ? 'text-green-400' : net > 200 ? 'text-amber-400' : 'text-zinc-300'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <span className={`text-base font-bold ${net < 0 ? 'text-green-400' : net > 200 ? 'text-amber-400' : 'text-zinc-300'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
               NET {net > 0 ? '+' : ''}{net}
             </span>
           ) : (
-            <span className="text-[9px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <span className="text-xs text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
               NET — sync for burn
             </span>
           )}
-          <span className="text-xs text-zinc-500">BURNED {totals.burned > 0 ? totals.burned.toLocaleString() : '—'}</span>
+          <span className="text-sm text-zinc-500">BURNED {totals.burned > 0 ? totals.burned.toLocaleString() : '—'}</span>
         </div>
         {/* Macro progress bars */}
         <div className="space-y-1.5">
@@ -113,11 +113,11 @@ function MacroBar({ label, current, target, color }: { label: string; current: n
   const pct = Math.min((current / target) * 100, 100);
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[8px] text-zinc-500 w-12" style={{ fontFamily: "var(--font-pixel), monospace" }}>{label}</span>
+      <span className="text-xs text-zinc-500 w-12" style={{ fontFamily: "var(--font-pixel), monospace" }}>{label}</span>
       <div className="flex-1 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
         <div className={`h-full ${color} transition-all duration-500 rounded-full`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-[8px] text-zinc-400 w-16 text-right">{current}/{target}g</span>
+      <span className="text-xs text-zinc-400 w-16 text-right">{current}/{target}g</span>
     </div>
   );
 }

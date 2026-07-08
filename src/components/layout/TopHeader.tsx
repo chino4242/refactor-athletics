@@ -31,7 +31,7 @@ function DailyXpPill({ colors }: { colors: any }) {
   if (xp === 0) return null;
   return (
     <>
-      <button onClick={handleOpen} className={`text-[9px] ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>⚡{xp}</button>
+      <button onClick={handleOpen} className={`text-xs ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>⚡{xp}</button>
       {showSheet && SheetComponent && <SheetComponent isOpen={showSheet} onClose={() => setShowSheet(false)} />}
     </>
   );
@@ -73,7 +73,7 @@ function LevelUpToast({ colors }: { colors: any }) {
       <div className="fixed inset-0 z-[70] flex items-center justify-center" onClick={() => setLevelUp(null)}>
         <div className="absolute inset-0 bg-black/90" />
         <div className="relative text-center space-y-4 px-8 animate-in fade-in zoom-in duration-500">
-          <p className={`text-[10px] ${colors.secondary} uppercase tracking-widest`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          <p className={`text-xs ${colors.secondary} uppercase tracking-widest`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
             ⚡ LEVEL UP
           </p>
           {avatarSrc && (
@@ -82,8 +82,8 @@ function LevelUpToast({ colors }: { colors: any }) {
           <p className="text-4xl text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>
             LV {levelUp.to}
           </p>
-          <p className="text-[10px] text-zinc-400 italic">{narrativeBeat}</p>
-          <p className="text-[8px] text-zinc-700 mt-6">tap to continue</p>
+          <p className="text-xs text-zinc-400 italic">{narrativeBeat}</p>
+          <p className="text-xs text-zinc-700 mt-6">tap to continue</p>
         </div>
       </div>
     );
@@ -93,10 +93,10 @@ function LevelUpToast({ colors }: { colors: any }) {
   return (
     <div className="fixed top-12 left-4 right-4 z-[60] flex justify-center animate-in slide-in-from-top-4" onClick={() => setLevelUp(null)}>
       <div className={`border-2 ${colors.primary} bg-zinc-900 px-5 py-3 text-center`} style={{ boxShadow: colors.glow }}>
-        <p className={`text-[12px] ${colors.secondary} font-bold`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+        <p className={`text-xs ${colors.secondary} font-bold`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
           ⚡ LV {levelUp.to}
         </p>
-        <p className="text-[9px] text-zinc-400 italic mt-1">{narrativeBeat}</p>
+        <p className="text-xs text-zinc-400 italic mt-1">{narrativeBeat}</p>
       </div>
     </div>
   );
@@ -119,7 +119,7 @@ export default function TopHeader() {
             <header className={`md:hidden flex items-center justify-between px-3 py-2 border-b-2 ${colors.border} bg-gradient-to-r from-zinc-900 via-zinc-900/80 to-zinc-900`}>
                 <div className="flex items-center gap-2">
                     <span className={`text-base`}>{themeEmoji}</span>
-                    <span className={`text-[9px] ${colors.secondary} tracking-widest font-bold`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                    <span className={`text-xs ${colors.secondary} tracking-widest font-bold`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                         REFACTOR ATHLETICS
                     </span>
                 </div>
@@ -127,7 +127,7 @@ export default function TopHeader() {
                     <DailyXpPill colors={colors} />
                     <Link href="/profile">
                         <div className={`w-7 h-7 border-2 ${colors.primary} bg-zinc-900 flex items-center justify-center`}>
-                            <span className="text-[10px]">👤</span>
+                            <span className="text-xs">👤</span>
                         </div>
                     </Link>
                 </div>
@@ -143,7 +143,7 @@ export default function TopHeader() {
                         { href: '/train', label: 'TRAIN' },
                     ].map((tab) => (
                         <Link key={tab.href} href={tab.href}>
-                            <button className={`px-3 py-2 text-[9px] uppercase tracking-wider transition-colors ${
+                            <button className={`px-3 py-2 text-xs uppercase tracking-wider transition-colors ${
                                 (tab.href === '/' && (pathname === '/' || pathname === '/dashboard')) || (tab.href !== '/' && pathname?.startsWith(tab.href))
                                     ? `${colors.secondary} ${colors.navActive}`
                                     : 'text-zinc-600 hover:text-zinc-300'
@@ -153,17 +153,17 @@ export default function TopHeader() {
                         </Link>
                     ))}
                 </nav>
-                <h1 className={`text-[10px] ${colors.secondary} tracking-widest`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                <h1 className={`text-xs ${colors.secondary} tracking-widest`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                     REFACTOR ATHLETICS
                 </h1>
                 <div className="flex items-center gap-2">
                     <Link href="/profile">
-                        <button className={`text-[8px] text-zinc-600 hover:text-zinc-300 transition-colors px-2 py-1 border ${colors.border}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                        <button className={`text-xs text-zinc-600 hover:text-zinc-300 transition-colors px-2 py-1 border ${colors.border}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                             PROFILE
                         </button>
                     </Link>
                     <form action={signout}>
-                        <button className="text-[8px] text-zinc-600 hover:text-red-400 transition-colors px-2 py-1 border border-zinc-800" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                        <button className="text-xs text-zinc-600 hover:text-red-400 transition-colors px-2 py-1 border border-zinc-800" style={{ fontFamily: "var(--font-pixel), monospace" }}>
                             OUT
                         </button>
                     </form>

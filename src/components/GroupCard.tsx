@@ -160,11 +160,11 @@ export default function GroupCard({ userId }: GroupCardProps) {
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <Users size={18} className="text-orange-500" />
-                                <h3 className="text-sm font-bold text-white uppercase tracking-wider">{group.name}</h3>
-                                <span className="text-xs text-zinc-600">{members.length} {members.length === 1 ? 'member' : 'members'}</span>
+                                <h3 className="text-base font-bold text-white uppercase tracking-wider">{group.name}</h3>
+                                <span className="text-sm text-zinc-600">{members.length} {members.length === 1 ? 'member' : 'members'}</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <button onClick={() => copyInvite(group)} className="flex items-center gap-1 text-xs text-zinc-400 hover:text-white transition px-2 py-1 bg-zinc-800 rounded">
+                                <button onClick={() => copyInvite(group)} className="flex items-center gap-1 text-sm text-zinc-400 hover:text-white transition px-2 py-1 bg-zinc-800 rounded">
                                     {copiedId === group.id ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
                                     {copiedId === group.id ? 'Copied!' : 'Invite Link'}
                                 </button>
@@ -179,8 +179,8 @@ export default function GroupCard({ userId }: GroupCardProps) {
                             {members.map(m => (
                                 <div key={m.user_id} className="flex items-center gap-1.5 bg-zinc-800 rounded-full px-2.5 py-1">
                                     <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                                    <span className="text-xs text-zinc-300">{m.display_name}</span>
-                                    {m.user_id === group.leader_id && <span className="text-[10px] text-orange-500">★</span>}
+                                    <span className="text-sm text-zinc-300">{m.display_name}</span>
+                                    {m.user_id === group.leader_id && <span className="text-xs text-orange-500">★</span>}
                                 </div>
                             ))}
                         </div>
@@ -191,12 +191,12 @@ export default function GroupCard({ userId }: GroupCardProps) {
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
                                         <span>{preset.emoji}</span>
-                                        <span className="text-xs font-bold text-white uppercase">{activeChallenge.name || challengeLabel}</span>
+                                        <span className="text-sm font-bold text-white uppercase">{activeChallenge.name || challengeLabel}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        {isCompleted && <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded font-bold">✓ COMPLETE</span>}
-                                        {isExpired && !isCompleted && <span className="text-[10px] bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded font-bold">FAILED</span>}
-                                        <span className="text-[10px] text-zinc-600">{activeChallenge.start_date} → {activeChallenge.end_date}</span>
+                                        {isCompleted && <span className="text-xs bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded font-bold">✓ COMPLETE</span>}
+                                        {isExpired && !isCompleted && <span className="text-xs bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded font-bold">FAILED</span>}
+                                        <span className="text-xs text-zinc-600">{activeChallenge.start_date} → {activeChallenge.end_date}</span>
                                     </div>
                                 </div>
 
@@ -207,7 +207,7 @@ export default function GroupCard({ userId }: GroupCardProps) {
                                         style={{ width: `${progressPercent}%` }}
                                     />
                                 </div>
-                                <div className="flex justify-between text-xs">
+                                <div className="flex justify-between text-sm">
                                     <span className="text-zinc-400">{totalProgress.toLocaleString()} / {activeChallenge.target.toLocaleString()} {preset.unit}</span>
                                     <span className={progressPercent >= 100 ? 'text-emerald-400 font-bold' : 'text-zinc-500'}>{Math.round(progressPercent)}%</span>
                                 </div>
@@ -220,7 +220,7 @@ export default function GroupCard({ userId }: GroupCardProps) {
                                             const memberVal = progress[m.user_id] || 0;
                                             const isMvp = m.user_id === mvpUserId && mvpValue > 0;
                                             return (
-                                                <div key={m.user_id} className="flex justify-between text-[10px]">
+                                                <div key={m.user_id} className="flex justify-between text-xs">
                                                     <span className="text-zinc-500 flex items-center gap-1">
                                                         {isMvp && <Crown size={10} className="text-yellow-500" />}
                                                         {m.display_name}
@@ -235,15 +235,15 @@ export default function GroupCard({ userId }: GroupCardProps) {
                                 {isCompleted && mvpName && (
                                     <div className="flex items-center gap-2 pt-2 border-t border-zinc-700/50">
                                         <Crown size={14} className="text-yellow-500" />
-                                        <span className="text-xs text-yellow-400 font-bold">MVP: {mvpName}</span>
-                                        <span className="text-[10px] text-zinc-600">({mvpValue.toLocaleString()} {preset.unit})</span>
+                                        <span className="text-base text-yellow-400 font-bold">MVP: {mvpName}</span>
+                                        <span className="text-xs text-zinc-600">({mvpValue.toLocaleString()} {preset.unit})</span>
                                     </div>
                                 )}
                             </div>
                         ) : (
                             <button
                                 onClick={() => setChallengeModalGroupId(group.id)}
-                                className="w-full py-2.5 bg-zinc-800 text-zinc-400 text-xs font-bold uppercase rounded-lg hover:bg-zinc-700 hover:text-white transition flex items-center justify-center gap-1"
+                                className="w-full py-2.5 bg-zinc-800 text-zinc-400 text-sm font-bold uppercase rounded-lg hover:bg-zinc-700 hover:text-white transition flex items-center justify-center gap-1"
                             >
                                 <Plus size={14} />
                                 Set {challengeLabel}
@@ -253,7 +253,7 @@ export default function GroupCard({ userId }: GroupCardProps) {
                         {/* History toggle */}
                         <button
                             onClick={() => loadHistory(group.id)}
-                            className="flex items-center gap-1 text-[10px] text-zinc-600 hover:text-zinc-400 transition uppercase tracking-wider font-bold"
+                            className="flex items-center gap-1 text-xs text-zinc-600 hover:text-zinc-400 transition uppercase tracking-wider font-bold"
                         >
                             <History size={12} />
                             Past Challenges
@@ -263,7 +263,7 @@ export default function GroupCard({ userId }: GroupCardProps) {
                         {historyGroupId === group.id && (
                             <div className="space-y-2">
                                 {challengeHistory.length === 0 ? (
-                                    <p className="text-[10px] text-zinc-600 text-center py-2">No completed challenges yet</p>
+                                    <p className="text-xs text-zinc-600 text-center py-2">No completed challenges yet</p>
                                 ) : challengeHistory.map(ch => {
                                     const p = CHALLENGE_PRESETS[ch.metric as ChallengeMetric];
                                     const total = ch.results ? Object.entries(ch.results).filter(([k]) => k !== '_success').reduce((s: number, [, v]: [string, any]) => s + (v as number), 0) : 0;
@@ -274,16 +274,16 @@ export default function GroupCard({ userId }: GroupCardProps) {
                                             <div className="flex items-center gap-2">
                                                 <span className="text-sm">{p?.emoji || '🏆'}</span>
                                                 <div>
-                                                    <div className="text-[10px] text-zinc-300 font-bold">{ch.name || `${p?.label} Challenge`}</div>
-                                                    <div className="text-[10px] text-zinc-600">{ch.start_date} → {ch.end_date}</div>
+                                                    <div className="text-xs text-zinc-300 font-bold">{ch.name || `${p?.label} Challenge`}</div>
+                                                    <div className="text-xs text-zinc-600">{ch.start_date} → {ch.end_date}</div>
                                                 </div>
                                             </div>
                                             <div className="text-right">
-                                                <div className={`text-[10px] font-bold ${wasSuccessful ? 'text-emerald-400' : 'text-red-400'}`}>
+                                                <div className={`text-xs font-bold ${wasSuccessful ? 'text-emerald-400' : 'text-red-400'}`}>
                                                     {wasSuccessful ? '✓ Complete' : '✗ Failed'}
                                                 </div>
-                                                <div className="text-[10px] text-zinc-600">{total.toLocaleString()} / {ch.target.toLocaleString()}</div>
-                                                {mvp && <div className="text-[10px] text-yellow-500 flex items-center gap-0.5 justify-end"><Crown size={8} /> {mvp}</div>}
+                                                <div className="text-xs text-zinc-600">{total.toLocaleString()} / {ch.target.toLocaleString()}</div>
+                                                {mvp && <div className="text-xs text-yellow-500 flex items-center gap-0.5 justify-end"><Crown size={8} /> {mvp}</div>}
                                             </div>
                                         </div>
                                     );
@@ -298,7 +298,7 @@ export default function GroupCard({ userId }: GroupCardProps) {
             <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-4">
                     <Users size={18} className="text-orange-500" />
-                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                    <h3 className="text-base font-bold text-white uppercase tracking-wider">
                         {groups.length === 0
                             ? (isClassic ? 'Join a Group' : 'Join Your Party')
                             : (isClassic ? 'Join Another Group' : 'Join Another Party')}
@@ -307,7 +307,7 @@ export default function GroupCard({ userId }: GroupCardProps) {
 
                 {!showCreate && !showJoin && (
                     <div className="text-center py-4 space-y-3">
-                        <p className="text-sm text-zinc-400">
+                        <p className="text-base text-zinc-400">
                             {isClassic
                                 ? 'Team up with friends for challenges and accountability.'
                                 : 'Form a party to take on quests together and earn bonus XP.'}
@@ -329,10 +329,10 @@ export default function GroupCard({ userId }: GroupCardProps) {
                             value={groupName}
                             onChange={e => setGroupName(e.target.value)}
                             placeholder={isClassic ? 'Group name...' : 'Party name...'}
-                            className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-sm"
+                            className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-base"
                             onKeyDown={e => e.key === 'Enter' && handleCreate()}
                         />
-                        {error && <p className="text-xs text-red-400">{error}</p>}
+                        {error && <p className="text-sm text-red-400">{error}</p>}
                         <div className="flex gap-2">
                             <button onClick={handleCreate} className="flex-1 py-2 bg-orange-600 text-white text-xs font-bold rounded-lg hover:bg-orange-500">Create</button>
                             <button onClick={() => { setShowCreate(false); setError(''); }} className="flex-1 py-2 bg-zinc-800 text-white text-xs font-bold rounded-lg hover:bg-zinc-700">Cancel</button>
@@ -346,10 +346,10 @@ export default function GroupCard({ userId }: GroupCardProps) {
                             value={inviteInput}
                             onChange={e => setInviteInput(e.target.value)}
                             placeholder="Enter invite code..."
-                            className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-sm uppercase tracking-wider"
+                            className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-base uppercase tracking-wider"
                             onKeyDown={e => e.key === 'Enter' && handleJoin()}
                         />
-                        {error && <p className="text-xs text-red-400">{error}</p>}
+                        {error && <p className="text-sm text-red-400">{error}</p>}
                         <div className="flex gap-2">
                             <button onClick={handleJoin} className="flex-1 py-2 bg-orange-600 text-white text-xs font-bold rounded-lg hover:bg-orange-500">Join</button>
                             <button onClick={() => { setShowJoin(false); setError(''); }} className="flex-1 py-2 bg-zinc-800 text-white text-xs font-bold rounded-lg hover:bg-zinc-700">Cancel</button>
@@ -395,19 +395,19 @@ function ChallengeResultOverlay({ result, onDismiss }: { result: { success: bool
                 <h2 className={`text-2xl font-black tracking-tight ${result.success ? 'text-emerald-400' : 'text-red-400'}`}>
                     {result.success ? 'CHALLENGE COMPLETE!' : 'CHALLENGE FAILED'}
                 </h2>
-                <p className="text-sm text-zinc-400">{result.name}</p>
+                <p className="text-base text-zinc-400">{result.name}</p>
                 <div className="bg-zinc-800 rounded-xl p-4">
                     <div className="text-3xl font-black text-white tabular-nums">
                         {result.total.toLocaleString()} <span className="text-lg text-zinc-500">/ {result.target.toLocaleString()}</span>
                     </div>
-                    <div className={`text-xs font-bold mt-1 ${result.success ? 'text-emerald-400' : 'text-red-400'}`}>
+                    <div className={`text-sm font-bold mt-1 ${result.success ? 'text-emerald-400' : 'text-red-400'}`}>
                         {result.success ? `${Math.round((result.total / result.target) * 100)}% — Target crushed!` : `${Math.round((result.total / result.target) * 100)}% — So close!`}
                     </div>
                 </div>
                 {result.success && result.mvp && (
                     <div className="flex items-center justify-center gap-2 text-amber-400">
                         <span className="text-lg">👑</span>
-                        <span className="text-sm font-bold">MVP: {result.mvp}</span>
+                        <span className="text-base font-bold">MVP: {result.mvp}</span>
                     </div>
                 )}
                 <button onClick={onDismiss} className={`w-full py-3 rounded-xl font-bold text-white transition-colors ${result.success ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-zinc-700 hover:bg-zinc-600'}`}>

@@ -63,8 +63,8 @@ export default function ProfileScreen({ userId, displayName, age, sex, currentWe
         <img src={`/themes/${currentTheme}/v2/banner.png`} alt="" className="w-full h-auto opacity-60" style={{ imageRendering: 'pixelated' }} />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a12] via-transparent to-transparent" />
         <div className="absolute bottom-3 left-3">
-          <p className="text-sm text-white font-bold">{displayName}</p>
-          <p className="text-[8px] text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>{identity.emoji} {identity.name} PATH</p>
+          <p className="text-base text-white font-bold">{displayName}</p>
+          <p className="text-xs text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>{identity.emoji} {identity.name} PATH</p>
         </div>
       </div>
 
@@ -73,26 +73,26 @@ export default function ProfileScreen({ userId, displayName, age, sex, currentWe
         <div className="grid grid-cols-4 gap-2 text-center">
           <div>
             <p className="text-lg text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>{stats?.powerLevel || 0}</p>
-            <p className="text-[7px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>POWER</p>
+            <p className="text-xs text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>POWER</p>
           </div>
           <div>
             <p className="text-lg text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>{stats?.ranked || 0}</p>
-            <p className="text-[7px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>RANKED</p>
+            <p className="text-xs text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>RANKED</p>
           </div>
           <div>
             <p className="text-lg text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>{currentWeight}</p>
-            <p className="text-[7px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>LBS</p>
+            <p className="text-xs text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>LBS</p>
           </div>
           <div>
             <p className="text-lg text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>{stats?.workouts || 0}</p>
-            <p className="text-[7px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>LOGS</p>
+            <p className="text-xs text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>LOGS</p>
           </div>
         </div>
       </PixelBox>
 
       {/* Theme Picker */}
       <PixelBox className="p-4 mb-4">
-        <p className={`text-[9px] ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>THEME</p>
+        <p className={`text-xs ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>THEME</p>
         <div className="flex gap-2">
           {THEMES_LIST.map(t => (
             <button
@@ -101,7 +101,7 @@ export default function ProfileScreen({ userId, displayName, age, sex, currentWe
               className={`flex-1 py-2 border text-center ${currentTheme === t.key ? `${colors.primary} bg-zinc-800` : 'border-zinc-700 bg-zinc-900'}`}
             >
               <span className="text-lg">{t.emoji}</span>
-              <p className={`text-[7px] mt-0.5 ${currentTheme === t.key ? colors.secondary : 'text-zinc-500'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>{t.name}</p>
+              <p className={`text-xs mt-0.5 ${currentTheme === t.key ? colors.secondary : 'text-zinc-500'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>{t.name}</p>
             </button>
           ))}
         </div>
@@ -109,7 +109,7 @@ export default function ProfileScreen({ userId, displayName, age, sex, currentWe
 
       {/* Settings Links */}
       <PixelBox className="p-4 mb-4">
-        <p className={`text-[9px] ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>SETTINGS</p>
+        <p className={`text-xs ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>SETTINGS</p>
         <div className="space-y-1">
           <button
             onClick={async () => {
@@ -122,23 +122,23 @@ export default function ProfileScreen({ userId, displayName, age, sex, currentWe
             }}
             className={`w-full flex items-center justify-between px-2 py-2 border ${colors.border} bg-zinc-800/50 hover:bg-zinc-800 transition-colors`}
           >
-            <span className="text-[8px] text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>RECONNECT HEALTH SYNC</span>
+            <span className="text-xs text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>RECONNECT HEALTH SYNC</span>
             <span className="text-zinc-600 text-xs">⟲</span>
           </button>
           <Link href="/settings" className={`flex items-center justify-between px-2 py-2 border ${colors.border} bg-zinc-800/50 hover:bg-zinc-800 transition-colors`}>
-            <span className="text-[8px] text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>INTEGRATIONS & EQUIPMENT</span>
+            <span className="text-xs text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>INTEGRATIONS & EQUIPMENT</span>
             <span className="text-zinc-600 text-xs">▸</span>
           </Link>
           <Link href="/privacy" className={`flex items-center justify-between px-2 py-2 border ${colors.border} bg-zinc-800/50 hover:bg-zinc-800 transition-colors`}>
-            <span className="text-[8px] text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>PRIVACY POLICY</span>
+            <span className="text-xs text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>PRIVACY POLICY</span>
             <span className="text-zinc-600 text-xs">▸</span>
           </Link>
           <Link href="/debug/health" className={`flex items-center justify-between px-2 py-2 border ${colors.border} bg-zinc-800/50 hover:bg-zinc-800 transition-colors`}>
-            <span className="text-[8px] text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>🔧 HEALTH DEBUG</span>
+            <span className="text-xs text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>🔧 HEALTH DEBUG</span>
             <span className="text-zinc-600 text-xs">▸</span>
           </Link>
           <Link href="/terms" className={`flex items-center justify-between px-2 py-2 border ${colors.border} bg-zinc-800/50 hover:bg-zinc-800 transition-colors`}>
-            <span className="text-[8px] text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>TERMS OF SERVICE</span>
+            <span className="text-xs text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>TERMS OF SERVICE</span>
             <span className="text-zinc-600 text-xs">▸</span>
           </Link>
         </div>
@@ -146,19 +146,19 @@ export default function ProfileScreen({ userId, displayName, age, sex, currentWe
 
       {/* Account */}
       <PixelBox className="p-4 mb-4">
-        <p className={`text-[9px] ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>ACCOUNT</p>
+        <p className={`text-xs ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>ACCOUNT</p>
         <div className="space-y-2">
           <button
             onClick={() => signout()}
             className={`w-full px-2 py-2 border ${colors.border} bg-zinc-800/50 text-left hover:bg-zinc-800 transition-colors`}
           >
-            <span className="text-[8px] text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>SIGN OUT</span>
+            <span className="text-xs text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>SIGN OUT</span>
           </button>
           <button
             onClick={() => setShowDeleteConfirm(true)}
             className="w-full px-2 py-2 border border-red-900/50 bg-zinc-800/50 text-left hover:bg-red-950/30 transition-colors"
           >
-            <span className="text-[8px] text-red-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>DELETE ACCOUNT</span>
+            <span className="text-xs text-red-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>DELETE ACCOUNT</span>
           </button>
         </div>
       </PixelBox>
@@ -167,11 +167,11 @@ export default function ProfileScreen({ userId, displayName, age, sex, currentWe
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-6">
           <div className={`border-2 border-red-800 bg-zinc-900 p-6 max-w-xs w-full text-center`}>
-            <p className="text-[10px] text-red-400 mb-4" style={{ fontFamily: "var(--font-pixel), monospace" }}>DELETE ACCOUNT?</p>
-            <p className="text-xs text-zinc-500 mb-4">This permanently removes all your data. This cannot be undone.</p>
+            <p className="text-xs text-red-400 mb-4" style={{ fontFamily: "var(--font-pixel), monospace" }}>DELETE ACCOUNT?</p>
+            <p className="text-sm text-zinc-500 mb-4">This permanently removes all your data. This cannot be undone.</p>
             <div className="flex gap-3">
-              <button onClick={() => setShowDeleteConfirm(false)} className={`flex-1 py-3 border ${colors.border} bg-zinc-800 text-zinc-300 text-[9px]`} style={{ fontFamily: "var(--font-pixel), monospace" }}>CANCEL</button>
-              <button onClick={async () => { await fetch('/api/account/delete', { method: 'DELETE' }); signout(); }} className="flex-1 py-3 border border-red-800 bg-zinc-800 text-red-400 text-[9px]" style={{ fontFamily: "var(--font-pixel), monospace" }}>DELETE</button>
+              <button onClick={() => setShowDeleteConfirm(false)} className={`flex-1 py-3 border ${colors.border} bg-zinc-800 text-zinc-300 text-xs`} style={{ fontFamily: "var(--font-pixel), monospace" }}>CANCEL</button>
+              <button onClick={async () => { await fetch('/api/account/delete', { method: 'DELETE' }); signout(); }} className="flex-1 py-3 border border-red-800 bg-zinc-800 text-red-400 text-xs" style={{ fontFamily: "var(--font-pixel), monospace" }}>DELETE</button>
             </div>
           </div>
         </div>

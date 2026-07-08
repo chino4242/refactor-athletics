@@ -61,10 +61,10 @@ export default function ViceToggle({
             <div className="flex justify-between items-center mb-2">
                 <div className="flex items-center gap-2">
                     {iconEl}
-                    <span className="text-[10px] uppercase font-bold text-zinc-400">{label}</span>
+                    <span className="text-xs uppercase font-bold text-zinc-400">{label}</span>
                 </div>
-                {status === 'success' && <span className="text-[10px] font-bold text-emerald-400">✓</span>}
-                {status === 'failed' && <span className="text-[10px] font-bold text-red-400">✗ {viceLogs.length}</span>}
+                {status === 'success' && <span className="text-xs font-bold text-emerald-400">✓</span>}
+                {status === 'failed' && <span className="text-xs font-bold text-red-400">✗ {viceLogs.length}</span>}
             </div>
 
             {/* Action buttons */}
@@ -89,10 +89,10 @@ export default function ViceToggle({
 
             {status === 'success' && (
                 <div className="flex items-center justify-between">
-                    <span className="text-xs text-emerald-400 font-bold">Complete</span>
+                    <span className="text-sm text-emerald-400 font-bold">Complete</span>
                     <button
                         onClick={handleMarkFail}
-                        className="text-[10px] text-zinc-600 hover:text-red-400 transition px-2 py-1"
+                        className="text-xs text-zinc-600 hover:text-red-400 transition px-2 py-1"
                         title="Undo"
                     >
                         Undo
@@ -104,13 +104,13 @@ export default function ViceToggle({
                 <div className="flex items-center justify-between">
                     <button
                         onClick={handleMarkFail}
-                        className="text-[10px] text-red-400 hover:text-red-300 font-bold px-2 py-1 bg-red-500/10 rounded transition"
+                        className="text-xs text-red-400 hover:text-red-300 font-bold px-2 py-1 bg-red-500/10 rounded transition"
                     >
                         +1
                     </button>
                     <button
                         onClick={handleMarkSafe}
-                        className="text-[10px] text-zinc-600 hover:text-emerald-400 transition px-2 py-1"
+                        className="text-xs text-zinc-600 hover:text-emerald-400 transition px-2 py-1"
                         title="Revert"
                     >
                         Undo

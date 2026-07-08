@@ -260,7 +260,7 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
 
             return (
                 <div className="mb-3">
-                    <div className="flex justify-between text-[10px] font-bold text-zinc-400 uppercase mb-1">
+                    <div className="flex justify-between text-xs font-bold text-zinc-400 uppercase mb-1">
                         <span>{label}</span>
                         <span className={isOver ? 'text-red-500' : 'text-zinc-500'}>
                             {isOver ? `${Math.round(actualTotal - weeklyTarget)} over` : `${Math.round(remaining)}${unit} left · ${daysLeft + 1}d to go`}
@@ -274,7 +274,7 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
                             if (amount <= 0 && i < todayPos) {
                                 const slotWidth = 100 / 7;
                                 return (
-                                    <div key={i} className="h-full flex items-center justify-center text-[8px] text-red-500/60 font-bold" style={{ width: `${slotWidth}%` }}>✕</div>
+                                    <div key={i} className="h-full flex items-center justify-center text-xs text-red-500/60 font-bold" style={{ width: `${slotWidth}%` }}>✕</div>
                                 );
                             }
                             if (amount <= 0) return null;
@@ -310,8 +310,8 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
         return (
             <div className="bg-zinc-900 border border-zinc-700 p-4 rounded-xl animate-fade-in-up">
                 <div className="flex justify-between items-center mb-4">
-                    <h4 className="text-sm font-black text-white italic uppercase">🎯 Set Nutrition Goals</h4>
-                    {hasTargets && <button onClick={() => setEditing(false)} className="text-xs text-zinc-500 hover:text-white">Cancel</button>}
+                    <h4 className="text-base font-black text-white italic uppercase">🎯 Set Nutrition Goals</h4>
+                    {hasTargets && <button onClick={() => setEditing(false)} className="text-sm text-zinc-500 hover:text-white">Cancel</button>}
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 mb-4">
@@ -398,24 +398,24 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
         <div className="bg-zinc-900 border border-zinc-700 p-4 rounded-xl">
 
             <div className="flex justify-between items-center mb-4">
-                <h4 className="text-sm font-black text-white italic uppercase flex items-center gap-2">
+                <h4 className="text-base font-black text-white italic uppercase flex items-center gap-2">
                     <span>🥗</span> Nutrition
-                    <button onClick={() => setEditing(true)} className="text-[10px] font-bold text-zinc-500 hover:text-white bg-zinc-800 hover:bg-zinc-700 px-2 py-0.5 rounded transition not-italic tracking-wider">EDIT</button>
+                    <button onClick={() => setEditing(true)} className="text-xs font-bold text-zinc-500 hover:text-white bg-zinc-800 hover:bg-zinc-700 px-2 py-0.5 rounded transition not-italic tracking-wider">EDIT</button>
                 </h4>
 
                 <div className="flex items-center gap-2">
                     {/* LOG BUTTON */}
                     <button
                         onClick={() => setShowLogModal(true)}
-                        className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white px-2 py-1 rounded transition-all"
+                        className="flex items-center gap-1 text-xs font-bold uppercase tracking-wider bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white px-2 py-1 rounded transition-all"
                     >
                         <Plus size={12} /> Log
                     </button>
 
                     {/* VIEW TOGGLE */}
                     <div className="flex bg-black rounded-lg p-0.5 z-10">
-                        <button onClick={() => setViewMode('daily')} className={`px-2 py-0.5 text-[10px] font-bold rounded ${viewMode === 'daily' ? 'bg-zinc-800 text-white' : 'text-zinc-600 hover:text-zinc-400'}`}>DAILY</button>
-                        <button onClick={() => setViewMode('weekly')} className={`px-2 py-0.5 text-[10px] font-bold rounded ${viewMode === 'weekly' ? 'bg-zinc-800 text-white' : 'text-zinc-600 hover:text-zinc-400'}`}>WEEKLY</button>
+                        <button onClick={() => setViewMode('daily')} className={`px-2 py-0.5 text-xs font-bold rounded ${viewMode === 'daily' ? 'bg-zinc-800 text-white' : 'text-zinc-600 hover:text-zinc-400'}`}>DAILY</button>
+                        <button onClick={() => setViewMode('weekly')} className={`px-2 py-0.5 text-xs font-bold rounded ${viewMode === 'weekly' ? 'bg-zinc-800 text-white' : 'text-zinc-600 hover:text-zinc-400'}`}>WEEKLY</button>
                     </div>
                 </div>
             </div>
@@ -442,8 +442,8 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
                                         if (f > 0) promises.push(handleLogMacro('fat', (totals['macro_fat'] || 0) + f));
                                         if (promises.length) await Promise.all(promises);
                                     }} className="shrink-0 bg-zinc-800/60 border border-zinc-700/40 rounded-lg px-3 py-1.5 hover:border-zinc-600/40 transition text-left">
-                                        <div className="text-[10px] font-semibold text-white truncate max-w-[90px]">{food.name}</div>
-                                        <div className="text-[9px] text-zinc-500">P:{p} C:{c} F:{f}</div>
+                                        <div className="text-base font-semibold text-white truncate max-w-[90px]">{food.name}</div>
+                                        <div className="text-xs text-zinc-500">P:{p} C:{c} F:{f}</div>
                                     </button>
                                 );
                             })}
@@ -468,7 +468,7 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
                         <span className="text-xs font-bold text-zinc-400 uppercase flex items-center gap-1">
                             <Flame size={12} className="text-red-500" /> Calories Burned
                         </span>
-                        <span className="text-xs font-bold text-red-400 flex items-center gap-2">
+                        <span className="text-base font-bold text-red-400 flex items-center gap-2">
                             {Math.round(totals['macro_calories_burned'] || 0)} / {targets.calories_burned || 2500} kcal
                             {(totals['macro_calories_burned'] || 0) > 0 && (
                                 <button onClick={async () => { await resetHabitTodayAction(userId, 'macro_calories_burned'); onUpdate(); }} className="text-zinc-600 hover:text-red-400 transition" title="Reset today">
@@ -521,17 +521,17 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
                                     <span className={`text-lg font-black ${net <= 0 ? 'text-emerald-400' : 'text-zinc-300'}`}>
                                         {net > 0 ? '+' : ''}{net}
                                     </span>
-                                    <span className="text-[10px] text-zinc-500 ml-1">/ {netTarget} kcal</span>
+                                    <span className="text-xs text-zinc-500 ml-1">/ {netTarget} kcal</span>
                                 </div>
                             </div>
-                            <div className="flex justify-between text-[10px] text-zinc-500 mt-1">
+                            <div className="flex justify-between text-xs text-zinc-500 mt-1">
                                 <span>In: {Math.round(caloriesIn)}</span>
                                 <span>Burned: {Math.round(caloriesBurned)}</span>
                                 <span className={onTarget ? 'text-emerald-400 font-bold' : 'text-zinc-500'}>
                                     {onTarget ? '✓ On Target' : `${Math.round(net - netTarget)} over`}
                                 </span>
                             </div>
-                            <button onClick={() => setViewMode('weekly')} className="mt-2 w-full text-center text-[10px] text-zinc-500 hover:text-orange-400 font-bold transition py-1">
+                            <button onClick={() => setViewMode('weekly')} className="mt-2 w-full text-center text-xs text-zinc-500 hover:text-orange-400 font-bold transition py-1">
                                 📊 View weekly trend — one day doesn&apos;t make or break the plan →
                             </button>
                         </div>
@@ -555,7 +555,7 @@ export default function NutritionTracker({ userId, userProfile, totals, onUpdate
                         <div className="mt-3 p-3 bg-zinc-950/50 border border-zinc-800 rounded-lg">
                             <div className="flex justify-between items-center mb-2">
                                 <span className="text-xs font-bold uppercase text-zinc-400">Weekly Net Calories</span>
-                                <span className={`text-sm font-black ${weeklyNet <= netTarget * 7 ? 'text-emerald-400' : 'text-zinc-300'}`}>
+                                <span className={`text-base font-black ${weeklyNet <= netTarget * 7 ? 'text-emerald-400' : 'text-zinc-300'}`}>
                                     {weeklyNet > 0 ? '+' : ''}{weeklyNet} kcal
                                 </span>
                             </div>

@@ -62,19 +62,19 @@ export default function ProtocolBriefing({ workout, date, onStart, onCancel }: P
                 {/* HIGH LEVEL STATS */}
                 <div className="flex gap-4 mt-6">
                     <div className="bg-zinc-900/50 p-3 rounded-xl border border-zinc-800 flex-1">
-                        <div className="text-zinc-500 text-[10px] uppercase font-bold mb-1 flex items-center gap-1">
+                        <div className="text-zinc-500 text-xs uppercase font-bold mb-1 flex items-center gap-1">
                             <Target size={12} /> XP
                         </div>
                         <div className="text-xl font-black text-white">{totalXP > 0 ? `+${totalXP}` : '---'}</div>
                     </div>
                     <div className="bg-zinc-900/50 p-3 rounded-xl border border-zinc-800 flex-1">
-                        <div className="text-zinc-500 text-[10px] uppercase font-bold mb-1 flex items-center gap-1">
+                        <div className="text-zinc-500 text-xs uppercase font-bold mb-1 flex items-center gap-1">
                             <Clock size={12} /> Time
                         </div>
                         <div className="text-xl font-black text-white">{estMinutes}m</div>
                     </div>
                     <div className="bg-zinc-900/50 p-3 rounded-xl border border-zinc-800 flex-1">
-                        <div className="text-zinc-500 text-[10px] uppercase font-bold mb-1 flex items-center gap-1">
+                        <div className="text-zinc-500 text-xs uppercase font-bold mb-1 flex items-center gap-1">
                             <Dumbbell size={12} /> Blocks
                         </div>
                         <div className="text-xl font-black text-white">{totalBlocks}</div>

@@ -211,11 +211,11 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
                     <div className="flex items-center gap-2">
                         <span className="text-sm">🎯</span>
                         <div>
-                            <span className="text-xs font-bold text-white">{challenge75.title}</span>
-                            <span className="text-[10px] text-zinc-500 ml-2">Day {challenge75.day}/75 · ✅ {challenge75.passed}</span>
+                            <span className="text-sm font-bold text-white">{challenge75.title}</span>
+                            <span className="text-xs text-zinc-500 ml-2">Day {challenge75.day}/75 · ✅ {challenge75.passed}</span>
                         </div>
                     </div>
-                    <span className="text-[10px] text-emerald-400 font-bold">View →</span>
+                    <span className="text-xs text-emerald-400 font-bold">View →</span>
                 </Link>
             )}
 
@@ -230,10 +230,10 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
                     ].map((s, i) => (
                         <div key={i} className="flex items-center gap-1.5">
                             <span className="text-sm">{s.icon}</span>
-                            <span className={`text-xs font-bold ${s.target && s.val >= s.target ? 'text-emerald-400' : 'text-white'}`}>
+                            <span className={`text-sm font-bold ${s.target && s.val >= s.target ? 'text-emerald-400' : 'text-white'}`}>
                                 {s.val >= 1000 ? `${(s.val / 1000).toFixed(1)}k` : s.val}
                             </span>
-                            {s.unit && <span className="text-[10px] text-zinc-600">{s.unit}</span>}
+                            {s.unit && <span className="text-xs text-zinc-600">{s.unit}</span>}
                         </div>
                     ))}
                 </Link>
@@ -259,34 +259,34 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
                 if (hasScheduled && !hasWorkout) return (
                     <Link href="/train" className={`block w-full bg-gradient-to-r ${theme.accentGradient} text-white rounded-xl px-4 py-4 flex items-center justify-between shadow-lg shadow-orange-900/20 active:scale-[0.98] transition`}>
                         <div>
-                            <div className="text-[10px] text-white/60 uppercase font-bold">Today&apos;s Workout</div>
-                            <div className="text-sm font-bold">{todayScheduled.title || 'Ready to train'}</div>
+                            <div className="text-xs text-white/60 uppercase font-bold">Today&apos;s Workout</div>
+                            <div className="text-base font-bold">{todayScheduled.title || 'Ready to train'}</div>
                         </div>
-                        <span className="text-sm font-bold">Start →</span>
+                        <span className="text-base font-bold">Start →</span>
                     </Link>
                 );
                 if (!hasFood && hour >= 7 && hour < 11) return (
                     <Link href="/track" className="block w-full bg-zinc-800 border border-zinc-700 text-white rounded-xl px-4 py-3 flex items-center justify-between hover:border-zinc-600 transition">
-                        <div className="flex items-center gap-2"><span>🥗</span><span className="text-sm font-medium">Log Breakfast</span></div>
-                        <span className="text-xs text-zinc-500">→</span>
+                        <div className="flex items-center gap-2"><span>🥗</span><span className="text-base font-medium">Log Breakfast</span></div>
+                        <span className="text-sm text-zinc-500">→</span>
                     </Link>
                 );
                 if (!hasFood && hour >= 11 && hour < 15) return (
                     <Link href="/track" className="block w-full bg-zinc-800 border border-zinc-700 text-white rounded-xl px-4 py-3 flex items-center justify-between hover:border-zinc-600 transition">
-                        <div className="flex items-center gap-2"><span>🥗</span><span className="text-sm font-medium">Log Lunch</span></div>
-                        <span className="text-xs text-zinc-500">→</span>
+                        <div className="flex items-center gap-2"><span>🥗</span><span className="text-base font-medium">Log Lunch</span></div>
+                        <span className="text-sm text-zinc-500">→</span>
                     </Link>
                 );
                 if (!hasFood && hour >= 17 && hour < 21) return (
                     <Link href="/track" className="block w-full bg-zinc-800 border border-zinc-700 text-white rounded-xl px-4 py-3 flex items-center justify-between hover:border-zinc-600 transition">
-                        <div className="flex items-center gap-2"><span>🥗</span><span className="text-sm font-medium">Log Dinner</span></div>
-                        <span className="text-xs text-zinc-500">→</span>
+                        <div className="flex items-center gap-2"><span>🥗</span><span className="text-base font-medium">Log Dinner</span></div>
+                        <span className="text-sm text-zinc-500">→</span>
                     </Link>
                 );
                 if (hasWorkout && todayProgress.steps < (profile.habit_targets?.habit_steps || 10000) * 0.5) return (
                     <div className="w-full bg-zinc-800/50 border border-zinc-700/50 text-white rounded-xl px-4 py-3 flex items-center justify-between">
-                        <div className="flex items-center gap-2"><span>👣</span><span className="text-sm font-medium text-zinc-400">{todayProgress.steps.toLocaleString()} / {(profile.habit_targets?.habit_steps || 10000).toLocaleString()} steps</span></div>
-                        <span className="text-[10px] text-zinc-600">Keep moving</span>
+                        <div className="flex items-center gap-2"><span>👣</span><span className="text-base font-medium text-zinc-400">{todayProgress.steps.toLocaleString()} / {(profile.habit_targets?.habit_steps || 10000).toLocaleString()} steps</span></div>
+                        <span className="text-xs text-zinc-600">Keep moving</span>
                     </div>
                 );
                 return null;
@@ -297,9 +297,9 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <span className="text-sm">⚡</span>
-                        <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Today&apos;s XP</span>
+                        <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Today&apos;s XP</span>
                     </div>
-                    <span className="text-sm font-black text-amber-400">+{todayProgress.xp || 0}</span>
+                    <span className="text-base font-black text-amber-400">+{todayProgress.xp || 0}</span>
                 </div>
             </button>
             {showTodayWrapUp && (
@@ -316,15 +316,15 @@ export default function TodayTab({ userId, programs, stats }: TodayTabProps) {
                     <Link href="/power-level" className="flex items-center gap-3 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 hover:border-zinc-700 transition">
                         <span className="text-sm">🎯</span>
                         <div className="flex-1 min-w-0">
-                            <span className="text-xs text-zinc-300 truncate block">{q.name}</span>
+                            <span className="text-sm text-zinc-300 truncate block">{q.name}</span>
                             <div className="flex items-center gap-2 mt-1">
                                 <div className="flex-1 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
                                     <div className={`h-full rounded-full ${q.pct >= 90 ? 'bg-amber-400 animate-pulse' : 'bg-zinc-600'}`} style={{ width: `${q.pct}%` }} />
                                 </div>
-                                <span className="text-[10px] text-zinc-500 font-mono shrink-0">{q.current} → {q.target}</span>
+                                <span className="text-xs text-zinc-500 font-mono shrink-0">{q.current} → {q.target}</span>
                             </div>
                         </div>
-                        <span className="text-[10px] font-bold text-amber-400">Lv{q.nextLevel}</span>
+                        <span className="text-xs font-bold text-amber-400">Lv{q.nextLevel}</span>
                     </Link>
                 );
             })()}

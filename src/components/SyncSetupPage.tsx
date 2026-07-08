@@ -31,7 +31,7 @@ export default function SyncSetupPage() {
                 </div>
             </div>
 
-            <p className="text-zinc-400 text-sm mb-6">
+            <p className="text-zinc-400 text-base mb-6">
                 Auto-sync steps, sleep, and calories burned from your phone — no manual entry.
             </p>
 
@@ -53,11 +53,11 @@ export default function SyncSetupPage() {
                             href="https://www.icloud.com/shortcuts/PLACEHOLDER"
                             target="_blank"
                             rel="noopener"
-                            className="block w-full text-center py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase tracking-wider text-sm rounded-xl transition"
+                            className="block w-full text-center py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase tracking-wider text-base rounded-xl transition"
                         >
                             Install Apple Shortcut
                         </a>
-                        <p className="text-zinc-600 text-[10px] mt-2 text-center">Opens in the Shortcuts app</p>
+                        <p className="text-zinc-600 text-xs mt-2 text-center">Opens in the Shortcuts app</p>
                     </Step>
 
                     <Step num={3} title="Paste your token">
@@ -71,7 +71,7 @@ export default function SyncSetupPage() {
                             <li>Choose <strong className="text-white">&quot;Sync Health to Refactor&quot;</strong></li>
                             <li>Turn on <strong className="text-white">Run Immediately</strong></li>
                         </ol>
-                        <p className="text-zinc-500 text-xs mt-2">That&apos;s it — your health data will sync every night automatically.</p>
+                        <p className="text-zinc-500 text-sm mt-2">That&apos;s it — your health data will sync every night automatically.</p>
                     </Step>
                 </div>
             ) : (
@@ -86,7 +86,7 @@ export default function SyncSetupPage() {
                             href="https://play.google.com/store/apps/details?id=ch.rmy.android.http_shortcuts"
                             target="_blank"
                             rel="noopener"
-                            className="block w-full text-center py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase tracking-wider text-sm rounded-xl transition"
+                            className="block w-full text-center py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase tracking-wider text-base rounded-xl transition"
                         >
                             Get HTTP Shortcuts
                         </a>
@@ -97,7 +97,7 @@ export default function SyncSetupPage() {
                         <a
                             href="/sync/http-shortcuts-export.json"
                             download
-                            className="block w-full text-center py-3 bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-white font-bold uppercase tracking-wider text-sm rounded-xl transition"
+                            className="block w-full text-center py-3 bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-white font-bold uppercase tracking-wider text-base rounded-xl transition"
                         >
                             Download Shortcut Config
                         </a>
@@ -119,13 +119,13 @@ export default function SyncSetupPage() {
                     Advanced: Manual API Setup
                 </summary>
                 <div className="mt-4 bg-zinc-900 border border-zinc-800 rounded-2xl p-5 space-y-3">
-                    <p className="text-zinc-400 text-xs">Send a POST request to sync data:</p>
+                    <p className="text-zinc-400 text-sm">Send a POST request to sync data:</p>
                     <div className="space-y-2">
                         <Row label="URL" value={apiUrl} copyLabel="url" onCopy={copyText} copied={copied} />
                         <Row label="Header" value="Authorization: Bearer YOUR_TOKEN" />
                         <Row label="Body" value='[{"type":"steps","value":10000},{"type":"sleep","value":7.5}]' copyLabel="body" onCopy={copyText} copied={copied} />
                     </div>
-                    <p className="text-zinc-500 text-[10px]">Types: steps, sleep, calories_burned, weight, day_strain, water</p>
+                    <p className="text-zinc-500 text-xs">Types: steps, sleep, calories_burned, weight, day_strain, water</p>
                 </div>
             </details>
         </div>
@@ -139,9 +139,9 @@ function Step({ num, title, children }: { num: number; title: string; children: 
                 <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center shrink-0">
                     <span className="text-xs font-black text-white">{num}</span>
                 </div>
-                <h3 className="text-sm font-black uppercase tracking-widest text-white">{title}</h3>
+                <h3 className="text-base font-black uppercase tracking-widest text-white">{title}</h3>
             </div>
-            <div className="text-zinc-400 text-sm ml-10">{children}</div>
+            <div className="text-zinc-400 text-base ml-10">{children}</div>
         </div>
     );
 }
@@ -149,7 +149,7 @@ function Step({ num, title, children }: { num: number; title: string; children: 
 function Row({ label, value, copyLabel, onCopy, copied }: { label: string; value: string; copyLabel?: string; onCopy?: (t: string, l: string) => void; copied?: string }) {
     return (
         <div className="flex items-center gap-2">
-            <span className="text-[10px] text-zinc-500 uppercase font-bold w-12 shrink-0">{label}</span>
+            <span className="text-xs text-zinc-500 uppercase font-bold w-12 shrink-0">{label}</span>
             <code className="flex-1 text-xs text-zinc-300 bg-zinc-950 px-2 py-1 rounded truncate">{value}</code>
             {copyLabel && onCopy && (
                 <button onClick={() => onCopy(value, copyLabel)} className="p-1 rounded bg-zinc-800 hover:bg-zinc-700 transition shrink-0">

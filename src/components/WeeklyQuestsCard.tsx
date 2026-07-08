@@ -90,7 +90,7 @@ export default function WeeklyQuestsCard({ userId }: { userId: string }) {
           {/* Offered quests */}
           {offered.length > 0 && (
             <div>
-              <div className="text-[9px] text-orange-400 font-bold uppercase mb-1.5">Choose your quests:</div>
+              <div className="text-xs text-orange-400 font-bold uppercase mb-1.5">Choose your quests:</div>
               <div className="space-y-1.5">
                 {offered.map(q => (
                   <button key={q.id} onClick={() => accept(q.id)}
@@ -98,9 +98,9 @@ export default function WeeklyQuestsCard({ userId }: { userId: string }) {
                     <span className="text-lg">{q.quest_templates.icon}</span>
                     <div className="flex-1 min-w-0">
                       <div className="text-xs font-bold text-white">{q.quest_templates.name}</div>
-                      <div className="text-[10px] text-zinc-500">{q.quest_templates.description.replace('{target}', String(Math.round(q.target_value)))}</div>
+                      <div className="text-xs text-zinc-500">{q.quest_templates.description.replace('{target}', String(Math.round(q.target_value)))}</div>
                     </div>
-                    <span className="text-[9px] text-orange-400 font-bold uppercase shrink-0">Accept</span>
+                    <span className="text-xs text-orange-400 font-bold uppercase shrink-0">Accept</span>
                   </button>
                 ))}
               </div>
@@ -115,12 +115,12 @@ export default function WeeklyQuestsCard({ userId }: { userId: string }) {
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-sm">{q.quest_templates.icon}</span>
                   <span className="text-xs font-medium text-white flex-1">{q.quest_templates.name}</span>
-                  <span className="text-[10px] text-zinc-500">{Math.round(q.current_value)}/{Math.round(q.target_value)}</span>
+                  <span className="text-xs text-zinc-500">{Math.round(q.current_value)}/{Math.round(q.target_value)}</span>
                 </div>
                 <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
                   <div className={`h-full rounded-full transition-all ${pct >= 100 ? 'bg-emerald-500' : 'bg-orange-500'}`} style={{ width: `${pct}%` }} />
                 </div>
-                <div className="text-[9px] text-zinc-600 mt-1">{q.quest_templates.description?.replace('{target}', String(Math.round(q.target_value)))}</div>
+                <div className="text-xs text-zinc-600 mt-1">{q.quest_templates.description?.replace('{target}', String(Math.round(q.target_value)))}</div>
               </div>
             );
           })}
@@ -129,12 +129,12 @@ export default function WeeklyQuestsCard({ userId }: { userId: string }) {
           {completed.map(q => (
             <div key={q.id} className="flex items-center gap-2 text-xs text-emerald-400">
               <Check size={12} /> <span>{q.quest_templates.name}</span>
-              <span className="text-[9px] text-zinc-600 ml-auto">+{q.xp_awarded} XP</span>
+              <span className="text-xs text-zinc-600 ml-auto">+{q.xp_awarded} XP</span>
             </div>
           ))}
 
           {allComplete && (
-            <p className="text-[11px] text-emerald-400/80 italic text-center pt-1">{questCompleteMessages[currentTheme] || questCompleteMessages.athlete}</p>
+            <p className="text-xs text-emerald-400/80 italic text-center pt-1">{questCompleteMessages[currentTheme] || questCompleteMessages.athlete}</p>
           )}
         </div>
       )}

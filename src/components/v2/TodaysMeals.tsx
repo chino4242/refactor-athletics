@@ -141,7 +141,7 @@ export default function TodaysMeals({ userId, refreshKey, onDelete }: Props) {
   if (loading) {
     return (
       <PixelBox className="p-3">
-        <p className="text-[8px] text-zinc-500 uppercase tracking-widest mb-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+        <p className="text-xs text-zinc-500 uppercase tracking-widest mb-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>
           TODAY&apos;S MEALS
         </p>
         <div className="space-y-2">
@@ -156,10 +156,10 @@ export default function TodaysMeals({ userId, refreshKey, onDelete }: Props) {
   if (meals.length === 0) {
     return (
       <PixelBox className="p-3">
-        <p className="text-[8px] text-zinc-500 uppercase tracking-widest mb-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+        <p className="text-xs text-zinc-500 uppercase tracking-widest mb-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>
           TODAY&apos;S MEALS
         </p>
-        <p className="text-[10px] text-zinc-600 text-center py-3">
+        <p className="text-sm text-zinc-600 text-center py-3">
           No meals logged yet — add your first one above
         </p>
       </PixelBox>
@@ -171,7 +171,7 @@ export default function TodaysMeals({ userId, refreshKey, onDelete }: Props) {
 
   return (
     <PixelBox className="p-3">
-      <p className="text-[8px] text-zinc-500 uppercase tracking-widest mb-3" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+      <p className="text-xs text-zinc-500 uppercase tracking-widest mb-3" style={{ fontFamily: "var(--font-pixel), monospace" }}>
         TODAY&apos;S MEALS
       </p>
 
@@ -179,7 +179,7 @@ export default function TodaysMeals({ userId, refreshKey, onDelete }: Props) {
         {tagOrder.map(tag => (
           <div key={tag}>
             {/* Tag header */}
-            <p className="text-[8px] text-zinc-500 mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <p className="text-xs text-zinc-500 mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>
               {MEAL_TAG_EMOJI[tag] ?? '🍽️'} {tag.toUpperCase()}
             </p>
 
@@ -191,9 +191,9 @@ export default function TodaysMeals({ userId, refreshKey, onDelete }: Props) {
                 >
                   <div className="flex-1 min-w-0 mr-2">
                     {meal.label && (
-                      <p className="text-[11px] text-zinc-300 truncate">{meal.label}</p>
+                      <p className="text-xs text-zinc-300 truncate">{meal.label}</p>
                     )}
-                    <p className="text-[9px] text-zinc-500">
+                    <p className="text-xs text-zinc-500">
                       <span className="text-zinc-600 mr-1.5">{new Date(meal.timestamp * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span>
                       {meal.calories > 0 && <span className="text-zinc-400 mr-1">{meal.calories} cal</span>}
                       {meal.protein > 0 && <span className={`${colors.secondary} mr-1`}>P{meal.protein}g</span>}
@@ -206,7 +206,7 @@ export default function TodaysMeals({ userId, refreshKey, onDelete }: Props) {
                     onClick={() => handleDelete(meal)}
                     disabled={deleting === meal.timestamp}
                     aria-label="Delete meal"
-                    className="text-[9px] text-red-500 px-2 py-1 border border-red-900 bg-zinc-800 hover:bg-red-950 disabled:opacity-40 shrink-0"
+                    className="text-xs text-red-500 px-2 py-1 border border-red-900 bg-zinc-800 hover:bg-red-950 disabled:opacity-40 shrink-0"
                   >
                     DEL
                   </button>

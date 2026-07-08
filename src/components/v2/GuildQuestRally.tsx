@@ -51,28 +51,28 @@ export default function GuildQuestRally({ questName, onDismiss }: Props) {
         </div>
 
         {/* Title */}
-        <p className="text-[10px] text-red-400 uppercase tracking-widest" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+        <p className="text-xs text-red-400 uppercase tracking-widest" style={{ fontFamily: "var(--font-pixel), monospace" }}>
           {rally.title}
         </p>
 
         {/* Quest name */}
-        <p className="text-sm text-white font-medium">{questName}</p>
+        <p className="text-base text-white font-medium">{questName}</p>
 
         {/* Rally quote */}
-        <p className="text-[11px] text-zinc-400 italic leading-relaxed px-4">
+        <p className="text-xs text-zinc-400 italic leading-relaxed px-4">
           {rally.quote}
         </p>
 
         {/* CTA */}
         <div className="pt-4">
-          <p className={`text-[10px] ${colors.secondary} uppercase tracking-wider`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          <p className={`text-xs ${colors.secondary} uppercase tracking-wider`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
             {rally.cta}
           </p>
         </div>
 
         {/* Dismiss */}
         <button onClick={onDismiss} className={`mt-6 px-6 py-2 border ${colors.primary} bg-zinc-900`}>
-          <span className="text-[9px] text-white uppercase" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          <span className="text-xs text-white uppercase" style={{ fontFamily: "var(--font-pixel), monospace" }}>
             Let&apos;s go
           </span>
         </button>

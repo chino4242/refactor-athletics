@@ -109,7 +109,7 @@ export default function ProgressCharts({ history, catalog, bodyweight }: Props) 
       <div className="flex gap-2 justify-center">
         {RANGES.map(r => (
           <button key={r.key} onClick={() => setRange(r.key)}
-            className={`text-[10px] font-bold uppercase px-3 py-1.5 rounded-lg transition ${range === r.key ? 'bg-orange-600 text-white' : 'bg-zinc-800 text-zinc-400'}`}>
+            className={`text-xs font-bold uppercase px-3 py-1.5 rounded-lg transition ${range === r.key ? 'bg-orange-600 text-white' : 'bg-zinc-800 text-zinc-400'}`}>
             {r.label}
           </button>
         ))}
@@ -122,7 +122,7 @@ export default function ProgressCharts({ history, catalog, bodyweight }: Props) 
         </div>
 
         <select value={activeExercise} onChange={e => setSelectedExercise(e.target.value)}
-          className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white mb-4 outline-none focus:border-zinc-500">
+          className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-base text-white mb-4 outline-none focus:border-zinc-500">
           {loggedExercises.map(ex => (
             <option key={ex.id} value={ex.id}>{ex.name} ({ex.count})</option>
           ))}
@@ -133,7 +133,7 @@ export default function ProgressCharts({ history, catalog, bodyweight }: Props) 
             {/* Est 1RM chart */}
             {isWeightExercise && (
               <div>
-                <div className="text-[10px] text-zinc-500 uppercase mb-2">Estimated 1RM (lbs)</div>
+                <div className="text-xs text-zinc-500 uppercase mb-2">Estimated 1RM (lbs)</div>
                 <ResponsiveContainer width="100%" height={180}>
                   <LineChart data={exerciseData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
@@ -148,7 +148,7 @@ export default function ProgressCharts({ history, catalog, bodyweight }: Props) 
 
             {/* Volume chart */}
             <div>
-              <div className="text-[10px] text-zinc-500 uppercase mb-2">Session Volume (lbs)</div>
+              <div className="text-xs text-zinc-500 uppercase mb-2">Session Volume (lbs)</div>
               <ResponsiveContainer width="100%" height={140}>
                 <BarChart data={exerciseData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
@@ -161,7 +161,7 @@ export default function ProgressCharts({ history, catalog, bodyweight }: Props) 
             </div>
           </div>
         ) : (
-          <p className="text-zinc-500 text-xs text-center py-8">Need at least 2 sessions to show trends</p>
+          <p className="text-zinc-500 text-sm text-center py-8">Need at least 2 sessions to show trends</p>
         )}
       </div>
 
@@ -179,7 +179,7 @@ export default function ProgressCharts({ history, catalog, bodyweight }: Props) 
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <p className="text-zinc-500 text-xs text-center py-8">Log body weight to see trends</p>
+          <p className="text-zinc-500 text-sm text-center py-8">Log body weight to see trends</p>
         )}
       </div>
 
@@ -197,7 +197,7 @@ export default function ProgressCharts({ history, catalog, bodyweight }: Props) 
             </BarChart>
           </ResponsiveContainer>
         ) : (
-          <p className="text-zinc-500 text-xs text-center py-8">Need at least 2 weeks of data</p>
+          <p className="text-zinc-500 text-sm text-center py-8">Need at least 2 weeks of data</p>
         )}
       </div>
     </div>

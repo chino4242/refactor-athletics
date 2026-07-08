@@ -67,7 +67,7 @@ export default function WhileYouWereAway({ userId }: WhileYouWereAwayProps) {
       </div>
       <div className="text-2xl font-black text-white mb-1">+{data.total} XP</div>
       {Object.keys(data.breakdown).length > 0 && (
-        <div className="flex gap-3 text-[10px] text-zinc-400">
+        <div className="flex gap-3 text-xs text-zinc-400">
           {Object.entries(data.breakdown).map(([type, amount]) => (
             <span key={type}>{sourceLabels[type] || type}: {amount}</span>
           ))}

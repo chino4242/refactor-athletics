@@ -169,22 +169,22 @@ export default function WorkoutReport({ sessionId, userId, onExit }: Props) {
                 <div className="flex items-center gap-4 mt-4">
                     <div className="text-center">
                         <div className="text-2xl font-black text-amber-400">+{totalXp}</div>
-                        <div className="text-[9px] text-zinc-500 uppercase">XP Earned</div>
+                        <div className="text-xs text-zinc-500 uppercase">XP Earned</div>
                     </div>
                     {liftExercises.filter(e => !e.isBlock).length > 0 && (
                         <div className="text-center">
                             <div className="text-2xl font-black text-white">{liftExercises.filter(e => !e.isBlock).length}</div>
-                            <div className="text-[9px] text-zinc-500 uppercase">Exercises</div>
+                            <div className="text-xs text-zinc-500 uppercase">Exercises</div>
                         </div>
                     )}
                     {prCount > 0 && (
                         <div className="text-center">
                             <div className="text-2xl font-black text-yellow-400">{prCount}</div>
-                            <div className="text-[9px] text-zinc-500 uppercase">PRs</div>
+                            <div className="text-xs text-zinc-500 uppercase">PRs</div>
                         </div>
                     )}
                 </div>
-                <div className="mt-8 text-[10px] text-zinc-600 uppercase tracking-wider animate-pulse">Tap for details</div>
+                <div className="mt-8 text-xs text-zinc-600 uppercase tracking-wider animate-pulse">Tap for details</div>
             </div>
         );
     }
@@ -195,29 +195,29 @@ export default function WorkoutReport({ sessionId, userId, onExit }: Props) {
             <div className="bg-gradient-to-b from-orange-600/20 to-transparent p-6 text-center">
                 <div className="text-5xl mb-3">🏆</div>
                 <h1 className="text-3xl font-black italic text-white uppercase tracking-tight">Workout Complete</h1>
-                <p className="text-zinc-400 text-sm mt-1">{dateStr}</p>
+                <p className="text-zinc-400 text-base mt-1">{dateStr}</p>
 
                 {/* Summary Stats */}
                 <div className="flex justify-center gap-6 mt-4">
                     <div className="text-center">
                         <div className="text-orange-500 text-xl font-black">+{totalXp}</div>
-                        <div className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">XP</div>
+                        <div className="text-xs text-zinc-500 uppercase font-bold tracking-wider">XP</div>
                     </div>
                     {totalVolume > 0 && (
                         <div className="text-center">
                             <div className="text-white text-xl font-black">{totalVolume.toLocaleString()}</div>
-                            <div className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">lbs</div>
+                            <div className="text-xs text-zinc-500 uppercase font-bold tracking-wider">lbs</div>
                         </div>
                     )}
                     {prCount > 0 && (
                         <div className="text-center">
                             <div className="text-yellow-400 text-xl font-black">{prCount}</div>
-                            <div className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">PRs</div>
+                            <div className="text-xs text-zinc-500 uppercase font-bold tracking-wider">PRs</div>
                         </div>
                     )}
                     <div className="text-center">
                         <div className="text-white text-xl font-black">{exercises.length}</div>
-                        <div className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Exercises</div>
+                        <div className="text-xs text-zinc-500 uppercase font-bold tracking-wider">Exercises</div>
                     </div>
                 </div>
             </div>
@@ -229,16 +229,16 @@ export default function WorkoutReport({ sessionId, userId, onExit }: Props) {
                     <div className="rounded-xl p-4 bg-orange-500/10 border border-orange-500/20">
                         <div className="flex items-center gap-2 mb-3">
                             <span className="text-lg">🏃</span>
-                            <span className="text-sm font-bold text-white">Treadmill Summary</span>
+                            <span className="text-base font-bold text-white">Treadmill Summary</span>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                             <div className="text-center">
                                 <div className="text-lg font-black text-white">{treadIntervals}</div>
-                                <div className="text-[10px] text-zinc-500 uppercase font-bold">Intervals</div>
+                                <div className="text-xs text-zinc-500 uppercase font-bold">Intervals</div>
                             </div>
                             <div className="text-center">
                                 <div className="text-lg font-black text-yellow-400">+{treadXp}</div>
-                                <div className="text-[10px] text-zinc-500 uppercase font-bold">XP</div>
+                                <div className="text-xs text-zinc-500 uppercase font-bold">XP</div>
                             </div>
                         </div>
                     </div>
@@ -248,12 +248,12 @@ export default function WorkoutReport({ sessionId, userId, onExit }: Props) {
                         <div className="flex items-start justify-between">
                             <div className="flex-1">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-sm font-bold text-white capitalize">{ex.name}</span>
-                                    {ex.isPR && <span className="text-[10px] bg-yellow-500/20 text-yellow-400 px-1.5 py-0.5 rounded font-bold">🏆 PR!</span>}
+                                    <span className="text-base font-bold text-white capitalize">{ex.name}</span>
+                                    {ex.isPR && <span className="text-xs bg-yellow-500/20 text-yellow-400 px-1.5 py-0.5 rounded font-bold">🏆 PR!</span>}
                                 </div>
                                 {!ex.isBlock && ex.bestWeight > 0 ? (
                                     <div className="mt-1 space-y-0.5">
-                                        <div className="text-xs text-zinc-400">
+                                        <div className="text-sm text-zinc-400">
                                             {ex.sets.map((s: any, j: number) => (
                                                 <span key={j}>
                                                     {j > 0 && ' → '}
@@ -261,18 +261,18 @@ export default function WorkoutReport({ sessionId, userId, onExit }: Props) {
                                                 </span>
                                             ))}
                                         </div>
-                                        <div className="text-[10px] text-zinc-600">
+                                        <div className="text-xs text-zinc-600">
                                             Best set: {ex.bestWeight} lbs
                                             {ex.est1RM > ex.bestWeight && ` • Est. 1RM: ${ex.est1RM} lbs`}
                                         </div>
                                     </div>
                                 ) : !ex.isBlock ? (
-                                    <div className="text-xs text-zinc-500 mt-0.5">{ex.sets.length} sets</div>
+                                    <div className="text-sm text-zinc-500 mt-0.5">{ex.sets.length} sets</div>
                                 ) : null}
                             </div>
                             <div className="text-right shrink-0 ml-3">
                                 {ex.level > 0 && ex.rankName ? (
-                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                                    <span className={`text-xs font-bold px-2 py-0.5 rounded ${
                                         ex.level >= 5 ? 'bg-orange-500/20 text-orange-400' :
                                         ex.level >= 3 ? 'bg-zinc-700 text-zinc-200' :
                                         'bg-zinc-800 text-zinc-400'
@@ -280,7 +280,7 @@ export default function WorkoutReport({ sessionId, userId, onExit }: Props) {
                                         {ex.rankName}
                                     </span>
                                 ) : (
-                                    <span className="text-xs text-zinc-600">+{ex.xp} XP</span>
+                                    <span className="text-sm text-zinc-600">+{ex.xp} XP</span>
                                 )}
                             </div>
                         </div>

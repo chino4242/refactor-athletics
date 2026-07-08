@@ -18,9 +18,9 @@ export default function StarterQuestCard({ quest, onInlineAction }: StarterQuest
         </div>
         <div className="flex-1 min-w-0">
           <span className="text-xs font-bold text-emerald-400">{quest.title}</span>
-          {quest.xpReward > 0 && <span className="text-[10px] text-emerald-500/60 ml-2">+{quest.xpReward} XP</span>}
+          {quest.xpReward > 0 && <span className="text-xs text-emerald-500/60 ml-2">+{quest.xpReward} XP</span>}
         </div>
-        <span className="text-[10px] text-zinc-600">✓</span>
+        <span className="text-xs text-zinc-600">✓</span>
       </div>
     );
   }
@@ -34,15 +34,15 @@ export default function StarterQuestCard({ quest, onInlineAction }: StarterQuest
       
       <div className="relative">
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-[10px] font-bold text-amber-400 uppercase tracking-widest">Active Quest</span>
-          {quest.xpReward > 0 && <span className="text-[10px] text-zinc-500">+{quest.xpReward} XP</span>}
+          <span className="text-xs font-bold text-amber-400 uppercase tracking-widest">Active Quest</span>
+          {quest.xpReward > 0 && <span className="text-xs text-zinc-500">+{quest.xpReward} XP</span>}
         </div>
         
         <div className="flex items-start gap-3 mt-3">
           <span className="text-2xl">{quest.emoji}</span>
           <div className="flex-1">
             <h3 className="text-lg font-black text-white">{quest.title}</h3>
-            <p className="text-sm text-zinc-400 mt-1">{quest.description}</p>
+            <p className="text-base text-zinc-400 mt-1">{quest.description}</p>
           </div>
         </div>
 
@@ -64,7 +64,7 @@ export default function StarterQuestCard({ quest, onInlineAction }: StarterQuest
           ) : null}
         </div>
 
-        <div className="mt-3 text-[10px] text-zinc-600 text-center">
+        <div className="mt-3 text-xs text-zinc-600 text-center">
           Unlocks: {quest.unlocks}
         </div>
       </div>
@@ -82,8 +82,8 @@ export function LockedFeatureOverlay({ questTitle, children, href = '/track' }: 
       </div>
       <div className="absolute inset-0 flex items-center justify-center">
         <Link href={href} className="bg-zinc-900/90 border border-zinc-700 rounded-lg px-3 py-1.5 flex items-center gap-2 hover:border-zinc-600 transition-colors">
-          <span className="text-[10px]">🔒</span>
-          <span className="text-[10px] text-zinc-400 font-bold">Tap to complete &quot;{questTitle}&quot;</span>
+          <span className="text-xs">🔒</span>
+          <span className="text-xs text-zinc-400 font-bold">Tap to complete &quot;{questTitle}&quot;</span>
         </Link>
       </div>
     </div>

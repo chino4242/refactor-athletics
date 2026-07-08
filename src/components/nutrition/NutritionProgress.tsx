@@ -86,7 +86,7 @@ export default function NutritionProgress({ totals, targets, userId }: Nutrition
     <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden">
       {/* Collapsed summary — always visible */}
       <button onClick={() => setExpanded(!expanded)} className="w-full px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-3 text-[11px] font-medium">
+        <div className="flex items-center gap-3 text-xs font-medium">
           <span className={protein >= (targets.protein || 150) ? 'text-blue-400' : 'text-zinc-400'}>P:{protein}/{targets.protein || 150}</span>
           <span className={carbs >= (targets.carbs || 200) ? 'text-orange-400' : 'text-zinc-400'}>C:{carbs}/{targets.carbs || 200}</span>
           <span className={fat >= (targets.fat || 65) ? 'text-yellow-400' : 'text-zinc-400'}>F:{fat}/{targets.fat || 65}</span>
@@ -102,8 +102,8 @@ export default function NutritionProgress({ totals, targets, userId }: Nutrition
         <div className="px-4 pb-4">
           {/* Daily / Weekly toggle */}
           <div className="flex bg-zinc-800 rounded-lg p-0.5 mb-3">
-            <button onClick={() => setView('daily')} className={`flex-1 py-1.5 text-[10px] font-bold rounded ${view === 'daily' ? 'bg-zinc-700 text-white' : 'text-zinc-500'}`}>TODAY</button>
-            <button onClick={() => setView('weekly')} className={`flex-1 py-1.5 text-[10px] font-bold rounded ${view === 'weekly' ? 'bg-zinc-700 text-white' : 'text-zinc-500'}`}>THIS WEEK</button>
+            <button onClick={() => setView('daily')} className={`flex-1 py-1.5 text-xs font-bold rounded ${view === 'daily' ? 'bg-zinc-700 text-white' : 'text-zinc-500'}`}>TODAY</button>
+            <button onClick={() => setView('weekly')} className={`flex-1 py-1.5 text-xs font-bold rounded ${view === 'weekly' ? 'bg-zinc-700 text-white' : 'text-zinc-500'}`}>THIS WEEK</button>
           </div>
 
           {view === 'daily' ? (
@@ -112,7 +112,7 @@ export default function NutritionProgress({ totals, targets, userId }: Nutrition
                 const pct = bar.target > 0 ? Math.min((bar.value / bar.target) * 100, 100) : 0;
                 return (
                   <div key={bar.label}>
-                    <div className="flex justify-between text-[10px] font-bold text-zinc-500 uppercase mb-1">
+                    <div className="flex justify-between text-xs font-bold text-zinc-500 uppercase mb-1">
                       <span>{bar.label}</span>
                       <span className={bar.value >= bar.target ? bar.color.replace('bg-', 'text-') : 'text-zinc-400'}>
                         {bar.value} / {bar.target} {bar.unit}
@@ -133,10 +133,10 @@ export default function NutritionProgress({ totals, targets, userId }: Nutrition
                     <span className={`text-lg font-black ${netToday <= 0 ? 'text-emerald-400' : 'text-zinc-300'}`}>
                       {netToday > 0 ? '+' : ''}{netToday.toLocaleString()}
                     </span>
-                    <span className="text-[10px] text-zinc-500 ml-1">/ {netTarget} kcal</span>
+                    <span className="text-xs text-zinc-500 ml-1">/ {netTarget} kcal</span>
                   </div>
                 </div>
-                <div className="flex justify-between text-[10px] text-zinc-500 mt-1">
+                <div className="flex justify-between text-xs text-zinc-500 mt-1">
                   <span>In: {caloriesIn.toLocaleString()}</span>
                   <span>Burned: {caloriesBurned.toLocaleString()}{caloriesBurned > 3000 ? ' (WHOOP total)' : ''}</span>
                   <span className={netToday <= netTarget ? 'text-emerald-400 font-bold' : ''}>
@@ -144,7 +144,7 @@ export default function NutritionProgress({ totals, targets, userId }: Nutrition
                   </span>
                 </div>
                 {caloriesBurned > 3000 && (
-                  <p className="text-[9px] text-zinc-600 mt-1">Includes BMR — WHOOP reports total daily expenditure, not just active calories.</p>
+                  <p className="text-xs text-zinc-600 mt-1">Includes BMR — WHOOP reports total daily expenditure, not just active calories.</p>
                 )}
               </div>
             </div>
@@ -159,10 +159,10 @@ export default function NutritionProgress({ totals, targets, userId }: Nutrition
                     <span className={`text-lg font-black ${weeklyNet <= weeklyTargetTotal ? 'text-emerald-400' : 'text-zinc-300'}`}>
                       {weeklyNet > 0 ? '+' : ''}{weeklyNet.toLocaleString()}
                     </span>
-                    <span className="text-[10px] text-zinc-500 ml-1">/ {weeklyTargetTotal.toLocaleString()} kcal</span>
+                    <span className="text-xs text-zinc-500 ml-1">/ {weeklyTargetTotal.toLocaleString()} kcal</span>
                   </div>
                 </div>
-                <p className="text-[10px] text-zinc-500 mt-1">One day doesn&apos;t make or break the plan — weekly trend matters more.</p>
+                <p className="text-xs text-zinc-500 mt-1">One day doesn&apos;t make or break the plan — weekly trend matters more.</p>
               </div>
 
               {/* Day-by-day breakdown */}
@@ -172,7 +172,7 @@ export default function NutritionProgress({ totals, targets, userId }: Nutrition
                     const isFuture = i > todayIdx;
                     const isToday = i === todayIdx;
                     return (
-                      <div key={i} className={`flex items-center gap-2 text-[11px] ${isFuture ? 'opacity-30' : ''}`}>
+                      <div key={i} className={`flex items-center gap-2 text-xs ${isFuture ? 'opacity-30' : ''}`}>
                         <span className={`w-4 text-center font-bold ${isToday ? 'text-orange-400' : 'text-zinc-500'}`}>{dayLabels[i]}</span>
                         <div className="flex-1 h-4 bg-zinc-800 rounded-sm overflow-hidden relative">
                           {!isFuture && day.calsIn > 0 && (
@@ -182,7 +182,7 @@ export default function NutritionProgress({ totals, targets, userId }: Nutrition
                             />
                           )}
                           {!isFuture && day.calsIn === 0 && i < todayIdx && (
-                            <div className="h-full flex items-center justify-center text-[8px] text-zinc-600">—</div>
+                            <div className="h-full flex items-center justify-center text-xs text-zinc-600">—</div>
                           )}
                         </div>
                         <span className={`w-16 text-right font-medium ${isFuture ? 'text-zinc-600' : day.net <= netTarget ? 'text-emerald-400' : 'text-zinc-400'}`}>
@@ -193,7 +193,7 @@ export default function NutritionProgress({ totals, targets, userId }: Nutrition
                   })}
                 </div>
               ) : (
-                <div className="text-center py-4 text-[11px] text-zinc-500">Loading weekly data...</div>
+                <div className="text-center py-4 text-xs text-zinc-500">Loading weekly data...</div>
               )}
             </div>
           )}

@@ -53,7 +53,7 @@ export default function MeasurementRow({ label, currentGoal, currentValue, onGoa
                 <div className="group relative" ref={dropdownRef}>
                     <button
                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                        className="flex items-center gap-1.5 text-[10px] font-bold uppercase py-2 px-3 rounded bg-zinc-800 hover:bg-zinc-700 transition border border-zinc-700"
+                        className="flex items-center gap-1.5 text-xs font-bold uppercase py-2 px-3 rounded bg-zinc-800 hover:bg-zinc-700 transition border border-zinc-700"
                     >
                         {activeGoal.icon}
                         <span className="text-zinc-300">{activeGoal.label}</span>
@@ -69,7 +69,7 @@ export default function MeasurementRow({ label, currentGoal, currentValue, onGoa
                                         onGoalChange(g.id);
                                         setIsDropdownOpen(false);
                                     }}
-                                    className={`w-full text-left px-3 py-3 text-[10px] font-bold uppercase flex items-center gap-2 hover:bg-zinc-800 transition ${currentGoal === g.id ? 'bg-zinc-800 text-white' : 'text-zinc-400'}`}
+                                    className={`w-full text-left px-3 py-3 text-xs font-bold uppercase flex items-center gap-2 hover:bg-zinc-800 transition ${currentGoal === g.id ? 'bg-zinc-800 text-white' : 'text-zinc-400'}`}
                                 >
                                     {g.icon}
                                     {g.label}
@@ -93,7 +93,7 @@ export default function MeasurementRow({ label, currentGoal, currentValue, onGoa
                             placeholder={currentValue !== '0' ? currentValue : "0.0"}
                             step="0.01"
                         />
-                        <span className="absolute right-3 top-2.5 text-[10px] text-zinc-600 font-bold pointer-events-none uppercase">{unit}</span>
+                        <span className="absolute right-3 top-2.5 text-xs text-zinc-600 font-bold pointer-events-none uppercase">{unit}</span>
                     </div>
                     <button
                         onClick={() => {

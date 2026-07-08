@@ -45,7 +45,7 @@ function DurationSetTimer({ setIndex, targetSeconds, isDone, onComplete }: { set
           </div>
           <div>
             <span className="text-green-400 font-bold font-mono">SET {setIndex + 1}</span>
-            <span className="text-green-400/70 text-xs ml-2">{elapsed || targetSeconds}s</span>
+            <span className="text-green-400/70 text-sm ml-2">{elapsed || targetSeconds}s</span>
           </div>
         </div>
       </div>
@@ -64,7 +64,7 @@ function DurationSetTimer({ setIndex, targetSeconds, isDone, onComplete }: { set
           </div>
           <div className="text-left">
             <div className="text-white font-bold font-mono">SET {setIndex + 1}</div>
-            <div className="text-zinc-500 text-xs">{targetSeconds}s hold — tap to start</div>
+            <div className="text-zinc-500 text-sm">{targetSeconds}s hold — tap to start</div>
           </div>
         </div>
       </button>
@@ -85,7 +85,7 @@ function DurationSetTimer({ setIndex, targetSeconds, isDone, onComplete }: { set
           </div>
           <div className="text-left">
             <div className="text-orange-400 font-bold text-xs uppercase tracking-wider">Set {setIndex + 1}</div>
-            <div className="text-zinc-500 text-[10px]">{elapsed}s / {targetSeconds}s</div>
+            <div className="text-zinc-500 text-xs">{elapsed}s / {targetSeconds}s</div>
           </div>
         </div>
         <button
@@ -296,7 +296,7 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
           </div>
         )}
 
-        <p className="text-zinc-400 text-sm mt-1 font-mono">
+        <p className="text-zinc-400 text-base mt-1 font-mono">
           {isRepsOnly
             ? <>{block.sets} Sets × Max Reps • {smartRest}s Rest</>
             : isDurationExercise
@@ -314,11 +314,11 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
             <div className="mt-2 flex items-start gap-2 bg-zinc-800/50 rounded-lg px-3 py-2">
               <Info size={12} className="text-zinc-500 shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <p className="text-[11px] text-zinc-400 leading-relaxed">{cueData.cue}</p>
+                <p className="text-xs text-zinc-400 leading-relaxed">{cueData.cue}</p>
                 {cueData.video_url ? (
-                  <a href={cueData.video_url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-orange-400 font-bold mt-1 inline-block">📹 Watch form video</a>
+                  <a href={cueData.video_url} target="_blank" rel="noopener noreferrer" className="text-xs text-orange-400 font-bold mt-1 inline-block">📹 Watch form video</a>
                 ) : (
-                  <a href={`https://www.youtube.com/results?search_query=how+to+${encodeURIComponent(catalogItem?.name || displayName)}+form`} target="_blank" rel="noopener noreferrer" className="text-[10px] text-zinc-600 hover:text-orange-400 mt-1 inline-block">🔍 Search form video</a>
+                  <a href={`https://www.youtube.com/results?search_query=how+to+${encodeURIComponent(catalogItem?.name || displayName)}+form`} target="_blank" rel="noopener noreferrer" className="text-xs text-zinc-600 hover:text-orange-400 mt-1 inline-block">🔍 Search form video</a>
                 )}
               </div>
             </div>
@@ -391,13 +391,13 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
             <>
               {summary && (
               <div className="mt-2 px-2 py-1.5 bg-zinc-800/50 border border-zinc-700/50 rounded-lg">
-                <span className="text-[10px] text-zinc-500">Last: </span>
-                <span className="text-[10px] text-zinc-300 font-mono">{summary}</span>
+                <span className="text-xs text-zinc-500">Last: </span>
+                <span className="text-xs text-zinc-300 font-mono">{summary}</span>
               </div>
               )}
               {targetHint && !isDurationExercise && (
                 <div className="mt-1 px-2 py-1.5 bg-orange-500/10 border border-orange-500/20 rounded-lg">
-                  <span className="text-[10px] text-orange-400 font-bold">🎯 Hit {targetHint.targets.join(' or ')} to rank up</span>
+                  <span className="text-xs text-orange-400 font-bold">🎯 Hit {targetHint.targets.join(' or ')} to rank up</span>
                 </div>
               )}
             </>
@@ -417,7 +417,7 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
             </div>
             <ul className="space-y-2">
               {block.tips.map((tip: any, i: number) => (
-                <li key={i} className="text-blue-100/80 text-sm leading-relaxed flex gap-2">
+                <li key={i} className="text-blue-100/80 text-base leading-relaxed flex gap-2">
                   <span className="text-blue-500">•</span>
                   {typeof tip === 'string' ? tip : tip.text}
                 </li>
@@ -465,7 +465,7 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
                 <div className="flex flex-col mr-3 gap-1.5">
                   {!isRepsOnly && !isDurationExercise && (
                   <div>
-                    <span className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Weight</span>
+                    <span className="text-xs text-zinc-500 uppercase font-bold mb-1">Weight</span>
                     <div className="flex gap-1 items-center">
                       <input
                         type="text"
@@ -478,7 +478,7 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
                         })())}
                         value={weights[i]}
                         onChange={(e) => updateWeight(i, e.target.value)}
-                        className="bg-zinc-900 text-white border border-zinc-600 rounded p-1.5 w-16 text-center font-mono text-sm focus:border-zinc-500 focus:outline-none"
+                        className="bg-zinc-900 text-white border border-zinc-600 rounded p-1.5 w-16 text-center font-mono text-base focus:border-zinc-500 focus:outline-none"
                         onClick={(e) => e.stopPropagation()}
                       />
                       <div className="flex flex-col gap-0.5">
@@ -487,7 +487,7 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
                             e.stopPropagation();
                             updateWeight(i, String(parseFloat(weights[i] || '0') + 5));
                           }}
-                          className="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white text-[10px] font-bold px-1.5 py-0.5 rounded transition-all"
+                          className="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white text-xs font-bold px-1.5 py-0.5 rounded transition-all"
                         >
                           +5
                         </button>
@@ -496,7 +496,7 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
                             e.stopPropagation();
                             updateWeight(i, String(Math.max(0, parseFloat(weights[i] || '0') - 5)));
                           }}
-                          className="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white text-[10px] font-bold px-1.5 py-0.5 rounded transition-all"
+                          className="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white text-xs font-bold px-1.5 py-0.5 rounded transition-all"
                         >
                           -5
                         </button>
@@ -505,7 +505,7 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
                   </div>
                   )}
                   <div>
-                    <span className="text-[10px] text-zinc-500 uppercase font-bold mb-1">{isDurationExercise ? 'Sec' : 'Reps'}</span>
+                    <span className="text-xs text-zinc-500 uppercase font-bold mb-1">{isDurationExercise ? 'Sec' : 'Reps'}</span>
                     <input
                       type="text"
                       inputMode="numeric"
@@ -516,7 +516,7 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
                         next[i] = e.target.value;
                         setRepsInputs(next);
                       }}
-                      className="bg-zinc-900 text-white border border-zinc-600 rounded p-1.5 w-16 text-center font-mono text-sm focus:border-zinc-500 focus:outline-none"
+                      className="bg-zinc-900 text-white border border-zinc-600 rounded p-1.5 w-16 text-center font-mono text-base focus:border-zinc-500 focus:outline-none"
                       onClick={(e) => e.stopPropagation()}
                     />
                   </div>
@@ -595,8 +595,8 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
 
           if (currentLevel >= 5) return (
             <div className="mx-4 mb-2 px-3 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-center">
-              <span className="text-[11px] font-bold text-emerald-400">⚡ Max rank on this exercise!</span>
-              {!isLowerBetter && <div className="text-[10px] text-zinc-500 mt-0.5">Estimated Strength: {estimatedStrength} lbs</div>}
+              <span className="text-xs font-bold text-emerald-400">⚡ Max rank on this exercise!</span>
+              {!isLowerBetter && <div className="text-xs text-zinc-500 mt-0.5">Estimated Strength: {estimatedStrength} lbs</div>}
             </div>
           );
 
@@ -632,21 +632,21 @@ export default function ExerciseView({ block, blockIndex, onComplete, fullHistor
 
           if (gap <= 0) return (
             <div className="mx-4 mb-2 px-3 py-2 bg-orange-500/10 border border-orange-500/20 rounded-xl text-center">
-              <span className="text-[11px] font-bold text-orange-400">⚡ You&apos;re in range for the next rank!</span>
-              {!isLowerBetter && <div className="text-[10px] text-zinc-500 mt-0.5">Estimated Strength: {estimatedStrength} lbs</div>}
+              <span className="text-xs font-bold text-orange-400">⚡ You&apos;re in range for the next rank!</span>
+              {!isLowerBetter && <div className="text-xs text-zinc-500 mt-0.5">Estimated Strength: {estimatedStrength} lbs</div>}
             </div>
           );
 
           return (
             <div className={`mx-4 mb-2 px-3 py-2 rounded-xl text-center ${gap <= 15 ? 'bg-orange-500/10 border border-orange-500/20 animate-pulse' : gap <= 30 ? 'bg-orange-500/10 border border-orange-500/20' : 'bg-zinc-800/50 border border-zinc-700/30'}`}>
               {!isLowerBetter && (
-                <div className="text-[10px] text-zinc-500 mb-0.5">Estimated Strength: <span className="font-bold text-zinc-300">{estimatedStrength} lbs</span></div>
+                <div className="text-xs text-zinc-500 mb-0.5">Estimated Strength: <span className="font-bold text-zinc-300">{estimatedStrength} lbs</span></div>
               )}
-              <span className={`text-[11px] font-bold ${gap <= 15 ? 'text-orange-400' : gap <= 30 ? 'text-orange-400' : 'text-zinc-400'}`}>
+              <span className={`text-xs font-bold ${gap <= 15 ? 'text-orange-400' : gap <= 30 ? 'text-orange-400' : 'text-zinc-400'}`}>
                 {gap <= 15 ? '🔥' : '🎯'} {gapLabel}
               </span>
               {targets.length > 0 && (
-                <div className="text-[10px] text-zinc-500 mt-0.5">
+                <div className="text-xs text-zinc-500 mt-0.5">
                   Hit {targets.join(' or ')} to rank up
                 </div>
               )}

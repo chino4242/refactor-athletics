@@ -47,7 +47,7 @@ export default function ProgressMetrics({ stats, profile, bodyCompHistory }: Pro
                     <div className="text-4xl font-black italic text-orange-500">
                         {powerLevel}<span className="text-lg text-zinc-500">/{stats?.max_expertise || 0}</span>
                     </div>
-                    <div className="text-[10px] text-zinc-400 group-hover:text-white mt-1 transition">Test an exercise to build Expertise →</div>
+                    <div className="text-xs text-zinc-400 group-hover:text-white mt-1 transition">Test an exercise to build Expertise →</div>
                 </Link>
 
                 {/* Body Composition */}
@@ -60,7 +60,7 @@ export default function ProgressMetrics({ stats, profile, bodyCompHistory }: Pro
                     <div className={`text-4xl font-black italic ${physiquePoints.color}`}>
                         {physiquePoints.score > 0 ? '+' : ''}{physiquePoints.score}
                     </div>
-                    <div className="text-[10px] text-emerald-500/70 group-hover:text-emerald-400 mt-1 transition">Log body comp to track trends →</div>
+                    <div className="text-xs text-emerald-500/70 group-hover:text-emerald-400 mt-1 transition">Log body comp to track trends →</div>
                 </Link>
 
                 {/* Weight */}
@@ -78,14 +78,14 @@ export default function ProgressMetrics({ stats, profile, bodyCompHistory }: Pro
                             return (
                                 <>
                                     <div className="text-2xl font-black italic text-white">{currentWeight} lbs</div>
-                                    <div className="text-xs text-zinc-500">Target: {target} lbs</div>
-                                    <div className="text-xs text-zinc-400 font-semibold">{diff} lbs to go</div>
+                                    <div className="text-sm text-zinc-500">Target: {target} lbs</div>
+                                    <div className="text-sm text-zinc-400 font-semibold">{diff} lbs to go</div>
                                 </>
                             );
                         }
                         return <div className="text-4xl font-black italic text-zinc-600">—</div>;
                     })()}
-                    <div className="text-[10px] text-cyan-500/70 group-hover:text-cyan-400 mt-1 transition">Update weight →</div>
+                    <div className="text-xs text-cyan-500/70 group-hover:text-cyan-400 mt-1 transition">Update weight →</div>
                 </Link>
             </div>
 
@@ -93,7 +93,7 @@ export default function ProgressMetrics({ stats, profile, bodyCompHistory }: Pro
             <div>
                 <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Level {stats?.player_level || 1}</span>
-                    <span className="text-xs text-zinc-500">{stats?.xp_to_next_level || 0} XP to next</span>
+                    <span className="text-sm text-zinc-500">{stats?.xp_to_next_level || 0} XP to next</span>
                 </div>
                 <div className="w-full bg-zinc-800 rounded-full h-2 overflow-hidden">
                     <div className="bg-gradient-to-r from-orange-600 to-red-600 h-2 rounded-full transition-all duration-500" style={{ width: `${stats?.level_progress_percent || 0}%` }} />

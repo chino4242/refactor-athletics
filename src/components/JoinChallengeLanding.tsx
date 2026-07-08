@@ -93,7 +93,7 @@ export default function JoinChallengeLanding({ currentUserId, inviteCode }: Prop
 
                             <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 mb-6 space-y-2">
                                 <div className="text-lg font-bold text-white">{challenge.name}</div>
-                                {challenge.description && <div className="text-sm text-zinc-500">{challenge.description}</div>}
+                                {challenge.description && <div className="text-base text-zinc-500">{challenge.description}</div>}
                                 <div className="flex justify-center gap-4 text-xs text-zinc-400 pt-2">
                                     <span>{preset?.emoji || '🏆'} {preset?.label || challenge.metric}</span>
                                     <span>👥 {participantCount} joined</span>
@@ -103,7 +103,7 @@ export default function JoinChallengeLanding({ currentUserId, inviteCode }: Prop
                                         Target: {Number(challenge.target).toLocaleString()} {preset?.unit || ''}
                                     </div>
                                 )}
-                                <div className="text-[10px] text-zinc-600">
+                                <div className="text-xs text-zinc-600">
                                     {challenge.start_date} → {challenge.end_date}
                                 </div>
                             </div>
@@ -146,7 +146,7 @@ export default function JoinChallengeLanding({ currentUserId, inviteCode }: Prop
                         <>
                             <h1 className="text-xl font-bold text-white mb-2">Something Went Wrong</h1>
                             <p className="text-zinc-500 mb-6">{error}</p>
-                            <button onClick={() => router.push('/arena')} className="text-orange-500 hover:text-white underline text-sm">
+                            <button onClick={() => router.push('/arena')} className="text-orange-500 hover:text-white underline text-base">
                                 Go to Arena
                             </button>
                         </>

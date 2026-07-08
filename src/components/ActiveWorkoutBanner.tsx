@@ -53,11 +53,11 @@ export default function ActiveWorkoutBanner() {
             >
                 <div className="flex items-center gap-2">
                     <span className="text-sm animate-pulse">⚔</span>
-                    <span className={`text-[9px] ${colors.secondary} uppercase tracking-wider`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                    <span className={`text-xs ${colors.secondary} uppercase tracking-wider`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                         BATTLE IN PROGRESS
                     </span>
                 </div>
-                <span className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>TAP TO RETURN ▸</span>
+                <span className="text-xs text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>TAP TO RETURN ▸</span>
             </button>
             <button
                 onClick={() => { localStorage.removeItem('active_workout'); setActive(null); }}

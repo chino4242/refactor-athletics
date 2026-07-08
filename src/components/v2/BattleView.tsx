@@ -739,7 +739,7 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0a0a12] flex items-center justify-center">
-        <p className={`text-[10px] ${colors.secondary} animate-pulse`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+        <p className={`text-xs ${colors.secondary} animate-pulse`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
           ENTERING BATTLE...
         </p>
       </div>
@@ -758,26 +758,26 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
           <div className="grid grid-cols-3 gap-3 text-center">
             <div>
               <p className="text-xl text-white font-bold">{victory.totalXp}</p>
-              <p className="text-[9px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>XP</p>
+              <p className="text-xs text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>XP</p>
             </div>
             <div>
               <p className="text-xl text-white font-bold">{victory.exercisesDefeated}</p>
-              <p className="text-[9px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>{currentTheme !== 'athlete' ? 'DEFEATED' : 'DONE'}</p>
+              <p className="text-xs text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>{currentTheme !== 'athlete' ? 'DEFEATED' : 'DONE'}</p>
             </div>
             <div>
               <p className="text-xl text-white font-bold">{victory.duration}</p>
-              <p className="text-[9px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>TIME</p>
+              <p className="text-xs text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>TIME</p>
             </div>
           </div>
 
           {/* Rank-ups */}
           {victory.rankUps.length > 0 && (
             <div className="border-t border-zinc-800 pt-3 space-y-1">
-              <p className={`text-[10px] ${colors.secondary} uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>⚡ RANKS EARNED</p>
+              <p className={`text-xs ${colors.secondary} uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>⚡ RANKS EARNED</p>
               {victory.rankUps.map((r, i) => (
                 <div key={i} className="flex items-center justify-between">
-                  <span className="text-xs text-zinc-200">{r.name}</span>
-                  <span className={`text-[10px] ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>LV{r.from}→LV{r.to}</span>
+                  <span className="text-sm text-zinc-200">{r.name}</span>
+                  <span className={`text-xs ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>LV{r.from}→LV{r.to}</span>
                 </div>
               ))}
             </div>
@@ -787,32 +787,32 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
           <div className="border-t border-zinc-800 pt-3 grid grid-cols-2 gap-2">
             {comboCount >= 3 && (
               <div className="flex items-center gap-1">
-                <span className="text-[10px] text-amber-400">🔥</span>
-                <span className="text-[10px] text-zinc-300">{comboCount}x combo</span>
+                <span className="text-xs text-amber-400">🔥</span>
+                <span className="text-xs text-zinc-300">{comboCount}x combo</span>
               </div>
             )}
             {bounties.filter(b => b.done).length > 0 && (
               <div className="flex items-center gap-1">
-                <span className="text-[10px] text-amber-400">🏆</span>
-                <span className="text-[10px] text-zinc-300">{bounties.filter(b => b.done).length} bounties</span>
+                <span className="text-xs text-amber-400">🏆</span>
+                <span className="text-xs text-zinc-300">{bounties.filter(b => b.done).length} bounties</span>
               </div>
             )}
             <div className="flex items-center gap-1">
-              <span className="text-[10px] text-zinc-500">📊</span>
-              <span className="text-[10px] text-zinc-300">{cards.reduce((s, c) => s + c.completedSets, 0)} total sets</span>
+              <span className="text-xs text-zinc-500">📊</span>
+              <span className="text-xs text-zinc-300">{cards.reduce((s, c) => s + c.completedSets, 0)} total sets</span>
             </div>
           </div>
 
           {/* What moved forward */}
           <div className="border-t border-zinc-800 pt-3 space-y-1">
-            <p className="text-[8px] text-zinc-600 uppercase" style={{ fontFamily: "var(--font-pixel), monospace" }}>ADVANCED</p>
+            <p className="text-xs text-zinc-600 uppercase" style={{ fontFamily: "var(--font-pixel), monospace" }}>ADVANCED</p>
             <div className="flex flex-wrap gap-2">
-              <span className="text-[9px] text-emerald-400 px-2 py-0.5 bg-emerald-950/30 border border-emerald-900" style={{ fontFamily: "var(--font-pixel), monospace" }}>✓ Streak</span>
+              <span className="text-xs text-emerald-400 px-2 py-0.5 bg-emerald-950/30 border border-emerald-900" style={{ fontFamily: "var(--font-pixel), monospace" }}>✓ Streak</span>
               {bounties.length > 0 && (
-                <span className="text-[9px] text-blue-400 px-2 py-0.5 bg-blue-950/30 border border-blue-900" style={{ fontFamily: "var(--font-pixel), monospace" }}>✓ Bounties</span>
+                <span className="text-xs text-blue-400 px-2 py-0.5 bg-blue-950/30 border border-blue-900" style={{ fontFamily: "var(--font-pixel), monospace" }}>✓ Bounties</span>
               )}
               {typeof window !== 'undefined' && localStorage.getItem('has_active_campaign') && (
-                <span className="text-[9px] text-purple-400 px-2 py-0.5 bg-purple-950/30 border border-purple-900" style={{ fontFamily: "var(--font-pixel), monospace" }}>✓ Campaign</span>
+                <span className="text-xs text-purple-400 px-2 py-0.5 bg-purple-950/30 border border-purple-900" style={{ fontFamily: "var(--font-pixel), monospace" }}>✓ Campaign</span>
               )}
             </div>
           </div>
@@ -823,7 +823,7 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
           className={`mt-6 px-6 py-3 border-2 ${colors.primary} bg-zinc-800 text-white hover:bg-zinc-700 transition-colors`}
           style={{ fontFamily: "var(--font-pixel), monospace" }}
         >
-          <span className="text-[10px]">▸ RETURN TO BASE</span>
+          <span className="text-xs">▸ RETURN TO BASE</span>
         </button>
       </div>
     );
@@ -837,7 +837,7 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
       <div className="min-h-screen bg-[#0a0a12] flex items-center justify-center">
         <div className="text-center">
           <p className="text-zinc-500 text-xs mb-4">No workout loaded</p>
-          <button onClick={onComplete} className={`text-[10px] px-4 py-2 border ${colors.border} bg-zinc-800 text-white`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          <button onClick={onComplete} className={`text-xs px-4 py-2 border ${colors.border} bg-zinc-800 text-white`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
             ▸ BACK
           </button>
         </div>
@@ -878,7 +878,7 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
       {/* Top bar: close button */}
       <div className="px-4 pt-3 pb-1 flex items-center justify-between">
         <button onClick={() => setShowEndConfirm(true)} className="text-zinc-600 text-xs">✕</button>
-        <span className="text-[8px] text-zinc-600" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+        <span className="text-xs text-zinc-600" style={{ fontFamily: "var(--font-pixel), monospace" }}>
           {currentTheme !== 'athlete' ? 'BATTLE' : 'WORKOUT'}
         </span>
         <div className="w-4" />
@@ -887,7 +887,7 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
       {/* Compact status bar */}
       <div className="mx-4 mb-2 flex items-center justify-between px-3 py-1.5 border border-zinc-800 bg-zinc-900/80 rounded-sm">
         {sessionXp > 0 ? (
-          <span className={`text-[10px] ${colors.secondary} font-bold`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          <span className={`text-xs ${colors.secondary} font-bold`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
             ⚡{sessionXp}
           </span>
         ) : <span />}
@@ -895,7 +895,7 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
           <div className="flex h-1.5 w-16 bg-zinc-800 rounded-full overflow-hidden">
             <div className={`${colors.barFill} transition-all duration-500`} style={{ width: `${(cards.filter(c => c.defeated).length / cards.length) * 100}%` }} />
           </div>
-          <span className="text-[9px] text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          <span className="text-xs text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>
             {cards.filter(c => c.defeated).length}/{cards.length}
           </span>
         </div>
@@ -905,7 +905,7 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
       {bounties.length > 0 && (
         <div className="flex items-center justify-center gap-3 mb-2 px-4">
           {bounties.map(b => (
-            <span key={b.id} className={`text-[8px] ${b.done ? 'text-amber-400' : 'text-zinc-600'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <span key={b.id} className={`text-xs ${b.done ? 'text-amber-400' : 'text-zinc-600'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
               {b.done ? '✓' : '○'} {b.label}
             </span>
           ))}
@@ -1001,7 +1001,7 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
           <div className="flex items-center gap-1 justify-center mb-2">
             {cards.filter(c => c.defeated).map(c => (
               <div key={c.id} className="w-5 h-5 border border-zinc-700 bg-zinc-800/50 flex items-center justify-center opacity-50">
-                <span className="text-[7px] text-green-500">✓</span>
+                <span className="text-xs text-green-500">✓</span>
               </div>
             ))}
           </div>
@@ -1020,11 +1020,11 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
       {showEndConfirm && (
         <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-6">
           <div className={`border-2 ${colors.primary} bg-zinc-900 p-6 max-w-xs w-full text-center`}>
-            <p className={`text-[10px] ${colors.headerText} mb-4`} style={{ fontFamily: "var(--font-pixel), monospace" }}>PAUSE BATTLE?</p>
+            <p className={`text-xs ${colors.headerText} mb-4`} style={{ fontFamily: "var(--font-pixel), monospace" }}>PAUSE BATTLE?</p>
             <div className="space-y-2">
-              <button onClick={() => setShowEndConfirm(false)} className={`w-full py-3 border ${colors.primary} bg-zinc-800 ${colors.secondary} text-[9px]`} style={{ fontFamily: "var(--font-pixel), monospace" }}>▸ KEEP GOING</button>
-              <button onClick={onComplete} className={`w-full py-3 border ${colors.border} bg-zinc-800 text-zinc-300 text-[9px]`} style={{ fontFamily: "var(--font-pixel), monospace" }}>◷ SAVE & EXIT</button>
-              <button onClick={() => { localStorage.removeItem(BATTLE_STATE_KEY); onComplete(); }} className="w-full py-3 border border-red-900 bg-zinc-800 text-red-400 text-[9px]" style={{ fontFamily: "var(--font-pixel), monospace" }}>✕ END WORKOUT</button>
+              <button onClick={() => setShowEndConfirm(false)} className={`w-full py-3 border ${colors.primary} bg-zinc-800 ${colors.secondary} text-xs`} style={{ fontFamily: "var(--font-pixel), monospace" }}>▸ KEEP GOING</button>
+              <button onClick={onComplete} className={`w-full py-3 border ${colors.border} bg-zinc-800 text-zinc-300 text-xs`} style={{ fontFamily: "var(--font-pixel), monospace" }}>◷ SAVE & EXIT</button>
+              <button onClick={() => { localStorage.removeItem(BATTLE_STATE_KEY); onComplete(); }} className="w-full py-3 border border-red-900 bg-zinc-800 text-red-400 text-xs" style={{ fontFamily: "var(--font-pixel), monospace" }}>✕ END WORKOUT</button>
             </div>
           </div>
         </div>
@@ -1043,10 +1043,10 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
                 <p className="text-xl text-white font-bold" style={{ fontFamily: "var(--font-pixel), monospace" }}>
                   {rankUpToast.name}
                 </p>
-                <p className="text-[10px] text-zinc-400 italic mt-2">
+                <p className="text-xs text-zinc-400 italic mt-2">
                   It acknowledges your strength. It joins your bestiary.
                 </p>
-                <p className="text-[9px] text-zinc-600 mt-3">tap to continue</p>
+                <p className="text-xs text-zinc-600 mt-3">tap to continue</p>
               </>
             ) : (
               <>
@@ -1059,11 +1059,11 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
             <p className={`text-3xl ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
               LV {rankUpToast.level}
             </p>
-            <p className="text-[10px] text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <p className="text-xs text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>
               {rankUpToast.rankName}
             </p>
             {rankUpToast.nextThreshold && (
-              <p className="text-[10px] text-zinc-500 mt-2">
+              <p className="text-xs text-zinc-500 mt-2">
                 Next: {rankUpToast.nextThreshold}
               </p>
             )}
@@ -1078,22 +1078,22 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
         <div className="fixed inset-0 z-40 flex items-center justify-center" onClick={() => setDefeatedOverlay(null)}>
           <div className="absolute inset-0 bg-black/70" />
           <div className="relative text-center space-y-3 px-8">
-            <p className="text-[11px] text-green-400 tracking-widest" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <p className="text-xs text-green-400 tracking-widest" style={{ fontFamily: "var(--font-pixel), monospace" }}>
               ✓ DEFEATED
             </p>
             <p className="text-lg text-white font-bold" style={{ fontFamily: "var(--font-pixel), monospace" }}>
               {defeatedOverlay.name}
             </p>
             {defeatedOverlay.isPr && (
-              <p className="text-sm text-amber-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>★ NEW PR</p>
+              <p className="text-base text-amber-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>★ NEW PR</p>
             )}
             {defeatedOverlay.lastThree.length > 0 && (
-              <p className="text-[10px] text-zinc-400">
+              <p className="text-xs text-zinc-400">
                 Last {defeatedOverlay.lastThree.length}: {defeatedOverlay.lastThree.join(' → ')}{' '}
                 {defeatedOverlay.lastThree.length >= 2 && (defeatedOverlay.lastThree[defeatedOverlay.lastThree.length - 1] > defeatedOverlay.lastThree[0] ? '↑' : defeatedOverlay.lastThree[defeatedOverlay.lastThree.length - 1] < defeatedOverlay.lastThree[0] ? '↓' : '→')}
               </p>
             )}
-            <p className="text-[9px] text-zinc-600 mt-4" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <p className="text-xs text-zinc-600 mt-4" style={{ fontFamily: "var(--font-pixel), monospace" }}>
               tap to continue
             </p>
           </div>
@@ -1105,22 +1105,22 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
         <div className="fixed inset-0 z-50" onClick={() => setHistoryExercise(null)}>
           <div className="absolute inset-0 bg-black/60" />
           <div className="absolute bottom-0 left-0 right-0 max-h-[40vh] bg-zinc-900 border-t-2 border-zinc-700 p-4 overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <p className={`text-[10px] ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <p className={`text-xs ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
               HISTORY — {historyExercise.replace(/_/g, ' ')}
             </p>
             {historyData.length === 0 ? (
-              <p className="text-xs text-zinc-500">No previous sessions</p>
+              <p className="text-sm text-zinc-500">No previous sessions</p>
             ) : (
               <div className="space-y-2">
                 {historyData.map((h, i) => (
                   <div key={i} className={`flex items-center justify-between border ${colors.border} bg-zinc-800/50 px-3 py-2`}>
                     <div>
-                      <p className="text-[11px] text-zinc-300">{h.date}</p>
-                      <p className="text-[10px] text-zinc-500">
+                      <p className="text-xs text-zinc-300">{h.date}</p>
+                      <p className="text-xs text-zinc-500">
                         {h.sets?.length ? h.sets.map((s: any) => `${s.weight}×${s.reps}`).join(', ') : `1RM: ${Math.round(h.raw_value || 0)}`}
                       </p>
                     </div>
-                    {h.level > 0 && <span className={`text-[9px] ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>LV{h.level}</span>}
+                    {h.level > 0 && <span className={`text-xs ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>LV{h.level}</span>}
                   </div>
                 ))}
               </div>

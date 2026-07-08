@@ -73,16 +73,16 @@ export default function CreatePublicChallengeModal({ userId, displayName, onCrea
                     {!shareLink ? (
                         <>
                             <div>
-                                <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Challenge Name</label>
+                                <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">Challenge Name</label>
                                 <input
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
                                     placeholder="e.g. April Step Challenge"
-                                    className="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-3 text-white text-sm outline-none focus:border-zinc-500"
+                                    className="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-3 text-white text-base outline-none focus:border-zinc-500"
                                 />
                             </div>
                             <div>
-                                <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Metric</label>
+                                <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">Metric</label>
                                 <div className="grid grid-cols-2 gap-2">
                                     {(Object.entries(CHALLENGE_PRESETS) as [ChallengeMetric, typeof CHALLENGE_PRESETS[ChallengeMetric]][]).map(([key, preset]) => (
                                         <button
@@ -95,20 +95,20 @@ export default function CreatePublicChallengeModal({ userId, displayName, onCrea
                                             }`}
                                         >
                                             <div className="text-lg">{preset.emoji}</div>
-                                            <div className="text-xs font-bold text-white">{preset.label}</div>
-                                            <div className="text-[10px] text-zinc-500">{preset.defaultTarget.toLocaleString()} {preset.unit}</div>
+                                            <div className="text-sm font-bold text-white">{preset.label}</div>
+                                            <div className="text-xs text-zinc-500">{preset.defaultTarget.toLocaleString()} {preset.unit}</div>
                                         </button>
                                     ))}
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Duration</label>
+                                <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">Duration</label>
                                 <div className="flex gap-2">
                                     {[7, 14, 30].map(d => (
                                         <button
                                             key={d}
                                             onClick={() => setDuration(d)}
-                                            className={`flex-1 py-2 rounded-lg text-sm font-bold transition ${
+                                            className={`flex-1 py-2 rounded-lg text-base font-bold transition ${
                                                 duration === d
                                                     ? 'bg-orange-500 text-black'
                                                     : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
@@ -129,10 +129,10 @@ export default function CreatePublicChallengeModal({ userId, displayName, onCrea
                         <div className="text-center space-y-4 py-4">
                             <div className="text-4xl">🎉</div>
                             <h3 className="text-xl font-black text-white">Challenge Created!</h3>
-                            <p className="text-sm text-zinc-400">Share this link with anyone to invite them:</p>
+                            <p className="text-base text-zinc-400">Share this link with anyone to invite them:</p>
                             <div className="flex items-center gap-2 bg-zinc-950 border border-zinc-700 rounded-lg p-3">
                                 <LinkIcon size={14} className="text-zinc-500 shrink-0" />
-                                <span className="text-xs text-orange-400 truncate flex-1">{shareLink}</span>
+                                <span className="text-sm text-orange-400 truncate flex-1">{shareLink}</span>
                                 <button onClick={handleCopy} className="shrink-0">
                                     {copied ? <Check size={16} className="text-emerald-500" /> : <Copy size={16} className="text-zinc-400 hover:text-white" />}
                                 </button>

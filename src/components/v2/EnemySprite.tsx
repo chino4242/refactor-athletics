@@ -143,7 +143,7 @@ export default function EnemySprite({ exerciseId, level, defeated, theme, showNa
         />
       </div>
       {showName && enemyName && (
-        <p className="text-[11px] text-white tracking-wide" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+        <p className="text-xs text-white tracking-wide" style={{ fontFamily: "var(--font-pixel), monospace" }}>
           {enemyName}
         </p>
       )}

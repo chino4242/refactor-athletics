@@ -123,19 +123,19 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                 {/* Greeting + Streak */}
                 <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                        <span className="text-sm" style={{ color: theme.accentHex }}>{greeting}</span>
+                        <span className="text-base" style={{ color: theme.accentHex }}>{greeting}</span>
                         {streak > 0 && (
-                            <span className="text-xs font-bold" style={{ color: theme.accentHex }}>🔥 {streak}d</span>
+                            <span className="text-base font-bold" style={{ color: theme.accentHex }}>🔥 {streak}d</span>
                         )}
                         {streakAtRisk && (
-                            <span className="text-[10px] text-amber-400 animate-pulse">⚠️</span>
+                            <span className="text-xs text-amber-400 animate-pulse">⚠️</span>
                         )}
                     </div>
                     {todayProgram && (
-                        <span className="text-[11px] text-zinc-500 font-medium">{todayProgram}</span>
+                        <span className="text-xs text-zinc-500 font-medium">{todayProgram}</span>
                     )}
                     {challenge75 && (
-                        <Link href="/challenge-75" className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                        <Link href="/challenge-75" className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
                             🎯 Day {challenge75.day}/75
                         </Link>
                     )}
@@ -153,18 +153,18 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                                     {powerLevel}
                                 </span>
                                 {stats?.max_expertise && (
-                                    <span className="text-sm text-zinc-600 font-bold">/ {stats.max_expertise}</span>
+                                    <span className="text-base text-zinc-600 font-bold">/ {stats.max_expertise}</span>
                                 )}
                                 <span className="text-xs text-zinc-500 uppercase font-bold tracking-wider ml-1">
                                     {isClassic ? 'Training Level' : 'Power Level'}
                                 </span>
                             </>
                         ) : (
-                            <span className="text-sm text-zinc-500">Complete a workout to earn your Power Level</span>
+                            <span className="text-base text-zinc-500">Complete a workout to earn your Power Level</span>
                         )}
                     </div>
                     {!isClassic && rankName && (
-                        <span className="text-[10px] font-bold ml-auto" style={{ color: theme.accentHex }}>{rankName}</span>
+                        <span className="text-xs font-bold ml-auto" style={{ color: theme.accentHex }}>{rankName}</span>
                     )}
                 </Link>
 
@@ -172,7 +172,7 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                 <div className="flex items-center gap-3">
                     <div className="flex items-center gap-1.5">
                         <Zap size={12} className="text-blue-500" />
-                        <span className="text-[11px] font-bold text-zinc-500">Lv {playerLevel}</span>
+                        <span className="text-xs font-bold text-zinc-500">Lv {playerLevel}</span>
                     </div>
                     <div className="flex-1 bg-zinc-800 rounded-full h-1.5 overflow-hidden">
                         <div 
@@ -180,7 +180,7 @@ export default function DashboardHeader({ stats, userId }: DashboardHeaderProps)
                             style={{ width: `${xpPercent}%` }}
                         />
                     </div>
-                    <span className="text-[10px] text-zinc-600">{xpToNext} to next</span>
+                    <span className="text-xs text-zinc-600">{xpToNext} to next</span>
                 </div>
             </div>
             </div>

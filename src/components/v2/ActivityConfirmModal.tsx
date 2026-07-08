@@ -29,11 +29,11 @@ export default function ActivityConfirmModal({ activity, onConfirm, onDismiss }:
       <div className="relative w-full max-w-md bg-zinc-900 border-t-2 border-zinc-700 rounded-t-lg p-5 pb-24 space-y-4 animate-in slide-in-from-bottom" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="text-center">
-          <p className={`text-[10px] ${colors.secondary} uppercase tracking-wider mb-1`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          <p className={`text-xs ${colors.secondary} uppercase tracking-wider mb-1`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
             CLAIM YOUR XP
           </p>
           <p className="text-lg text-white font-medium">{activity.name}</p>
-          <p className="text-sm text-zinc-400">{activity.duration} min</p>
+          <p className="text-base text-zinc-400">{activity.duration} min</p>
         </div>
 
         {/* XP display */}
@@ -45,7 +45,7 @@ export default function ActivityConfirmModal({ activity, onConfirm, onDismiss }:
 
         {/* Session assignment */}
         <div>
-          <p className="text-[9px] text-zinc-500 mb-2 uppercase" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          <p className="text-xs text-zinc-500 mb-2 uppercase" style={{ fontFamily: "var(--font-pixel), monospace" }}>
             Count toward:
           </p>
           <div className="flex gap-2">
@@ -53,7 +53,7 @@ export default function ActivityConfirmModal({ activity, onConfirm, onDismiss }:
               <button
                 key={g}
                 onClick={() => setSessionGroup(sessionGroup === g.toLowerCase() ? null : g.toLowerCase())}
-                className={`flex-1 py-2 border text-[9px] transition-colors ${sessionGroup === g.toLowerCase() ? `${colors.primary} ${colors.secondary}` : 'border-zinc-700 text-zinc-500'}`}
+                className={`flex-1 py-2 border text-xs transition-colors ${sessionGroup === g.toLowerCase() ? `${colors.primary} ${colors.secondary}` : 'border-zinc-700 text-zinc-500'}`}
                 style={{ fontFamily: "var(--font-pixel), monospace" }}
               >
                 {g}
@@ -67,7 +67,7 @@ export default function ActivityConfirmModal({ activity, onConfirm, onDismiss }:
           onClick={() => onConfirm(sessionGroup)}
           className={`w-full py-3 border-2 ${colors.primary} bg-zinc-800 text-center hover:bg-zinc-700 transition-colors`}
         >
-          <span className={`text-[11px] ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          <span className={`text-xs ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
             ✓ CLAIM
           </span>
         </button>

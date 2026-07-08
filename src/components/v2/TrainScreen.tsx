@@ -280,7 +280,7 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
 
       {/* Weekly View */}
       <PixelBox className="p-3 mb-4">
-        <p className={`text-[10px] ${colors.headerText} mb-2 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+        <p className={`text-xs ${colors.headerText} mb-2 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
           THIS WEEK
         </p>
         <div className="grid grid-cols-7 gap-1">
@@ -293,7 +293,7 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
                 if (isSelected || day.isToday) { setSelectedDay(null); const localDay = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase(); const prog = fullSchedule.find((p: any) => (p.day || '').toLowerCase() === localDay); setWorkout(prog ? { name: prog.title || prog.name || 'Workout', exercises: (prog.exercises || []).slice(0, 5), estimatedXp: prog.xp || 50 } : null); }
                 else { setSelectedDay(dayName); const prog = fullSchedule.find((p: any) => (p.day || '').toLowerCase() === dayName); setWorkout(prog ? { name: prog.title || prog.name || 'Workout', exercises: (prog.exercises || []).slice(0, 5), estimatedXp: prog.xp || 50 } : null); }
               }} className="flex flex-col items-center gap-1">
-                <span className="text-[10px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                <span className="text-xs text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
                   {day.label}
                 </span>
                 <div className={`w-7 h-7 flex items-center justify-center border ${
@@ -302,16 +302,16 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
                   day.completed ? 'border-green-500 bg-green-900/30' :
                   'border-zinc-700 bg-zinc-900'
                 }`}>
-                  {day.completed && !isSelected && <span className="text-[9px] text-green-400">✓</span>}
-                  {day.isToday && !day.completed && !isSelected && !selectedDay && <span className={`text-[9px] ${colors.secondary}`}>▸</span>}
-                  {isSelected && <span className={`text-[9px] ${colors.secondary}`}>▸</span>}
+                  {day.completed && !isSelected && <span className="text-xs text-green-400">✓</span>}
+                  {day.isToday && !day.completed && !isSelected && !selectedDay && <span className={`text-xs ${colors.secondary}`}>▸</span>}
+                  {isSelected && <span className={`text-xs ${colors.secondary}`}>▸</span>}
                 </div>
               </button>
             );
           })}
         </div>
         {dailyStreak >= 2 && (
-          <p className="text-[10px] text-amber-400 mt-2 text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          <p className="text-xs text-amber-400 mt-2 text-center" style={{ fontFamily: "var(--font-pixel), monospace" }}>
             🔥 {dailyStreak} DAY STREAK
           </p>
         )}
@@ -319,7 +319,7 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
 
       {/* Creature quote */}
       {currentTheme !== 'athlete' && (
-        <p className="text-[9px] text-zinc-600 italic text-center mb-3 px-4">
+        <p className="text-xs text-zinc-600 italic text-center mb-3 px-4">
           {getTrainQuote(currentTheme, allComplete, sessionGroups.reduce((s, g) => s + g.completed, 0), dailyStreak)}
         </p>
       )}
@@ -329,10 +329,10 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
         {workout ? (
           <>
             <div className="flex items-center justify-between mb-2">
-              <p className={`text-[10px] ${colors.headerText} uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              <p className={`text-xs ${colors.headerText} uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                 {selectedDay ? `${selectedDay.toUpperCase()}'S WORKOUT` : allComplete ? '✓ DAY COMPLETE' : "TODAY\u0027S BATTLE"}
               </p>
-              {todayXp > 0 && <span className={`text-[10px] ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>⚡{todayXp} XP</span>}
+              {todayXp > 0 && <span className={`text-xs ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>⚡{todayXp} XP</span>}
             </div>
 
             {/* Session Groups */}
@@ -343,12 +343,12 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
                   return (
                     <a key={i} href={`/train/active?session=${g.type.toLowerCase()}${selectedDay ? `&day=${selectedDay}` : ''}`} className={`flex items-center justify-between px-3 py-3 border ${done ? 'border-green-800 bg-green-950/30' : colors.border + ' bg-zinc-800/50'} hover:bg-zinc-700/50 transition-colors`}>
                       <div className="flex items-center gap-2">
-                        <span className={`text-[11px] ${done ? 'text-green-400' : 'text-zinc-200'} font-medium`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                        <span className={`text-xs ${done ? 'text-green-400' : 'text-zinc-200'} font-medium`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                           {done ? '✓' : '▸'} {g.type}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={`text-[9px] ${done ? 'text-green-500' : 'text-zinc-500'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                        <span className={`text-xs ${done ? 'text-green-500' : 'text-zinc-500'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                           {g.completed}/{g.exercises.length}
                         </span>
                         {!done && <span className="text-zinc-600 text-xs">›</span>}
@@ -360,7 +360,7 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
             ) : (
               <div className="space-y-1 mb-3">
                 {workout.exercises.map((ex, i) => (
-                  <p key={i} className="text-xs text-zinc-400">• {ex}</p>
+                  <p key={i} className="text-sm text-zinc-400">• {ex}</p>
                 ))}
               </div>
             )}
@@ -377,15 +377,15 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
             {/* Completion bonus teaser or action button */}
             {allComplete ? (
               <div className="text-center space-y-2">
-                <p className="text-[10px] text-green-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                <p className="text-xs text-green-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>
                   🏆 ALL SESSIONS COMPLETE — +200 XP BONUS
                 </p>
-                <div className="flex justify-center gap-4 text-[9px] text-zinc-400">
+                <div className="flex justify-center gap-4 text-xs text-zinc-400">
                   <span>{sessionGroups.reduce((s, g) => s + g.exercises.length, 0)} exercises</span>
                   <span>⚡{todayXp} XP</span>
                   {dailyStreak >= 2 && <span>🔥 {dailyStreak} streak</span>}
                 </div>
-                <p className="text-[8px] text-zinc-600 italic mt-1">
+                <p className="text-xs text-zinc-600 italic mt-1">
                   {currentTheme === 'samurai' ? 'The rift is quiet tonight. Rest well, warrior.' :
                    currentTheme === 'draconic' ? 'The flames dim. You have earned your rest.' :
                    currentTheme === 'viking' ? 'The battle is won. Odin raises his horn.' :
@@ -395,19 +395,19 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
               </div>
             ) : (
               <div className="flex items-center justify-between">
-                <span className="text-[10px] text-zinc-600">
+                <span className="text-xs text-zinc-600">
                   Complete all → +200 XP bonus
                 </span>
                 <a
                   href={`/train/active${selectedDay ? `?day=${selectedDay}` : ''}`}
                   onClick={() => localStorage.setItem('first_workout_started', '1')}
-                  className={`text-[10px] px-4 py-2 border ${colors.primary} bg-zinc-800 ${colors.secondary} hover:bg-zinc-700 transition-colors ${!localStorage.getItem('first_workout_started') ? 'ring-2 ring-offset-2 ring-offset-zinc-900 ring-amber-500 animate-pulse' : ''}`}
+                  className={`text-xs px-4 py-2 border ${colors.primary} bg-zinc-800 ${colors.secondary} hover:bg-zinc-700 transition-colors ${!localStorage.getItem('first_workout_started') ? 'ring-2 ring-offset-2 ring-offset-zinc-900 ring-amber-500 animate-pulse' : ''}`}
                   style={{ fontFamily: "var(--font-pixel), monospace" }}
                 >
                   {hasBattleSession ? '▸ RESUME' : '▸ START ALL'}
                 </a>
                 {!localStorage.getItem('first_workout_started') && (
-                  <p className="text-[8px] text-amber-400 text-center mt-2 animate-bounce" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                  <p className="text-xs text-amber-400 text-center mt-2 animate-bounce" style={{ fontFamily: "var(--font-pixel), monospace" }}>
                     ↑ Your first workout is ready. Tap to begin.
                   </p>
                 )}
@@ -416,18 +416,18 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
           </>
         ) : (
           <>
-            <p className={`text-[10px] ${colors.headerText} mb-2 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <p className={`text-xs ${colors.headerText} mb-2 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
               {currentTheme !== 'athlete' ? '🔥 RECOVERY DAY' : 'REST DAY'}
             </p>
-            <p className="text-xs text-zinc-300 mb-2">Rest fuels progress. Your muscles grow today.</p>
-            <p className="text-[11px] text-zinc-500 mb-3">
+            <p className="text-sm text-zinc-300 mb-2">Rest fuels progress. Your muscles grow today.</p>
+            <p className="text-xs text-zinc-500 mb-3">
               {['Walk 10-20 min for blood flow', 'Foam roll tight areas (5 min)', 'Deep breathing + stretch (10 min)', 'Light mobility work — no intensity'][new Date().getDay() % 4]}
             </p>
             <div className="flex gap-2">
-              <a href="/train/active?mode=flexible&filter=cardio" className={`text-[10px] px-3 py-1.5 border ${colors.border} bg-zinc-800/50 text-zinc-400 hover:text-white transition-colors`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              <a href="/train/active?mode=flexible&filter=cardio" className={`text-xs px-3 py-1.5 border ${colors.border} bg-zinc-800/50 text-zinc-400 hover:text-white transition-colors`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                 🚶 WALK
               </a>
-              <a href="/train/active?mode=flexible" className={`text-[10px] px-3 py-1.5 border ${colors.border} bg-zinc-800/50 text-zinc-400 hover:text-white transition-colors`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              <a href="/train/active?mode=flexible" className={`text-xs px-3 py-1.5 border ${colors.border} bg-zinc-800/50 text-zinc-400 hover:text-white transition-colors`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                 🧘 MOBILITY
               </a>
             </div>
@@ -438,14 +438,14 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
       {/* Today's Synced Activities */}
       {syncedActivities.length > 0 && (
         <PixelBox className="p-3 mb-4">
-          <p className={`text-[9px] ${colors.headerText} mb-2 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          <p className={`text-xs ${colors.headerText} mb-2 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
             TODAY&apos;S ACTIVITIES
           </p>
           <div className="space-y-1">
             {syncedActivities.map((a, i) => (
               <button key={i} onClick={() => setConfirmingActivity({ ...a, id: String(i) })} className="w-full flex items-center justify-between hover:bg-zinc-800/50 px-1 py-0.5 -mx-1 rounded transition-colors">
-                <span className="text-[10px] text-zinc-300">{a.name} · {a.duration} min</span>
-                <span className={`text-[9px] ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>+{a.xp} XP</span>
+                <span className="text-xs text-zinc-300">{a.name} · {a.duration} min</span>
+                <span className={`text-xs ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>+{a.xp} XP</span>
               </button>
             ))}
           </div>
@@ -456,10 +456,10 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
       {zone2 && zone2.enrolled && !zone2.completed && (
         <PixelBox className="p-3 mb-4">
           <div className="flex items-center justify-between mb-2">
-            <p className={`text-[9px] ${colors.headerText} uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <p className={`text-xs ${colors.headerText} uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
               ❤️ ZONE 2 FOUNDATION
             </p>
-            <span className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <span className="text-xs text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
               WEEK {zone2.currentWeek}/{zone2.totalWeeks}
             </span>
           </div>
@@ -469,11 +469,11 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
                 <div className={`h-full bg-rose-500 transition-all`} style={{ width: `${Math.min((zone2.weekMinutes / zone2.weekTarget) * 100, 100)}%` }} />
               </div>
             </div>
-            <span className="text-[10px] text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <span className="text-xs text-zinc-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>
               {zone2.weekMinutes}/{zone2.weekTarget} min
             </span>
           </div>
-          <p className="text-[8px] text-zinc-500 mt-1.5">HR {Math.round(0.6 * (180 - 30))}–{180 - 30} BPM · Any cardio counts</p>
+          <p className="text-xs text-zinc-500 mt-1.5">HR {Math.round(0.6 * (180 - 30))}–{180 - 30} BPM · Any cardio counts</p>
         </PixelBox>
       )}
       {zone2 && !zone2.enrolled && (
@@ -487,9 +487,9 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
           }}
           className={`w-full mb-4 p-3 border ${colors.border} bg-zinc-900/50 text-left`}
         >
-          <p className={`text-[9px] ${colors.secondary} uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>❤️ NEW PROGRAM AVAILABLE</p>
-          <p className="text-[10px] text-zinc-300 mt-1">Zone 2 Foundation — Build 150 min/week aerobic base in 6 weeks</p>
-          <p className="text-[8px] text-zinc-500 mt-0.5">Tap to enroll</p>
+          <p className={`text-xs ${colors.secondary} uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>❤️ NEW PROGRAM AVAILABLE</p>
+          <p className="text-xs text-zinc-300 mt-1">Zone 2 Foundation — Build 150 min/week aerobic base in 6 weeks</p>
+          <p className="text-xs text-zinc-500 mt-0.5">Tap to enroll</p>
         </button>
       )}
 
@@ -498,10 +498,10 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
         <div className="mb-4 px-1 space-y-1">
           {yesterday && (
             <div className={`px-3 py-2 border ${colors.border} bg-zinc-900/30`}>
-              <p className="text-[9px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>YESTERDAY: {yesterday}</p>
+              <p className="text-xs text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>YESTERDAY: {yesterday}</p>
             </div>
           )}
-          {tomorrow && <p className="text-[11px] text-zinc-600 px-3">Tomorrow: {tomorrow}</p>}
+          {tomorrow && <p className="text-xs text-zinc-600 px-3">Tomorrow: {tomorrow}</p>}
         </div>
       )}
 
@@ -530,10 +530,10 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
 
       {/* Quick Log */}
       <PixelBox className="p-4 mb-4">
-        <p className={`text-[10px] ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+        <p className={`text-xs ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
           QUICK LOG
         </p>
-        <p className="text-[11px] text-zinc-500 mb-2">Manual entry when sync fails</p>
+        <p className="text-xs text-zinc-500 mb-2">Manual entry when sync fails</p>
         <div className="grid grid-cols-3 gap-2">
           {[
             { label: '🏃 RUN', href: '/train/active?mode=flexible&filter=cardio' },
@@ -543,7 +543,7 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
             <a
               key={item.label}
               href={item.href}
-              className={`text-[10px] px-2 py-3 border ${colors.border} bg-zinc-800/50 text-zinc-300 hover:bg-zinc-700 transition-colors text-center`}
+              className={`text-xs px-2 py-3 border ${colors.border} bg-zinc-800/50 text-zinc-300 hover:bg-zinc-700 transition-colors text-center`}
               style={{ fontFamily: "var(--font-pixel), monospace" }}
             >
               {item.label}
@@ -554,7 +554,7 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
 
       {/* Daily Workout Report — for WHOOP upload */}
       <PixelBox className="p-4 mb-4">
-        <p className={`text-[10px] ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+        <p className={`text-xs ${colors.headerText} mb-3 uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
           📋 WORKOUT REPORT
         </p>
         <DailyWorkoutReport userId={userId} />

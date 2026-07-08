@@ -343,7 +343,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                         <div className="flex items-center gap-2 text-white font-black italic tracking-tighter uppercase">
                             <span>🥗 Log Nutrition</span>
                         </div>
-                        <div className="text-[10px] text-zinc-500 font-medium">
+                        <div className="text-xs text-zinc-500 font-medium">
                             {Math.round(totals['macro_protein'] || 0)}g P · {Math.round(totals['macro_carbs'] || 0)}g C · {Math.round(totals['macro_fat'] || 0)}g F · {Math.round((totals['macro_protein'] || 0) * 4 + (totals['macro_carbs'] || 0) * 4 + (totals['macro_fat'] || 0) * 9)} cal today
                         </div>
                     </div>
@@ -368,7 +368,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                             autoFocus
                         />
                         <label className={`border text-zinc-400 hover:text-white px-3 rounded-xl transition cursor-pointer flex items-center shrink-0 ${photoLoading ? 'bg-orange-500/10 border-orange-500/30 animate-pulse' : 'bg-zinc-800 hover:bg-zinc-700 border-zinc-700'}`}>
-                            {photoLoading ? <span className="text-xs text-orange-400">📸</span> : <Camera size={18} />}
+                            {photoLoading ? <span className="text-sm text-orange-400">📸</span> : <Camera size={18} />}
                             <input
                                 type="file"
                                 accept="image/*"
@@ -387,7 +387,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                     </div>
                     {(aiLoading || photoLoading) && (
                         <div className="mt-2 text-center">
-                            <span className="text-xs text-orange-400 animate-pulse">{photoLoading ? 'Analyzing your photo...' : 'Analyzing your meal...'}</span>
+                            <span className="text-sm text-orange-400 animate-pulse">{photoLoading ? 'Analyzing your photo...' : 'Analyzing your meal...'}</span>
                         </div>
                     )}
                 </div>
@@ -395,11 +395,11 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                 {/* Water Quick-Log */}
                 <div className="px-4 py-2 border-b border-zinc-800/50 flex items-center gap-2">
                     <span className="text-sm">💧</span>
-                    <span className={`text-[10px] font-bold uppercase shrink-0 transition-colors ${waterFlash ? 'text-cyan-400' : 'text-zinc-500'}`}>{Math.round(totals['habit_water'] || 0)}oz</span>
+                    <span className={`text-xs font-bold uppercase shrink-0 transition-colors ${waterFlash ? 'text-cyan-400' : 'text-zinc-500'}`}>{Math.round(totals['habit_water'] || 0)}oz</span>
                     <div className="flex gap-1.5 flex-1">
                         {[8, 16, 32].map(oz => (
                             <button key={oz} onClick={async () => { setWaterFlash(true); await onLog('water', (totals['habit_water'] || 0) + oz); setTimeout(() => setWaterFlash(false), 1000); }}
-                                className="flex-1 bg-zinc-800 hover:bg-cyan-900 border border-zinc-700 hover:border-cyan-500 text-[10px] font-bold text-zinc-400 hover:text-cyan-400 rounded-lg py-1.5 transition active:scale-95 active:bg-cyan-800">
+                                className="flex-1 bg-zinc-800 hover:bg-cyan-900 border border-zinc-700 hover:border-cyan-500 text-xs font-bold text-zinc-400 hover:text-cyan-400 rounded-lg py-1.5 transition active:scale-95 active:bg-cyan-800">
                                 +{oz}oz
                             </button>
                         ))}
@@ -409,7 +409,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                 {/* Quick-Log Tiles (recent meals, one-tap) */}
                 {recents.length > 0 && !foodResults.length && (
                     <div className="px-4 py-2 border-b border-zinc-800/50">
-                        <span className="text-[9px] text-zinc-600 uppercase font-bold tracking-wider">Quick Log</span>
+                        <span className="text-xs text-zinc-600 uppercase font-bold tracking-wider">Quick Log</span>
                         <div className="flex gap-2 mt-1.5 overflow-x-auto no-scrollbar pb-1">
                             {recents.slice(0, 5).map((food, i) => {
                                 const servGrams = parseFloat(parseServingGrams(food.servingSize));
@@ -425,8 +425,8 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                                         }}
                                         className="shrink-0 bg-zinc-800/60 border border-zinc-700/40 rounded-xl px-3 py-2 hover:border-zinc-600/40 transition text-left"
                                     >
-                                        <div className="text-[11px] font-semibold text-white truncate max-w-[100px]">{food.name}</div>
-                                        <div className="text-[9px] text-orange-400 font-bold mt-0.5">{p}g P</div>
+                                        <div className="text-xs font-semibold text-white truncate max-w-[100px]">{food.name}</div>
+                                        <div className="text-xs text-orange-400 font-bold mt-0.5">{p}g P</div>
                                     </button>
                                 );
                             })}
@@ -471,17 +471,17 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                             <div className="bg-zinc-800/50 border border-orange-500/30 rounded-lg p-3 space-y-2">
                                 <div className="flex items-start justify-between">
                                     <div>
-                                        <div className="text-sm font-bold text-white">{selectedFood.name}</div>
-                                        {selectedFood.brand && <div className="text-[10px] text-zinc-500">{selectedFood.brand}</div>}
+                                        <div className="text-base font-bold text-white">{selectedFood.name}</div>
+                                        {selectedFood.brand && <div className="text-xs text-zinc-500">{selectedFood.brand}</div>}
                                     </div>
-                                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-zinc-700 text-zinc-400 uppercase">{selectedFood.source}</span>
+                                    <span className="text-xs px-1.5 py-0.5 rounded bg-zinc-700 text-zinc-400 uppercase">{selectedFood.source}</span>
                                 </div>
                                 <div className="flex items-end gap-2">
                                     <div className="flex-1">
-                                        <label className="text-[9px] text-zinc-500 uppercase block mb-0.5">Serving (g)</label>
+                                        <label className="text-xs text-zinc-500 uppercase block mb-0.5">Serving (g)</label>
                                         <input type="number" value={servingGrams} onChange={e => setServingGrams(e.target.value)}
                                             className="w-full bg-zinc-900 border border-zinc-700 rounded px-2 py-1.5 text-sm text-white text-center focus:border-zinc-500 outline-none" />
-                                        {selectedFood.servingLabel && <div className="text-[9px] text-zinc-500 mt-0.5 text-center">{selectedFood.servingLabel}</div>}
+                                        {selectedFood.servingLabel && <div className="text-xs text-zinc-500 mt-0.5 text-center">{selectedFood.servingLabel}</div>}
                                     </div>
                                     <div className="flex gap-1 flex-wrap">
                                         {(() => {
@@ -490,7 +490,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                                             const unique = [...new Set(presets)];
                                             return unique.map(g => (
                                                 <button key={g} onClick={() => setServingGrams(g)}
-                                                    className={`text-[9px] px-2 py-1.5 rounded border transition ${servingGrams === g ? 'border-orange-500 text-orange-400' : 'border-zinc-700 text-zinc-500'}`}>
+                                                    className={`text-xs px-2 py-1.5 rounded border transition ${servingGrams === g ? 'border-orange-500 text-orange-400' : 'border-zinc-700 text-zinc-500'}`}>
                                                     {g === actual && actual !== '100' ? `${g}g ★` : `${g}g`}
                                                 </button>
                                             ));
@@ -503,20 +503,20 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                                     return (
                                         <div className="grid grid-cols-4 gap-2 text-center">
                                             <div className="bg-zinc-900 rounded p-1.5">
-                                                <div className="text-[8px] text-zinc-600">CAL</div>
-                                                <div className="text-xs font-bold text-white">{Math.round(selectedFood.per100g.calories * mult)}</div>
+                                                <div className="text-xs text-zinc-600">CAL</div>
+                                                <div className="text-sm font-bold text-white">{Math.round(selectedFood.per100g.calories * mult)}</div>
                                             </div>
                                             <div className="bg-zinc-900 rounded p-1.5">
-                                                <div className="text-[8px] text-zinc-600">PRO</div>
-                                                <div className="text-xs font-bold text-red-400">{Math.round(selectedFood.per100g.protein * mult)}g</div>
+                                                <div className="text-xs text-zinc-600">PRO</div>
+                                                <div className="text-sm font-bold text-red-400">{Math.round(selectedFood.per100g.protein * mult)}g</div>
                                             </div>
                                             <div className="bg-zinc-900 rounded p-1.5">
-                                                <div className="text-[8px] text-zinc-600">CARB</div>
-                                                <div className="text-xs font-bold text-yellow-400">{Math.round(selectedFood.per100g.carbs * mult)}g</div>
+                                                <div className="text-xs text-zinc-600">CARB</div>
+                                                <div className="text-sm font-bold text-yellow-400">{Math.round(selectedFood.per100g.carbs * mult)}g</div>
                                             </div>
                                             <div className="bg-zinc-900 rounded p-1.5">
-                                                <div className="text-[8px] text-zinc-600">FAT</div>
-                                                <div className="text-xs font-bold text-green-400">{Math.round(selectedFood.per100g.fat * mult)}g</div>
+                                                <div className="text-xs text-zinc-600">FAT</div>
+                                                <div className="text-sm font-bold text-green-400">{Math.round(selectedFood.per100g.fat * mult)}g</div>
                                             </div>
                                         </div>
                                     );
@@ -537,32 +537,32 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                         {/* Meal Cart */}
                         {mealCart.length > 0 && !showMealTypePicker && (
                             <div className="bg-zinc-800/50 border border-emerald-500/20 rounded-xl p-3 space-y-2">
-                                <div className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Meal ({mealCart.length} items)</div>
+                                <div className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Meal ({mealCart.length} items)</div>
                                 {mealCart.map((item, idx) => (
                                     <div key={idx} className="flex items-center justify-between bg-zinc-900/50 rounded-lg px-2.5 py-1.5">
                                         {editingCartIdx === idx ? (
                                             <div className="flex items-center gap-2 flex-1">
-                                                <span className="text-xs text-white truncate max-w-[120px]">{item.food.name}</span>
+                                                <span className="text-sm text-white truncate max-w-[120px]">{item.food.name}</span>
                                                 <input type="number" value={item.servingGrams} onChange={e => handleUpdateCartItem(idx, e.target.value)}
                                                     className="w-14 bg-zinc-800 border border-zinc-600 rounded px-1.5 py-0.5 text-xs text-white text-center focus:border-zinc-500 outline-none" />
-                                                <span className="text-[9px] text-zinc-500">g</span>
-                                                <button onClick={() => setEditingCartIdx(null)} className="text-[9px] text-emerald-400 font-bold">Done</button>
+                                                <span className="text-xs text-zinc-500">g</span>
+                                                <button onClick={() => setEditingCartIdx(null)} className="text-xs text-emerald-400 font-bold">Done</button>
                                             </div>
                                         ) : (
                                             <button onClick={() => setEditingCartIdx(idx)} className="flex-1 text-left">
-                                                <span className="text-xs text-white">{item.food.name}</span>
-                                                <span className="text-[9px] text-zinc-500 ml-1.5">{item.servingGrams}g</span>
+                                                <span className="text-sm text-white">{item.food.name}</span>
+                                                <span className="text-xs text-zinc-500 ml-1.5">{item.servingGrams}g</span>
                                             </button>
                                         )}
                                         <div className="flex items-center gap-2">
-                                            <span className="text-[9px] text-zinc-400">P:{item.p} C:{item.c} F:{item.f}</span>
+                                            <span className="text-xs text-zinc-400">P:{item.p} C:{item.c} F:{item.f}</span>
                                             <button onClick={() => handleRemoveCartItem(idx)} className="text-zinc-700 hover:text-red-400 transition">✕</button>
                                         </div>
                                     </div>
                                 ))}
                                 <div className="flex items-center justify-between pt-1 border-t border-zinc-700/50">
-                                    <span className="text-[10px] text-zinc-400">Total</span>
-                                    <span className="text-xs font-bold text-white">
+                                    <span className="text-xs text-zinc-400">Total</span>
+                                    <span className="text-sm font-bold text-white">
                                         P:{mealCart.reduce((s, i) => s + i.p, 0)} C:{mealCart.reduce((s, i) => s + i.c, 0)} F:{mealCart.reduce((s, i) => s + i.f, 0)} · {mealCart.reduce((s, i) => s + i.p * 4 + i.c * 4 + i.f * 9, 0)} cal
                                     </span>
                                 </div>
@@ -576,7 +576,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                         {/* Meal Type Picker */}
                         {showMealTypePicker && (
                             <div className="bg-zinc-800/50 border border-emerald-500/20 rounded-xl p-3 space-y-2">
-                                <div className="text-[10px] text-zinc-400 text-center">Which meal is this?</div>
+                                <div className="text-xs text-zinc-400 text-center">Which meal is this?</div>
                                 <div className="grid grid-cols-4 gap-2">
                                     {[
                                         { id: 'breakfast', emoji: '🌅', label: 'Breakfast' },
@@ -587,11 +587,11 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                                         <button key={m.id} onClick={() => handleLogMeal(m.id)}
                                             className="flex flex-col items-center gap-1 py-2 bg-zinc-900 hover:bg-emerald-500/10 border border-zinc-700 hover:border-emerald-500/30 rounded-lg transition">
                                             <span className="text-lg">{m.emoji}</span>
-                                            <span className="text-[9px] text-zinc-400 font-bold">{m.label}</span>
+                                            <span className="text-xs text-zinc-400 font-bold">{m.label}</span>
                                         </button>
                                     ))}
                                 </div>
-                                <button onClick={() => setShowMealTypePicker(false)} className="w-full text-center text-[10px] text-zinc-600 hover:text-zinc-400 py-1">Back</button>
+                                <button onClick={() => setShowMealTypePicker(false)} className="w-full text-center text-xs text-zinc-600 hover:text-zinc-400 py-1">Back</button>
                             </div>
                         )}
 
@@ -599,7 +599,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                         {loggedConfirmation && (
                             <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3 text-center">
                                 <span className="text-sm">✓</span>
-                                <span className="text-xs font-bold text-emerald-400 ml-2">Meal logged!</span>
+                                <span className="text-sm font-bold text-emerald-400 ml-2">Meal logged!</span>
                             </div>
                         )}
 
@@ -609,13 +609,13 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                                 {/* Favorites — show when not searching */}
                                 {!foodQuery && favorites.length > 0 && (
                                     <div className="mb-3">
-                                        <span className="text-[10px] font-bold text-yellow-400 uppercase tracking-wider">★ Favorites</span>
+                                        <span className="text-xs font-bold text-yellow-400 uppercase tracking-wider">★ Favorites</span>
                                         <div className="mt-1 space-y-1">
                                             {favorites.map(food => (
                                                 <button key={food.name} onClick={() => { setSelectedFood(food); setServingGrams(parseServingGrams(food.servingSize) || '100'); }}
                                                     className="w-full text-left p-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg hover:border-yellow-500/30 transition">
-                                                    <div className="text-xs font-medium text-white truncate">{food.name}</div>
-                                                    <div className="text-[10px] text-zinc-500">P:{food.per100g.protein} C:{food.per100g.carbs} F:{food.per100g.fat} per 100g</div>
+                                                    <div className="text-sm font-medium text-white truncate">{food.name}</div>
+                                                    <div className="text-xs text-zinc-500">P:{food.per100g.protein} C:{food.per100g.carbs} F:{food.per100g.fat} per 100g</div>
                                                 </button>
                                             ))}
                                         </div>
@@ -624,13 +624,13 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                                 {/* Recents — show when not searching */}
                                 {!foodQuery && recents.length > 0 && (
                                     <div className="mb-3">
-                                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">🕐 Recent</span>
+                                        <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">🕐 Recent</span>
                                         <div className="mt-1 space-y-1">
                                             {recents.filter(r => !favorites.some(f => f.name === r.name)).slice(0, 5).map(food => (
                                                 <button key={food.name} onClick={() => { setSelectedFood(food); setServingGrams(parseServingGrams(food.servingSize) || '100'); }}
                                                     className="w-full text-left p-2 bg-zinc-800/30 border border-zinc-800/50 rounded-lg hover:border-zinc-600 transition">
-                                                    <div className="text-xs font-medium text-zinc-300 truncate">{food.name}</div>
-                                                    <div className="text-[10px] text-zinc-600">P:{food.per100g.protein} C:{food.per100g.carbs} F:{food.per100g.fat}</div>
+                                                    <div className="text-sm font-medium text-zinc-300 truncate">{food.name}</div>
+                                                    <div className="text-xs text-zinc-600">P:{food.per100g.protein} C:{food.per100g.carbs} F:{food.per100g.fat}</div>
                                                 </button>
                                             ))}
                                         </div>
@@ -639,14 +639,14 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                                 {/* Saved Meals */}
                                 {!foodQuery && meals.length > 0 && !showMealBuilder && (
                                     <div className="mb-3">
-                                        <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">🍽️ Meals</span>
+                                        <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">🍽️ Meals</span>
                                         <div className="mt-1 space-y-1">
                                             {meals.map(meal => (
                                                 <div key={meal.name} className="flex items-center gap-2">
                                                     <button onClick={() => logMeal(meal)}
                                                         className="flex-1 text-left p-2 bg-emerald-500/5 border border-emerald-500/20 rounded-lg hover:border-emerald-500/40 transition">
-                                                        <div className="text-xs font-medium text-white">{meal.name}</div>
-                                                        <div className="text-[10px] text-zinc-500">{meal.foods.length} items · tap to log all</div>
+                                                        <div className="text-sm font-medium text-white">{meal.name}</div>
+                                                        <div className="text-xs text-zinc-500">{meal.foods.length} items · tap to log all</div>
                                                     </button>
                                                     <button onClick={() => deleteMeal(meal.name)} className="text-zinc-700 hover:text-red-400 text-xs p-1">✕</button>
                                                 </div>
@@ -656,7 +656,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                                 )}
                                 {/* Meal Builder */}
                                 {!foodQuery && !showMealBuilder && (favorites.length > 0 || recents.length > 0) && (
-                                    <button onClick={() => setShowMealBuilder(true)} className="w-full text-center text-[10px] text-zinc-600 hover:text-emerald-400 font-bold uppercase tracking-wider py-2 transition">
+                                    <button onClick={() => setShowMealBuilder(true)} className="w-full text-center text-xs text-zinc-600 hover:text-emerald-400 font-bold uppercase tracking-wider py-2 transition">
                                         + Create Meal Template
                                     </button>
                                 )}
@@ -668,13 +668,13 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                                         </div>
                                         <input type="text" value={mealName} onChange={e => setMealName(e.target.value)} placeholder="Meal name (e.g. Breakfast)"
                                             className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-xs text-white focus:border-emerald-500 outline-none" />
-                                        <div className="text-[10px] text-zinc-500">Tap items below to add:</div>
+                                        <div className="text-xs text-zinc-500">Tap items below to add:</div>
                                         <div className="flex flex-wrap gap-1">
                                             {[...favorites, ...recents.filter(r => !favorites.some(f => f.name === r.name))].map(food => {
                                                 const added = mealItems.some(m => m.name === food.name);
                                                 return (
                                                     <button key={food.name} onClick={() => setMealItems(prev => added ? prev.filter(m => m.name !== food.name) : [...prev, food])}
-                                                        className={`px-2 py-1 rounded text-[10px] font-medium transition ${added ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-zinc-800 text-zinc-400 border border-zinc-700'}`}>
+                                                        className={`px-2 py-1 rounded text-xs font-medium transition ${added ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-zinc-800 text-zinc-400 border border-zinc-700'}`}>
                                                         {added ? '✓ ' : ''}{food.name.split(' ').slice(0, 3).join(' ')}
                                                     </button>
                                                 );
@@ -699,10 +699,10 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                                     <button key={food.id} onClick={() => { setSelectedFood(food); setServingGrams(parseServingGrams(food.servingSize)); }}
                                         className="w-full text-left px-3 py-2 rounded-lg hover:bg-zinc-800 transition flex items-center justify-between">
                                         <div className="min-w-0 flex-1">
-                                            <div className="text-sm text-white truncate">{food.name}</div>
-                                            {food.brand && <div className="text-[10px] text-zinc-600 truncate">{food.brand}</div>}
+                                            <div className="text-base text-white truncate">{food.name}</div>
+                                            {food.brand && <div className="text-xs text-zinc-600 truncate">{food.brand}</div>}
                                         </div>
-                                        <div className="text-[9px] text-zinc-500 text-right ml-2 flex-shrink-0">
+                                        <div className="text-xs text-zinc-500 text-right ml-2 flex-shrink-0">
                                             <div>{food.per100g.calories} cal</div>
                                             <div>P{food.per100g.protein} C{food.per100g.carbs} F{food.per100g.fat}</div>
                                         </div>
@@ -723,7 +723,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
                 <div className="p-4 border-b border-zinc-800/50">
                     <div className="p-2 bg-blue-950/20 border border-blue-900/30 rounded text-xs text-blue-400">
                         <div className="font-bold mb-1">Current Totals:</div>
-                        <div className="grid grid-cols-4 gap-2 text-[10px]">
+                        <div className="grid grid-cols-4 gap-2 text-xs">
                             <div>🍞 {Math.round(totals['macro_carbs'] || 0)}g</div>
                             <div>🥑 {Math.round(totals['macro_fat'] || 0)}g</div>
                             <div>🥩 {Math.round(totals['macro_protein'] || 0)}g</div>
@@ -782,7 +782,7 @@ export default function MacroLogModal({ isOpen, onClose, onLog, totals, userId }
 
                     {/* Water */}
                     <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-cyan-500 uppercase flex items-center gap-1">
+                        <label className="text-xs font-bold text-cyan-500 uppercase flex items-center gap-1">
                             <Droplets size={12} /> Water (oz)
                         </label>
                         <div className="flex gap-2">

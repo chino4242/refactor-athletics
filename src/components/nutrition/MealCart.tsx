@@ -84,8 +84,8 @@ export default function MealCart({ items, mealType, onMealTypeChange, onRemove, 
         <div key={i} className="space-y-1">
           <div className="flex items-center justify-between gap-2">
             <div className="flex-1 min-w-0">
-              <div className="text-xs font-medium text-white truncate">{item.food.name}</div>
-              <div className="text-[10px] text-zinc-500">{item.p * 4 + item.c * 4 + item.f * 9} cal · P:{item.p} C:{item.c} F:{item.f}</div>
+              <div className="text-sm font-medium text-white truncate">{item.food.name}</div>
+              <div className="text-xs text-zinc-500">{item.p * 4 + item.c * 4 + item.f * 9} cal · P:{item.p} C:{item.c} F:{item.f}</div>
             </div>
             <button onClick={() => onRemove(i)} className="text-zinc-600 hover:text-red-400 p-1">
               <X size={12} />
@@ -94,7 +94,7 @@ export default function MealCart({ items, mealType, onMealTypeChange, onRemove, 
           {/* Serving adjustment */}
           <div className="flex items-center gap-1.5 relative">
             {showTip && i === 0 && (
-              <div onClick={dismissTip} className="absolute -top-7 left-0 bg-orange-600 text-white text-[10px] px-2 py-1 rounded shadow-lg whitespace-nowrap z-10 cursor-pointer animate-pulse">
+              <div onClick={dismissTip} className="absolute -top-7 left-0 bg-orange-600 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap z-10 cursor-pointer animate-pulse">
                 Tap to adjust portion size ✕
               </div>
             )}
@@ -123,7 +123,7 @@ export default function MealCart({ items, mealType, onMealTypeChange, onRemove, 
                 <button
                   key={mult}
                   onClick={() => onUpdateServing(i, g)}
-                  className={`text-[10px] px-1.5 py-0.5 rounded transition ${isActive ? 'bg-orange-600 text-white' : 'bg-zinc-700/50 text-zinc-400 hover:text-white'}`}
+                  className={`text-xs px-1.5 py-0.5 rounded transition ${isActive ? 'bg-orange-600 text-white' : 'bg-zinc-700/50 text-zinc-400 hover:text-white'}`}
                 >
                   {mult === 0.5 ? '½' : mult}×
                 </button>
@@ -140,14 +140,14 @@ export default function MealCart({ items, mealType, onMealTypeChange, onRemove, 
             <button
               key={m.id}
               onClick={() => onMealTypeChange(m.id)}
-              className={`text-[10px] px-2 py-1 rounded-full transition ${mealType === m.id ? 'bg-orange-600 text-white' : 'bg-zinc-700/50 text-zinc-400 hover:text-white'}`}
+              className={`text-xs px-2 py-1 rounded-full transition ${mealType === m.id ? 'bg-orange-600 text-white' : 'bg-zinc-700/50 text-zinc-400 hover:text-white'}`}
             >
               {m.emoji} {m.id}
             </button>
           ))}
         </div>
         <div className="flex items-center justify-between">
-          <div className="text-[11px] text-zinc-400">
+          <div className="text-xs text-zinc-400">
             <span className="font-bold text-white">{totalCal} cal</span> · P:{totals.p} C:{totals.c} F:{totals.f}
           </div>
           <button

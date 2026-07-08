@@ -107,7 +107,7 @@ export default function CardioCard({ card, isActive, colors, onComplete }: Cardi
   if (!engineChoice) {
     return (
       <div className={`border-2 ${isActive ? colors.primary : colors.border} bg-zinc-900 p-4 space-y-3`}>
-        <p className={`text-[10px] ${colors.headerText} text-center uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+        <p className={`text-xs ${colors.headerText} text-center uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
           {currentTheme === 'samurai' ? 'CHOOSE YOUR PATH' :
            currentTheme === 'dragon' ? 'FEED THE FLAME' :
            currentTheme === 'viking' ? 'ROW OR RAID' :
@@ -116,18 +116,18 @@ export default function CardioCard({ card, isActive, colors, onComplete }: Cardi
         </p>
         <button onClick={() => setEngineChoice('hiit')} className={`w-full p-3 border ${colors.border} bg-zinc-800 text-left hover:bg-zinc-700 transition-colors`}>
           <span className="text-sm">🔥</span>
-          <span className="text-xs text-white ml-2 font-medium">HIIT Intervals</span>
-          <p className="text-[10px] text-zinc-500 ml-6">Programmed tread block</p>
+          <span className="text-sm text-white ml-2 font-medium">HIIT Intervals</span>
+          <p className="text-sm text-zinc-500 ml-6">Programmed tread block</p>
         </button>
         <button onClick={() => setEngineChoice('zone2')} className={`w-full p-3 border ${colors.border} bg-zinc-800 text-left hover:bg-zinc-700 transition-colors`}>
           <span className="text-sm">💚</span>
-          <span className="text-xs text-white ml-2 font-medium">Zone 2 Steady State</span>
-          <p className="text-[10px] text-zinc-500 ml-6">Easy pace — pick your duration</p>
+          <span className="text-sm text-white ml-2 font-medium">Zone 2 Steady State</span>
+          <p className="text-sm text-zinc-500 ml-6">Easy pace — pick your duration</p>
         </button>
         {engineChoice === null && (
           <div className="flex gap-2 justify-center">
             {[20, 30, 45].map(m => (
-              <button key={m} onClick={() => { setZone2Duration(m); setEngineChoice('zone2'); }} className={`text-[9px] px-2 py-1 border border-zinc-700 bg-zinc-900 text-zinc-400`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              <button key={m} onClick={() => { setZone2Duration(m); setEngineChoice('zone2'); }} className={`text-xs px-2 py-1 border border-zinc-700 bg-zinc-900 text-zinc-400`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                 {m}min Z2
               </button>
             ))}
@@ -140,8 +140,8 @@ export default function CardioCard({ card, isActive, colors, onComplete }: Cardi
   if (finished) {
     return (
       <div className={`border-2 ${colors.primary} bg-zinc-900 p-4 text-center`}>
-        <p className={`text-[10px] ${colors.secondary} mb-2`} style={{ fontFamily: "var(--font-pixel), monospace" }}>✓ CARDIO COMPLETE</p>
-        <p className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>{Math.round(totalDuration / 60)} min</p>
+        <p className={`text-xs ${colors.secondary} mb-2`} style={{ fontFamily: "var(--font-pixel), monospace" }}>✓ CARDIO COMPLETE</p>
+        <p className="text-xs text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>{Math.round(totalDuration / 60)} min</p>
       </div>
     );
   }
@@ -165,8 +165,8 @@ export default function CardioCard({ card, isActive, colors, onComplete }: Cardi
     <div className={`border-2 ${zoneBg} p-4 space-y-4 transition-colors duration-300 ${flash ? 'brightness-200' : ''}`} style={flash ? { filter: 'brightness(2)' } : undefined}>
       {/* Header */}
       <div className="flex items-center justify-between">
-        <p className="text-xs text-white font-medium">{card.name}</p>
-        <span className="text-[8px] text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+        <p className="text-sm text-white font-medium">{card.name}</p>
+        <span className="text-xs text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>
           {Math.round(totalElapsed / 60)}/{Math.round(totalDuration / 60)} MIN
         </span>
       </div>
@@ -181,10 +181,10 @@ export default function CardioCard({ card, isActive, colors, onComplete }: Cardi
       {/* Current zone — LARGE display */}
       {current && (
         <div className="text-center py-3">
-          <p className={`text-sm uppercase font-bold ${zoneText}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          <p className={`text-base uppercase font-bold ${zoneText}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
             {current.zone}
           </p>
-          <p className="text-[10px] text-zinc-500 mt-1 mb-3">
+          <p className="text-sm text-zinc-500 mt-1 mb-3">
             {current.zone === 'Comfortable' ? 'Easy pace — can hold a conversation' :
              current.zone === 'Challenging' ? 'Push it — breathing hard' :
              current.zone === 'Full Send' ? 'All out — max effort' :
@@ -202,11 +202,11 @@ export default function CardioCard({ card, isActive, colors, onComplete }: Cardi
           <span className={`text-white block ${isCountdown ? 'text-5xl animate-pulse' : 'text-3xl'}`} style={{ fontFamily: "var(--font-pixel), monospace", transition: 'font-size 0.2s' }}>
             {running ? remaining : current.seconds}
           </span>
-          <p className="text-[8px] text-zinc-600 mt-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          <p className="text-xs text-zinc-600 mt-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>
             INTERVAL {currentIdx + 1}/{intervals.length}
           </p>
           {currentIdx + 1 < intervals.length && (
-            <p className="text-[10px] text-zinc-600 mt-1">
+            <p className="text-sm text-zinc-600 mt-1">
               Next: {intervals[currentIdx + 1].zone} ({intervals[currentIdx + 1].seconds}s)
             </p>
           )}
@@ -219,7 +219,7 @@ export default function CardioCard({ card, isActive, colors, onComplete }: Cardi
           onClick={() => setRunning(!running)}
           className={`w-full py-3 border-2 ${running ? 'border-red-500' : colors.primary} bg-zinc-800 text-center transition-colors hover:bg-zinc-700`}
         >
-          <span className={`text-[10px] ${running ? 'text-red-400' : colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          <span className={`text-xs ${running ? 'text-red-400' : colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
             {running ? '■ PAUSE' : '▶ START CARDIO'}
           </span>
         </button>
@@ -230,14 +230,14 @@ export default function CardioCard({ card, isActive, colors, onComplete }: Cardi
                 onClick={() => { setCurrentIdx(i => i + 1); setElapsed(0); }}
                 className="flex-1 py-2 border border-zinc-700 bg-zinc-800 text-center hover:bg-zinc-700"
               >
-                <span className="text-[9px] text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>▸ SKIP</span>
+                <span className="text-xs text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>▸ SKIP</span>
               </button>
             )}
             <button
               onClick={() => { if (totalElapsed > 0) onCompleteRef.current(totalElapsed, card.id); setRunning(false); setFinished(true); }}
               className="flex-1 py-2 border border-zinc-700 bg-zinc-800 text-center hover:bg-zinc-700"
             >
-              <span className="text-[9px] text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>✓ END EARLY</span>
+              <span className="text-xs text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>✓ END EARLY</span>
             </button>
           </div>
         )}

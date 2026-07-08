@@ -296,8 +296,8 @@ export default function NutritionInputV2({ userId, onLog }: Props) {
       {nudge && !showCoach && (
         <button onClick={() => { setCoachInitialMsg(nudge); setShowCoach(true); setNudge(null); }} className={`w-full border ${colors.border} bg-zinc-800/80 p-2 flex items-center gap-2 text-left`}>
           <span className="text-sm">📊</span>
-          <span className="text-[10px] text-zinc-300 flex-1">{nudge}</span>
-          <span className="text-[8px] text-zinc-500" onClick={(e) => { e.stopPropagation(); setNudge(null); localStorage.setItem('coach_nudge_dismissed', String(Date.now() + 7 * 86400000)); }}>✕</span>
+          <span className="text-xs text-zinc-300 flex-1">{nudge}</span>
+          <span className="text-xs text-zinc-500" onClick={(e) => { e.stopPropagation(); setNudge(null); localStorage.setItem('coach_nudge_dismissed', String(Date.now() + 7 * 86400000)); }}>✕</span>
         </button>
       )}
 
@@ -305,7 +305,7 @@ export default function NutritionInputV2({ userId, onLog }: Props) {
       {!showCoach && !loading && !pending && (
         <button onClick={() => { setCoachInitialMsg(undefined); setShowCoach(true); }} className={`w-full border ${colors.border} bg-zinc-800/50 p-2 flex items-center gap-2`}>
           <span className="text-sm">🧠</span>
-          <span className="text-[10px] text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>COACH — adjust targets with AI</span>
+          <span className="text-xs text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>COACH — adjust targets with AI</span>
         </button>
       )}
 
@@ -313,7 +313,7 @@ export default function NutritionInputV2({ userId, onLog }: Props) {
       {loading && (
         <div className={`border ${colors.border} bg-zinc-800 p-3 animate-pulse flex items-center gap-3`}>
           <span className="text-lg">🧠</span>
-          <span className="text-[11px] text-zinc-400">ANALYZING MEAL...</span>
+          <span className="text-xs text-zinc-400">ANALYZING MEAL...</span>
         </div>
       )}
 
@@ -323,7 +323,7 @@ export default function NutritionInputV2({ userId, onLog }: Props) {
           {/* Meal tag selector */}
           <div className="flex gap-1">
             {MEAL_TAGS.map(m => (
-              <button key={m.key} onClick={() => setMealTag(m.key)} className={`text-[8px] px-2 py-1 border ${mealTag === m.key ? colors.primary + ' ' + colors.secondary : 'border-zinc-700 text-zinc-500'} bg-zinc-800`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              <button key={m.key} onClick={() => setMealTag(m.key)} className={`text-xs px-2 py-1 border ${mealTag === m.key ? colors.primary + ' ' + colors.secondary : 'border-zinc-700 text-zinc-500'} bg-zinc-800`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                 {m.emoji} {m.label}
               </button>
             ))}
@@ -374,7 +374,7 @@ export default function NutritionInputV2({ userId, onLog }: Props) {
                   setFavorites(prev => prev.filter(f => f.id !== fav.id));
                 }
               }}
-              className="text-[8px] px-2 py-1 border border-zinc-700 bg-zinc-800 text-zinc-400 hover:text-white rounded-sm truncate max-w-[120px]"
+              className="text-xs px-2 py-1 border border-zinc-700 bg-zinc-800 text-zinc-400 hover:text-white rounded-sm truncate max-w-[120px]"
             >
               ★ {fav.name}
             </button>
@@ -395,9 +395,9 @@ export default function NutritionInputV2({ userId, onLog }: Props) {
             className="flex items-center gap-1 flex-1"
           >
             <span className="text-sm">★</span>
-            <span className="text-[10px] text-amber-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>Save &ldquo;{lastLoggedMeal.name.slice(0, 25)}&rdquo; to favorites</span>
+            <span className="text-xs text-amber-300" style={{ fontFamily: "var(--font-pixel), monospace" }}>Save &ldquo;{lastLoggedMeal.name.slice(0, 25)}&rdquo; to favorites</span>
           </button>
-          <button onClick={() => { setShowSavePrompt(false); setLastLoggedMeal(null); }} className="text-[9px] text-zinc-600 px-1">✕</button>
+          <button onClick={() => { setShowSavePrompt(false); setLastLoggedMeal(null); }} className="text-xs text-zinc-600 px-1">✕</button>
         </div>
       )}
 
@@ -408,7 +408,7 @@ export default function NutritionInputV2({ userId, onLog }: Props) {
           {pending.items && pending.items.length > 0 && (
             <div className="space-y-1 max-h-[120px] overflow-y-auto">
               {pending.items.map((item, i) => (
-                <div key={i} className="flex items-center justify-between text-[9px] px-1 py-0.5 border-b border-zinc-700/50">
+                <div key={i} className="flex items-center justify-between text-xs px-1 py-0.5 border-b border-zinc-700/50">
                   <span className="text-zinc-300 truncate max-w-[140px]">{item.name}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-zinc-500">{item.calories}cal</span>
@@ -416,7 +416,7 @@ export default function NutritionInputV2({ userId, onLog }: Props) {
                       const newItems = pending.items!.filter((_, idx) => idx !== i);
                       const totals = newItems.reduce((acc, f) => ({ protein: acc.protein + f.protein, carbs: acc.carbs + f.carbs, fat: acc.fat + f.fat, calories: acc.calories + f.calories }), { protein: 0, carbs: 0, fat: 0, calories: 0 });
                       setPending({ ...totals, items: newItems });
-                    }} className="text-red-500 text-[8px]">✕</button>
+                    }} className="text-red-500 text-xs">✕</button>
                   </div>
                 </div>
               ))}
@@ -424,12 +424,12 @@ export default function NutritionInputV2({ userId, onLog }: Props) {
           )}
           {/* Totals */}
           <div className="flex items-center justify-between">
-            <span className="text-[9px] text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <span className="text-xs text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>
               P:{pending.protein}g C:{pending.carbs}g F:{pending.fat}g {pending.calories}cal
             </span>
           </div>
           <div className="flex items-center justify-between">
-            <button onClick={() => { const idx = MEAL_TAGS.findIndex(m => m.key === mealTag); setMealTag(MEAL_TAGS[(idx + 1) % MEAL_TAGS.length].key); }} className={`text-[8px] px-2 py-1 border ${colors.border} bg-zinc-900 text-zinc-300`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <button onClick={() => { const idx = MEAL_TAGS.findIndex(m => m.key === mealTag); setMealTag(MEAL_TAGS[(idx + 1) % MEAL_TAGS.length].key); }} className={`text-xs px-2 py-1 border ${colors.border} bg-zinc-900 text-zinc-300`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
               {MEAL_TAGS.find(m => m.key === mealTag)?.emoji} {MEAL_TAGS.find(m => m.key === mealTag)?.label}
             </button>
             <div className="flex gap-2">
@@ -443,16 +443,16 @@ export default function NutritionInputV2({ userId, onLog }: Props) {
       {/* XP pop */}
       {xpPop && (
         <div className="flex justify-center py-1">
-          <span className={`text-[11px] font-bold ${colors.secondary} animate-bounce`}>+{xpPop} XP 🎉</span>
+          <span className={`text-xs font-bold ${colors.secondary} animate-bounce`}>+{xpPop} XP 🎉</span>
         </div>
       )}
 
       {/* Daily progress (collapsed) */}
       <button onClick={() => setExpanded(!expanded)} className="w-full flex items-center justify-between px-1 py-1">
-        <span className="text-[8px] text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+        <span className="text-xs text-zinc-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>
           P:{dailyTotals.protein}/{targets.protein} C:{dailyTotals.carbs}/{targets.carbs} F:{dailyTotals.fat}/{targets.fat}
         </span>
-        <span className="text-[8px] text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+        <span className="text-xs text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
           {expanded ? '▴' : '▾'}
         </span>
       </button>
@@ -467,7 +467,7 @@ export default function NutritionInputV2({ userId, onLog }: Props) {
             { label: 'FAT', value: dailyTotals.fat, target: targets.fat },
           ].map(bar => (
             <div key={bar.label}>
-              <div className="flex justify-between text-[7px] text-zinc-500 mb-0.5" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              <div className="flex justify-between text-xs text-zinc-500 mb-0.5" style={{ fontFamily: "var(--font-pixel), monospace" }}>
                 <span>{bar.label}</span>
                 <span>{Math.round((bar.value / bar.target) * 100)}%</span>
               </div>
@@ -481,11 +481,11 @@ export default function NutritionInputV2({ userId, onLog }: Props) {
 
           {/* Weekly dots */}
           <div className="pt-2 border-t border-zinc-800">
-            <p className="text-[7px] text-zinc-600 mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>PROTEIN THIS WEEK</p>
+            <p className="text-xs text-zinc-600 mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>PROTEIN THIS WEEK</p>
             <div className="flex items-center gap-2">
               {dayLabels.map((d, i) => (
                 <div key={i} className="flex flex-col items-center gap-0.5">
-                  <span className="text-[6px] text-zinc-600">{d}</span>
+                  <span className="text-xs text-zinc-600">{d}</span>
                   <div className={`w-2 h-2 rounded-full ${weeklyDots[i] ? 'bg-green-500' : 'bg-zinc-700'}`} />
                 </div>
               ))}

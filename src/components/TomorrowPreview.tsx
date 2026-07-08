@@ -40,9 +40,9 @@ export default function TomorrowPreview({ userId }: TomorrowPreviewProps) {
     <Link href="/train" className="block bg-zinc-900/50 border border-zinc-800 rounded-xl p-3 hover:border-zinc-700 transition mt-3">
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Tomorrow</div>
-          <div className="text-sm font-bold text-white mt-0.5">{workout.type} Day</div>
-          <div className="text-[10px] text-zinc-500">{workout.blockCount} blocks</div>
+          <div className="text-xs text-zinc-500 uppercase font-bold tracking-wider">Tomorrow</div>
+          <div className="text-base font-bold text-white mt-0.5">{workout.type} Day</div>
+          <div className="text-xs text-zinc-500">{workout.blockCount} blocks</div>
         </div>
         <ChevronRight size={16} className="text-zinc-600" />
       </div>

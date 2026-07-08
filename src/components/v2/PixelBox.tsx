@@ -91,7 +91,7 @@ export function ScreenWrapper({ children, onRefresh }: { children: React.ReactNo
           ) : (
             <span className={`text-sm ${colors.secondary}`}>↓</span>
           )}
-          <span className={`text-[9px] ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          <span className={`text-xs ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
             {refreshing ? 'SYNCING...' : 'RELEASE'}
           </span>
         </div>

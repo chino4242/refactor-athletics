@@ -90,10 +90,10 @@ export default function BlockCompleteOverlay({
         </div>
 
         {rankUp.best_set && (
-          <div className="text-sm text-zinc-400 mb-2">{rankUp.best_set}</div>
+          <div className="text-base text-zinc-400 mb-2">{rankUp.best_set}</div>
         )}
         {rankUp.e1rm && (
-          <div className="text-xs text-zinc-500">Estimated Strength: {rankUp.e1rm} lbs</div>
+          <div className="text-sm text-zinc-500">Estimated Strength: {rankUp.e1rm} lbs</div>
         )}
 
         {/* One-time education on first rank-up */}
@@ -101,15 +101,15 @@ export default function BlockCompleteOverlay({
           localStorage.setItem('rank_education_seen', '1');
           return (
             <div className="mt-6 px-4 py-3 bg-zinc-800/80 border border-zinc-700 rounded-xl max-w-xs text-left">
-              <div className="text-[10px] font-bold text-orange-400 uppercase tracking-wider mb-1">How Ranks Work</div>
-              <p className="text-[11px] text-zinc-400 leading-relaxed">
+              <div className="text-xs font-bold text-orange-400 uppercase tracking-wider mb-1">How Ranks Work</div>
+              <p className="text-xs text-zinc-400 leading-relaxed">
                 Your rank is based on <span className="text-white font-bold">Estimated Strength</span> — calculated from your weight × reps. More weight <em>or</em> more reps = higher rank.
               </p>
             </div>
           );
         })()}
 
-        <div className="mt-8 text-[10px] text-zinc-600 uppercase tracking-wider animate-pulse">Tap to continue</div>
+        <div className="mt-8 text-xs text-zinc-600 uppercase tracking-wider animate-pulse">Tap to continue</div>
       </div>
     );
   }
@@ -145,31 +145,31 @@ export default function BlockCompleteOverlay({
       </div>
 
       <h1 className="text-xl font-black text-white mb-1">Block Complete</h1>
-      <p className="text-[11px] text-zinc-400 italic mb-1">{blockCompleteMessages[currentTheme] || blockCompleteMessages.athlete}</p>
-      <p className="text-xs text-zinc-500 mb-5">{completedCount} of {totalBlocks} blocks done</p>
+      <p className="text-xs text-zinc-400 italic mb-1">{blockCompleteMessages[currentTheme] || blockCompleteMessages.athlete}</p>
+      <p className="text-sm text-zinc-500 mb-5">{completedCount} of {totalBlocks} blocks done</p>
 
       <div className="w-full space-y-1.5 mb-6">
         {blockResults.map((r: any, i: number) => (
           <div key={i} className="flex items-center justify-between bg-zinc-800/60 rounded-xl p-3 border border-zinc-700/30">
             <div className="text-left min-w-0 flex-1">
-              <p className="text-sm font-semibold text-white truncate">
+              <p className="text-base font-semibold text-white truncate">
                 {r.name}
-                {r.isPR && <span className="ml-1.5 text-yellow-400 text-[10px]">🏆 PR</span>}
+                {r.isPR && <span className="ml-1.5 text-yellow-400 text-xs">🏆 PR</span>}
               </p>
               {r.best_set ? (
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] text-white font-medium">{r.best_set}</span>
-                  {r.e1rm && <span className="text-[10px] text-zinc-500">e1RM: {r.e1rm} lbs</span>}
+                  <span className="text-xs text-white font-medium">{r.best_set}</span>
+                  {r.e1rm && <span className="text-xs text-zinc-500">e1RM: {r.e1rm} lbs</span>}
                 </div>
               ) : (
-                <p className="text-[11px] text-zinc-500">{r.value}</p>
+                <p className="text-xs text-zinc-500">{r.value}</p>
               )}
               {r.next_threshold_lbs && r.next_rank_name && (
-                <p className="text-[10px] text-orange-400 font-semibold mt-0.5">🔥 {r.next_threshold_lbs} lbs to {getThemedRankName((r.level || 0) + 1)}</p>
+                <p className="text-xs text-orange-400 font-semibold mt-0.5">🔥 {r.next_threshold_lbs} lbs to {getThemedRankName((r.level || 0) + 1)}</p>
               )}
             </div>
             {r.hasStandards && r.level > 0 ? (
-              <span className={`text-[10px] font-bold px-2 py-1 rounded-lg shrink-0 ml-2 ${
+              <span className={`text-xs font-bold px-2 py-1 rounded-lg shrink-0 ml-2 ${
                 r.level >= 4 ? 'bg-orange-500/15 text-orange-400 border border-orange-500/20' :
                 r.level >= 2 ? 'bg-zinc-700/80 text-zinc-300 border border-zinc-600/30' :
                 'bg-zinc-800 text-zinc-400 border border-zinc-700/30'
@@ -177,7 +177,7 @@ export default function BlockCompleteOverlay({
                 {getThemedRankName(r.level || 0)}
               </span>
             ) : (
-              <span className="text-[10px] text-zinc-600 shrink-0 ml-2">+{r.xp_earned} XP</span>
+              <span className="text-xs text-zinc-600 shrink-0 ml-2">+{r.xp_earned} XP</span>
             )}
           </div>
         ))}
@@ -192,7 +192,7 @@ export default function BlockCompleteOverlay({
         </button>
         <button
           onClick={onStop}
-          className="w-full py-3 text-zinc-500 font-medium text-sm rounded-xl hover:text-white transition"
+          className="w-full py-3 text-zinc-500 font-medium text-base rounded-xl hover:text-white transition"
         >
           Stop Workout
         </button>

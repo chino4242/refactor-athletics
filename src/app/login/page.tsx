@@ -20,13 +20,13 @@ export default async function LoginPage({
                             Refactor <span className="text-orange-500">Athletics</span>
                         </h1>
                         <div className="w-12 h-0.5 bg-gradient-to-r from-orange-600 to-red-600 rounded-full mt-3 mb-4"></div>
-                        <p className="text-zinc-400 text-sm text-center leading-relaxed max-w-xs">
+                        <p className="text-zinc-400 text-base text-center leading-relaxed max-w-xs">
                             Every rep counts. Track workouts, nutrition, and daily habits — earn ranks based on real performance, and watch your Power Level grow over time.
                         </p>
                     </div>
 
                     {params?.message && (
-                        <div className="mb-6 p-4 rounded-xl bg-orange-500/10 border border-orange-500/30 text-orange-400 text-sm font-bold text-center">
+                        <div className="mb-6 p-4 rounded-xl bg-orange-500/10 border border-orange-500/30 text-orange-400 text-base font-bold text-center">
                             {params.message}
                         </div>
                     )}
@@ -84,7 +84,7 @@ export default async function LoginPage({
                 </div>
             </div>
 
-            <p className="mt-8 text-[10px] text-zinc-600 font-mono uppercase tracking-widest">
+            <p className="mt-8 text-xs text-zinc-600 font-mono uppercase tracking-widest">
                 Built with Next.js & Supabase
             </p>
         </div>

@@ -71,7 +71,7 @@ export default function Arena({ userId }: ArenaProps) {
         <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-zinc-950/30 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 px-4 pb-4 flex items-end justify-between">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: theme.accentHex }}>{theme.displayName}</p>
+            <p className="text-xs font-bold uppercase tracking-widest" style={{ color: theme.accentHex }}>{theme.displayName}</p>
             <h1 className="text-2xl font-black text-white">{isClassic ? 'Social' : theme.labels.arena}</h1>
           </div>
           <LevelGate featureId="duels" playerLevel={playerLevel} inline>
@@ -91,8 +91,8 @@ export default function Arena({ userId }: ArenaProps) {
         <Link href="/challenge-75" className="flex items-center gap-3 p-3 bg-zinc-900 border border-zinc-800 rounded-xl hover:border-zinc-700 transition">
           <span className="text-xl">🎯</span>
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-bold text-white">75 Day Challenge</div>
-            <div className="text-[10px] text-zinc-500">Solo or with your group</div>
+            <div className="text-base font-bold text-white">75 Day Challenge</div>
+            <div className="text-xs text-zinc-500">Solo or with your group</div>
           </div>
           <span className="text-zinc-600">›</span>
         </Link>
@@ -132,13 +132,13 @@ export default function Arena({ userId }: ArenaProps) {
             ) : activeDuels.length === 0 ? (
               <div className="py-16 text-center">
                 <div className="text-4xl mb-3">{isClassic ? '🤝' : '⚔️'}</div>
-                <p className="text-sm font-semibold text-zinc-400">{isClassic ? 'No active challenges' : 'The arena awaits'}</p>
-                <p className="text-xs text-zinc-600 mt-1 max-w-xs mx-auto">
+                <p className="text-base font-semibold text-zinc-400">{isClassic ? 'No active challenges' : 'The arena awaits'}</p>
+                <p className="text-sm text-zinc-600 mt-1 max-w-xs mx-auto">
                   {isClassic ? 'Challenge a friend to compare progress.' : 'Challenge a rival and prove your worth.'}
                 </p>
                 <button
                   onClick={() => setIsChallengeModalOpen(true)}
-                  className="mt-4 text-xs text-orange-400 hover:text-orange-300 font-medium"
+                  className="mt-4 text-sm text-orange-400 hover:text-orange-300 font-medium"
                 >
                   Create a challenge →
                 </button>
@@ -176,8 +176,8 @@ export default function Arena({ userId }: ArenaProps) {
             ) : historyDuels.length === 0 ? (
               <div className="py-16 text-center">
                 <div className="text-4xl mb-3">📜</div>
-                <p className="text-sm font-semibold text-zinc-400">No history yet</p>
-                <p className="text-xs text-zinc-600 mt-1">Completed challenges will appear here.</p>
+                <p className="text-base font-semibold text-zinc-400">No history yet</p>
+                <p className="text-sm text-zinc-600 mt-1">Completed challenges will appear here.</p>
               </div>
             ) : (
               historyDuels.map(d => (

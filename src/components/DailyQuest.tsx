@@ -197,7 +197,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
                   <Share2 size={18} />
                 </button>
               </div>
-              <p className="text-xs text-zinc-400 font-medium">Complete these tasks to boost your power.</p>
+              <p className="text-sm text-zinc-400 font-medium">Complete these tasks to boost your power.</p>
             </div>
           </div>
         </div>
@@ -255,9 +255,9 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
             className="w-full flex items-center justify-between py-2"
           >
             <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">🥗 Nutrition</span>
-            <span className="text-[10px] text-zinc-600 font-normal normal-case tracking-normal ml-2">Track macros, water & calories</span>
+            <span className="text-sm text-zinc-600 font-normal normal-case tracking-normal ml-2">Track macros, water & calories</span>
             <div className="flex items-center gap-2">
-              <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${nutritionComplete === nutritionMetrics.length ? 'bg-emerald-500/20 text-emerald-400' : 'bg-zinc-800 text-zinc-500'}`}>
+              <span className={`text-xs font-bold px-2 py-0.5 rounded ${nutritionComplete === nutritionMetrics.length ? 'bg-emerald-500/20 text-emerald-400' : 'bg-zinc-800 text-zinc-500'}`}>
                 {nutritionComplete}/{nutritionMetrics.length}
               </span>
               <ChevronDown size={16} className={`text-zinc-600 transition-transform ${expandedSections.nutrition ? 'rotate-180' : ''}`} />
@@ -359,9 +359,9 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
                   className="w-full flex items-center justify-between py-2"
                 >
                   <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{cat.label}</span>
-                  <span className="text-[10px] text-zinc-600 font-normal normal-case tracking-normal ml-2">{cat.desc}</span>
+                  <span className="text-sm text-zinc-600 font-normal normal-case tracking-normal ml-2">{cat.desc}</span>
                   <div className="flex items-center gap-2">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${completed === visibleHabits.length ? 'bg-emerald-500/20 text-emerald-400' : 'bg-zinc-800 text-zinc-500'}`}>
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded ${completed === visibleHabits.length ? 'bg-emerald-500/20 text-emerald-400' : 'bg-zinc-800 text-zinc-500'}`}>
                       {completed}/{visibleHabits.length}
                     </span>
                     <ChevronDown size={16} className={`text-zinc-600 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
@@ -422,12 +422,12 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
                               <div className="flex justify-between items-center mb-2">
                                 <div className="flex items-center gap-2">
                                   <span className="text-sm">{h.icon}</span>
-                                  <span className="text-[10px] uppercase font-bold text-zinc-400">{h.label}</span>
+                                  <span className="text-xs uppercase font-bold text-zinc-400">{h.label}</span>
                                 </div>
-                                {done && <span className="text-[10px] font-bold text-emerald-400">✓</span>}
+                                {done && <span className="text-xs font-bold text-emerald-400">✓</span>}
                               </div>
                               {done ? (
-                                <span className="text-xs text-emerald-400 font-bold">Complete</span>
+                                <span className="text-sm text-emerald-400 font-bold">Complete</span>
                               ) : (
                                 <button
                                   onClick={() => handleLog(h.id, 1, h.label)}
@@ -458,8 +458,8 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
                           return (
                             <div key={h.id} className="p-2 bg-zinc-900/50 rounded-xl border border-zinc-800/50">
                               <div className="flex items-center justify-between mb-2">
-                                <span className="text-[10px] uppercase font-bold text-zinc-400">{h.label}</span>
-                                {currentMood > 0 && <span className="text-[10px] text-emerald-400 font-bold">✓ {moods[currentMood - 1]?.label}</span>}
+                                <span className="text-xs uppercase font-bold text-zinc-400">{h.label}</span>
+                                {currentMood > 0 && <span className="text-xs text-emerald-400 font-bold">✓ {moods[currentMood - 1]?.label}</span>}
                               </div>
                               <div className="flex justify-between gap-1">
                                 {moods.map(m => (
@@ -485,7 +485,7 @@ export default function DailyQuest({ userId, bodyweight, onXpEarned, targetDateT
                     {/* Inline heatmaps per category */}
                     <button
                       onClick={() => setExpandedSections(prev => ({ ...prev, [`${cat.id}_heatmap`]: !prev[`${cat.id}_heatmap`] }))}
-                      className="w-full py-1 text-[10px] font-bold uppercase tracking-widest text-zinc-600 hover:text-zinc-400 transition-colors flex items-center justify-center gap-1"
+                      className="w-full py-1 text-xs font-bold uppercase tracking-widest text-zinc-600 hover:text-zinc-400 transition-colors flex items-center justify-center gap-1"
                     >
                       📊 {expandedSections[`${cat.id}_heatmap`] ? 'Hide' : 'Show'} Streaks
                     </button>

@@ -121,17 +121,17 @@ export default function HabitHeatmap({ history, habitId, label, colorClass, days
                 <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-widest">{label}</h4>
                 <div className="flex items-center gap-3">
                     {streak > 0 && (
-                        <span className="text-[10px] font-bold text-orange-500">🔥 {streak}d streak</span>
+                        <span className="text-xs font-bold text-orange-500">🔥 {streak}d streak</span>
                     )}
                     {goal && (
-                        <span className="text-[10px] text-zinc-600 font-mono">Goal: {goal}</span>
+                        <span className="text-xs text-zinc-600 font-mono">Goal: {goal}</span>
                     )}
                 </div>
             </div>
 
             <div className="flex items-end gap-2">
                 {/* Day Labels */}
-                <div className="flex flex-col justify-between pb-[6px] text-[9px] text-zinc-600 font-medium h-[82px] leading-none text-right">
+                <div className="flex flex-col justify-between pb-[6px] text-xs text-zinc-600 font-medium h-[82px] leading-none text-right">
                     <span className="opacity-0">Sun</span>
                     <span>Mon</span>
                     <span className="opacity-0">Tue</span>

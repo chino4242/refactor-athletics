@@ -152,7 +152,7 @@ export default function CharacterEditor({ userId, initialConfig, onSave }: Chara
                         }`}
                     >
                         <div className="text-xl mb-1">❌</div>
-                        <div className="text-[10px] text-zinc-400">None</div>
+                        <div className="text-xs text-zinc-400">None</div>
                     </button>
 
                     {slotGear.map(gear => (
@@ -172,8 +172,8 @@ export default function CharacterEditor({ userId, initialConfig, onSave }: Chara
                                     {SLOT_LABELS[activeSlot].emoji}
                                 </div>
                             )}
-                            <div className="text-[10px] text-zinc-300 truncate">{gear.name}</div>
-                            <div className={`text-[9px] font-bold uppercase ${
+                            <div className="text-xs text-zinc-300 truncate">{gear.name}</div>
+                            <div className={`text-xs font-bold uppercase ${
                                 gear.rarity === 'legendary' ? 'text-yellow-400' :
                                 gear.rarity === 'epic' ? 'text-purple-400' :
                                 gear.rarity === 'rare' ? 'text-blue-400' : 'text-zinc-500'

@@ -89,7 +89,7 @@ export default function HabitCard({
                         {current > 0 && onReset && (
                             <button
                                 onClick={() => { onReset(); setIsEditing(false); }}
-                                className="text-[10px] text-red-400 hover:text-red-300 font-bold px-2 py-1 rounded bg-red-500/10 border border-red-500/20"
+                                className="text-xs text-red-400 hover:text-red-300 font-bold px-2 py-1 rounded bg-red-500/10 border border-red-500/20"
                             >
                                 Reset to 0
                             </button>
@@ -131,7 +131,7 @@ export default function HabitCard({
                             if (e.key === 'Enter') handleSubmit();
                             if (e.key === 'Escape') setIsEditing(false);
                         }}
-                        className={`w-full bg-zinc-950 rounded p-1.5 text-xs text-white text-center outline-none border transition-all ${mode === 'total' ? 'border-orange-900 focus:border-zinc-500 placeholder-orange-500/50' : 'border-zinc-800 focus:border-zinc-600'}`}
+                        className={`w-full bg-zinc-950 rounded p-1.5 text-sm text-white text-center outline-none border transition-all ${mode === 'total' ? 'border-orange-900 focus:border-zinc-500 placeholder-orange-500/50' : 'border-zinc-800 focus:border-zinc-600'}`}
                         placeholder={mode === 'total' ? String(current) : unit}
                     />
                     <button
@@ -158,23 +158,23 @@ export default function HabitCard({
                 <div className="flex justify-between items-center mb-1.5">
                     <div className="flex items-center gap-2">
                         {typeof icon === 'string' ? <span className="text-sm">{icon}</span> : icon}
-                        <span className="text-[10px] uppercase font-bold text-zinc-400 group-hover:text-zinc-300 transition-colors">{label}</span>
-                        {justLogged && <span className="text-[10px] text-emerald-400 font-bold animate-pulse">✓</span>}
+                        <span className="text-xs uppercase font-bold text-zinc-400 group-hover:text-zinc-300 transition-colors">{label}</span>
+                        {justLogged && <span className="text-xs text-emerald-400 font-bold animate-pulse">✓</span>}
                         {justLogged && onUndo && (
                             <button
                                 onClick={(e) => { e.stopPropagation(); onUndo(); setJustLogged(false); }}
-                                className="text-[10px] text-red-400 hover:text-red-300 font-bold px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/20"
+                                className="text-xs text-red-400 hover:text-red-300 font-bold px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/20"
                             >
                                 Undo
                             </button>
                         )}
                     </div>
                     <div className="flex items-center gap-1.5">
-                        <span className={`text-[10px] font-mono font-bold ${isCompleted ? 'text-emerald-500' : textColor}`}>
+                        <span className={`text-xs font-mono font-bold ${isCompleted ? 'text-emerald-500' : textColor}`}>
                             {current} <span className="text-zinc-600">/ {goal}</span>
                         </span>
                         {xp > 0 && !isCompleted && (
-                            <span className={`text-[9px] px-1 rounded bg-zinc-950 border border-zinc-800 ${textColor} opacity-60`}>+{xp}xp</span>
+                            <span className={`text-xs px-1 rounded bg-zinc-950 border border-zinc-800 ${textColor} opacity-60`}>+{xp}xp</span>
                         )}
                     </div>
                 </div>

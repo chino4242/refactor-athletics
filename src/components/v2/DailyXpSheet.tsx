@@ -76,7 +76,7 @@ export default function DailyXpSheet({ isOpen, onClose }: Props) {
         <div className="p-4">
           {/* Header */}
           <div className="flex items-center justify-between mb-3">
-            <p className={`text-[12px] ${colors.secondary} font-bold`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <p className={`text-xs ${colors.secondary} font-bold`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
               ⚡ TODAY&apos;S XP
             </p>
             <span className="text-lg font-bold text-white">{total} XP</span>
@@ -97,7 +97,7 @@ export default function DailyXpSheet({ isOpen, onClose }: Props) {
 
           {/* Breakdown */}
           {total === 0 ? (
-            <p className="text-xs text-zinc-500 text-center py-6">No XP earned yet today — go get some 💪</p>
+            <p className="text-sm text-zinc-500 text-center py-6">No XP earned yet today — go get some 💪</p>
           ) : (
             <div className="space-y-2">
               {sortedGroups.map(([type, data]) => (
@@ -105,20 +105,20 @@ export default function DailyXpSheet({ isOpen, onClose }: Props) {
                   <div className="flex items-center justify-between py-1.5">
                     <div className="flex items-center gap-2">
                       <span className="text-sm">{SOURCE_ICONS[type] || '⚡'}</span>
-                      <span className="text-xs text-zinc-300 capitalize">{type}</span>
+                      <span className="text-sm text-zinc-300 capitalize">{type}</span>
                     </div>
-                    <span className="text-xs font-bold text-white">{data.total} XP</span>
+                    <span className="text-sm font-bold text-white">{data.total} XP</span>
                   </div>
                   {/* Individual entries */}
                   <div className="pl-7 space-y-0.5">
                     {data.entries.slice(0, 5).map((e, i) => (
                       <div key={i} className="flex items-center justify-between">
-                        <span className="text-[11px] text-zinc-500 truncate max-w-[200px]">{e.source_label}</span>
-                        <span className="text-[11px] text-zinc-400">{e.amount}</span>
+                        <span className="text-xs text-zinc-500 truncate max-w-[200px]">{e.source_label}</span>
+                        <span className="text-xs text-zinc-400">{e.amount}</span>
                       </div>
                     ))}
                     {data.entries.length > 5 && (
-                      <p className="text-[10px] text-zinc-600">+{data.entries.length - 5} more</p>
+                      <p className="text-xs text-zinc-600">+{data.entries.length - 5} more</p>
                     )}
                   </div>
                 </div>
@@ -147,8 +147,8 @@ function SyncStatus() {
   if (needsReconnect) {
     return (
       <div className="mt-4 pt-3 border-t border-zinc-800 text-center">
-        <p className="text-[10px] text-amber-400">⚠ Health sync returning empty — permissions may have been revoked</p>
-        <p className="text-[10px] text-zinc-500 mt-1">Go to Settings → Health → Refactor Athletics to re-enable</p>
+        <p className="text-xs text-amber-400">⚠ Health sync returning empty — permissions may have been revoked</p>
+        <p className="text-xs text-zinc-500 mt-1">Go to Settings → Health → Refactor Athletics to re-enable</p>
       </div>
     );
   }
@@ -158,7 +158,7 @@ function SyncStatus() {
   return (
     <div className="mt-4 pt-3 border-t border-zinc-800 flex items-center justify-center gap-2">
       <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-      <span className="text-[10px] text-zinc-600">Synced {label}{status.exercises > 0 ? ` · ${status.exercises} exercise${status.exercises > 1 ? 's' : ''} found` : ''}</span>
+      <span className="text-xs text-zinc-600">Synced {label}{status.exercises > 0 ? ` · ${status.exercises} exercise${status.exercises > 1 ? 's' : ''} found` : ''}</span>
     </div>
   );
 }

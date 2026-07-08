@@ -87,9 +87,9 @@ export default function CreatureNarrator({ theme, streak, todayXp, dailyTarget, 
         className="w-6 h-6 object-contain"
         style={{ imageRendering: 'pixelated' }}
       />
-      <p className="text-[9px] text-zinc-400 italic leading-tight flex-1">&ldquo;{line}&rdquo;</p>
+      <p className="text-xs text-zinc-400 italic leading-tight flex-1">&ldquo;{line}&rdquo;</p>
       {phase && (
-        <span className={`text-[8px] ${phase.color} whitespace-nowrap`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+        <span className={`text-xs ${phase.color} whitespace-nowrap`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
           🔥 {phase.name}
         </span>
       )}

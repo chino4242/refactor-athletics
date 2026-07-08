@@ -161,7 +161,7 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                 {/* Step 1: Waiver */}
                 {step === 1 && (
                     <div className="space-y-4">
-                        <div className="bg-zinc-800 border border-zinc-700 rounded-lg p-4 max-h-64 overflow-y-auto text-sm text-zinc-300 space-y-3">
+                        <div className="bg-zinc-800 border border-zinc-700 rounded-lg p-4 max-h-64 overflow-y-auto text-base text-zinc-300 space-y-3">
                             <p className="font-semibold text-white">ASSUMPTION OF RISK AND WAIVER OF LIABILITY</p>
                             <p>
                                 By using Refactor Athletics, I acknowledge that physical exercise involves inherent risks including,
@@ -179,7 +179,7 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                                 Athletics, its owners, developers, and affiliates from any and all liability for injuries or damages
                                 resulting from my use of this application.
                             </p>
-                            <p className="text-xs text-zinc-400 pt-2">
+                            <p className="text-sm text-zinc-400 pt-2">
                                 Last updated: March 13, 2026
                             </p>
                         </div>
@@ -190,7 +190,7 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                                 onChange={e => setWaiverAccepted(e.target.checked)}
                                 className="mt-1 w-4 h-4 rounded border-zinc-600 bg-zinc-800 text-orange-500 focus:ring-orange-500"
                             />
-                            <span className="text-sm text-zinc-300">
+                            <span className="text-base text-zinc-300">
                                 I have read and agree to the terms of this waiver. I understand the risks involved in physical exercise
                                 and assume full responsibility for my participation.
                             </span>
@@ -217,13 +217,13 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                                 <div className="flex items-start gap-3">
                                     <span className="text-2xl">{option.emoji}</span>
                                     <div>
-                                        <div className="text-sm font-medium text-white">{option.title}</div>
-                                        <div className="text-xs text-zinc-400 mt-1">{option.description}</div>
+                                        <div className="text-base font-medium text-white">{option.title}</div>
+                                        <div className="text-sm text-zinc-400 mt-1">{option.description}</div>
                                     </div>
                                 </div>
                             </button>
                         ))}
-                        <p className="text-xs text-zinc-500 pt-1">You can change this anytime in settings.</p>
+                        <p className="text-sm text-zinc-500 pt-1">You can change this anytime in settings.</p>
                     </div>
                 )}
 
@@ -234,31 +234,31 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                             {experienceMode === 'rpg' ? (
                                 <>
                                     <p className="font-semibold text-orange-400">Your fitness RPG awaits.</p>
-                                    <p className="text-sm">
+                                    <p className="text-base">
                                         Refactor Athletics turns your real-world training into a game.
                                         Track workouts, earn XP, level up, and compete with others.
                                     </p>
-                                    <p className="text-sm">
+                                    <p className="text-base">
                                         Your performance is ranked against age and sex-adjusted standards, so everyone competes fairly.
                                         Build your <span className="text-orange-400 font-semibold">Power Level</span> by mastering exercises across
                                         Strength, Endurance, Power, and Mobility.
                                     </p>
-                                    <p className="text-sm">
+                                    <p className="text-base">
                                         Challenge friends to duels, join a group to train together, complete daily quests, and hold each other accountable as you transform into legendary status.
                                     </p>
                                 </>
                             ) : (
                                 <>
                                     <p className="font-semibold text-orange-400">Your fitness journey starts here.</p>
-                                    <p className="text-sm">
+                                    <p className="text-base">
                                         Refactor Athletics helps you build lasting habits with clear, actionable tracking.
                                         Log workouts, nutrition, and daily habits — then watch your consistency compound over time.
                                     </p>
-                                    <p className="text-sm">
+                                    <p className="text-base">
                                         Your performance is measured against age and sex-adjusted benchmarks, so you always know
                                         where you stand and what to aim for next.
                                     </p>
-                                    <p className="text-sm">
+                                    <p className="text-base">
                                         Track streaks, hit personal bests, and see your progress through clean charts and weekly summaries.
                                     </p>
                                 </>
@@ -285,8 +285,8 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                                     <div className="flex items-center gap-3">
                                         <div className="text-3xl">{theme.emoji}</div>
                                         <div>
-                                            <div className="text-sm font-bold text-white">{theme.name}</div>
-                                            <div className="text-[11px] text-zinc-500 mt-0.5">{theme.description}</div>
+                                            <div className="text-base font-bold text-white">{theme.name}</div>
+                                            <div className="text-sm text-zinc-500 mt-0.5">{theme.description}</div>
                                         </div>
                                     </div>
                                 </button>
@@ -313,8 +313,8 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                                             }`}
                                         >
                                             <div className="text-3xl mb-2">{path.emoji}</div>
-                                            <div className="text-sm font-medium text-white">{path.name}</div>
-                                            <div className="text-xs text-zinc-400 mt-1">{path.description}</div>
+                                            <div className="text-base font-medium text-white">{path.name}</div>
+                                            <div className="text-sm text-zinc-400 mt-1">{path.description}</div>
                                         </button>
                                     ))}
                                 </div>
@@ -323,8 +323,8 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                             <>
                                 <p className="text-zinc-400">Here&apos;s how we&apos;ll help you improve</p>
                                 <div className="bg-zinc-800 border border-zinc-700 rounded-lg p-5 space-y-4">
-                                    <div className="text-sm font-semibold text-orange-400">General Wellness</div>
-                                    <div className="space-y-3 text-sm text-zinc-300">
+                                    <div className="text-base font-semibold text-orange-400">General Wellness</div>
+                                    <div className="space-y-3 text-base text-zinc-300">
                                         <div className="flex items-start gap-3">
                                             <span className="text-base mt-0.5">🏃</span>
                                             <p>Aim for an hour of activity each day — walking, lifting, stretching, whatever moves you.</p>
@@ -343,7 +343,7 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                                         </div>
                                     </div>
                                 </div>
-                                <p className="text-xs text-zinc-500">We&apos;ll personalize your dashboard based on your goals.</p>
+                                <p className="text-sm text-zinc-500">We&apos;ll personalize your dashboard based on your goals.</p>
                             </>
                         )}
                     </div>
@@ -354,7 +354,7 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                     <div className="space-y-4">
                         <p className="text-zinc-400">Tell us about yourself</p>
                         <div>
-                            <label className="block text-sm font-medium text-zinc-300 mb-2">Age</label>
+                            <label className="block text-base font-medium text-zinc-300 mb-2">Age</label>
                             <input
                                 type="number"
                                 value={formData.age}
@@ -364,7 +364,7 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-zinc-300 mb-2">Sex</label>
+                            <label className="block text-base font-medium text-zinc-300 mb-2">Sex</label>
                             <select
                                 value={formData.sex}
                                 onChange={e => setFormData({ ...formData, sex: e.target.value })}
@@ -375,10 +375,10 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                                 <option value="female">Female</option>
                                 <option value="unspecified">Prefer not to say</option>
                             </select>
-                            <p className="text-xs text-zinc-500 mt-1">Used for performance benchmarks. Defaults to combined averages if not specified.</p>
+                            <p className="text-sm text-zinc-500 mt-1">Used for performance benchmarks. Defaults to combined averages if not specified.</p>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-zinc-300 mb-2">Current Weight (lbs)</label>
+                            <label className="block text-base font-medium text-zinc-300 mb-2">Current Weight (lbs)</label>
                             <input
                                 type="number"
                                 step="0.1"
@@ -396,7 +396,7 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                     <div className="space-y-4">
                         <p className="text-zinc-400">Set your goal</p>
                         <div>
-                            <label className="block text-sm font-medium text-zinc-300 mb-2">Target Weight (lbs)</label>
+                            <label className="block text-base font-medium text-zinc-300 mb-2">Target Weight (lbs)</label>
                             <input
                                 type="number"
                                 step="0.1"
@@ -405,7 +405,7 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                                 className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-white"
                                 placeholder="170"
                             />
-                            <p className="text-xs text-zinc-500 mt-2">You can change this anytime in your profile</p>
+                            <p className="text-sm text-zinc-500 mt-2">You can change this anytime in your profile</p>
                         </div>
                     </div>
                 )}
@@ -452,12 +452,12 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                                         }`}
                                     >
                                         <span className="text-lg">{item.emoji}</span>
-                                        <span className="text-xs font-medium text-white">{item.label}</span>
+                                        <span className="text-sm font-medium text-white">{item.label}</span>
                                     </button>
                                 );
                             })}
                         </div>
-                        <p className="text-xs text-zinc-500">You can update this anytime in settings.</p>
+                        <p className="text-sm text-zinc-500">You can update this anytime in settings.</p>
                     </div>
                 )}
 
@@ -479,7 +479,7 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                                     <button key={item.id} onClick={() => setGoals(prev => selected ? prev.filter(g => g !== item.id) : [...prev, item.id])}
                                         className={`w-full p-3 rounded-lg border-2 transition-all text-left flex items-center gap-3 ${selected ? 'border-orange-500 bg-orange-500/10' : 'border-zinc-700 bg-zinc-800 hover:border-zinc-600'}`}>
                                         <span className="text-xl">{item.emoji}</span>
-                                        <span className={`text-sm font-medium ${selected ? 'text-white' : 'text-zinc-300'}`}>{item.label}</span>
+                                        <span className={`text-base font-medium ${selected ? 'text-white' : 'text-zinc-300'}`}>{item.label}</span>
                                     </button>
                                 );
                             })}
@@ -498,11 +498,11 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                         <p className="text-zinc-400">We&apos;ll calculate recommended daily macros based on your profile.</p>
 
                         <div>
-                            <label className="block text-sm font-medium text-zinc-300 mb-2">Activity Level</label>
+                            <label className="block text-base font-medium text-zinc-300 mb-2">Activity Level</label>
                             <select value={activityLevel} onChange={e => {
                                 setActivityLevel(e.target.value as ActivityLevel);
                                 setCalcResult(calculateMacros({ weightLbs: parseFloat(formData.bodyweight), age: parseInt(formData.age), sex: formData.sex, activityLevel: e.target.value as ActivityLevel, goal: macroGoal }));
-                            }} className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-white text-sm">
+                            }} className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-white text-base">
                                 {(Object.entries(ACTIVITY_LABELS) as [ActivityLevel, string][]).map(([k, v]) => (
                                     <option key={k} value={k}>{v}</option>
                                 ))}
@@ -510,13 +510,13 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-zinc-300 mb-2">Goal</label>
+                            <label className="block text-base font-medium text-zinc-300 mb-2">Goal</label>
                             <div className="flex gap-2">
                                 {(Object.entries(GOAL_LABELS) as [MacroGoal, string][]).map(([k, v]) => (
                                     <button key={k} onClick={() => {
                                         setMacroGoal(k);
                                         setCalcResult(calculateMacros({ weightLbs: parseFloat(formData.bodyweight), age: parseInt(formData.age), sex: formData.sex, activityLevel, goal: k }));
-                                    }} className={`flex-1 text-xs font-bold py-2.5 rounded-lg transition ${macroGoal === k ? 'bg-orange-600 text-white' : 'bg-zinc-800 text-zinc-400 border border-zinc-700'}`}>
+                                    }} className={`flex-1 text-sm font-bold py-2.5 rounded-lg transition ${macroGoal === k ? 'bg-orange-600 text-white' : 'bg-zinc-800 text-zinc-400 border border-zinc-700'}`}>
                                         {v}
                                     </button>
                                 ))}
@@ -526,32 +526,32 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                         {calcResult && (
                             <div className="grid grid-cols-4 gap-2 text-center mt-2">
                                 <div className="bg-zinc-800 rounded-lg p-3">
-                                    <div className="text-[9px] text-zinc-500 uppercase">Calories</div>
+                                    <div className="text-xs text-zinc-500 uppercase">Calories</div>
                                     <div className="text-lg font-bold text-white">{calcResult.calories}</div>
                                 </div>
                                 <div className="bg-zinc-800 rounded-lg p-3">
-                                    <div className="text-[9px] text-zinc-500 uppercase">Protein</div>
+                                    <div className="text-xs text-zinc-500 uppercase">Protein</div>
                                     <div className="text-lg font-bold text-red-400">{calcResult.protein}g</div>
                                 </div>
                                 <div className="bg-zinc-800 rounded-lg p-3">
-                                    <div className="text-[9px] text-zinc-500 uppercase">Carbs</div>
+                                    <div className="text-xs text-zinc-500 uppercase">Carbs</div>
                                     <div className="text-lg font-bold text-yellow-400">{calcResult.carbs}g</div>
                                 </div>
                                 <div className="bg-zinc-800 rounded-lg p-3">
-                                    <div className="text-[9px] text-zinc-500 uppercase">Fat</div>
+                                    <div className="text-xs text-zinc-500 uppercase">Fat</div>
                                     <div className="text-lg font-bold text-green-400">{calcResult.fat}g</div>
                                 </div>
                             </div>
                         )}
 
-                        <p className="text-xs text-zinc-500">You can adjust these anytime in Quest Settings.</p>
+                        <p className="text-sm text-zinc-500">You can adjust these anytime in Quest Settings.</p>
                     </div>
                 )}
 
                 {/* Step 10: Health Sync */}
                 {step === 10 && (
                     <div className="space-y-4">
-                        <p className="text-zinc-400 text-sm">Auto-sync steps, sleep, calories, and more from your wearable. You can always set this up later in Settings.</p>
+                        <p className="text-zinc-400 text-base">Auto-sync steps, sleep, calories, and more from your wearable. You can always set this up later in Settings.</p>
 
                         {/* Native Health (Apple Health on iOS, Health Connect on Android) */}
                         <button
@@ -581,8 +581,8 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                             <div className="flex items-center gap-3">
                                 <span className="text-2xl">{typeof window !== 'undefined' && (window as any).Capacitor?.getPlatform?.() === 'android' ? '💚' : '🍎'}</span>
                                 <div>
-                                    <div className="text-sm font-bold text-white">{typeof window !== 'undefined' && (window as any).Capacitor?.getPlatform?.() === 'android' ? 'Connect Health Connect' : 'Connect Apple Health'}</div>
-                                    <div className="text-xs text-zinc-400">Auto-sync steps, sleep, calories, heart rate, and weight daily</div>
+                                    <div className="text-base font-bold text-white">{typeof window !== 'undefined' && (window as any).Capacitor?.getPlatform?.() === 'android' ? 'Connect Health Connect' : 'Connect Apple Health'}</div>
+                                    <div className="text-sm text-zinc-400">Auto-sync steps, sleep, calories, heart rate, and weight daily</div>
                                 </div>
                             </div>
                         </button>
@@ -597,8 +597,8 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                             <div className="flex items-center gap-3">
                                 <span className="text-2xl">⌚</span>
                                 <div>
-                                    <div className="text-sm font-bold text-white">Connect WHOOP</div>
-                                    <div className="text-xs text-zinc-400">Strain, recovery, HRV, sleep, calories</div>
+                                    <div className="text-base font-bold text-white">Connect WHOOP</div>
+                                    <div className="text-sm text-zinc-400">Strain, recovery, HRV, sleep, calories</div>
                                 </div>
                             </div>
                         </a>
@@ -608,20 +608,20 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                             <div className="flex items-center gap-3">
                                 <span className="text-2xl">📱</span>
                                 <div>
-                                    <div className="text-sm font-bold text-white">Health Connect / Apple Health</div>
-                                    <div className="text-xs text-zinc-400">Steps, sleep, calories, weight, and more via HC Webhook app</div>
+                                    <div className="text-base font-bold text-white">Health Connect / Apple Health</div>
+                                    <div className="text-sm text-zinc-400">Steps, sleep, calories, weight, and more via HC Webhook app</div>
                                 </div>
                             </div>
                             {syncToken ? (
                                 <div className="bg-zinc-900 rounded-lg p-3">
-                                    <span className="text-[10px] text-zinc-500 uppercase font-bold">Your Webhook URL</span>
+                                    <span className="text-xs text-zinc-500 uppercase font-bold">Your Webhook URL</span>
                                     <div className="flex gap-1.5 mt-1">
-                                        <code className="flex-1 text-[10px] text-zinc-300 bg-zinc-950 px-2 py-1.5 rounded break-all">{typeof window !== 'undefined' ? `${window.location.origin}/api/sync/health-connect?token=${syncToken}` : ''}</code>
+                                        <code className="flex-1 text-xs text-zinc-300 bg-zinc-950 px-2 py-1.5 rounded break-all">{typeof window !== 'undefined' ? `${window.location.origin}/api/sync/health-connect?token=${syncToken}` : ''}</code>
                                         <button onClick={() => navigator.clipboard.writeText(`${window.location.origin}/api/sync/health-connect?token=${syncToken}`)} className="px-2 py-1 bg-zinc-800 rounded hover:bg-zinc-700 transition shrink-0 self-start text-zinc-400 text-xs">
                                             Copy
                                         </button>
                                     </div>
-                                    <p className="text-zinc-600 text-[10px] mt-2">Paste this URL in the HC Webhook app.</p>
+                                    <p className="text-zinc-600 text-sm mt-2">Paste this URL in the HC Webhook app.</p>
                                 </div>
                             ) : (
                                 <button
@@ -641,16 +641,16 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                                 </button>
                             )}
                             <div className="flex gap-2">
-                                <a href="https://play.google.com/store/apps/details?id=com.hcwebhook.app" target="_blank" rel="noopener" className="flex-1 text-center py-2 bg-zinc-700 hover:bg-zinc-600 text-white text-[10px] font-bold uppercase rounded-lg transition">
+                                <a href="https://play.google.com/store/apps/details?id=com.hcwebhook.app" target="_blank" rel="noopener" className="flex-1 text-center py-2 bg-zinc-700 hover:bg-zinc-600 text-white text-xs font-bold uppercase rounded-lg transition">
                                     Android App
                                 </a>
-                                <a href="https://apps.apple.com/app/health-webhook/id6763619597" target="_blank" rel="noopener" className="flex-1 text-center py-2 bg-zinc-700 hover:bg-zinc-600 text-white text-[10px] font-bold uppercase rounded-lg transition">
+                                <a href="https://apps.apple.com/app/health-webhook/id6763619597" target="_blank" rel="noopener" className="flex-1 text-center py-2 bg-zinc-700 hover:bg-zinc-600 text-white text-xs font-bold uppercase rounded-lg transition">
                                     iOS App
                                 </a>
                             </div>
                         </div>
 
-                        <p className="text-xs text-zinc-500 text-center">Skip this step if you prefer to track manually.</p>
+                        <p className="text-sm text-zinc-500 text-center">Skip this step if you prefer to track manually.</p>
                     </div>
                 )}
 

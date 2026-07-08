@@ -79,7 +79,7 @@ export default function QuickLogModal({ userId, bodyweight, sex, catalog, onClos
       <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-end justify-center" onClick={onClose}>
         <div className="bg-zinc-900 border-t border-zinc-700 rounded-t-2xl w-full max-w-lg h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
           <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
-            <h3 className="text-sm font-bold text-white">Quick Log</h3>
+            <h3 className="text-base font-bold text-white">Quick Log</h3>
             <button onClick={onClose} className="text-zinc-500 hover:text-white text-xs font-bold px-3 py-1 rounded bg-zinc-800">✕</button>
           </div>
 
@@ -92,7 +92,7 @@ export default function QuickLogModal({ userId, bodyweight, sex, catalog, onClos
                 return (
                   <button key={qp.id} onClick={() => setSelected(item)} className="flex flex-col items-center gap-1 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-xl hover:border-zinc-600 transition min-w-[64px]">
                     <span className="text-lg">{qp.emoji}</span>
-                    <span className="text-[9px] font-bold text-zinc-400 whitespace-nowrap">{qp.label}</span>
+                    <span className="text-xs font-bold text-zinc-400 whitespace-nowrap">{qp.label}</span>
                   </button>
                 );
               })}
@@ -105,13 +105,13 @@ export default function QuickLogModal({ userId, bodyweight, sex, catalog, onClos
                 placeholder="Search exercises..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg pl-9 pr-3 py-2 text-sm text-white focus:border-zinc-500 outline-none"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg pl-9 pr-3 py-2 text-base text-white focus:border-zinc-500 outline-none"
                 autoFocus
               />
             </div>
             <div className="flex gap-1.5 overflow-x-auto pb-2 no-scrollbar">
               {CATEGORIES.filter(c => c === 'All' || catalog.some(ex => ex.category === c)).map(c => (
-                <button key={c} onClick={() => setCategory(c)} className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-lg whitespace-nowrap transition ${category === c ? 'bg-orange-600 text-white' : 'bg-zinc-800 text-zinc-400'}`}>
+                <button key={c} onClick={() => setCategory(c)} className={`text-xs font-bold uppercase px-2.5 py-1 rounded-lg whitespace-nowrap transition ${category === c ? 'bg-orange-600 text-white' : 'bg-zinc-800 text-zinc-400'}`}>
                   {c}
                 </button>
               ))}
@@ -125,11 +125,11 @@ export default function QuickLogModal({ userId, bodyweight, sex, catalog, onClos
                 onClick={() => setSelected(c)}
                 className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-zinc-800 transition"
               >
-                <span className="text-sm text-white">{c.name}</span>
-                <span className="text-[10px] text-zinc-600 ml-2">{c.category}</span>
+                <span className="text-base text-white">{c.name}</span>
+                <span className="text-xs text-zinc-600 ml-2">{c.category}</span>
               </button>
             ))}
-            {filtered.length === 0 && <p className="text-center text-zinc-500 text-xs py-8">No exercises found</p>}
+            {filtered.length === 0 && <p className="text-center text-zinc-500 text-sm py-8">No exercises found</p>}
           </div>
         </div>
       </div>
@@ -143,8 +143,8 @@ export default function QuickLogModal({ userId, bodyweight, sex, catalog, onClos
         <div className="p-4 border-b border-zinc-800">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-bold text-white">{selected.name}</h3>
-              <button onClick={() => setSelected(null)} className="text-[10px] text-orange-500">← Change exercise</button>
+              <h3 className="text-base font-bold text-white">{selected.name}</h3>
+              <button onClick={() => setSelected(null)} className="text-xs text-orange-500">← Change exercise</button>
             </div>
             <button onClick={onClose} className="text-zinc-500 hover:text-white text-xs font-bold px-3 py-1 rounded bg-zinc-800">✕</button>
           </div>
@@ -153,38 +153,38 @@ export default function QuickLogModal({ userId, bodyweight, sex, catalog, onClos
         <div className="p-4 space-y-3 max-h-[60vh] overflow-y-auto">
           {sets.map((s, i) => (
             <div key={i} className="flex items-center gap-2">
-              <span className="text-[10px] text-zinc-600 w-6 text-center">{i + 1}</span>
+              <span className="text-xs text-zinc-600 w-6 text-center">{i + 1}</span>
               {isCardio ? (
                 <div className="flex-1 space-y-2">
                   <div className="flex gap-2">
                     <div className="flex flex-col flex-1">
-                      <span className="text-[8px] text-zinc-600 text-center mb-0.5">MIN</span>
-                      <input type="text" inputMode="numeric" placeholder="0" value={s.duration} onChange={e => updateSet(i, 'duration', e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1.5 text-center text-sm text-white focus:border-zinc-500 outline-none" />
+                      <span className="text-xs text-zinc-600 text-center mb-0.5">MIN</span>
+                      <input type="text" inputMode="numeric" placeholder="0" value={s.duration} onChange={e => updateSet(i, 'duration', e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1.5 text-center text-base text-white focus:border-zinc-500 outline-none" />
                     </div>
                     <div className="flex flex-col flex-1">
-                      <span className="text-[8px] text-zinc-600 text-center mb-0.5">SEC</span>
-                      <input type="text" inputMode="numeric" placeholder="0" value={s.seconds} onChange={e => updateSet(i, 'seconds', e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1.5 text-center text-sm text-white focus:border-zinc-500 outline-none" />
+                      <span className="text-xs text-zinc-600 text-center mb-0.5">SEC</span>
+                      <input type="text" inputMode="numeric" placeholder="0" value={s.seconds} onChange={e => updateSet(i, 'seconds', e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1.5 text-center text-base text-white focus:border-zinc-500 outline-none" />
                     </div>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[8px] text-zinc-600 text-center mb-0.5">DISTANCE (MILES)</span>
-                    <input type="text" inputMode="decimal" placeholder="0.0" value={s.distance} onChange={e => updateSet(i, 'distance', e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1.5 text-center text-sm text-white focus:border-zinc-500 outline-none" />
+                    <span className="text-xs text-zinc-600 text-center mb-0.5">DISTANCE (MILES)</span>
+                    <input type="text" inputMode="decimal" placeholder="0.0" value={s.distance} onChange={e => updateSet(i, 'distance', e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1.5 text-center text-base text-white focus:border-zinc-500 outline-none" />
                   </div>
                 </div>
               ) : isBodyweight ? (
                 <div className="flex flex-col flex-1">
-                  <span className="text-[8px] text-zinc-600 text-center mb-0.5">REPS</span>
-                  <input type="text" inputMode="numeric" placeholder="—" value={s.reps} onChange={e => updateSet(i, 'reps', e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1.5 text-center text-sm text-white focus:border-zinc-500 outline-none" />
+                  <span className="text-xs text-zinc-600 text-center mb-0.5">REPS</span>
+                  <input type="text" inputMode="numeric" placeholder="—" value={s.reps} onChange={e => updateSet(i, 'reps', e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1.5 text-center text-base text-white focus:border-zinc-500 outline-none" />
                 </div>
               ) : (
                 <>
                   <div className="flex flex-col flex-1">
-                    <span className="text-[8px] text-zinc-600 text-center mb-0.5">LBS</span>
-                    <input type="text" inputMode="decimal" placeholder="—" value={s.weight} onChange={e => updateSet(i, 'weight', e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1.5 text-center text-sm text-white focus:border-zinc-500 outline-none" />
+                    <span className="text-xs text-zinc-600 text-center mb-0.5">LBS</span>
+                    <input type="text" inputMode="decimal" placeholder="—" value={s.weight} onChange={e => updateSet(i, 'weight', e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1.5 text-center text-base text-white focus:border-zinc-500 outline-none" />
                   </div>
                   <div className="flex flex-col flex-1">
-                    <span className="text-[8px] text-zinc-600 text-center mb-0.5">REPS</span>
-                    <input type="text" inputMode="numeric" placeholder="—" value={s.reps} onChange={e => updateSet(i, 'reps', e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1.5 text-center text-sm text-white focus:border-zinc-500 outline-none" />
+                    <span className="text-xs text-zinc-600 text-center mb-0.5">REPS</span>
+                    <input type="text" inputMode="numeric" placeholder="—" value={s.reps} onChange={e => updateSet(i, 'reps', e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1.5 text-center text-base text-white focus:border-zinc-500 outline-none" />
                   </div>
                 </>
               )}
@@ -192,7 +192,7 @@ export default function QuickLogModal({ userId, bodyweight, sex, catalog, onClos
           ))}
 
           {!isCardio && (
-            <button onClick={addSet} className="w-full text-[10px] text-zinc-500 hover:text-white py-2 border border-dashed border-zinc-700 rounded-lg transition">
+            <button onClick={addSet} className="w-full text-xs text-zinc-500 hover:text-white py-2 border border-dashed border-zinc-700 rounded-lg transition">
               + Add Set
             </button>
           )}
@@ -202,7 +202,7 @@ export default function QuickLogModal({ userId, bodyweight, sex, catalog, onClos
           <button
             onClick={handleLog}
             disabled={logging}
-            className="w-full bg-gradient-to-r from-orange-600 to-orange-500 text-white font-bold py-3 rounded-xl text-sm uppercase tracking-wider transition active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full bg-gradient-to-r from-orange-600 to-orange-500 text-white font-bold py-3 rounded-xl text-base uppercase tracking-wider transition active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
           >
             <Zap size={16} />
             {logging ? 'Logging...' : 'Log Exercise'}

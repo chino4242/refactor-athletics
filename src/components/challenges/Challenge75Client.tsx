@@ -59,8 +59,8 @@ export default function Challenge75Client({ userId, groups }: { userId: string; 
       {challenges.length === 0 ? (
         <div className="text-center py-12 space-y-3">
           <div className="text-4xl">🎯</div>
-          <p className="text-zinc-400 text-sm">No active challenges yet.</p>
-          <button onClick={() => setShowCreate(true)} className="bg-orange-600 text-white text-sm font-bold px-4 py-2 rounded-lg">Start Your First Challenge</button>
+          <p className="text-zinc-400 text-base">No active challenges yet.</p>
+          <button onClick={() => setShowCreate(true)} className="bg-orange-600 text-white text-base font-bold px-4 py-2 rounded-lg">Start Your First Challenge</button>
         </div>
       ) : (
         <div className="space-y-3">
@@ -70,12 +70,12 @@ export default function Challenge75Client({ userId, groups }: { userId: string; 
             return (
               <button key={c.id} onClick={() => setSelectedChallenge(c)} className="w-full text-left bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-700 transition">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-bold text-white">{c.title}</span>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${c.status === 'active' ? 'bg-emerald-500/10 text-emerald-400' : c.status === 'completed' ? 'bg-blue-500/10 text-blue-400' : 'bg-red-500/10 text-red-400'}`}>
+                  <span className="text-base font-bold text-white">{c.title}</span>
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${c.status === 'active' ? 'bg-emerald-500/10 text-emerald-400' : c.status === 'completed' ? 'bg-blue-500/10 text-blue-400' : 'bg-red-500/10 text-red-400'}`}>
                     {c.status}
                   </span>
                 </div>
-                <div className="flex items-center gap-3 text-[11px] text-zinc-500">
+                <div className="flex items-center gap-3 text-xs text-zinc-500">
                   <span>Day {Math.min(daysPassed, 75)}/75</span>
                   <span>✅ {passedDays} days</span>
                   {c.group_id && <span className="flex items-center gap-1"><Users size={10} /> Group</span>}
@@ -173,7 +173,7 @@ function CreateChallenge({ userId, groups, onDone }: { userId: string; groups: a
           <button onClick={onDone} className="text-zinc-500 text-xs">Cancel</button>
         </div>
 
-        <p className="text-sm text-zinc-400">Choose a template to get started, or build your own from scratch.</p>
+        <p className="text-base text-zinc-400">Choose a template to get started, or build your own from scratch.</p>
 
         <div className="space-y-3">
           {TEMPLATES.map(t => (
@@ -181,9 +181,9 @@ function CreateChallenge({ userId, groups, onDone }: { userId: string; groups: a
               <div className="flex items-center gap-3">
                 <span className="text-2xl">{t.emoji}</span>
                 <div className="flex-1">
-                  <div className="text-sm font-bold text-white">{t.name}</div>
-                  <div className="text-[11px] text-zinc-500 mt-0.5">{t.description}</div>
-                  <div className="text-[10px] text-zinc-600 mt-1">{t.metrics.length} daily requirements</div>
+                  <div className="text-base font-bold text-white">{t.name}</div>
+                  <div className="text-xs text-zinc-500 mt-0.5">{t.description}</div>
+                  <div className="text-xs text-zinc-600 mt-1">{t.metrics.length} daily requirements</div>
                 </div>
                 <ChevronRight size={16} className="text-zinc-600" />
               </div>
@@ -194,8 +194,8 @@ function CreateChallenge({ userId, groups, onDone }: { userId: string; groups: a
             <div className="flex items-center gap-3">
               <span className="text-2xl">⚙️</span>
               <div className="flex-1">
-                <div className="text-sm font-bold text-white">Custom</div>
-                <div className="text-[11px] text-zinc-500 mt-0.5">Pick your own metrics and set your own rules.</div>
+                <div className="text-base font-bold text-white">Custom</div>
+                <div className="text-xs text-zinc-500 mt-0.5">Pick your own metrics and set your own rules.</div>
               </div>
               <ChevronRight size={16} className="text-zinc-600" />
             </div>
@@ -214,18 +214,18 @@ function CreateChallenge({ userId, groups, onDone }: { userId: string; groups: a
       </div>
 
       <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Challenge name"
-        className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm text-white focus:border-zinc-500 outline-none" />
+        className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2.5 text-base text-white focus:border-zinc-500 outline-none" />
 
       <div>
-        <label className="text-[11px] font-bold text-zinc-500 uppercase mb-2 block">Start Date</label>
+        <label className="text-xs font-bold text-zinc-500 uppercase mb-2 block">Start Date</label>
         <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
-          className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:border-zinc-500 outline-none" />
-        <span className="text-[10px] text-zinc-600 ml-2">Ends: {new Date(new Date(startDate).getTime() + 74 * 86400000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+          className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-base text-white focus:border-zinc-500 outline-none" />
+        <span className="text-xs text-zinc-600 ml-2">Ends: {new Date(new Date(startDate).getTime() + 74 * 86400000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
       </div>
 
       {groups.length > 0 && (
         <div>
-          <label className="text-[11px] font-bold text-zinc-500 uppercase mb-2 block">Challenge Type</label>
+          <label className="text-xs font-bold text-zinc-500 uppercase mb-2 block">Challenge Type</label>
           <div className="flex gap-2">
             <button onClick={() => setGroupId(null)} className={`flex-1 py-2 rounded-lg text-xs font-bold border ${!groupId ? 'border-orange-500 bg-orange-500/10 text-orange-400' : 'border-zinc-700 text-zinc-400'}`}>Solo</button>
             {groups.map((g: any) => (
@@ -240,8 +240,8 @@ function CreateChallenge({ userId, groups, onDone }: { userId: string; groups: a
       {groupId && (
         <div className="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-3">
           <div>
-            <div className="text-xs font-bold text-white">Shared Fate</div>
-            <div className="text-[10px] text-zinc-500">If one person fails, everyone fails</div>
+            <div className="text-sm font-bold text-white">Shared Fate</div>
+            <div className="text-xs text-zinc-500">If one person fails, everyone fails</div>
           </div>
           <button onClick={() => setSharedFailure(!sharedFailure)}
             className={`w-10 h-5 rounded-full transition-colors ${sharedFailure ? 'bg-orange-500' : 'bg-zinc-700'}`}>
@@ -251,15 +251,15 @@ function CreateChallenge({ userId, groups, onDone }: { userId: string; groups: a
       )}
 
       <div>
-        <label className="text-[11px] font-bold text-zinc-500 uppercase mb-2 block">What to Track</label>
+        <label className="text-xs font-bold text-zinc-500 uppercase mb-2 block">What to Track</label>
         <div className="grid grid-cols-2 gap-2">
           {APP_METRICS.map(m => {
             const selected = selectedMetrics.some(s => s.id === m.id);
             return (
               <button key={m.id} onClick={() => toggleMetric(m)}
                 className={`p-3 rounded-lg border text-left transition ${selected ? 'border-orange-500 bg-orange-500/10' : 'border-zinc-800 bg-zinc-900 hover:border-zinc-700'}`}>
-                <div className="text-xs font-bold text-white">{m.label}</div>
-                <div className="text-[10px] text-zinc-500">{m.unit}</div>
+                <div className="text-sm font-bold text-white">{m.label}</div>
+                <div className="text-xs text-zinc-500">{m.unit}</div>
               </button>
             );
           })}
@@ -268,10 +268,10 @@ function CreateChallenge({ userId, groups, onDone }: { userId: string; groups: a
 
       {/* Custom checkboxes */}
       <div>
-        <label className="text-[11px] font-bold text-zinc-500 uppercase mb-2 block">Custom Daily Habits</label>
+        <label className="text-xs font-bold text-zinc-500 uppercase mb-2 block">Custom Daily Habits</label>
         <div className="flex gap-2">
           <input type="text" value={customLabel} onChange={e => setCustomLabel(e.target.value)} placeholder="e.g. Read 30 min, No alcohol"
-            className="flex-1 bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:border-zinc-500 outline-none"
+            className="flex-1 bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-base text-white focus:border-zinc-500 outline-none"
             onKeyDown={e => { if (e.key === 'Enter') addCustom(); }} />
           <button onClick={addCustom} className="bg-zinc-800 border border-zinc-700 text-zinc-400 px-3 rounded-lg text-xs font-bold">Add</button>
         </div>
@@ -280,15 +280,15 @@ function CreateChallenge({ userId, groups, onDone }: { userId: string; groups: a
       {/* Selected metrics with minimums */}
       {selectedMetrics.length > 0 && (
         <div className="space-y-2">
-          <label className="text-[11px] font-bold text-zinc-500 uppercase block">Minimums</label>
+          <label className="text-xs font-bold text-zinc-500 uppercase block">Minimums</label>
           {selectedMetrics.map(m => (
             <div key={m.id} className="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2">
-              <span className="text-xs text-white">{m.label}</span>
+              <span className="text-sm text-white">{m.label}</span>
               {m.type === 'app' ? (
                 <input type="number" value={m.minimum} onChange={e => updateMinimum(m.id, Number(e.target.value))}
-                  className="w-20 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs text-white text-center focus:border-zinc-500 outline-none" />
+                  className="w-20 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-sm text-white text-center focus:border-zinc-500 outline-none" />
               ) : (
-                <span className="text-[10px] text-zinc-500">Daily checkbox</span>
+                <span className="text-xs text-zinc-500">Daily checkbox</span>
               )}
               <button onClick={() => setSelectedMetrics(prev => prev.filter(s => s.id !== m.id))} className="text-zinc-600 hover:text-red-400 ml-2"><X size={14} /></button>
             </div>
@@ -297,7 +297,7 @@ function CreateChallenge({ userId, groups, onDone }: { userId: string; groups: a
       )}
 
       <button onClick={handleCreate} disabled={selectedMetrics.length === 0 || saving}
-        className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold py-3 rounded-xl text-sm uppercase tracking-wider disabled:opacity-50">
+        className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold py-3 rounded-xl text-base uppercase tracking-wider disabled:opacity-50">
         {saving ? 'Creating...' : 'Start Challenge'}
       </button>
     </div>
@@ -349,22 +349,22 @@ function JoinChallenge({ challenge, userId, onDone, onSkip }: { challenge: any; 
       </div>
 
       <div className="bg-zinc-800/50 border border-zinc-700/50 rounded-xl p-3 text-center">
-        <div className="text-sm font-bold text-white">{challenge.title}</div>
-        <div className="text-[10px] text-zinc-500 mt-1">Created by a group member · {challenge.challenge_75_members?.length || 1} participant(s)</div>
+        <div className="text-base font-bold text-white">{challenge.title}</div>
+        <div className="text-xs text-zinc-500 mt-1">Created by a group member · {challenge.challenge_75_members?.length || 1} participant(s)</div>
       </div>
 
-      <p className="text-sm text-zinc-400">Pick YOUR targets — you&apos;ll be evaluated against them each day.{challenge.shared_failure && ' The party succeeds or fails together — if anyone misses their targets, everyone starts over.'}</p>
+      <p className="text-base text-zinc-400">Pick YOUR targets — you&apos;ll be evaluated against them each day.{challenge.shared_failure && ' The party succeeds or fails together — if anyone misses their targets, everyone starts over.'}</p>
 
       <div>
-        <label className="text-[11px] font-bold text-zinc-500 uppercase mb-2 block">What to Track</label>
+        <label className="text-xs font-bold text-zinc-500 uppercase mb-2 block">What to Track</label>
         <div className="grid grid-cols-2 gap-2">
           {APP_METRICS.map(m => {
             const selected = selectedMetrics.some(s => s.id === m.id);
             return (
               <button key={m.id} onClick={() => toggleMetric(m)}
                 className={`p-3 rounded-lg border text-left transition ${selected ? 'border-orange-500 bg-orange-500/10' : 'border-zinc-800 bg-zinc-900 hover:border-zinc-700'}`}>
-                <div className="text-xs font-bold text-white">{m.label}</div>
-                <div className="text-[10px] text-zinc-500">{m.unit}</div>
+                <div className="text-sm font-bold text-white">{m.label}</div>
+                <div className="text-xs text-zinc-500">{m.unit}</div>
               </button>
             );
           })}
@@ -372,10 +372,10 @@ function JoinChallenge({ challenge, userId, onDone, onSkip }: { challenge: any; 
       </div>
 
       <div>
-        <label className="text-[11px] font-bold text-zinc-500 uppercase mb-2 block">Custom Daily Habits</label>
+        <label className="text-xs font-bold text-zinc-500 uppercase mb-2 block">Custom Daily Habits</label>
         <div className="flex gap-2">
           <input type="text" value={customLabel} onChange={e => setCustomLabel(e.target.value)} placeholder="e.g. Read 30 min, No alcohol"
-            className="flex-1 bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:border-zinc-500 outline-none"
+            className="flex-1 bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-base text-white focus:border-zinc-500 outline-none"
             onKeyDown={e => { if (e.key === 'Enter') addCustom(); }} />
           <button onClick={addCustom} className="bg-zinc-800 border border-zinc-700 text-zinc-400 px-3 rounded-lg text-xs font-bold">Add</button>
         </div>
@@ -383,15 +383,15 @@ function JoinChallenge({ challenge, userId, onDone, onSkip }: { challenge: any; 
 
       {selectedMetrics.length > 0 && (
         <div className="space-y-2">
-          <label className="text-[11px] font-bold text-zinc-500 uppercase block">Your Minimums</label>
+          <label className="text-xs font-bold text-zinc-500 uppercase block">Your Minimums</label>
           {selectedMetrics.map(m => (
             <div key={m.id} className="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2">
-              <span className="text-xs text-white">{m.label}</span>
+              <span className="text-sm text-white">{m.label}</span>
               {m.type === 'app' ? (
                 <input type="number" value={m.minimum} onChange={e => updateMinimum(m.id, Number(e.target.value))}
-                  className="w-20 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs text-white text-center focus:border-zinc-500 outline-none" />
+                  className="w-20 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-sm text-white text-center focus:border-zinc-500 outline-none" />
               ) : (
-                <span className="text-[10px] text-zinc-500">Daily checkbox</span>
+                <span className="text-xs text-zinc-500">Daily checkbox</span>
               )}
               <button onClick={() => setSelectedMetrics(prev => prev.filter(s => s.id !== m.id))} className="text-zinc-600 hover:text-red-400 ml-2"><X size={14} /></button>
             </div>
@@ -400,7 +400,7 @@ function JoinChallenge({ challenge, userId, onDone, onSkip }: { challenge: any; 
       )}
 
       <button onClick={handleJoin} disabled={selectedMetrics.length === 0 || saving}
-        className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold py-3 rounded-xl text-sm uppercase tracking-wider disabled:opacity-50">
+        className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold py-3 rounded-xl text-base uppercase tracking-wider disabled:opacity-50">
         {saving ? 'Joining...' : 'Join Challenge'}
       </button>
     </div>
@@ -478,12 +478,12 @@ function ChallengeView({ challenge, userId, onBack }: { challenge: Challenge; us
 
       <div className="text-center">
         <h2 className="text-lg font-black text-white">{challenge.title}</h2>
-        <div className="text-sm text-zinc-400 mt-1">
+        <div className="text-base text-zinc-400 mt-1">
           {myStatus === 'joined' && <span>Day {Math.min(daysPassed + 1, 75)} of 75 · ✅ {passedCount} days</span>}
           {myStatus === 'completed' && <span className="text-emerald-400 font-bold">🏆 Completed!</span>}
           {myStatus === 'failed' && <span className="text-red-400">Failed on day {Math.floor((new Date(myMembership.failed_on!).getTime() - startDate.getTime()) / 86400000) + 1} — {myMembership.failed_metric}</span>}
         </div>
-        <div className="text-[10px] text-zinc-600 mt-1">
+        <div className="text-xs text-zinc-600 mt-1">
           {startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} → {endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
         </div>
       </div>
@@ -491,7 +491,7 @@ function ChallengeView({ challenge, userId, onBack }: { challenge: Challenge; us
       {/* Today's Custom Checks */}
       {challenge.status === 'active' && customMetrics.length > 0 && (
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 space-y-2">
-          <span className="text-[10px] font-bold text-zinc-500 uppercase">Today&apos;s Check-in</span>
+          <span className="text-xs font-bold text-zinc-500 uppercase">Today&apos;s Check-in</span>
           {customMetrics.map((m: any) => {
             const checked = todayRecord?.custom_checks?.[m.metric_id] === true;
             return (
@@ -500,7 +500,7 @@ function ChallengeView({ challenge, userId, onBack }: { challenge: Challenge; us
                 <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${checked ? 'border-emerald-500 bg-emerald-500' : 'border-zinc-600'}`}>
                   {checked && <Check size={12} className="text-black" />}
                 </div>
-                <span className="text-xs text-white">{m.label}</span>
+                <span className="text-sm text-white">{m.label}</span>
               </button>
             );
           })}
@@ -531,7 +531,7 @@ function ChallengeView({ challenge, userId, onBack }: { challenge: Challenge; us
             </div>
           ))}
         </div>
-        <div className="flex items-center gap-3 mt-2 text-[9px] text-zinc-500">
+        <div className="flex items-center gap-3 mt-2 text-xs text-zinc-500">
           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-emerald-500" /> Passed</span>
           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-red-500" /> Failed</span>
           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm border border-blue-500 bg-blue-500/30" /> Today</span>
@@ -542,7 +542,7 @@ function ChallengeView({ challenge, userId, onBack }: { challenge: Challenge; us
       {/* Today's Daily Checklist — Table View */}
       {challenge.status === 'active' && (
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 overflow-x-auto">
-          <span className="text-[10px] font-bold text-zinc-500 uppercase block mb-2">Today&apos;s Progress</span>
+          <span className="text-xs font-bold text-zinc-500 uppercase block mb-2">Today&apos;s Progress</span>
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-zinc-800">
@@ -590,16 +590,16 @@ function ChallengeView({ challenge, userId, onBack }: { challenge: Challenge; us
       {/* Tracking — editable targets */}
       <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 space-y-1.5">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] font-bold text-zinc-500 uppercase">Your Targets</span>
+          <span className="text-xs font-bold text-zinc-500 uppercase">Your Targets</span>
           {!editingTargets && myMembership?.status === 'joined' && (
-            <button onClick={() => setEditingTargets(true)} className="text-[10px] text-orange-400 font-bold">Edit</button>
+            <button onClick={() => setEditingTargets(true)} className="text-xs text-orange-400 font-bold">Edit</button>
           )}
         </div>
         {metrics.map((m: any) => (
-          <div key={m.id} className="flex items-center justify-between text-xs">
+          <div key={m.id} className="flex items-center justify-between text-sm">
             <span className="text-zinc-300">{m.label}</span>
             {editingTargets && m.metric_type !== 'custom' ? (
-              <input type="number" defaultValue={m.minimum} className="w-16 bg-zinc-800 border border-zinc-700 rounded px-2 py-0.5 text-xs text-white text-right outline-none focus:border-orange-500"
+              <input type="number" defaultValue={m.minimum} className="w-16 bg-zinc-800 border border-zinc-700 rounded px-2 py-0.5 text-sm text-white text-right outline-none focus:border-orange-500"
                 onBlur={e => { editedTargets.current[m.id] = Number(e.target.value); }} />
             ) : (
               <span className="text-zinc-500">{m.metric_type === 'custom' ? 'Daily ✓' : `≥ ${m.minimum}`}</span>

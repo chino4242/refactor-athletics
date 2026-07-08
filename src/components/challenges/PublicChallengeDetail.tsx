@@ -59,7 +59,7 @@ export default function PublicChallengeDetail({ challengeId, currentUserId }: Pr
     if (!challenge) return (
         <div className="text-center py-20">
             <p className="text-zinc-500">Challenge not found.</p>
-            <button onClick={() => router.push('/arena')} className="text-orange-500 underline text-sm mt-4">Back to Arena</button>
+            <button onClick={() => router.push('/arena')} className="text-orange-500 underline text-base mt-4">Back to Arena</button>
         </div>
     );
 
@@ -81,7 +81,7 @@ export default function PublicChallengeDetail({ challengeId, currentUserId }: Pr
                 </button>
                 <div className="flex-1">
                     <h1 className="text-2xl font-black italic uppercase tracking-tight text-white">{challenge.name}</h1>
-                    {challenge.description && <p className="text-zinc-500 text-sm">{challenge.description}</p>}
+                    {challenge.description && <p className="text-zinc-500 text-base">{challenge.description}</p>}
                 </div>
                 <button onClick={handleShare} className="p-2 bg-zinc-800 rounded-lg hover:bg-zinc-700 transition">
                     <Share2 size={16} className={copied ? 'text-emerald-500' : 'text-zinc-400'} />
@@ -91,18 +91,18 @@ export default function PublicChallengeDetail({ challengeId, currentUserId }: Pr
             {/* Stats Bar */}
             <div className="grid grid-cols-3 gap-3">
                 <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-center">
-                    <div className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest">Metric</div>
-                    <div className="text-sm font-bold text-white mt-1">{preset?.emoji || '🏆'} {preset?.label || challenge.metric}</div>
+                    <div className="text-xs text-zinc-500 uppercase font-bold tracking-widest">Metric</div>
+                    <div className="text-base font-bold text-white mt-1">{preset?.emoji || '🏆'} {preset?.label || challenge.metric}</div>
                 </div>
                 <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-center">
-                    <div className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest">Participants</div>
-                    <div className="text-sm font-bold text-white mt-1">👥 {participants.length}</div>
+                    <div className="text-xs text-zinc-500 uppercase font-bold tracking-widest">Participants</div>
+                    <div className="text-base font-bold text-white mt-1">👥 {participants.length}</div>
                 </div>
                 <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-center">
-                    <div className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest">
+                    <div className="text-xs text-zinc-500 uppercase font-bold tracking-widest">
                         {challenge.status === 'completed' ? 'Status' : 'Days Left'}
                     </div>
-                    <div className={`text-sm font-bold mt-1 ${daysLeft <= 2 ? 'text-red-400' : 'text-white'}`}>
+                    <div className={`text-base font-bold mt-1 ${daysLeft <= 2 ? 'text-red-400' : 'text-white'}`}>
                         {challenge.status === 'completed' ? '✅ Done' : `⏳ ${daysLeft}`}
                     </div>
                 </div>
@@ -112,14 +112,14 @@ export default function PublicChallengeDetail({ challengeId, currentUserId }: Pr
             {isParticipant && (
                 <div className="bg-orange-500/10 border border-orange-500/30 rounded-xl p-4 flex items-center justify-between">
                     <div>
-                        <div className="text-[10px] text-orange-400 uppercase font-bold tracking-widest">Your Rank</div>
+                        <div className="text-xs text-orange-400 uppercase font-bold tracking-widest">Your Rank</div>
                         <div className="text-2xl font-black text-white">#{myRank}</div>
                     </div>
                     <div className="text-right">
-                        <div className="text-[10px] text-orange-400 uppercase font-bold tracking-widest">Your Score</div>
+                        <div className="text-xs text-orange-400 uppercase font-bold tracking-widest">Your Score</div>
                         <div className="text-2xl font-black text-white">
                             {(participants.find(p => p.user_id === currentUserId)?.score || 0).toLocaleString()}
-                            <span className="text-xs text-zinc-500 ml-1">{preset?.unit || ''}</span>
+                            <span className="text-sm text-zinc-500 ml-1">{preset?.unit || ''}</span>
                         </div>
                     </div>
                 </div>
@@ -132,7 +132,7 @@ export default function PublicChallengeDetail({ challengeId, currentUserId }: Pr
                 </div>
                 <div className="divide-y divide-zinc-800/50">
                     {participants.length === 0 ? (
-                        <div className="p-6 text-center text-zinc-600 text-sm">No participants yet. Share the link!</div>
+                        <div className="p-6 text-center text-zinc-600 text-base">No participants yet. Share the link!</div>
                     ) : participants.map((p, i) => (
                         <div
                             key={p.user_id}
@@ -147,14 +147,14 @@ export default function PublicChallengeDetail({ challengeId, currentUserId }: Pr
                                 {i === 0 ? <Crown size={14} /> : i + 1}
                             </div>
                             <div className="flex-1 min-w-0">
-                                <div className={`text-sm font-bold truncate ${p.user_id === currentUserId ? 'text-orange-400' : 'text-white'}`}>
+                                <div className={`text-base font-bold truncate ${p.user_id === currentUserId ? 'text-orange-400' : 'text-white'}`}>
                                     {p.display_name || 'Anonymous'}
-                                    {p.user_id === currentUserId && <span className="text-[10px] text-zinc-500 ml-1">(you)</span>}
+                                    {p.user_id === currentUserId && <span className="text-xs text-zinc-500 ml-1">(you)</span>}
                                 </div>
                             </div>
-                            <div className="text-sm font-bold text-white">
+                            <div className="text-base font-bold text-white">
                                 {p.score.toLocaleString()}
-                                <span className="text-[10px] text-zinc-600 ml-1">{preset?.unit || ''}</span>
+                                <span className="text-xs text-zinc-600 ml-1">{preset?.unit || ''}</span>
                             </div>
                         </div>
                     ))}
@@ -165,7 +165,7 @@ export default function PublicChallengeDetail({ challengeId, currentUserId }: Pr
             {isParticipant && (
                 <button
                     onClick={handleShare}
-                    className="w-full py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-sm font-bold text-zinc-300 hover:bg-zinc-700 transition flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-base font-bold text-zinc-300 hover:bg-zinc-700 transition flex items-center justify-center gap-2"
                 >
                     <Share2 size={14} />
                     {copied ? 'Link Copied!' : 'Share Challenge Link'}

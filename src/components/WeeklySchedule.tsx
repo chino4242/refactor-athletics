@@ -70,7 +70,7 @@ export default function WeeklySchedule({ onSelectDay, completedDates = [] }: Wee
         <div className="w-full bg-zinc-900/50 rounded-2xl border border-zinc-800 p-4 mb-8">
             <div className="flex items-center justify-between mb-4 px-2">
                 <h3 className="text-zinc-400 font-bold uppercase tracking-widest text-xs">Current Week</h3>
-                <span className="text-[10px] bg-zinc-800 text-zinc-500 px-2 py-1 rounded">Week 1 of 8</span>
+                <span className="text-xs bg-zinc-800 text-zinc-500 px-2 py-1 rounded">Week 1 of 8</span>
             </div>
 
             {/* 1. Horizontal Day Strip */}
@@ -99,7 +99,7 @@ export default function WeeklySchedule({ onSelectDay, completedDates = [] }: Wee
                                 </div>
                             )}
 
-                            <span className="text-[9px] font-bold uppercase tracking-wider mb-0.5">{format(day.date, 'EEE')}</span>
+                            <span className="text-xs font-bold uppercase tracking-wider mb-0.5">{format(day.date, 'EEE')}</span>
                             <span className={`text-base font-black leading-none ${isSelected ? 'text-white' : 'text-current'} `}>
                                 {format(day.date, 'd')}
                             </span>

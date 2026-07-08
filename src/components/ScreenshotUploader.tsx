@@ -109,12 +109,12 @@ export default function ScreenshotUploader({ type, subtype, userId, onDataExtrac
         {uploading ? (
           <>
             <Loader2 size={14} className="animate-spin" />
-            <span className="text-[10px] text-zinc-400">Parsing...</span>
+            <span className="text-xs text-zinc-400">Parsing...</span>
           </>
         ) : (
           <>
             <Upload size={14} className="text-orange-500" />
-            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wide">
+            <span className="text-xs text-zinc-400 font-bold uppercase tracking-wide">
               {type === 'habits' ? '📱 Upload Habits' : 'Upload'}
             </span>
           </>
@@ -134,10 +134,10 @@ export default function ScreenshotUploader({ type, subtype, userId, onDataExtrac
 
       {reviewData && (
         <div className="mt-2 bg-zinc-800/80 border border-emerald-800/50 rounded-xl p-3 space-y-2">
-          <p className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">Review Extracted Data</p>
+          <p className="text-xs text-emerald-400 font-bold uppercase tracking-widest">Review Extracted Data</p>
           {Object.entries(reviewData).map(([key, val]) => (
             <div key={key} className="flex items-center gap-2">
-              <span className="text-[10px] text-zinc-400 uppercase w-24 truncate">{key.replace(/_/g, ' ')}</span>
+              <span className="text-xs text-zinc-400 uppercase w-24 truncate">{key.replace(/_/g, ' ')}</span>
               <input
                 type="number"
                 step="0.1"
@@ -150,11 +150,11 @@ export default function ScreenshotUploader({ type, subtype, userId, onDataExtrac
           <div className="flex gap-2 pt-1">
             <button
               onClick={() => setReviewData(null)}
-              className="flex-1 text-[10px] text-zinc-400 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700 font-bold uppercase"
+              className="flex-1 text-xs text-zinc-400 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700 font-bold uppercase"
             >Cancel</button>
             <button
               onClick={handleConfirm}
-              className="flex-1 text-[10px] text-white py-1.5 rounded bg-emerald-600 hover:bg-emerald-500 font-bold uppercase flex items-center justify-center gap-1"
+              className="flex-1 text-xs text-white py-1.5 rounded bg-emerald-600 hover:bg-emerald-500 font-bold uppercase flex items-center justify-center gap-1"
             ><Check size={12} /> Confirm</button>
           </div>
         </div>

@@ -122,8 +122,8 @@ export default function NutritionSection({ userId, userProfile, totals, onUpdate
               onClick={() => handleSelectFood(food)}
               className="w-full text-left px-4 py-2.5 hover:bg-zinc-800 border-b border-zinc-800 last:border-0 transition"
             >
-              <div className="text-sm text-white truncate">{food.name}</div>
-              <div className="text-[10px] text-zinc-400">
+              <div className="text-base text-white truncate">{food.name}</div>
+              <div className="text-xs text-zinc-400">
                 {food.brand && <span>{food.brand} · </span>}
                 {food.per100g.calories} cal · {food.per100g.protein}p · {food.per100g.carbs}c · {food.per100g.fat}f
                 {food.servingSize && <span> · {food.servingSize}</span>}
@@ -159,7 +159,7 @@ export default function NutritionSection({ userId, userProfile, totals, onUpdate
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-sm">💧</span>
-            <span className="text-xs text-zinc-300 font-medium">{Math.round(totals['habit_water'] || 0)} / {targets.water || 100} oz</span>
+            <span className="text-sm text-zinc-300 font-medium">{Math.round(totals['habit_water'] || 0)} / {targets.water || 100} oz</span>
           </div>
           <div className="flex items-center gap-1.5">
             {[8, 16, 32].map(oz => (
@@ -170,7 +170,7 @@ export default function NutritionSection({ userId, userProfile, totals, onUpdate
                   await logHabitAction(userId, 'habit_water', current + oz, undefined, 'Water');
                   onUpdate();
                 }}
-                className="bg-cyan-600/20 border border-cyan-500/30 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-lg hover:bg-cyan-600/30 transition"
+                className="bg-cyan-600/20 border border-cyan-500/30 text-cyan-400 text-xs font-bold px-2 py-1 rounded-lg hover:bg-cyan-600/30 transition"
               >
                 +{oz}
               </button>
@@ -182,7 +182,7 @@ export default function NutritionSection({ userId, userProfile, totals, onUpdate
                   await logHabitAction(userId, 'habit_water', Math.max(0, current - 8), undefined, 'Water');
                   onUpdate();
                 }}
-                className="bg-zinc-700/50 border border-zinc-600/50 text-zinc-400 text-[10px] font-bold px-2 py-1 rounded-lg hover:text-red-400 transition"
+                className="bg-zinc-700/50 border border-zinc-600/50 text-zinc-400 text-xs font-bold px-2 py-1 rounded-lg hover:text-red-400 transition"
               >
                 −8
               </button>
@@ -199,8 +199,8 @@ export default function NutritionSection({ userId, userProfile, totals, onUpdate
           input.value = '';
           onUpdate();
         }}>
-          <input name="water_amt" type="number" placeholder="Custom oz" className="flex-1 bg-zinc-700/50 border border-zinc-600/50 rounded-lg px-2 py-1 text-[10px] text-white placeholder:text-zinc-500 outline-none focus:border-cyan-500/50 w-20" />
-          <button type="submit" className="bg-cyan-600/20 border border-cyan-500/30 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-lg">Add</button>
+          <input name="water_amt" type="number" placeholder="Custom oz" className="flex-1 bg-zinc-700/50 border border-zinc-600/50 rounded-lg px-2 py-1 text-xs text-white placeholder:text-zinc-500 outline-none focus:border-cyan-500/50 w-20" />
+          <button type="submit" className="bg-cyan-600/20 border border-cyan-500/30 text-cyan-400 text-xs font-bold px-2 py-1 rounded-lg">Add</button>
         </form>
       </div>
 
@@ -217,10 +217,10 @@ export default function NutritionSection({ userId, userProfile, totals, onUpdate
         }}>
           <div className="flex items-center gap-2">
             <span className="text-sm">🔥</span>
-            <span className="text-xs text-zinc-300 font-medium">{Math.round(totals['macro_calories_burned'] || 0)} burned</span>
+            <span className="text-sm text-zinc-300 font-medium">{Math.round(totals['macro_calories_burned'] || 0)} burned</span>
           </div>
-          <input name="cal_amt" type="number" placeholder="kcal" className="ml-auto w-20 bg-zinc-700/50 border border-zinc-600/50 rounded-lg px-2 py-1 text-[10px] text-white placeholder:text-zinc-500 outline-none focus:border-orange-500/50" />
-          <button type="submit" className="bg-orange-600/20 border border-orange-500/30 text-orange-400 text-[10px] font-bold px-2 py-1 rounded-lg">Set</button>
+          <input name="cal_amt" type="number" placeholder="kcal" className="ml-auto w-20 bg-zinc-700/50 border border-zinc-600/50 rounded-lg px-2 py-1 text-xs text-white placeholder:text-zinc-500 outline-none focus:border-orange-500/50" />
+          <button type="submit" className="bg-orange-600/20 border border-orange-500/30 text-orange-400 text-xs font-bold px-2 py-1 rounded-lg">Set</button>
         </form>
       </div>
 

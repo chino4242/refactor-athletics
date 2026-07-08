@@ -42,7 +42,7 @@ export default function TrophyList({
                 {!isBest && <img src={imageSrc} alt={`Lvl ${item.level}`} className="w-12 h-12 rounded-md object-cover border border-zinc-700 bg-zinc-800 shrink-0 shadow-sm" />}
                 <div className={`flex flex-col justify-center ${isBest ? 'items-end' : 'items-start'}`}>
                     <div className="flex items-center gap-2 mb-1">
-                        <span className={`text-sm font-bold font-mono ${isBest ? 'text-orange-400' : 'text-white'}`}>{item.value}</span>
+                        <span className={`text-base font-bold font-mono ${isBest ? 'text-orange-400' : 'text-white'}`}>{item.value}</span>
                         {!isBest && (
                             <button
                                 onClick={(e) => { e.stopPropagation(); onDelete(item); }}
@@ -54,7 +54,7 @@ export default function TrophyList({
                         )}
                     </div>
                     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wide border ${item.level >= 3 ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' : item.level >= 1 ? 'bg-zinc-800 text-zinc-400 border-zinc-700' : 'bg-zinc-900 text-zinc-600 border-zinc-800'}`}>Level {item.level}</span>
-                    <span className="text-[9px] text-zinc-500 mt-1">{item.date}</span>
+                    <span className="text-xs text-zinc-500 mt-1">{item.date}</span>
                 </div>
                 {isBest && <img src={imageSrc} alt={`Lvl ${item.level}`} className="w-12 h-12 rounded-md object-cover border border-zinc-700 bg-zinc-800 shrink-0 shadow-sm" />}
             </div>
@@ -69,7 +69,7 @@ export default function TrophyList({
                         🏆
                     </div>
                     <h3 className="text-zinc-400 font-bold uppercase tracking-wider mb-2">Trophy Case Empty</h3>
-                    <p className="text-sm text-zinc-500 max-w-xs mx-auto">
+                    <p className="text-base text-zinc-500 max-w-xs mx-auto">
                         Log your first <span className="text-zinc-300 font-bold">Bench Press</span> or <span className="text-zinc-300 font-bold">Squat</span> to unlock this slot.
                     </p>
                 </div>
@@ -96,7 +96,7 @@ export default function TrophyList({
                                 {displayCategory.includes("Mobility") && "🧘"}
                                 {displayCategory}
                             </h3>
-                            <span className="text-xs font-bold bg-zinc-800 text-zinc-400 px-2 py-1 rounded">
+                            <span className="text-base font-bold bg-zinc-800 text-zinc-400 px-2 py-1 rounded">
                                 Total Score: {categoryStats[category] || 0}
                             </span>
                         </div>
@@ -109,7 +109,7 @@ export default function TrophyList({
                                         <th className="py-3 pr-6 text-right font-bold w-1/3">Personal Best</th>
                                     </tr>
                                 </thead>
-                                <tbody className="text-sm divide-y divide-zinc-800">
+                                <tbody className="text-base divide-y divide-zinc-800">
                                     {items.map((trophy) => {
                                         const cleanId = trophy.exerciseId.replace(/^(five_rm_|one_rm_)/, '');
                                         let exerciseName = getExerciseName(cleanId) || getExerciseName(trophy.exerciseId);
@@ -124,7 +124,7 @@ export default function TrophyList({
                                         
                                         return (
                                             <tr key={trophy.exerciseId} className="hover:bg-zinc-800/50 transition group">
-                                                <td className="py-3 pl-6 align-middle"><span className="font-bold text-white block text-sm">{exerciseName}</span></td>
+                                                <td className="py-3 pl-6 align-middle"><span className="font-bold text-white block text-base">{exerciseName}</span></td>
                                                 <td className="py-3 pl-4 align-middle">{renderStatCell(trophy.recent, false)}</td>
                                                 <td className="py-3 pr-6 align-middle">{renderStatCell(trophy.best, true)}</td>
                                             </tr>

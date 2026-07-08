@@ -28,7 +28,7 @@ export default function FirstVisitTooltip({ id, message }: FirstVisitTooltipProp
     <div onClick={dismiss} className="mx-4 mb-3 px-4 py-3 bg-zinc-800/80 border border-zinc-700/50 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 cursor-pointer">
       <span className="text-lg">💡</span>
       <p className="text-xs text-zinc-300 flex-1">{message}</p>
-      <span className="text-[10px] text-zinc-600 shrink-0">tap to dismiss</span>
+      <span className="text-xs text-zinc-600 shrink-0">tap to dismiss</span>
     </div>
   );
 }

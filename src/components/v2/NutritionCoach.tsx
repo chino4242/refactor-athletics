@@ -139,7 +139,7 @@ export default function NutritionCoach({ userId, onClose, initialMessage }: Prop
       <div className={`flex items-center justify-between px-4 py-3 border-b ${colors.border}`}>
         <div className="flex items-center gap-2">
           <span className="text-lg">🧠</span>
-          <span className="text-sm text-white font-medium">Nutrition Coach</span>
+          <span className="text-base text-white font-medium">Nutrition Coach</span>
         </div>
         <button onClick={onClose} className="text-zinc-400 text-sm px-2 py-1">✕</button>
       </div>
@@ -161,15 +161,15 @@ export default function NutritionCoach({ userId, onClose, initialMessage }: Prop
         {/* Apply recommendation card */}
         {recommendation && !applying && (
           <div className={`border ${colors.primary} bg-zinc-800 p-3 space-y-2`}>
-            <p className="text-[9px] text-zinc-400 uppercase" style={{ fontFamily: "var(--font-pixel), monospace" }}>RECOMMENDED TARGETS</p>
+            <p className="text-xs text-zinc-400 uppercase" style={{ fontFamily: "var(--font-pixel), monospace" }}>RECOMMENDED TARGETS</p>
             <div className="grid grid-cols-4 gap-2 text-center">
-              <div><p className="text-sm text-white font-bold">{recommendation.protein}g</p><p className="text-[8px] text-zinc-500">Protein</p></div>
-              <div><p className="text-sm text-white font-bold">{recommendation.carbs}g</p><p className="text-[8px] text-zinc-500">Carbs</p></div>
-              <div><p className="text-sm text-white font-bold">{recommendation.fat}g</p><p className="text-[8px] text-zinc-500">Fat</p></div>
-              <div><p className="text-sm text-white font-bold">{recommendation.calories}</p><p className="text-[8px] text-zinc-500">Cal</p></div>
+              <div><p className="text-base text-white font-bold">{recommendation.protein}g</p><p className="text-xs text-zinc-500">Protein</p></div>
+              <div><p className="text-base text-white font-bold">{recommendation.carbs}g</p><p className="text-xs text-zinc-500">Carbs</p></div>
+              <div><p className="text-base text-white font-bold">{recommendation.fat}g</p><p className="text-xs text-zinc-500">Fat</p></div>
+              <div><p className="text-base text-white font-bold">{recommendation.calories}</p><p className="text-xs text-zinc-500">Cal</p></div>
             </div>
             <button onClick={() => handleApply(recommendation!)} className={`w-full py-2 border ${colors.primary} bg-zinc-900 text-center`}>
-              <span className="text-[10px] text-green-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>✓ APPLY TARGETS</span>
+              <span className="text-xs text-green-400" style={{ fontFamily: "var(--font-pixel), monospace" }}>✓ APPLY TARGETS</span>
             </button>
           </div>
         )}

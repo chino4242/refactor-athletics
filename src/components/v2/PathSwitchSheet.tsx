@@ -128,10 +128,10 @@ export default function PathSwitchSheet({ userId, currentPath, exercises, onConf
 
         {/* Header */}
         <div className="text-center pt-2">
-          <p className={`text-[10px] ${colors.headerText} uppercase tracking-widest`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+          <p className={`text-xs ${colors.headerText} uppercase tracking-widest`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
             SWITCH PATH
           </p>
-          <p className="text-[9px] text-zinc-500 mt-1">
+          <p className="text-xs text-zinc-500 mt-1">
             Your path determines which 4 specialty exercises count toward Power Level.
           </p>
         </div>
@@ -145,14 +145,14 @@ export default function PathSwitchSheet({ userId, currentPath, exercises, onConf
               className={`w-full text-left px-3 py-2.5 border ${targetPath === opt.key ? colors.primary + ' bg-zinc-800' : 'border-zinc-800 bg-zinc-900'} transition-colors`}
             >
               <div className="flex items-center justify-between">
-                <span className={`text-[10px] ${targetPath === opt.key ? colors.secondary : 'text-zinc-300'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                <span className={`text-xs ${targetPath === opt.key ? colors.secondary : 'text-zinc-300'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
                   {opt.label.toUpperCase()}
                 </span>
                 {opt.key === currentPath && (
-                  <span className="text-[7px] text-zinc-600" style={{ fontFamily: "var(--font-pixel), monospace" }}>CURRENT</span>
+                  <span className="text-xs text-zinc-600" style={{ fontFamily: "var(--font-pixel), monospace" }}>CURRENT</span>
                 )}
               </div>
-              <p className="text-[8px] text-zinc-500 mt-0.5">{opt.description}</p>
+              <p className="text-xs text-zinc-500 mt-0.5">{opt.description}</p>
             </button>
           ))}
         </div>
@@ -162,14 +162,14 @@ export default function PathSwitchSheet({ userId, currentPath, exercises, onConf
           <div className="space-y-3">
             {/* PL Impact */}
             <div className={`border ${colors.border} bg-zinc-900 p-3`}>
-              <p className="text-[8px] text-zinc-500 uppercase mb-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>POWER LEVEL IMPACT</p>
+              <p className="text-xs text-zinc-500 uppercase mb-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>POWER LEVEL IMPACT</p>
               <div className="flex items-center justify-center gap-3">
                 <span className="text-xl text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>{currentPL}</span>
                 <span className="text-zinc-500">→</span>
                 <span className={`text-xl ${projectedPL < currentPL ? 'text-amber-400' : 'text-white'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>{projectedPL}</span>
               </div>
               {lostLevels > 0 && (
-                <p className="text-[8px] text-zinc-500 text-center mt-1">
+                <p className="text-xs text-zinc-500 text-center mt-1">
                   -{lostLevels} from dropped exercises (earn it back by ranking the new ones)
                 </p>
               )}
@@ -177,8 +177,8 @@ export default function PathSwitchSheet({ userId, currentPath, exercises, onConf
 
             {/* Keeps */}
             <div>
-              <p className="text-[8px] text-zinc-500 uppercase mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>KEEPS (8 core)</p>
-              <p className="text-[9px] text-zinc-400">
+              <p className="text-xs text-zinc-500 uppercase mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>KEEPS (8 core)</p>
+              <p className="text-xs text-zinc-400">
                 {UNIVERSAL_CORE.map(id => getExerciseName(id, exercises)).join(', ')}
               </p>
             </div>
@@ -186,11 +186,11 @@ export default function PathSwitchSheet({ userId, currentPath, exercises, onConf
             {/* Carries */}
             {carries.length > 0 && (
               <div>
-                <p className="text-[8px] text-green-400 uppercase mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>★ CARRIES OVER</p>
+                <p className="text-xs text-green-400 uppercase mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>★ CARRIES OVER</p>
                 {carries.map(id => {
                   const ex = exercises.find(e => e.exerciseId === id);
                   return (
-                    <div key={id} className="flex justify-between text-[9px] py-0.5">
+                    <div key={id} className="flex justify-between text-xs py-0.5">
                       <span className="text-zinc-300">{getExerciseName(id, exercises)}</span>
                       {ex && ex.level > 0 && <span className="text-green-400">Lv{ex.level} ★</span>}
                     </div>
@@ -202,11 +202,11 @@ export default function PathSwitchSheet({ userId, currentPath, exercises, onConf
             {/* Loses */}
             {loses.length > 0 && (
               <div>
-                <p className="text-[8px] text-red-400 uppercase mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>DROPS</p>
+                <p className="text-xs text-red-400 uppercase mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>DROPS</p>
                 {loses.map(id => {
                   const ex = exercises.find(e => e.exerciseId === id);
                   return (
-                    <div key={id} className="flex justify-between text-[9px] py-0.5">
+                    <div key={id} className="flex justify-between text-xs py-0.5">
                       <span className="text-zinc-500">{getExerciseName(id, exercises)}</span>
                       {ex && ex.level > 0 && !ex.expired && <span className="text-red-400">-Lv{ex.level}</span>}
                     </div>
@@ -218,9 +218,9 @@ export default function PathSwitchSheet({ userId, currentPath, exercises, onConf
             {/* Gains */}
             {gains.length > 0 && (
               <div>
-                <p className={`text-[8px] ${colors.secondary} uppercase mb-1`} style={{ fontFamily: "var(--font-pixel), monospace" }}>GAINS</p>
+                <p className={`text-xs ${colors.secondary} uppercase mb-1`} style={{ fontFamily: "var(--font-pixel), monospace" }}>GAINS</p>
                 {gains.map(id => (
-                  <div key={id} className="flex justify-between text-[9px] py-0.5">
+                  <div key={id} className="flex justify-between text-xs py-0.5">
                     <span className="text-zinc-300">{getExerciseName(id, exercises)}</span>
                     <span className={gainedLevels[id] ? 'text-green-400' : 'text-zinc-600'}>
                       {gainedLevels[id] ? `Lv${gainedLevels[id]} ★` : 'unranked'}
@@ -235,14 +235,14 @@ export default function PathSwitchSheet({ userId, currentPath, exercises, onConf
         {/* Confirm */}
         <div className="pt-4 pb-8">
           {!isSamePath && (
-            <p className="text-[8px] text-zinc-500 text-center mb-3">
+            <p className="text-xs text-zinc-500 text-center mb-3">
               Your daily workouts will switch to the {PATH_OPTIONS.find(p => p.key === targetPath)?.label} default programs.
             </p>
           )}
           <button
             onClick={handleConfirm}
             disabled={isSamePath || confirming}
-            className={`w-full text-center text-[10px] py-3 border ${isSamePath ? 'border-zinc-700 text-zinc-600' : colors.primary + ' ' + colors.secondary} bg-zinc-800 disabled:opacity-50 transition-colors`}
+            className={`w-full text-center text-xs py-3 border ${isSamePath ? 'border-zinc-700 text-zinc-600' : colors.primary + ' ' + colors.secondary} bg-zinc-800 disabled:opacity-50 transition-colors`}
             style={{ fontFamily: "var(--font-pixel), monospace" }}
           >
             {confirming ? 'SWITCHING...' : isSamePath ? 'SELECT A DIFFERENT PATH' : `SWITCH TO ${PATH_OPTIONS.find(p => p.key === targetPath)?.label.toUpperCase()}`}

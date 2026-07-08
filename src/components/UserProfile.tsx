@@ -115,9 +115,9 @@ export default function UserProfile({
           <div className="flex-1">
             <h1 className="text-2xl font-black text-white uppercase tracking-wide">{displayName}</h1>
             <div className="flex items-center gap-3 mt-1">
-              <span className="text-xs font-bold" style={{ color: theme.accentHex }}>{rankName || `Tier ${tier}`}</span>
-              <span className="text-[10px] text-zinc-400">Lv {stats?.player_level || 1}</span>
-              <span className="text-[10px] text-zinc-500">{stats?.total_career_xp || 0} XP</span>
+              <span className="text-base font-bold" style={{ color: theme.accentHex }}>{rankName || `Tier ${tier}`}</span>
+              <span className="text-xs text-zinc-400">Lv {stats?.player_level || 1}</span>
+              <span className="text-xs text-zinc-500">{stats?.total_career_xp || 0} XP</span>
             </div>
           </div>
           <button onClick={() => setShowWeeklyReview(true)} className="p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-700/50 text-sm" title="Weekly Report">📜</button>
@@ -128,27 +128,27 @@ export default function UserProfile({
       <div className="flex items-center justify-around px-4 py-4 bg-zinc-900 border-b border-zinc-800">
         <div className="text-center">
           <div className="text-lg font-black text-white">{stats?.power_level || 0}</div>
-          <div className="text-[9px] text-zinc-500 uppercase font-bold">{isClassic ? 'Score' : 'Power'}</div>
+          <div className="text-xs text-zinc-500 uppercase font-bold">{isClassic ? 'Score' : 'Power'}</div>
         </div>
         <div className="text-center">
           <div className="text-lg font-black text-white">{stats?.exercises_tracked || 0}</div>
-          <div className="text-[9px] text-zinc-500 uppercase font-bold">Ranked</div>
+          <div className="text-xs text-zinc-500 uppercase font-bold">Ranked</div>
         </div>
         <div className="text-center">
           <div className="text-lg font-black text-white">{currentWeight}</div>
-          <div className="text-[9px] text-zinc-500 uppercase font-bold">lbs</div>
+          <div className="text-xs text-zinc-500 uppercase font-bold">lbs</div>
         </div>
         <div className="text-center">
           <div className="text-lg font-black text-white">{stats?.player_level || 1}</div>
-          <div className="text-[9px] text-zinc-500 uppercase font-bold">Level</div>
+          <div className="text-xs text-zinc-500 uppercase font-bold">Level</div>
         </div>
       </div>
 
       {/* Settings Link */}
       <Link href="/settings" className="flex items-center gap-3 mx-4 mt-3 px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl hover:border-zinc-700 transition">
         <Settings size={18} className="text-zinc-400" />
-        <span className="flex-1 text-sm font-bold text-white">Settings</span>
-        <span className="text-[10px] text-zinc-600">Equipment, integrations, macros</span>
+        <span className="flex-1 text-base font-bold text-white">Settings</span>
+        <span className="text-xs text-zinc-600">Equipment, integrations, macros</span>
         <ChevronRight size={14} className="text-zinc-600" />
       </Link>
 
@@ -158,7 +158,7 @@ export default function UserProfile({
           <div>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Top Ranked</h2>
-              <a href="/power-level" className="text-[10px] text-orange-400 font-bold">See all →</a>
+              <a href="/power-level" className="text-xs text-orange-400 font-bold">See all →</a>
             </div>
             <div className="space-y-2">
               {topExercises.map((trophy: any) => {
@@ -168,10 +168,10 @@ export default function UserProfile({
                   <div key={trophy.exerciseId} className="flex items-center gap-3 bg-zinc-900 border border-zinc-800 rounded-xl p-3">
                     {img && <img src={img} alt="" className="w-10 h-10 object-contain" />}
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-bold text-white capitalize truncate">{name}</div>
-                      <div className="text-[10px] text-zinc-500">{trophy.best?.value}</div>
+                      <div className="text-base font-bold text-white capitalize truncate">{name}</div>
+                      <div className="text-xs text-zinc-500">{trophy.best?.value}</div>
                     </div>
-                    <span className="text-xs font-bold" style={{ color: theme.accentHex }}>Lv {trophy.best?.level}</span>
+                    <span className="text-base font-bold" style={{ color: theme.accentHex }}>Lv {trophy.best?.level}</span>
                   </div>
                 );
               })}

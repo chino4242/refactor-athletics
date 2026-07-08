@@ -90,8 +90,8 @@ export default function BodyCompHome({ userId, bodyweight, bodyCompHistory, goal
       <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
         <div className="text-center py-4">
           <div className="text-4xl mb-3">📐</div>
-          <h3 className="text-sm font-bold text-white mb-1">Body Composition</h3>
-          <p className="text-xs text-zinc-500 mb-4">Track your physical transformation</p>
+          <h3 className="text-base font-bold text-white mb-1">Body Composition</h3>
+          <p className="text-sm text-zinc-500 mb-4">Track your physical transformation</p>
           <button onClick={() => setShowLog(true)}
             className="bg-gradient-to-r from-orange-600 to-red-600 text-white px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider">
             Log First Measurement
@@ -113,7 +113,7 @@ export default function BodyCompHome({ userId, bodyweight, bodyCompHistory, goal
           <div className={`text-3xl font-black italic ${physiquePoints.color}`}>
             {physiquePoints.score > 0 ? '+' : ''}{physiquePoints.score}
           </div>
-          {summary && <p className="text-[11px] text-zinc-500 mt-0.5">{summary}</p>}
+          {summary && <p className="text-xs text-zinc-500 mt-0.5">{summary}</p>}
         </div>
         <button onClick={() => setShowLog(true)}
           className="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-white p-2.5 rounded-xl transition">
@@ -166,10 +166,10 @@ export default function BodyCompHome({ userId, bodyweight, bodyCompHistory, goal
 
           return cards.map(c => (
             <div key={c.label} className="bg-zinc-800/50 rounded-lg p-2 border border-zinc-700/50">
-              <div className="text-[9px] text-zinc-500 uppercase font-bold">{c.label}</div>
-              <div className="text-sm font-black text-white">{c.value}</div>
+              <div className="text-xs text-zinc-500 uppercase font-bold">{c.label}</div>
+              <div className="text-base font-black text-white">{c.value}</div>
               {c.delta && (
-                <div className={`text-[10px] font-mono ${
+                <div className={`text-xs font-mono ${
                   c.goal === 'Shrink' ? (parseFloat(c.delta) <= 0 ? 'text-emerald-400' : 'text-rose-400') :
                   c.goal === 'Grow' ? (parseFloat(c.delta) >= 0 ? 'text-emerald-400' : 'text-rose-400') :
                   'text-zinc-500'
@@ -182,7 +182,7 @@ export default function BodyCompHome({ userId, bodyweight, bodyCompHistory, goal
 
       {/* Last logged */}
       {lastLoggedDate && (
-        <div className="text-[9px] text-zinc-600 text-center">
+        <div className="text-xs text-zinc-600 text-center">
           Last logged: {lastLoggedDate}
         </div>
       )}

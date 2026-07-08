@@ -47,15 +47,15 @@ export default function DuelHistoryCard({ duel, currentUserId }: Props) {
                     <StatusIcon size={18} />
                 </div>
                 <div>
-                    <h3 className={`font-black uppercase tracking-wider text-sm ${statusColor}`}>{displayStatus}</h3>
-                    <p className="text-zinc-500 text-xs">vs {opponentName}</p>
+                    <h3 className={`font-black uppercase tracking-wider text-base ${statusColor}`}>{displayStatus}</h3>
+                    <p className="text-zinc-500 text-sm">vs {opponentName}</p>
                 </div>
             </div>
 
             <div className="text-right">
-                <div className="text-xs text-zinc-600 font-mono mb-1">{startDate}</div>
+                <div className="text-sm text-zinc-600 font-mono mb-1">{startDate}</div>
                 {(duel.status === 'COMPLETED') && (
-                    <div className="text-sm font-bold text-zinc-300">
+                    <div className="text-base font-bold text-zinc-300">
                         {myScore} - {theirScore}
                     </div>
                 )}

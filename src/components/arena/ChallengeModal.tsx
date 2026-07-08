@@ -149,7 +149,7 @@ export default function ChallengeModal({ isOpen, challengerId, onClose, onChalle
                     <h2 className="text-2xl font-black italic text-white uppercase tracking-tight">
                         {duelLink ? 'Challenge Ready' : 'Issue Challenge'}
                     </h2>
-                    <p className="text-zinc-400 text-sm mt-1">
+                    <p className="text-zinc-400 text-base mt-1">
                         {duelLink ? 'Share this link with your rival.' : 'Compete for the highest XP total.'}
                     </p>
                 </div>
@@ -159,7 +159,7 @@ export default function ChallengeModal({ isOpen, challengerId, onClose, onChalle
                     {duelLink ? (
                         <div className="space-y-4 animate-fade-in-up">
                             <div className="bg-zinc-950 border border-zinc-800 p-4 rounded-xl flex items-center justify-between gap-3">
-                                <code className="text-xs text-zinc-400 truncate font-mono">
+                                <code className="text-sm text-zinc-400 truncate font-mono">
                                     {duelLink}
                                 </code>
                                 <button
@@ -170,7 +170,7 @@ export default function ChallengeModal({ isOpen, challengerId, onClose, onChalle
                                 </button>
                             </div>
                             <div className="text-center">
-                                <p className="text-xs text-zinc-500">
+                                <p className="text-sm text-zinc-500">
                                     Anyone with this link can accept the duel.
                                 </p>
                             </div>
@@ -193,7 +193,7 @@ export default function ChallengeModal({ isOpen, challengerId, onClose, onChalle
                                         <div className={`text-xs font-black uppercase mb-0.5 flex items-center gap-2 ${mode === 'IMMEDIATE' ? 'text-orange-400' : 'text-zinc-300'}`}>
                                             <Clock size={14} /> Immediate
                                         </div>
-                                        <div className="text-zinc-500 text-[10px] font-mono leading-tight">
+                                        <div className="text-zinc-500 text-xs font-mono leading-tight">
                                             Timer starts now. Ends cleanly in 24h.
                                         </div>
                                     </button>
@@ -208,7 +208,7 @@ export default function ChallengeModal({ isOpen, challengerId, onClose, onChalle
                                         <div className={`text-xs font-black uppercase mb-0.5 flex items-center gap-2 ${mode === 'CALENDAR' ? 'text-orange-400' : 'text-zinc-300'}`}>
                                             <Globe size={14} /> Calendar
                                         </div>
-                                        <div className="text-zinc-500 text-[10px] font-mono leading-tight">
+                                        <div className="text-zinc-500 text-xs font-mono leading-tight">
                                             Starts Midnight Tomorrow. Uses local days.
                                         </div>
                                     </button>
@@ -237,7 +237,7 @@ export default function ChallengeModal({ isOpen, challengerId, onClose, onChalle
                                             <div className={`text-xs font-black uppercase mb-0.5 ${selectedDuration === dur.days && !isCustomDate ? 'text-orange-400' : 'text-zinc-300'}`}>
                                                 {dur.label}
                                             </div>
-                                            <div className="text-zinc-500 text-[10px] font-mono">
+                                            <div className="text-zinc-500 text-xs font-mono">
                                                 {dur.desc}
                                             </div>
                                         </button>
@@ -255,7 +255,7 @@ export default function ChallengeModal({ isOpen, challengerId, onClose, onChalle
                                         <div className={`text-xs font-black uppercase mb-0.5 ${isCustomDate ? 'text-orange-400' : 'text-zinc-300'}`}>
                                             Custom Range
                                         </div>
-                                        <div className="text-zinc-500 text-[10px] font-mono">
+                                        <div className="text-zinc-500 text-xs font-mono">
                                             {customStartDate && customEndDate
                                                 ? `${customStartDate.toLocaleDateString()} - ${customEndDate.toLocaleDateString()}`
                                                 : 'Pick your dates'}
@@ -280,7 +280,7 @@ export default function ChallengeModal({ isOpen, challengerId, onClose, onChalle
                                                 <div className={`text-xs font-black uppercase mb-0.5 ${activeDateField === 'start' || customStartDate ? 'text-orange-400' : 'text-zinc-300'}`}>
                                                     Start Date
                                                 </div>
-                                                <div className="text-zinc-500 text-[10px] font-mono truncate">
+                                                <div className="text-zinc-500 text-xs font-mono truncate">
                                                     {customStartDate ? customStartDate.toLocaleDateString() : 'Select Start'}
                                                 </div>
                                             </button>
@@ -303,7 +303,7 @@ export default function ChallengeModal({ isOpen, challengerId, onClose, onChalle
                                                 <div className={`text-xs font-black uppercase mb-0.5 ${activeDateField === 'end' || customEndDate ? 'text-orange-400' : 'text-zinc-300'}`}>
                                                     End Date
                                                 </div>
-                                                <div className="text-zinc-500 text-[10px] font-mono truncate">
+                                                <div className="text-zinc-500 text-xs font-mono truncate">
                                                     {customEndDate ? customEndDate.toLocaleDateString() : 'Select End'}
                                                 </div>
                                             </button>
@@ -330,7 +330,7 @@ export default function ChallengeModal({ isOpen, challengerId, onClose, onChalle
                                                     }}
                                                 />
                                                 <div className="mt-2 text-center">
-                                                    <p className="text-[10px] text-zinc-500">
+                                                    <p className="text-xs text-zinc-500">
                                                         *Midnight to Midnight (Local Time)
                                                     </p>
                                                 </div>
@@ -352,7 +352,7 @@ export default function ChallengeModal({ isOpen, challengerId, onClose, onChalle
                                             <button
                                                 key={metric}
                                                 onClick={() => toggleMetric(metric)}
-                                                className={`p-2 rounded-lg text-[10px] font-bold uppercase tracking-wider border transition-all ${isSelected
+                                                className={`p-2 rounded-lg text-xs font-bold uppercase tracking-wider border transition-all ${isSelected
                                                     ? 'bg-zinc-800 border-orange-500 text-orange-400 shadow-lg shadow-orange-900/20'
                                                     : 'bg-zinc-900/50 border-zinc-800 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300'
                                                     }`}
@@ -362,7 +362,7 @@ export default function ChallengeModal({ isOpen, challengerId, onClose, onChalle
                                         );
                                     })}
                                 </div>
-                                <p className="text-[10px] text-zinc-600 mt-2 text-center">
+                                <p className="text-xs text-zinc-600 mt-2 text-center">
                                     {includedMetrics.includes('ALL')
                                         ? "All XP gained will count towards the score."
                                         : "Only selected activities will generate points."}

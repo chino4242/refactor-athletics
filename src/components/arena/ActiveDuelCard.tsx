@@ -92,8 +92,8 @@ export default function ActiveDuelCard({ duel, currentUserId, onRefresh, onShowV
                         <Clock size={20} className="text-zinc-500" />
                     </div>
                     <div>
-                        <h3 className="text-white font-bold uppercase tracking-wide text-sm">Challenge Pending</h3>
-                        <p className="text-zinc-500 text-xs">
+                        <h3 className="text-white font-bold uppercase tracking-wide text-base">Challenge Pending</h3>
+                        <p className="text-zinc-500 text-sm">
                             {duel.opponent_id ? `vs ${duel.opponent_id}` : 'Waiting for opponent...'}
                         </p>
                     </div>
@@ -104,7 +104,7 @@ export default function ActiveDuelCard({ duel, currentUserId, onRefresh, onShowV
                     <button
                         onClick={handleAccept}
                         disabled={loading}
-                        className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-bold text-sm uppercase tracking-wider transition-colors"
+                        className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-bold text-base uppercase tracking-wider transition-colors"
                     >
                         {loading ? '...' : 'Accept Duel'}
                     </button>
@@ -175,16 +175,16 @@ export default function ActiveDuelCard({ duel, currentUserId, onRefresh, onShowV
                     <div>
                         <div className="flex justify-between items-end mb-2">
                             <div>
-                                <span className="text-white font-bold text-sm uppercase tracking-wide">
+                                <span className="text-white font-bold text-base uppercase tracking-wide">
                                     {isChallenger ? (duel.challenger_name || "You") : (duel.opponent_name || "You")}
                                 </span>
                             </div>
-                            <span className="text-[10px] text-zinc-500 font-mono uppercase">Lvl {isChallenger ? (duel.challenger_level || 1) : (duel.opponent_level || 1)}</span>
+                            <span className="text-xs text-zinc-500 font-mono uppercase">Lvl {isChallenger ? (duel.challenger_level || 1) : (duel.opponent_level || 1)}</span>
                         </div>
                         <div className="text-right">
-                            <span className="font-black text-2xl text-white block leading-none">{myScore} <span className="text-sm text-zinc-500 font-bold">XP</span></span>
+                            <span className="font-black text-2xl text-white block leading-none">{myScore} <span className="text-base text-zinc-500 font-bold">XP</span></span>
                             {showMetric && (
-                                <span className="text-[10px] text-zinc-400 font-mono uppercase tracking-wide block mt-1">
+                                <span className="text-xs text-zinc-400 font-mono uppercase tracking-wide block mt-1">
                                     {myTotal.toLocaleString()} {metricLabel}
                                 </span>
                             )}
@@ -201,7 +201,7 @@ export default function ActiveDuelCard({ duel, currentUserId, onRefresh, onShowV
 
                     {/* MY HISTORY */}
                     <div className="mt-3 bg-zinc-950/50 rounded-lg p-3 border border-zinc-800/50">
-                        <p className="text-[10px] uppercase font-bold text-zinc-600 mb-2 flex items-center gap-1">
+                        <p className="text-xs uppercase font-bold text-zinc-600 mb-2 flex items-center gap-1">
                             <Clock size={10} /> Recent Activity
                         </p>
                         <div className="space-y-2">
@@ -221,12 +221,12 @@ export default function ActiveDuelCard({ duel, currentUserId, onRefresh, onShowV
                                 }
 
                                 return (
-                                    <div key={i} className="flex justify-between items-center text-xs mb-2">
+                                    <div key={i} className="flex justify-between items-center text-sm mb-2">
                                         <div className="flex flex-col">
                                             <span className="text-zinc-400 font-bold truncate max-w-[150px]">{h.rank_name || h.exercise_id}</span>
 
                                             {displayValue != null && (
-                                                <span className="text-[10px] text-zinc-500 font-mono block">
+                                                <span className="text-xs text-zinc-500 font-mono block">
                                                     {Number(displayValue).toLocaleString()} {isStepsChallenge ? 'Additional Steps' : (metricLabel || 'Units')}
                                                 </span>
                                             )}
@@ -234,7 +234,7 @@ export default function ActiveDuelCard({ duel, currentUserId, onRefresh, onShowV
                                         <span className="font-mono text-emerald-500 font-bold">+{h.xp} XP</span>
                                     </div>
                                 );
-                            }) || <p className="text-[10px] text-zinc-700 italic">No recent activity</p>}
+                            }) || <p className="text-xs text-zinc-700 italic">No recent activity</p>}
                         </div>
                     </div>
                 </div>
@@ -242,24 +242,24 @@ export default function ActiveDuelCard({ duel, currentUserId, onRefresh, onShowV
                 {/* OPPONENT */}
                 <div className="relative mt-8">
                     {/* VS Badge */}
-                    <div className="absolute left-1/2 -top-4 -translate-x-1/2 bg-zinc-900 border border-zinc-700 text-zinc-500 text-[10px] font-black px-2 py-0.5 rounded-full z-10">
+                    <div className="absolute left-1/2 -top-4 -translate-x-1/2 bg-zinc-900 border border-zinc-700 text-zinc-500 text-xs font-black px-2 py-0.5 rounded-full z-10">
                         VS
                     </div>
 
                     <div className="flex justify-between items-end mb-2">
                         <div>
-                            <span className="text-white font-bold text-sm uppercase tracking-wide">
+                            <span className="text-white font-bold text-base uppercase tracking-wide">
                                 {isChallenger ? (duel.opponent_name || "Waiting...") : (duel.challenger_name || duel.challenger_id)}
                             </span>
                         </div>
-                        <span className="text-[10px] text-zinc-600 font-mono uppercase">
+                        <span className="text-xs text-zinc-600 font-mono uppercase">
                             Lvl {isChallenger ? (duel.opponent_level || 1) : (duel.challenger_level || 1)}
                         </span>
                     </div>
                     <div className="text-right">
-                        <span className="font-black text-2xl text-white block leading-none">{theirScore} <span className="text-sm text-zinc-500 font-bold">XP</span></span>
+                        <span className="font-black text-2xl text-white block leading-none">{theirScore} <span className="text-base text-zinc-500 font-bold">XP</span></span>
                         {showMetric && (
-                            <span className="text-[10px] text-zinc-400 font-mono uppercase tracking-wide block mt-1">
+                            <span className="text-xs text-zinc-400 font-mono uppercase tracking-wide block mt-1">
                                 {theirTotal.toLocaleString()} {metricLabel}
                             </span>
                         )}
@@ -274,7 +274,7 @@ export default function ActiveDuelCard({ duel, currentUserId, onRefresh, onShowV
 
                     {/* THEIR HISTORY */}
                     <div className="mt-3 bg-zinc-950/50 rounded-lg p-3 border border-zinc-800/50">
-                        <p className="text-[10px] uppercase font-bold text-zinc-600 mb-2 flex items-center gap-1">
+                        <p className="text-xs uppercase font-bold text-zinc-600 mb-2 flex items-center gap-1">
                             <Clock size={10} /> Recent Activity
                         </p>
                         <div className="space-y-2">
@@ -294,12 +294,12 @@ export default function ActiveDuelCard({ duel, currentUserId, onRefresh, onShowV
                                 }
 
                                 return (
-                                    <div key={i} className="flex justify-between items-center text-xs mb-2">
+                                    <div key={i} className="flex justify-between items-center text-sm mb-2">
                                         <div className="flex flex-col">
                                             <span className="text-zinc-400 font-bold truncate max-w-[150px]">{h.rank_name || h.exercise_id}</span>
 
                                             {displayValue != null && (
-                                                <span className="text-[10px] text-zinc-500 font-mono block">
+                                                <span className="text-xs text-zinc-500 font-mono block">
                                                     {Number(displayValue).toLocaleString()} {isStepsChallenge ? 'Additional Steps' : (metricLabel || 'Units')}
                                                 </span>
                                             )}
@@ -307,7 +307,7 @@ export default function ActiveDuelCard({ duel, currentUserId, onRefresh, onShowV
                                         <span className="font-mono text-red-900/70 font-bold ml-2">+{h.xp} XP</span>
                                     </div>
                                 );
-                            }) || <p className="text-[10px] text-zinc-700 italic">No recent activity</p>}
+                            }) || <p className="text-xs text-zinc-700 italic">No recent activity</p>}
                         </div>
                     </div>
                 </div>

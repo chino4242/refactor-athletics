@@ -328,7 +328,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                         opacity: pullDistance / 100 
                     }}
                 >
-                    <div className="text-orange-500 text-sm font-bold">
+                    <div className="text-orange-500 text-base font-bold">
                         {pullDistance > 60 ? '↓ Release to refresh' : '↓ Pull to refresh'}
                     </div>
                 </div>
@@ -339,7 +339,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                 <div className="fixed top-4 left-0 right-0 flex items-center justify-center z-50">
                     <div className="bg-zinc-900 border border-zinc-800 rounded-full px-4 py-2 flex items-center gap-2">
                         <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
-                        <span className="text-sm text-zinc-400">Refreshing...</span>
+                        <span className="text-base text-zinc-400">Refreshing...</span>
                     </div>
                 </div>
             )}
@@ -351,7 +351,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                         <summary className="list-none cursor-pointer">
                             <div className="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 hover:border-zinc-700 transition">
                                 <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">📋 Yesterday&apos;s Recap</span>
-                                <span className="text-[10px] text-zinc-600">tap to expand</span>
+                                <span className="text-xs text-zinc-600">tap to expand</span>
                             </div>
                         </summary>
                         <div className="mt-2">

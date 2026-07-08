@@ -23,7 +23,7 @@ export default function RecoverySelector({ onSelect }: Props) {
                 <div className="text-center">
                     <div className="text-4xl mb-3">{selected.emoji}</div>
                     <h2 className="text-xl font-black italic text-white uppercase">{selected.label}</h2>
-                    <p className="text-zinc-500 text-sm mt-1">How long?</p>
+                    <p className="text-zinc-500 text-base mt-1">How long?</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -37,7 +37,7 @@ export default function RecoverySelector({ onSelect }: Props) {
                             }`}
                         >
                             <div className={`text-2xl font-black ${duration === min ? 'text-emerald-400' : 'text-white'}`}>{min}</div>
-                            <div className="text-[10px] text-zinc-500 uppercase font-bold">minutes</div>
+                            <div className="text-xs text-zinc-500 uppercase font-bold">minutes</div>
                         </button>
                     ))}
                 </div>
@@ -60,7 +60,7 @@ export default function RecoverySelector({ onSelect }: Props) {
         <div className="w-full max-w-md mx-auto bg-zinc-900 rounded-3xl border border-zinc-800 p-6 space-y-4">
             <div className="text-center mb-2">
                 <h2 className="text-xs font-bold text-emerald-500 uppercase tracking-widest">Active Recovery</h2>
-                <p className="text-zinc-500 text-sm mt-1">Pick your recovery activity</p>
+                <p className="text-zinc-500 text-base mt-1">Pick your recovery activity</p>
             </div>
 
             {RECOVERY_OPTIONS.map(opt => (
@@ -72,8 +72,8 @@ export default function RecoverySelector({ onSelect }: Props) {
                     <div className="flex items-center gap-4">
                         <div className="text-3xl">{opt.emoji}</div>
                         <div className="flex-1">
-                            <div className="text-white font-black uppercase text-sm">{opt.label}</div>
-                            <div className="text-zinc-500 text-xs mt-0.5">{opt.desc}</div>
+                            <div className="text-white font-black uppercase text-base">{opt.label}</div>
+                            <div className="text-zinc-500 text-sm mt-0.5">{opt.desc}</div>
                         </div>
                         <ChevronRight size={18} className="text-zinc-600 group-hover:text-emerald-500 transition" />
                     </div>

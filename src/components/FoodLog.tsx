@@ -91,7 +91,7 @@ export default function FoodLog({ userId, onUpdate }: FoodLogProps) {
 
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-3">
-      <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-3">Today&apos;s Food Log</div>
+      <div className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">Today&apos;s Food Log</div>
       <div className="space-y-3">
         {grouped.map(group => {
           const meal = MEAL_LABELS[group.type] || { emoji: '🍽️', label: group.type };
@@ -102,14 +102,14 @@ export default function FoodLog({ userId, onUpdate }: FoodLogProps) {
             <div key={group.type}>
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-xs font-bold text-zinc-300">{meal.emoji} {meal.label}</span>
-                <span className="text-[9px] text-zinc-600">P:{totalP} C:{totalC} F:{totalF}</span>
+                <span className="text-xs text-zinc-600">P:{totalP} C:{totalC} F:{totalF}</span>
               </div>
               <div className="space-y-1">
                 {group.items.map(entry => (
                   <div key={entry.id} className="flex items-center justify-between bg-zinc-800/50 rounded-lg px-3 py-2">
                     <div className="flex-1 min-w-0">
                       <div className="text-xs text-zinc-300 truncate">{entry.food_name}</div>
-                      <div className="text-[9px] text-zinc-600">{entry.serving_size} · P:{entry.protein} C:{entry.carbs} F:{entry.fat}</div>
+                      <div className="text-xs text-zinc-600">{entry.serving_size} · P:{entry.protein} C:{entry.carbs} F:{entry.fat}</div>
                     </div>
                     <button onClick={() => deleteEntry(entry.id, entry)} className="text-zinc-700 hover:text-red-400 p-1 transition shrink-0">
                       <Trash2 size={13} />

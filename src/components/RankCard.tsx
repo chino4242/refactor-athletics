@@ -54,7 +54,7 @@ export default function RankCard({
         {/* 2. RESULT VALUE */}
         <div className="flex justify-between items-start mb-4">
           <div>
-            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">RESULT</span>
+            <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">RESULT</span>
             <div className="text-2xl font-black text-zinc-900">{resultValue}</div>
           </div>
         </div>
@@ -66,14 +66,14 @@ export default function RankCard({
             {rankName}
             <InfoTooltip text={getRankTooltip(rankName)} size={20} className="ml-3" />
           </h2>
-          <p className="text-sm text-zinc-500 italic font-medium leading-relaxed">"{rankDescription}"</p>
+          <p className="text-base text-zinc-500 italic font-medium leading-relaxed">"{rankDescription}"</p>
         </div>
 
         {/* 4. NEXT LEVEL INDICATOR (New) */}
         {nextMilestone && (
           <div className="mb-6 bg-zinc-100 p-3 rounded-lg border border-zinc-200">
             <div className="flex justify-between items-center mb-1">
-              <span className="text-[10px] font-bold text-zinc-400 uppercase">Next Level Goal</span>
+              <span className="text-xs font-bold text-zinc-400 uppercase">Next Level Goal</span>
               <span className="text-xs font-bold text-zinc-700">{nextMilestone}</span>
             </div>
             {/* Visual Progress Bar (Static fill for visual effect) */}

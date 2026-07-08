@@ -117,7 +117,7 @@ export default function ExerciseHistoryModal({ exercise, history, onClose }: Exe
                             <div className="flex flex-col items-end">
                                 <div className="text-3xl">⚠️</div>
                                 <div className="text-xs font-bold text-amber-500 uppercase tracking-widest">Rusty</div>
-                                <div className="text-xs text-zinc-600">{daysSinceLastLog} Days Inactive</div>
+                                <div className="text-sm text-zinc-600">{daysSinceLastLog} Days Inactive</div>
                             </div>
                         )}
                     </div>
@@ -177,17 +177,17 @@ export default function ExerciseHistoryModal({ exercise, history, onClose }: Exe
                                 <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-zinc-900 border-2 border-zinc-600"></div>
 
                                 <div className="mb-4">
-                                    <div className="text-sm font-bold text-white mb-2 ml-1">{format(new Date(date + 'T12:00:00'), 'MMM d, yyyy')}</div>
+                                    <div className="text-base font-bold text-white mb-2 ml-1">{format(new Date(date + 'T12:00:00'), 'MMM d, yyyy')}</div>
 
                                     <div className="space-y-3">
                                         {items.map((item, idx) => (
                                             <div key={idx} className="bg-zinc-950 p-4 rounded-xl border border-zinc-800/50">
                                                 <div className="flex justify-between items-start mb-2">
-                                                    <div className="text-xs text-zinc-500 font-mono">
+                                                    <div className="text-sm text-zinc-500 font-mono">
                                                         {format(new Date(item.timestamp * 1000), 'h:mm a')}
                                                     </div>
                                                     {item.xp && item.xp > 0 && (
-                                                        <span className="text-xs font-bold text-emerald-500">+{item.xp} XP</span>
+                                                        <span className="text-sm font-bold text-emerald-500">+{item.xp} XP</span>
                                                     )}
                                                 </div>
 
@@ -195,7 +195,7 @@ export default function ExerciseHistoryModal({ exercise, history, onClose }: Exe
                                                 {item.data ? (
                                                     <div className="space-y-1">
                                                         {item.data.map((set, sIdx) => (
-                                                            <div key={sIdx} className="flex items-center justify-between text-sm">
+                                                            <div key={sIdx} className="flex items-center justify-between text-base">
                                                                 <div className="flex items-center gap-3">
                                                                     <span className="text-zinc-600 font-mono w-4">{sIdx + 1}</span>
                                                                     <span className="font-bold text-zinc-300">
@@ -217,7 +217,7 @@ export default function ExerciseHistoryModal({ exercise, history, onClose }: Exe
                                                         ))}
                                                     </div>
                                                 ) : (
-                                                    <div className="text-sm text-zinc-400 italic">
+                                                    <div className="text-base text-zinc-400 italic">
                                                         {item.value}
                                                         {item.description && <span className="text-zinc-600"> • {item.description}</span>}
                                                     </div>
@@ -225,7 +225,7 @@ export default function ExerciseHistoryModal({ exercise, history, onClose }: Exe
 
                                                 {/* SESSION PR BADGE */}
                                                 {item.level > 0 && (
-                                                    <div className="mt-3 flex items-center gap-2 text-xs font-bold text-yellow-500 bg-yellow-500/10 px-2 py-1 rounded inline-block">
+                                                    <div className="mt-3 flex items-center gap-2 text-sm font-bold text-yellow-500 bg-yellow-500/10 px-2 py-1 rounded inline-block">
                                                         <span>🏆</span>
                                                         <span>Level {item.level} Performance</span>
                                                     </div>

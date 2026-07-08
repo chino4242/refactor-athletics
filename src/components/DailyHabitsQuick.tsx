@@ -66,7 +66,7 @@ export default function DailyHabitsQuick({ userId, hiddenHabits }: DailyHabitsQu
 
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3">
-      <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Daily Rites</div>
+      <div className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Daily Rites</div>
       <div className="flex flex-wrap gap-2">
         {visibleHabits.map(habit => {
           const done = logged.has(habit.virtueId);

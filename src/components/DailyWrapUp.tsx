@@ -229,7 +229,7 @@ export default function DailyWrapUp({ userId, mode, onDismiss, stats }: DailyWra
     <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
       {/* Header + Dismiss */}
       <div className="flex items-center justify-between px-4 pt-4 pb-1">
-        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{dateLabel}</span>
+        <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{dateLabel}</span>
         {onDismiss && <button onClick={onDismiss} className="text-zinc-600 hover:text-zinc-400 p-1"><X size={14} /></button>}
       </div>
 
@@ -239,7 +239,7 @@ export default function DailyWrapUp({ userId, mode, onDismiss, stats }: DailyWra
           <div className="flex items-baseline gap-2">
             <span className="text-2xl">{hero.emoji}</span>
             <span className="text-2xl font-black text-white">{hero.value}</span>
-            <span className="text-sm text-zinc-400">{hero.label}</span>
+            <span className="text-base text-zinc-400">{hero.label}</span>
           </div>
         </div>
       )}
@@ -254,14 +254,14 @@ export default function DailyWrapUp({ userId, mode, onDismiss, stats }: DailyWra
         {leveledUp ? (
           <div className="text-center py-2">
             <div className="text-2xl mb-1">🎉</div>
-            <div className="text-sm font-black text-amber-400">Level {level} Reached!</div>
-            <div className="text-[11px] text-zinc-500 mt-0.5">+{data.totalXp} {xpLabel} pushed you over the edge</div>
+            <div className="text-base font-black text-amber-400">Level {level} Reached!</div>
+            <div className="text-xs text-zinc-500 mt-0.5">+{data.totalXp} {xpLabel} pushed you over the edge</div>
           </div>
         ) : (
           <>
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-xs font-bold text-amber-400">+{data.totalXp} {xpLabel}</span>
-              <span className="text-[10px] text-zinc-500">
+              <span className="text-sm font-bold text-amber-400">+{data.totalXp} {xpLabel}</span>
+              <span className="text-xs text-zinc-500">
                 {xpToNext > 0 ? `${xpToNext.toLocaleString()} to Lv ${level + 1}` : `Level ${level}`}
               </span>
             </div>
@@ -272,7 +272,7 @@ export default function DailyWrapUp({ userId, mode, onDismiss, stats }: DailyWra
               />
             </div>
             {bestDay > 0 && data.totalXp > 0 && (
-              <div className="text-[10px] text-zinc-500 mt-1.5">
+              <div className="text-xs text-zinc-500 mt-1.5">
                 {data.totalXp >= bestDay
                   ? '⭐ New personal best!'
                   : `Your best: ${bestDay} ${xpLabel}`}
@@ -286,7 +286,7 @@ export default function DailyWrapUp({ userId, mode, onDismiss, stats }: DailyWra
       {checks.length > 0 && (
         <div className="px-4 pb-3 flex items-center gap-3 flex-wrap">
           {checks.map((c, i) => (
-            <span key={i} className={`text-[11px] font-medium flex items-center gap-1 ${c.met ? 'text-emerald-400' : 'text-zinc-500'}`}>
+            <span key={i} className={`text-xs font-medium flex items-center gap-1 ${c.met ? 'text-emerald-400' : 'text-zinc-500'}`}>
               {c.met ? <Check size={10} className="text-emerald-500" /> : <span className="w-2.5" />}
               {c.emoji} {c.label}
             </span>
@@ -297,14 +297,14 @@ export default function DailyWrapUp({ userId, mode, onDismiss, stats }: DailyWra
       {/* Streak Callout */}
       {data.streak >= 2 && (
         <div className="px-4 pb-3">
-          <span className="text-[11px] font-bold text-amber-400">🔥 {data.streak}-day streak</span>
+          <span className="text-xs font-bold text-amber-400">🔥 {data.streak}-day streak</span>
         </div>
       )}
 
       {/* Expandable XP Breakdown */}
       {data.xpItems.length > 0 && (
         <div className="px-4 pb-2">
-          <button onClick={() => setExpanded(!expanded)} className="flex items-center gap-1 text-[10px] text-zinc-500 hover:text-zinc-400 uppercase tracking-wider font-bold">
+          <button onClick={() => setExpanded(!expanded)} className="flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-400 uppercase tracking-wider font-bold">
             {expanded ? 'Hide' : 'Details'}
             {expanded ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
           </button>
@@ -325,7 +325,7 @@ export default function DailyWrapUp({ userId, mode, onDismiss, stats }: DailyWra
       {nudge && (
         <div className="px-4 pb-3">
           <div className="bg-orange-500/5 border border-orange-500/20 rounded-lg px-3 py-2">
-            <p className="text-[11px] text-orange-300">{nudge}</p>
+            <p className="text-xs text-orange-300">{nudge}</p>
           </div>
         </div>
       )}
