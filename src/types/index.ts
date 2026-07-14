@@ -26,6 +26,10 @@ export interface UserProfileData {
     subscription_status?: 'free' | 'active' | 'trialing' | 'canceled' | 'past_due';
     subscription_source?: 'stripe' | 'apple' | 'google';
     subscription_ends_at?: string;
+    notifications_enabled?: boolean;
+    notification_preferences?: Record<string, boolean>;
+    quiet_hours?: { start: string; end: string };
+    visual_mode?: 'vibrant' | 'retro';
 }
 
 export interface NutritionTargets {

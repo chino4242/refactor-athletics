@@ -437,6 +437,53 @@ export async function logTrainingAction(
     import('@/utils/questProgress').then(m => m.checkQuestProgress(supabase, userId)).catch(() => {});
     import('@/utils/challenge75Snapshot').then(m => m.updateChallenge75Snapshot(supabase, userId)).catch(() => {});
 
+    // Rank-up proximity notification (fire-and-forget)
+    if (nextThresholdLbs && nextRankName) {
+      import('@/services/notifications').then(async (m) => {
+        try {
+          // Check weekly cooldown: don't send if already sent for this exercise this week
+          const oneWeekAgo = new Date();
+          oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+          const { createServiceClient } = await import('@/utils/supabase/service');
+          const serviceSupabase = createServiceClient();
+          const { count } = await serviceSupabase
+            .from('notifications_log')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', userId)
+            .eq('category', 'rank_proximity')
+            .eq('deep_link', `/test?exercise=${exerciseId}`)
+            .gte('sent_at', oneWeekAgo.toISOString());
+          
+          if ((count || 0) > 0) return; // Already notified this week for this exercise
+
+          // Check user's path — only notify for path exercises
+          const { data: userPath } = await serviceSupabase
+            .from('users')
+            .select('selected_path, notifications_enabled')
+            .eq('id', userId)
+            .single();
+          
+          if (!userPath?.notifications_enabled) return;
+
+          const exerciseLabel = exerciseId.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
+          const unit = (standards.unit === 'xBW' || standards.unit === 'lbs') ? 'lbs' : standards.unit || 'lbs';
+
+          await m.sendNotification({
+            userId,
+            category: 'rank_proximity',
+            variables: {
+              distance: nextThresholdLbs,
+              unit,
+              rank_name: nextRankName,
+              exercise_name: exerciseLabel,
+            },
+            deepLink: `/test?exercise=${exerciseId}`,
+            priority: 3,
+          });
+        } catch {}
+      }).catch(() => {});
+    }
+
     // First workout recruit reward: +200 XP to group leader
     (async () => { try {
       const { count } = await supabase.from('workouts').select('id', { count: 'exact', head: true }).eq('user_id', userId);

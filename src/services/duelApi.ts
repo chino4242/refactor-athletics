@@ -68,6 +68,16 @@ export const createChallenge = async (userId: string, durationDays: number, duel
         console.error("Error creating duel challenge:", error.message, error.code, error.details);
         return null;
     }
+
+    // Send push notification to opponent (fire-and-forget)
+    if (opponentId && data) {
+      fetch('/api/notifications/send-duel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ opponentId, duelType, duelId: data.id }),
+      }).catch(() => {});
+    }
+
     return data;
 };
 

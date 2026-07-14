@@ -6,6 +6,7 @@ import { saveProfile } from '@/services/api';
 import { useToast } from '@/context/ToastContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useExperienceMode } from '@/context/ExperienceModeContext';
+import { useVisualMode } from '@/context/VisualModeContext';
 import { THEMES } from '@/data/themes';
 import { Settings, User, Target, Palette, ChevronLeft, RefreshCw, Copy, Check, Link2, Eye, EyeOff, Dumbbell } from 'lucide-react';
 import type { UserProfileData } from '@/types';
@@ -20,6 +21,7 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
     const toast = useToast();
     const { currentTheme, setCurrentTheme } = useTheme();
     const { isClassic } = useExperienceMode();
+    const { mode: visualMode, setMode: setVisualMode } = useVisualMode();
     const [loading, setLoading] = useState(false);
     const [showThemes, setShowThemes] = useState(false);
     const [syncToken, setSyncToken] = useState(initialProfile?.sync_token || '');
@@ -69,6 +71,9 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
     });
     const [hiddenHabits, setHiddenHabits] = useState<string[]>(initialProfile?.hidden_habits || []);
     const [equipment, setEquipment] = useState<string[]>(initialProfile?.available_equipment || []);
+    const [notificationsEnabled, setNotificationsEnabled] = useState(initialProfile?.notifications_enabled || false);
+    const [notifPrefs, setNotifPrefs] = useState<Record<string, boolean>>(initialProfile?.notification_preferences || {});
+    const [quietHours, setQuietHours] = useState<{ start: string; end: string }>(initialProfile?.quiet_hours || { start: '22:00', end: '07:00' });
 
     const handleThemeSelect = (themeKey: string) => {
         setCurrentTheme(themeKey);
@@ -123,6 +128,41 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
         setTimeout(() => setTokenCopied(false), 2000);
     };
 
+    const handleEnableNotifications = async () => {
+        try {
+            const { registerForPushNotifications } = await import('@/services/pushNotifications');
+            const granted = await registerForPushNotifications(userId);
+            if (granted) {
+                setNotificationsEnabled(true);
+                await saveProfile({ user_id: userId, notifications_enabled: true } as any);
+                toast.success('Notifications enabled!');
+            }
+        } catch {
+            toast.error('Failed to enable notifications');
+        }
+    };
+
+    const handleNotifToggle = async (key: string) => {
+        const newValue = !(notifPrefs[key] ?? true);
+        const updated = { ...notifPrefs, [key]: newValue };
+        setNotifPrefs(updated);
+        try {
+            await saveProfile({ user_id: userId, notification_preferences: updated } as any);
+        } catch {
+            toast.error('Failed to save notification preference');
+        }
+    };
+
+    const handleQuietHoursChange = async (field: 'start' | 'end', value: string) => {
+        const updated = { ...quietHours, [field]: value };
+        setQuietHours(updated);
+        try {
+            await saveProfile({ user_id: userId, quiet_hours: updated } as any);
+        } catch {
+            toast.error('Failed to save quiet hours');
+        }
+    };
+
     const syncWhoop = async () => {
         setWhoopSyncing(true);
         try {
@@ -165,6 +205,37 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
             </div>
 
             <div className="space-y-6">
+                {/* Visual Mode */}
+                <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 mb-4">
+                  <h2 className="text-base font-black uppercase tracking-widest mb-3">Visual Style</h2>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => { setVisualMode('vibrant'); saveProfile({ user_id: userId, visual_mode: 'vibrant' }); }}
+                      className={`p-4 rounded-xl border-2 transition-all text-left ${
+                        visualMode === 'vibrant'
+                          ? 'border-orange-500 bg-orange-500/10'
+                          : 'border-zinc-700 bg-zinc-800 hover:border-zinc-600'
+                      }`}
+                    >
+                      <div className="text-2xl mb-2">✨</div>
+                      <div className="text-base font-bold text-white">Vibrant</div>
+                      <div className="text-sm text-zinc-400 mt-1">Modern, warm, rounded cards</div>
+                    </button>
+                    <button
+                      onClick={() => { setVisualMode('retro'); saveProfile({ user_id: userId, visual_mode: 'retro' }); }}
+                      className={`p-4 rounded-xl border-2 transition-all text-left ${
+                        visualMode === 'retro'
+                          ? 'border-orange-500 bg-orange-500/10'
+                          : 'border-zinc-700 bg-zinc-800 hover:border-zinc-600'
+                      }`}
+                    >
+                      <div className="text-2xl mb-2">🕹️</div>
+                      <div className="text-base font-bold text-white">Retro</div>
+                      <div className="text-sm text-zinc-400 mt-1">SNES pixel art, dark dungeon</div>
+                    </button>
+                  </div>
+                </div>
+
                 {/* Theme Picker */}
                 {(isClassic && !showThemes) ? (
                 <button
@@ -530,6 +601,69 @@ export default function SettingsPageClient({ userId, initialProfile }: SettingsP
                         </button>
                     )}
                     </div>
+                </div>
+
+                {/* Notifications Section */}
+                <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+                    <h2 className="text-base font-black uppercase tracking-widest mb-4">Notifications</h2>
+                    {!notificationsEnabled ? (
+                        <button
+                            onClick={handleEnableNotifications}
+                            className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase tracking-wider text-sm rounded-xl transition"
+                        >
+                            Enable Notifications
+                        </button>
+                    ) : (
+                        <div className="space-y-3">
+                            {[
+                                { key: 'streak_daily', label: 'Streak & Daily Reminders' },
+                                { key: 'rank_warnings', label: 'Rank Warnings' },
+                                { key: 'social', label: 'Social & Duels' },
+                                { key: 'workout_schedule', label: 'Workout Schedule' },
+                                { key: 'hydration', label: 'Hydration' },
+                                { key: 'weekly_summary', label: 'Weekly Summary' },
+                                { key: 're_engagement', label: 'Re-engagement' },
+                            ].map(({ key, label }) => {
+                                const enabled = notifPrefs[key] ?? true;
+                                return (
+                                    <div key={key} className="flex items-center justify-between">
+                                        <span className="text-sm text-zinc-300">{label}</span>
+                                        <button
+                                            onClick={() => handleNotifToggle(key)}
+                                            className={`w-10 h-6 rounded-full transition-colors ${enabled ? 'bg-emerald-500' : 'bg-zinc-700'} relative`}
+                                        >
+                                            <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-transform ${enabled ? 'translate-x-5' : 'translate-x-1'}`} />
+                                        </button>
+                                    </div>
+                                );
+                            })}
+
+                            {/* Quiet Hours */}
+                            <div className="pt-3 mt-3 border-t border-zinc-800">
+                                <p className="text-xs text-zinc-500 mb-3">Quiet Hours — no notifications during this window</p>
+                                <div className="flex items-center gap-3">
+                                    <div className="flex-1">
+                                        <label className="text-xs text-zinc-600 mb-1 block">Start</label>
+                                        <input
+                                            type="time"
+                                            value={quietHours.start}
+                                            onChange={e => handleQuietHoursChange('start', e.target.value)}
+                                            className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+                                        />
+                                    </div>
+                                    <div className="flex-1">
+                                        <label className="text-xs text-zinc-600 mb-1 block">End</label>
+                                        <input
+                                            type="time"
+                                            value={quietHours.end}
+                                            onChange={e => handleQuietHoursChange('end', e.target.value)}
+                                            className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Save Button */}

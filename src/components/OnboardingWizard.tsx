@@ -57,8 +57,8 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
     const [goals, setGoals] = useState<string[]>([]);
     const [successStatement, setSuccessStatement] = useState('');
 
-    // Slimmed wizard: waiver → mode → personal info → goals → equipment → health sync
-    const steps = [1, 2, 6, 11, 8, 10];
+    // Slimmed wizard: waiver → mode → personal info → goals → equipment → health sync → notifications
+    const steps = [1, 2, 6, 11, 8, 10, 12];
 
     const currentIndex = steps.indexOf(step);
     const totalSteps = steps.length;
@@ -155,6 +155,7 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                         {step === 11 && 'Your Goals'}
                         {step === 8 && 'Your Equipment'}
                         {step === 10 && 'Connect Your Health Data'}
+                        {step === 12 && 'Stay on Track'}
                     </h2>
                 </div>
 
@@ -654,7 +655,81 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                     </div>
                 )}
 
-                {/* Navigation Buttons */}
+                {/* Step 12: Push Notifications Permission */}
+                {step === 12 && (
+                    <div className="space-y-5">
+                        <p className="text-zinc-400 text-base">Get timely reminders that help you stay consistent — not spam.</p>
+
+                        {/* Mock notification preview */}
+                        <div className="bg-zinc-800 border border-zinc-700 rounded-2xl p-4 shadow-lg">
+                            <div className="flex items-start gap-3">
+                                <div className="w-8 h-8 bg-orange-500/20 rounded-lg flex items-center justify-center shrink-0">
+                                    <span className="text-base">🔥</span>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="text-sm font-bold text-zinc-300">Refactor Athletics</div>
+                                    <div className="text-base text-white mt-0.5">
+                                        {experienceMode === 'rpg'
+                                            ? '🔥 Your 7-day quest chain breaks at dawn. Keep the fire alive!'
+                                            : '🔥 Your 7-day streak ends at midnight! 2 mins to log something.'}
+                                    </div>
+                                </div>
+                                <div className="text-sm text-zinc-500 shrink-0">now</div>
+                            </div>
+                        </div>
+
+                        {/* What you'll get */}
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-3 text-base text-zinc-300">
+                                <span>🔥</span>
+                                <span>Streak reminders before you lose momentum</span>
+                            </div>
+                            <div className="flex items-center gap-3 text-base text-zinc-300">
+                                <span>🏆</span>
+                                <span>Alerts when you&apos;re close to ranking up</span>
+                            </div>
+                            <div className="flex items-center gap-3 text-base text-zinc-300">
+                                <span>⚔️</span>
+                                <span>Challenges from friends and party members</span>
+                            </div>
+                            <div className="flex items-center gap-3 text-base text-zinc-300">
+                                <span>🗓️</span>
+                                <span>Workout day reminders</span>
+                            </div>
+                        </div>
+
+                        <p className="text-sm text-zinc-500 text-center">Max 2 per day. You can customize or disable anytime in Settings.</p>
+
+                        {/* Action buttons */}
+                        <div className="space-y-2">
+                            <button
+                                onClick={async () => {
+                                    try {
+                                        const { registerForPushNotifications } = await import('@/services/pushNotifications');
+                                        const granted = await registerForPushNotifications(userId);
+                                        await saveProfile({ user_id: userId, notifications_enabled: granted });
+                                    } catch {}
+                                    router.refresh();
+                                }}
+                                className="w-full py-3.5 bg-orange-600 hover:bg-orange-500 text-white text-base font-bold rounded-xl transition-all active:scale-97"
+                            >
+                                Enable Notifications
+                            </button>
+                            <button
+                                onClick={async () => {
+                                    await saveProfile({ user_id: userId, notifications_enabled: false });
+                                    router.refresh();
+                                }}
+                                className="w-full py-3 text-zinc-500 hover:text-zinc-300 text-sm font-medium transition-colors"
+                            >
+                                Not Now
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Navigation Buttons (hidden on notification step which has its own) */}
+                {step !== 12 && (
                 <div className="flex gap-3 mt-6">
                     {currentIndex > 0 && (
                         <button
@@ -682,6 +757,7 @@ export default function OnboardingWizard({ userId }: OnboardingWizardProps) {
                         </button>
                     )}
                 </div>
+                )}
             </div>
         </div>
     );

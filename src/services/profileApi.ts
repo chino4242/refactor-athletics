@@ -37,7 +37,7 @@ export const getProfile = async (userId: string): Promise<UserProfileData | null
     };
 };
 
-export const saveProfile = async (profile: UserProfileData): Promise<any> => {
+export const saveProfile = async (profile: Partial<UserProfileData> & { user_id: string }): Promise<any> => {
     const supabase = createClient();
     const payload: any = {
         id: profile.user_id,

@@ -22,6 +22,7 @@ import TopHeader from "@/components/layout/TopHeader";
 import MobileNav from "@/components/layout/MobileNav";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { ExperienceModeProvider } from "@/context/ExperienceModeContext";
+import { VisualModeProvider } from "@/context/VisualModeContext";
 import { ToastProvider } from "@/context/ToastContext";
 import ToastContainer from "@/components/ui/Toast";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
@@ -77,6 +78,7 @@ export default async function RootLayout({
       >
         <ThemeProvider initialTheme={initialTheme}>
           <ExperienceModeProvider>
+          <VisualModeProvider>
           <ToastProvider>
             <ServiceWorkerRegistration />
             <TimezoneSync />
@@ -93,6 +95,7 @@ export default async function RootLayout({
             </div>
             <ToastContainer />
           </ToastProvider>
+          </VisualModeProvider>
           </ExperienceModeProvider>
         </ThemeProvider>
       </body>

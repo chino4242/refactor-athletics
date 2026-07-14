@@ -41,7 +41,7 @@ export const getProfile = async (userId: string): Promise<UserProfileData | null
     };
 };
 
-export const saveProfile = async (profile: UserProfileData): Promise<any> => {
+export const saveProfile = async (profile: Partial<UserProfileData> & { user_id: string }): Promise<any> => {
     const supabase = createClient();
     const payload: any = {
         id: profile.user_id,
@@ -65,6 +65,9 @@ export const saveProfile = async (profile: UserProfileData): Promise<any> => {
     if (profile.available_equipment !== undefined) payload.available_equipment = profile.available_equipment;
     if (profile.preferred_cardio !== undefined) payload.preferred_cardio = profile.preferred_cardio;
     if (profile.measurement_mode !== undefined) payload.measurement_mode = profile.measurement_mode;
+    if (profile.notifications_enabled !== undefined) payload.notifications_enabled = profile.notifications_enabled;
+    if (profile.notification_preferences !== undefined) payload.notification_preferences = profile.notification_preferences;
+    if (profile.quiet_hours !== undefined) payload.quiet_hours = profile.quiet_hours;
 
     const { error } = await supabase
         .from('users')
