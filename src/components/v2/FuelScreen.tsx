@@ -63,7 +63,12 @@ export default function FuelScreen({ userId }: Props) {
         const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
         const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).toISOString();
         const nativeBurned = await getCaloriesBurned(startOfToday, endOfToday);
-        if (nativeBurned > burned) burned = nativeBurned;
+        if (nativeBurned > burned) {
+          burned = nativeBurned;
+          // Write back to DB so desktop/web can see the latest burn data
+          await supabase.from('nutrition_logs').delete().eq('user_id', userId).eq('date', today).eq('macro_type', 'calories_burned');
+          await supabase.from('nutrition_logs').insert({ user_id: userId, date: today, macro_type: 'calories_burned', amount: nativeBurned, xp: 0, label: 'Health Sync', timestamp: Math.floor(Date.now() / 1000) });
+        }
       } catch {}
 
       setTotals({ protein: Math.round(t['protein'] || 0), carbs: Math.round(t['carbs'] || 0), fat: Math.round(t['fat'] || 0), calsIn: Math.round(t['calories'] || 0), burned });
@@ -223,6 +228,17 @@ export default function FuelScreen({ userId }: Props) {
   if (isVibrant) {
     return (
       <ScreenWrapper onRefresh={async () => setRefreshKey(k => k + 1)}>
+        {/* Theme Banner */}
+        {currentTheme !== 'athlete' && (
+          <div className="rounded-2xl overflow-hidden border border-zinc-700/20 mb-4">
+            <img
+              src={`/themes/${currentTheme}/v2/banner.png`}
+              alt=""
+              className="w-full object-cover"
+              style={{ imageRendering: 'pixelated' }}
+            />
+          </div>
+        )}
         {showCoach && <NutritionCoach userId={userId} onClose={() => { setShowCoach(false); setRefreshKey(k => k + 1); }} />}
         <input ref={fileRef} type="file" accept="image/*" onChange={vibHandlePhoto} className="hidden" />
         <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={vibHandlePhoto} className="hidden" />

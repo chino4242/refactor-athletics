@@ -600,7 +600,7 @@ export default function PowerLevelScreen({ userId }: PowerLevelScreenProps) {
       <WeeklyRecapCard userId={userId} />
 
       {/* Theme Banner */}
-      <div className="mb-4 overflow-hidden border-2 border-zinc-800 rounded-sm max-h-[120px]">
+      <div className={`mb-4 overflow-hidden ${vibrantMode ? 'rounded-2xl border border-zinc-700/20' : 'border-2 border-zinc-800 rounded-sm max-h-[120px]'}`}>
         <img
           src={`/themes/${currentTheme}/v2/banner.png`}
           alt=""

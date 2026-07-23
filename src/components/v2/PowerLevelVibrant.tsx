@@ -41,7 +41,7 @@ interface VibrantProps {
 const VIBRANT_ACCENTS: Record<string, { gradient: string; text: string; glow: string; softBg: string }> = {
   athlete: { gradient: 'from-orange-500 to-amber-400', text: 'text-orange-400', glow: 'shadow-[0_0_60px_rgba(249,115,22,0.12)]', softBg: 'bg-orange-500/[0.03]' },
   dragon: { gradient: 'from-red-500 to-orange-400', text: 'text-red-400', glow: 'shadow-[0_0_60px_rgba(239,68,68,0.12)]', softBg: 'bg-red-500/[0.03]' },
-  samurai: { gradient: 'from-indigo-500 to-pink-400', text: 'text-pink-400', glow: 'shadow-[0_0_60px_rgba(236,72,153,0.12)]', softBg: 'bg-pink-500/[0.03]' },
+  samurai: { gradient: 'from-[#c084a8] to-[#e8a0b8]', text: 'text-[#e8a0b8]', glow: 'shadow-[0_0_60px_rgba(232,160,184,0.12)]', softBg: 'bg-pink-500/[0.03]' },
   viking: { gradient: 'from-sky-500 to-cyan-400', text: 'text-sky-300', glow: 'shadow-[0_0_60px_rgba(56,189,248,0.12)]', softBg: 'bg-sky-500/[0.03]' },
   dinosaur: { gradient: 'from-green-500 to-emerald-400', text: 'text-emerald-400', glow: 'shadow-[0_0_60px_rgba(16,185,129,0.12)]', softBg: 'bg-emerald-500/[0.03]' },
 };
@@ -81,7 +81,7 @@ export default function PowerLevelVibrant({
   const [showRadar, setShowRadar] = useState(false);
 
   const accentHex = currentTheme === 'dragon' ? '#ef4444' :
-    currentTheme === 'samurai' ? '#ec4899' :
+    currentTheme === 'samurai' ? '#e8a0b8' :
     currentTheme === 'viking' ? '#38bdf8' :
     currentTheme === 'dinosaur' ? '#22c55e' : '#f97316';
 
@@ -89,7 +89,15 @@ export default function PowerLevelVibrant({
     <div className={`rounded-3xl ${accent.softBg} border border-zinc-700/20 ${accent.glow} overflow-hidden`}>
       
       {/* === TOP GRADIENT ACCENT === */}
-      <div className={`h-1 bg-gradient-to-r ${accent.gradient}`} />
+      <svg viewBox="0 0 400 12" className="w-full h-3" preserveAspectRatio="none">
+        <path d="M0 6 Q20 2 60 6 Q100 10 150 5 Q200 2 250 7 Q300 10 350 4 Q380 2 400 6" stroke="url(#plBrushGrad)" strokeWidth="4" fill="none" strokeLinecap="round" opacity="0.7" />
+        <defs>
+          <linearGradient id="plBrushGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor={accentHex === '#e8a0b8' ? '#c084a8' : accentHex} />
+            <stop offset="100%" stopColor={accentHex} />
+          </linearGradient>
+        </defs>
+      </svg>
 
       {/* === THE SINGLE CARD === */}
       <div className="p-5">

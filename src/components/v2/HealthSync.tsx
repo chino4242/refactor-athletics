@@ -57,7 +57,7 @@ export default function HealthSync({ userId, refreshKey, onSyncComplete, onSyncS
 
         const promises: Promise<any>[] = [];
         if (data.steps > 0) promises.push(logHabitAction(userId, 'habit_steps', data.steps, undefined, 'Steps (Sync)'));
-        if (data.caloriesBurned > 0 && !hasWhoop) promises.push(logHabitAction(userId, 'macro_calories_burned', data.caloriesBurned, undefined, 'Calories Burned'));
+        if (data.caloriesBurned > 0) promises.push(logHabitAction(userId, 'macro_calories_burned', data.caloriesBurned, undefined, 'Calories Burned'));
         if (data.stepsYesterday > 0) {
           const noon = Math.floor(new Date(data.yesterdayDate + 'T12:00:00').getTime() / 1000);
           promises.push(logHabitAction(userId, 'habit_steps', data.stepsYesterday, undefined, 'Steps (Sync)', noon));

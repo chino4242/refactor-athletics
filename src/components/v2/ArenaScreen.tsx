@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useTheme } from '@/context/ThemeContext';
 import { getV2Theme } from '@/data/v2themes';
+import { useVisualMode } from '@/context/VisualModeContext';
 import PixelBox, { ScreenWrapper } from './PixelBox';
 import { ArenaSkeleton } from './Skeletons';
 import { getWeeklyBounties, setDifficulty, type BountyWithProgress, type Difficulty } from '@/services/bountyService';
@@ -13,6 +14,7 @@ import DuelModal from './DuelModal';
 import QRInviteModal from './QRInviteModal';
 import PartyStatusStrip from './PartyStatusStrip';
 import PartyDailyActivity from './PartyDailyActivity';
+import ArenaVibrant from './ArenaVibrant';
 
 interface ArenaScreenProps {
   userId: string;
@@ -288,6 +290,7 @@ async function getUserGuildQuest(userId: string): Promise<{ quest: GroupChalleng
 export default function ArenaScreen({ userId }: ArenaScreenProps) {
   const { currentTheme } = useTheme();
   const colors = getV2Theme(currentTheme);
+  const { isVibrant } = useVisualMode();
   const [bounties, setBounties] = useState<BountyWithProgress[]>([]);
   const [guildQuest, setGuildQuest] = useState<GroupChallengeWithProgress | null>(null);
   const [questCelebration, setQuestCelebration] = useState<GroupChallengeWithProgress | null>(null);
@@ -302,6 +305,7 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
   const [activeDuels, setActiveDuels] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showQR, setShowQR] = useState(false);
+  const [tierIndex, setTierIndex] = useState(0);
   const [bountyReveal, setBountyReveal] = useState(() => {
     // Fire reveal on first Arena visit of the week (not just Monday at midnight)
     if (typeof window === 'undefined') return false;
@@ -412,6 +416,17 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
         }
       } catch { /* empty state */ }
       setLoading(false);
+
+      // Fetch tier for avatar
+      try {
+        const { createClient: getClient4 } = await import('@/utils/supabase/client');
+        const sb4 = getClient4();
+        const { data: workouts } = await sb4.from('workouts').select('exercise_id, level').eq('user_id', userId).gt('level', 0);
+        const maxLevels: Record<string, number> = {};
+        for (const w of workouts || []) { if (!maxLevels[w.exercise_id] || w.level > maxLevels[w.exercise_id]) maxLevels[w.exercise_id] = w.level; }
+        const pl = Object.values(maxLevels).reduce((s, l) => s + l, 0);
+        setTierIndex(pl < 12 ? 0 : pl < 24 ? 1 : pl < 36 ? 2 : pl < 48 ? 3 : 4);
+      } catch {}
     })();
   }, [userId, refreshKey]);
 
@@ -424,6 +439,76 @@ export default function ArenaScreen({ userId }: ArenaScreenProps) {
   if (loading) {
     return <ArenaSkeleton />;
   }
+
+  // ─── Vibrant Mode ───
+  if (isVibrant) {
+    return (
+      <ScreenWrapper onRefresh={async () => { setRefreshKey(k => k + 1); }}>
+        {/* Theme Banner — very top */}
+        {currentTheme !== 'athlete' && (
+          <div className="rounded-2xl overflow-hidden border border-zinc-700/20 mb-4">
+            <img
+              src={`/themes/${currentTheme}/v2/banner.png`}
+              alt=""
+              className="w-full object-cover"
+              style={{ imageRendering: 'pixelated' }}
+            />
+          </div>
+        )}
+        <PartyStatusStrip userId={userId} />
+        <PartyDailyActivity userId={userId} refreshKey={refreshKey} />
+        <ArenaVibrant
+          userId={userId}
+          bounties={bounties}
+          activeDuels={activeDuels}
+          guildQuest={guildQuest as any}
+          campaign={campaign}
+          groupId={groupId}
+          tierIndex={tierIndex}
+          onDifficultyChange={(id, d) => handleDifficultyChange(id, d as Difficulty)}
+          onChallengeSomeone={() => setShowDuelModal(true)}
+          onRallyParty={() => setShowQuestModal(true)}
+          onStartCampaign={() => setShowCampaignModal(true)}
+          onInvite={async () => {
+            if (!inviteCode) return;
+            const url = `https://refactorathletics.com/join/${inviteCode}`;
+            try { if (navigator.share) { await navigator.share({ text: 'Join my party on Refactor Athletics', url }); } else { await navigator.clipboard.writeText(url); setToast('Link copied!'); } } catch {}
+          }}
+          onShowQR={() => setShowQR(true)}
+        />
+        {/* Modals shared between modes */}
+        {showQR && (inviteCode || groupId) && <QRInviteModal code={inviteCode || groupId || ''} onClose={() => setShowQR(false)} />}
+        {groupId && <GuildQuestModal isOpen={showQuestModal} groupId={groupId} userId={userId} onClose={() => setShowQuestModal(false)} onCreated={async () => { const result = await getUserGuildQuest(userId); setGuildQuest(result?.quest || null); }} />}
+        <CampaignModal isOpen={showCampaignModal} userId={userId} groupId={groupId} onClose={() => setShowCampaignModal(false)} onCreated={async () => { setShowCampaignModal(false); const data = await fetch('/api/challenge-75').then(r => r.json()); setCampaign((data?.challenges || []).find((c: any) => c.status === 'active') || null); }} />
+        <DuelModal isOpen={showDuelModal} userId={userId} groupId={groupId} onClose={() => setShowDuelModal(false)} onCreated={async () => { const { getActiveDuels } = await import('@/services/duelApi'); setActiveDuels(await getActiveDuels(userId)); }} />
+        {duelResult && (
+          <div className="fixed inset-0 z-[70] flex items-center justify-center" onClick={() => setDuelResult(null)}>
+            <div className="absolute inset-0 bg-black/90" />
+            <div className="relative text-center space-y-4 px-8 animate-in fade-in zoom-in duration-500">
+              <p className={`text-sm uppercase tracking-widest ${duelResult.won ? 'text-amber-400' : duelResult.tied ? 'text-zinc-400' : 'text-zinc-500'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                {duelResult.won ? '⚔ VICTORY ⚔' : duelResult.tied ? '⚔ DRAW ⚔' : '⚔ DUEL COMPLETE ⚔'}
+              </p>
+              <p className="text-3xl text-white" style={{ fontFamily: "var(--font-pixel), monospace" }}>{duelResult.myScore.toLocaleString()} - {duelResult.theirScore.toLocaleString()}</p>
+              <p className="text-xs text-zinc-500 italic">tap to continue</p>
+            </div>
+          </div>
+        )}
+        {questCelebration && (
+          <div className="fixed inset-0 z-[70] flex items-center justify-center" onClick={() => setQuestCelebration(null)}>
+            <div className="absolute inset-0 bg-black/90" />
+            <div className="relative text-center space-y-4 px-8 animate-in fade-in zoom-in duration-500">
+              <p className="text-sm text-amber-400 uppercase tracking-widest" style={{ fontFamily: "var(--font-pixel), monospace" }}>⚔ QUEST COMPLETE ⚔</p>
+              <p className="text-lg text-white font-bold" style={{ fontFamily: "var(--font-pixel), monospace" }}>{questCelebration.name}</p>
+              <p className="text-xs text-zinc-500 italic">tap to continue</p>
+            </div>
+          </div>
+        )}
+        {toast && <div className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-zinc-700 text-zinc-100 text-xs px-4 py-2 rounded shadow-lg z-50 animate-fade-in" onAnimationEnd={() => setTimeout(() => setToast(null), 1500)}>{toast}</div>}
+      </ScreenWrapper>
+    );
+  }
+
+  // ─── Retro Mode ───
 
   return (
     <ScreenWrapper onRefresh={async () => { setRefreshKey(k => k + 1); }}>

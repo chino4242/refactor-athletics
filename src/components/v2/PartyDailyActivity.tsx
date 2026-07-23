@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '@/context/ThemeContext';
 import { getV2Theme } from '@/data/v2themes';
+import { useVisualMode } from '@/context/VisualModeContext';
 
 interface Props {
   userId: string;
@@ -28,6 +29,7 @@ interface MemberActivity {
 export default function PartyDailyActivity({ userId, refreshKey = 0 }: Props) {
   const { currentTheme } = useTheme();
   const colors = getV2Theme(currentTheme);
+  const { isVibrant } = useVisualMode();
   const [members, setMembers] = useState<MemberActivity[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -193,29 +195,33 @@ export default function PartyDailyActivity({ userId, refreshKey = 0 }: Props) {
   const allTrained = members.every(m => m.trained);
 
   return (
-    <div className={`border ${colors.border} bg-zinc-900/50 p-3 mb-4`}>
-      <p className="text-xs text-zinc-500 uppercase mb-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>TODAY&apos;S ACTIVITY</p>
+    <div className={`${isVibrant ? 'rounded-2xl bg-zinc-900/50 border border-zinc-800/30' : `border ${colors.border} bg-zinc-900/50`} p-3 mb-4`}>
+      <p className={`text-xs text-zinc-500 uppercase mb-2 ${isVibrant ? 'font-semibold tracking-widest' : ''}`} style={isVibrant ? undefined : { fontFamily: "var(--font-pixel), monospace" }}>TODAY&apos;S ACTIVITY</p>
 
       {/* Both Trained Badge */}
       {allTrained && (
-        <div className={`flex items-center justify-center gap-2 py-1.5 mb-2 border ${colors.border} bg-zinc-800/50`}>
+        <div className={`flex items-center justify-center gap-2 py-1.5 mb-2 ${isVibrant ? 'rounded-lg bg-emerald-950/30 border border-emerald-500/20' : `border ${colors.border} bg-zinc-800/50`}`}>
           <span className="text-xs">⚔</span>
-          <span className={`text-xs ${colors.secondary} uppercase`} style={{ fontFamily: "var(--font-pixel), monospace" }}>BOTH TRAINED TODAY</span>
+          <span className={`text-xs ${isVibrant ? 'text-emerald-400 font-bold' : `${colors.secondary} uppercase`}`} style={isVibrant ? undefined : { fontFamily: "var(--font-pixel), monospace" }}>BOTH TRAINED TODAY</span>
           <span className="text-xs">⚔</span>
         </div>
       )}
 
       <div className="space-y-2">
         {members.map(m => (
-          <div key={m.userId} className={`px-2 py-2 ${m.isYou ? `border ${colors.border} bg-zinc-800/50` : 'border border-zinc-800/30'}`}>
+          <div key={m.userId} className={`px-2 py-2 ${
+            isVibrant
+              ? m.isYou ? 'rounded-xl bg-zinc-800/40 border border-zinc-700/30' : 'rounded-xl border border-zinc-800/20'
+              : m.isYou ? `border ${colors.border} bg-zinc-800/50` : 'border border-zinc-800/30'
+          }`}>
             {/* Name + Streak row */}
             <div className="flex items-center justify-between mb-1">
-              <p className={`text-xs ${m.isYou ? 'text-white' : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+              <p className={`text-xs ${m.isYou ? 'text-white font-bold' : 'text-zinc-400'}`} style={isVibrant ? undefined : { fontFamily: "var(--font-pixel), monospace" }}>
                 {m.name}{m.isYou ? ' (YOU)' : ''}
               </p>
               {m.streak > 0 && (
-                <span className={`text-xs ${m.streak >= 7 ? 'text-amber-300' : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-                  🏋️ {m.streak}d training streak
+                <span className={`text-xs ${m.streak >= 7 ? 'text-amber-300' : 'text-zinc-400'}`} style={isVibrant ? undefined : { fontFamily: "var(--font-pixel), monospace" }}>
+                  🏋️ {m.streak}d
                 </span>
               )}
             </div>
@@ -245,7 +251,7 @@ export default function PartyDailyActivity({ userId, refreshKey = 0 }: Props) {
               )}
             </div>
 
-            {/* Session section boxes — only show what's scheduled today */}
+            {/* Session section boxes */}
             {m.scheduledSections.length > 0 && (
               <div className="flex items-center gap-1.5 mt-1.5">
                 {[
@@ -254,8 +260,12 @@ export default function PartyDailyActivity({ userId, refreshKey = 0 }: Props) {
                   { key: 'core', label: 'CORE', done: m.sections.core },
                   { key: 'mobility', label: 'MOB', done: m.sections.mobility },
                 ].filter(s => m.scheduledSections.includes(s.key)).map(s => (
-                  <div key={s.key} className={`px-1.5 py-0.5 border ${s.done ? 'border-green-800 bg-green-950/30' : 'border-zinc-700 bg-zinc-800/30'}`}>
-                    <span className={`text-xs ${s.done ? 'text-green-400' : 'text-zinc-600'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                  <div key={s.key} className={`px-1.5 py-0.5 ${
+                    isVibrant
+                      ? s.done ? 'rounded-md bg-emerald-950/30 border border-emerald-500/20' : 'rounded-md bg-zinc-800/30 border border-zinc-700/30'
+                      : s.done ? 'border border-green-800 bg-green-950/30' : 'border border-zinc-700 bg-zinc-800/30'
+                  }`}>
+                    <span className={`text-xs ${s.done ? 'text-green-400' : 'text-zinc-600'}`} style={isVibrant ? undefined : { fontFamily: "var(--font-pixel), monospace" }}>
                       {s.done ? '✓' : '○'} {s.label}
                     </span>
                   </div>
@@ -267,7 +277,7 @@ export default function PartyDailyActivity({ userId, refreshKey = 0 }: Props) {
             {m.rankUps && m.rankUps.length > 0 && (
               <div className="mt-1.5 space-y-0.5">
                 {m.rankUps.map((r, i) => (
-                  <p key={i} className={`text-xs ${colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                  <p key={i} className={`text-xs ${isVibrant ? 'text-emerald-400' : colors.secondary}`} style={isVibrant ? undefined : { fontFamily: "var(--font-pixel), monospace" }}>
                     ↑ {r.exercise.replace(/_/g, ' ')} → Lv{r.level}
                   </p>
                 ))}

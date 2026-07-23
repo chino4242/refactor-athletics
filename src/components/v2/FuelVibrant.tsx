@@ -62,7 +62,7 @@ const MEAL_TAG_ORDER = ['breakfast', 'lunch', 'snack', 'dinner'];
 const VIBRANT_ACCENTS: Record<string, { gradient: string; text: string }> = {
   athlete: { gradient: 'from-orange-500 to-amber-400', text: 'text-orange-400' },
   dragon: { gradient: 'from-red-500 to-orange-400', text: 'text-red-400' },
-  samurai: { gradient: 'from-indigo-500 to-pink-400', text: 'text-pink-400' },
+  samurai: { gradient: 'from-[#c084a8] to-[#e8a0b8]', text: 'text-[#e8a0b8]' },
   viking: { gradient: 'from-sky-500 to-cyan-400', text: 'text-sky-300' },
   dinosaur: { gradient: 'from-green-500 to-emerald-400', text: 'text-emerald-400' },
 };
@@ -201,7 +201,16 @@ export default function FuelVibrant({
   return (
     <div className="rounded-3xl bg-gradient-to-b from-zinc-800/50 to-zinc-900/70 border border-zinc-700/20 overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.3)]">
       {/* Accent bar */}
-      <div className={`h-1 bg-gradient-to-r ${accent.gradient}`} />
+      {/* Brush stroke accent */}
+      <svg viewBox="0 0 400 12" className="w-full h-3" preserveAspectRatio="none">
+        <path d="M0 6 Q20 2 60 6 Q100 10 150 5 Q200 2 250 7 Q300 10 350 4 Q380 2 400 6" stroke="url(#fuelBrushGrad)" strokeWidth="4" fill="none" strokeLinecap="round" opacity="0.7" />
+        <defs>
+          <linearGradient id="fuelBrushGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor={currentTheme === 'samurai' ? '#c084a8' : currentTheme === 'dragon' ? '#ef4444' : currentTheme === 'viking' ? '#38bdf8' : currentTheme === 'dinosaur' ? '#22c55e' : '#f97316'} />
+            <stop offset="100%" stopColor={currentTheme === 'samurai' ? '#e8a0b8' : currentTheme === 'dragon' ? '#f97316' : currentTheme === 'viking' ? '#06b6d4' : currentTheme === 'dinosaur' ? '#10b981' : '#fbbf24'} />
+          </linearGradient>
+        </defs>
+      </svg>
 
       <div className="p-5 space-y-5">
 

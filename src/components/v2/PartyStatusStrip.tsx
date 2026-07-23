@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '@/context/ThemeContext';
 import { getV2Theme } from '@/data/v2themes';
+import { useVisualMode } from '@/context/VisualModeContext';
 
 interface Props {
   userId: string;
@@ -19,6 +20,7 @@ interface MemberStatus {
 export default function PartyStatusStrip({ userId }: Props) {
   const { currentTheme } = useTheme();
   const colors = getV2Theme(currentTheme);
+  const { isVibrant } = useVisualMode();
   const [members, setMembers] = useState<MemberStatus[]>([]);
   const [selected, setSelected] = useState<MemberStatus | null>(null);
 
@@ -72,16 +74,16 @@ export default function PartyStatusStrip({ userId }: Props) {
     <div className="mb-3">
       {/* Avatar row */}
       <div className="flex items-center gap-2 px-1">
-        <p className="text-xs text-zinc-600 mr-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>PARTY</p>
+        <p className={`text-xs ${isVibrant ? 'text-zinc-500 font-medium' : 'text-zinc-600'} mr-1`} style={isVibrant ? undefined : { fontFamily: "var(--font-pixel), monospace" }}>PARTY</p>
         {members.map(m => (
           <button
             key={m.userId}
             onClick={() => setSelected(selected?.userId === m.userId ? null : m)}
             className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold transition-all ${
               m.trainedToday
-                ? `${colors.primary} bg-zinc-800 text-white`
+                ? isVibrant ? 'border-emerald-500 bg-zinc-800 text-white ring-1 ring-emerald-500/30' : `${colors.primary} bg-zinc-800 text-white ring-1 ring-green-500/40`
                 : 'border-zinc-700 bg-zinc-900 text-zinc-600'
-            } ${m.trainedToday ? 'ring-1 ring-green-500/40' : ''}`}
+            }`}
           >
             {m.displayName.charAt(0).toUpperCase()}
           </button>
@@ -90,10 +92,10 @@ export default function PartyStatusStrip({ userId }: Props) {
 
       {/* Selected member detail */}
       {selected && (
-        <div className={`mt-2 border ${colors.border} bg-zinc-800/50 px-3 py-2 flex items-center justify-between`}>
+        <div className={`mt-2 ${isVibrant ? 'rounded-xl bg-zinc-800/50 border border-zinc-700/30' : `border ${colors.border} bg-zinc-800/50`} px-3 py-2 flex items-center justify-between`}>
           <div>
             <p className="text-sm text-white font-medium">{selected.displayName}</p>
-            <p className="text-xs text-zinc-500" style={{ fontFamily: "var(--font-pixel), monospace" }}>
+            <p className={`text-xs text-zinc-500 ${isVibrant ? '' : ''}`} style={isVibrant ? undefined : { fontFamily: "var(--font-pixel), monospace" }}>
               {selected.trainedToday ? '✓ TRAINED TODAY' : 'NOT YET TODAY'}
             </p>
           </div>
@@ -103,8 +105,8 @@ export default function PartyStatusStrip({ userId }: Props) {
                 await fetch('/api/challenge-75', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'nudge', target_user_id: selected.userId }) });
                 setSelected(null);
               }}
-              className={`text-xs px-2 py-1 border ${colors.border} bg-zinc-900 text-zinc-400 hover:text-white transition-colors`}
-              style={{ fontFamily: "var(--font-pixel), monospace" }}
+              className={`text-xs px-2 py-1 ${isVibrant ? 'rounded-lg bg-zinc-900 border border-zinc-700 text-zinc-400 hover:text-white' : `border ${colors.border} bg-zinc-900 text-zinc-400 hover:text-white`} transition-colors`}
+              style={isVibrant ? undefined : { fontFamily: "var(--font-pixel), monospace" }}
             >
               👊 NUDGE
             </button>
