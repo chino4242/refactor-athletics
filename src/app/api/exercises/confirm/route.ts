@@ -34,6 +34,15 @@ export async function POST(request: Request) {
 
     if (rankedExerciseId) {
       const result = await logTrainingAction(user.id, rankedExerciseId, profile?.bodyweight || 180, profile?.sex || 'male', [{ duration: dur, reps: 1, weight: 0 }]);
+      // Store actual distance on the ranked entry
+      if (distMeters > 0) {
+        await service.from('workouts')
+          .update({ distance_meters: distMeters })
+          .eq('user_id', user.id)
+          .eq('exercise_id', rankedExerciseId)
+          .order('timestamp', { ascending: false })
+          .limit(1);
+      }
       return NextResponse.json({ success: true, ranked: true, level: result.level });
     }
   }
@@ -51,6 +60,7 @@ export async function POST(request: Request) {
   await service.from('workouts').insert({
     user_id: user.id, exercise_id: catalogId, timestamp: ex.timestamp, date: ex.date,
     value, raw_value: dur, sets: null, level: 0, xp, rank_name: null,
+    distance_meters: distMeters > 0 ? distMeters : null,
   });
 
   // Post to party

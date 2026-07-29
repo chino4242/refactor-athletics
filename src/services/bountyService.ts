@@ -170,11 +170,13 @@ async function computeProgress(userId: string, weekStart: string, bounties: any[
   const supabase = createClient();
   const weekEnd = new Date(new Date(weekStart).getTime() + 6 * 24 * 60 * 60 * 1000).toLocaleDateString('en-CA');
 
-  const [{ data: workouts }, { data: nutrition }, { data: completedDuels }, { data: completedQuests }] = await Promise.all([
+  const [{ data: workouts }, { data: nutrition }, { data: completedDuels }, { data: completedQuests }, { data: runWorkouts }] = await Promise.all([
     supabase.from('workouts').select('date, raw_value, sets, level').eq('user_id', userId).gte('date', weekStart),
     supabase.from('nutrition_logs').select('date').eq('user_id', userId).gte('date', weekStart),
     supabase.from('duels').select('id').or(`challenger_id.eq.${userId},opponent_id.eq.${userId}`).eq('status', 'COMPLETED').gte('end_at', Math.floor(new Date(weekStart).getTime() / 1000)),
     supabase.from('group_challenges').select('id').eq('status', 'completed').gte('completed_at', weekStart),
+    // All workouts with distance tracked (runs, bikes, rows, etc.)
+    supabase.from('workouts').select('exercise_id, timestamp, distance_meters').eq('user_id', userId).gte('date', weekStart).not('distance_meters', 'is', null).gt('distance_meters', 0),
   ]);
 
   const workoutDates = new Set((workouts || []).map(w => w.date));
@@ -196,9 +198,31 @@ async function computeProgress(userId: string, weekStart: string, bounties: any[
       case 'sessions':
         current = workoutDates.size;
         break;
-      case 'distance':
-        current = 0; // TODO: cardio distance tracking
+      case 'distance': {
+        // Sum actual run distances from workouts table
+        // Deduplicate: one physical run creates multiple entries (run_400m, run_1_mile, run_5k)
+        // Group by timestamp (within 60s = same run), take max distance per group
+        const runs = (runWorkouts || []).filter((r: any) => r.distance_meters > 0);
+        const groups: number[] = [];
+        const sorted = [...runs].sort((a: any, b: any) => a.timestamp - b.timestamp);
+        let lastTs = 0;
+        let groupMax = 0;
+        for (const r of sorted) {
+          if (r.timestamp - lastTs > 60) {
+            // New run group
+            if (groupMax > 0) groups.push(groupMax);
+            groupMax = Number(r.distance_meters);
+          } else {
+            // Same run, take max distance
+            groupMax = Math.max(groupMax, Number(r.distance_meters));
+          }
+          lastTs = r.timestamp;
+        }
+        if (groupMax > 0) groups.push(groupMax);
+        const totalMeters = groups.reduce((s, m) => s + m, 0);
+        current = Math.round((totalMeters / 1609.34) * 10) / 10;
         break;
+      }
       case 'rank_chase':
         current = (workouts || []).some(w => w.level > 0) ? 1 : 0; // simplified — any ranked log counts
         break;

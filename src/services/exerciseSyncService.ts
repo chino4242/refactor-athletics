@@ -84,6 +84,14 @@ export async function processExerciseSessions(
       const ranked = await tryRankRun(supabase, userId, bodyweight, sex, dur, distMeters);
       if (ranked) {
         synced.push(`${ranked.exerciseId}: Lv.${ranked.level}`);
+        // Also save the full distance to the highest-ranked workout entry
+        // (so bounties and distance tracking can query it accurately)
+        await supabase.from('workouts')
+          .update({ distance_meters: distMeters })
+          .eq('user_id', userId)
+          .eq('exercise_id', ranked.exerciseId)
+          .order('timestamp', { ascending: false })
+          .limit(1);
         continue;
       }
     }
