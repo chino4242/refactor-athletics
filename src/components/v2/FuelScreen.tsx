@@ -35,6 +35,8 @@ export default function FuelScreen({ userId }: Props) {
   const [showCoach, setShowCoach] = useState(false);
   const [deletingTs, setDeletingTs] = useState<number | null>(null);
   const [tierIndex, setTierIndex] = useState(0);
+  const [selectedDate, setSelectedDate] = useState(new Date().toLocaleDateString('en-CA'));
+  const [weightHistory, setWeightHistory] = useState<{ date: string; weight: number }[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
 
@@ -42,7 +44,7 @@ export default function FuelScreen({ userId }: Props) {
     (async () => {
       const { createClient } = await import('@/utils/supabase/client');
       const supabase = createClient();
-      const today = new Date().toLocaleDateString('en-CA');
+      const today = selectedDate;
 
       const [{ data: logs }, { data: user }, { data: todayHabitBurn }] = await Promise.all([
         supabase.from('nutrition_logs').select('macro_type, amount').eq('user_id', userId).eq('date', today),
@@ -56,20 +58,23 @@ export default function FuelScreen({ userId }: Props) {
       const todayHabitBurnVal = (todayHabitBurn || []).reduce((s: number, h: any) => s + (h.value || 0), 0);
       let burned = Math.round(t['calories_burned'] || todayHabitBurnVal || 0);
 
-      // Read calories burned directly from native plugin (more accurate than DB)
-      try {
-        const { getCaloriesBurned } = await import('@/services/nativeHealth');
-        const now = new Date();
-        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-        const rightNow = now.toISOString(); // Use current moment, not end-of-day
-        const nativeBurned = await getCaloriesBurned(startOfToday, rightNow);
-        if (nativeBurned > burned) {
-          burned = nativeBurned;
-          // Write back to DB so desktop/web can see the latest burn data
-          await supabase.from('nutrition_logs').delete().eq('user_id', userId).eq('date', today).eq('macro_type', 'calories_burned');
-          await supabase.from('nutrition_logs').insert({ user_id: userId, date: today, macro_type: 'calories_burned', amount: nativeBurned, xp: 0, label: 'Health Sync', timestamp: Math.floor(Date.now() / 1000) });
-        }
-      } catch {}
+      // Read calories burned directly from native plugin (more accurate than DB) — only for today
+      const isToday = selectedDate === new Date().toLocaleDateString('en-CA');
+      if (isToday) {
+        try {
+          const { getCaloriesBurned } = await import('@/services/nativeHealth');
+          const now = new Date();
+          const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+          const rightNow = now.toISOString(); // Use current moment, not end-of-day
+          const nativeBurned = await getCaloriesBurned(startOfToday, rightNow);
+          if (nativeBurned > burned) {
+            burned = nativeBurned;
+            // Write back to DB so desktop/web can see the latest burn data
+            await supabase.from('nutrition_logs').delete().eq('user_id', userId).eq('date', today).eq('macro_type', 'calories_burned');
+            await supabase.from('nutrition_logs').insert({ user_id: userId, date: today, macro_type: 'calories_burned', amount: nativeBurned, xp: 0, label: 'Health Sync', timestamp: Math.floor(Date.now() / 1000) });
+          }
+        } catch {}
+      }
 
       setTotals({ protein: Math.round(t['protein'] || 0), carbs: Math.round(t['carbs'] || 0), fat: Math.round(t['fat'] || 0), calsIn: Math.round(t['calories'] || 0), burned });
 
@@ -77,7 +82,7 @@ export default function FuelScreen({ userId }: Props) {
         setTargets({ protein: user.nutrition_targets.protein || 170, carbs: user.nutrition_targets.carbs || 250, fat: user.nutrition_targets.fat || 65, calories: user.nutrition_targets.calories || 2000 });
       }
     })();
-  }, [userId, refreshKey]);
+  }, [userId, refreshKey, selectedDate]);
 
   const net = totals.calsIn - totals.burned;
 
@@ -151,6 +156,20 @@ export default function FuelScreen({ userId }: Props) {
         for (const w of workouts || []) { if (!maxLevels[w.exercise_id] || w.level > maxLevels[w.exercise_id]) maxLevels[w.exercise_id] = w.level; }
         const pl = Object.values(maxLevels).reduce((s, l) => s + l, 0);
         setTierIndex(pl < 12 ? 0 : pl < 24 ? 1 : pl < 36 ? 2 : pl < 48 ? 3 : 4);
+      } catch {}
+
+      // Fetch weight history (last 30 days)
+      try {
+        const thirtyAgo = new Date(Date.now() - 30 * 86400000).toLocaleDateString('en-CA');
+        const { data: weights } = await supabase.from('body_measurements')
+          .select('date, weight')
+          .eq('user_id', userId)
+          .gte('date', thirtyAgo)
+          .not('weight', 'is', null)
+          .order('date', { ascending: true });
+        if (weights?.length) {
+          setWeightHistory(weights.map((w: any) => ({ date: w.date, weight: w.weight })));
+        }
       } catch {}
     })();
   }, [userId, refreshKey, isVibrant, targets.protein]);
@@ -254,6 +273,10 @@ export default function FuelScreen({ userId }: Props) {
           text={vibText}
           weeklyDots={weeklyDots}
           tierIndex={tierIndex}
+          selectedDate={selectedDate}
+          isToday={selectedDate === new Date().toLocaleDateString('en-CA')}
+          onDateChange={setSelectedDate}
+          weightHistory={weightHistory}
           onTextChange={setVibText}
           onMealTagChange={setMealTag}
           onSubmit={vibHandleSubmit}

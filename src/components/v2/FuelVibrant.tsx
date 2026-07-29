@@ -46,6 +46,10 @@ interface Props {
   onNudgeDismiss: () => void;
   onCoachOpen: () => void;
   deletingTimestamp: number | null;
+  selectedDate: string;
+  isToday: boolean;
+  onDateChange: (date: string) => void;
+  weightHistory: { date: string; weight: number }[];
 }
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -165,7 +169,7 @@ export default function FuelVibrant({
   onTextChange, onMealTagChange, onSubmit, onConfirm, onConfirmWithMultiplier, onDismiss,
   onPhotoCapture, onPhotoUpload, onFavoriteTap, onFavoriteLongPress,
   onMealDelete, onNudgeTap, onNudgeDismiss, onCoachOpen,
-  deletingTimestamp,
+  deletingTimestamp, selectedDate, isToday, onDateChange, weightHistory,
 }: Props) {
   const { currentTheme } = useTheme();
   const accent = VIBRANT_ACCENTS[currentTheme] || VIBRANT_ACCENTS.athlete;
@@ -199,6 +203,42 @@ export default function FuelVibrant({
   }
 
   return (
+    <div className="space-y-3">
+
+      {/* ── DATE NAVIGATOR ── */}
+      <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none">
+        {Array.from({ length: 7 }).map((_, i) => {
+          const d = new Date();
+          d.setDate(d.getDate() - (6 - i));
+          const dateStr = d.toLocaleDateString('en-CA');
+          const dayLabel = d.toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 2);
+          const isSelected = dateStr === selectedDate;
+          const isTodayDate = dateStr === new Date().toLocaleDateString('en-CA');
+          return (
+            <button
+              key={dateStr}
+              onClick={() => onDateChange(dateStr)}
+              className={`flex-1 min-w-[44px] flex flex-col items-center py-1.5 rounded-lg transition-all ${
+                isSelected
+                  ? `bg-gradient-to-b ${accent.gradient} text-white`
+                  : 'bg-zinc-900/40 text-zinc-500 hover:text-zinc-300'
+              }`}
+            >
+              <span className="text-[10px] font-medium">{dayLabel}</span>
+              <span className={`text-sm font-bold ${isSelected ? 'text-white' : ''}`}>{d.getDate()}</span>
+              {isTodayDate && !isSelected && <div className="w-1 h-1 rounded-full bg-zinc-500 mt-0.5" />}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ── VIEWING PAST DATE INDICATOR ── */}
+      {!isToday && (
+        <button onClick={() => onDateChange(new Date().toLocaleDateString('en-CA'))} className="w-full text-center py-1.5 text-xs text-zinc-400 bg-zinc-800/40 rounded-lg">
+          Viewing {new Date(selectedDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })} · tap for today
+        </button>
+      )}
+
     <div className="rounded-3xl bg-gradient-to-b from-zinc-800/50 to-zinc-900/70 border border-zinc-700/20 overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.3)]">
       {/* Accent bar */}
       {/* Brush stroke accent */}
@@ -327,7 +367,7 @@ export default function FuelVibrant({
         )}
 
         {/* ── INPUT COMPOSER ── */}
-        {!pending && !loading && (
+        {!pending && !loading && isToday && (
           <div className="flex items-end gap-2">
             <div className="flex-1 bg-zinc-900/60 border border-zinc-800/50 rounded-xl px-3 py-2.5">
               <textarea
@@ -404,6 +444,43 @@ export default function FuelVibrant({
         )}
 
       </div>
+    </div>
+
+      {/* ── WEIGHT SPARKLINE ── */}
+      {weightHistory.length >= 2 && (
+        <div className="rounded-xl bg-zinc-900/40 border border-zinc-800/30 p-3">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-zinc-500 font-medium">Weight (30d)</span>
+            <span className="text-xs text-zinc-400 font-bold">{weightHistory[weightHistory.length - 1].weight} lbs</span>
+          </div>
+          <svg viewBox={`0 0 ${weightHistory.length * 10} 40`} className="w-full h-10" preserveAspectRatio="none">
+            {(() => {
+              const weights = weightHistory.map(w => w.weight);
+              const min = Math.min(...weights) - 1;
+              const max = Math.max(...weights) + 1;
+              const range = max - min || 1;
+              const points = weights.map((w, i) => `${i * 10},${40 - ((w - min) / range) * 36}`).join(' ');
+              return (
+                <>
+                  <polyline points={points} fill="none" stroke={currentTheme === 'samurai' ? '#e8a0b8' : currentTheme === 'dragon' ? '#ef4444' : currentTheme === 'viking' ? '#38bdf8' : currentTheme === 'dinosaur' ? '#22c55e' : '#f97316'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  <circle cx={(weights.length - 1) * 10} cy={40 - ((weights[weights.length - 1] - min) / range) * 36} r="3" fill={currentTheme === 'samurai' ? '#e8a0b8' : currentTheme === 'dragon' ? '#ef4444' : currentTheme === 'viking' ? '#38bdf8' : currentTheme === 'dinosaur' ? '#22c55e' : '#f97316'} />
+                </>
+              );
+            })()}
+          </svg>
+          {weightHistory.length >= 7 && (() => {
+            const first = weightHistory[0].weight;
+            const last = weightHistory[weightHistory.length - 1].weight;
+            const diff = last - first;
+            return (
+              <p className={`text-xs mt-1 ${diff < 0 ? 'text-emerald-400' : diff > 0 ? 'text-amber-400' : 'text-zinc-500'}`}>
+                {diff < 0 ? '↓' : diff > 0 ? '↑' : '→'} {Math.abs(diff).toFixed(1)} lbs over {weightHistory.length} days
+              </p>
+            );
+          })()}
+        </div>
+      )}
+
     </div>
   );
 }
