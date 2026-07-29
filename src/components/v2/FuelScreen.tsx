@@ -65,11 +65,11 @@ export default function FuelScreen({ userId }: Props) {
           const { getCaloriesBurned } = await import('@/services/nativeHealth');
           const now = new Date();
           const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-          const rightNow = now.toISOString(); // Use current moment, not end-of-day
+          const rightNow = now.toISOString();
           const nativeBurned = await getCaloriesBurned(startOfToday, rightNow);
-          if (nativeBurned > burned) {
+          if (nativeBurned > 0) {
             burned = nativeBurned;
-            // Write back to DB so desktop/web can see the latest burn data
+            // Always write native value to DB (replaces any stale/projected data)
             await supabase.from('nutrition_logs').delete().eq('user_id', userId).eq('date', today).eq('macro_type', 'calories_burned');
             await supabase.from('nutrition_logs').insert({ user_id: userId, date: today, macro_type: 'calories_burned', amount: nativeBurned, xp: 0, label: 'Health Sync', timestamp: Math.floor(Date.now() / 1000) });
           }
