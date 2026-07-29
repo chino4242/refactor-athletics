@@ -174,6 +174,7 @@ export async function syncTodayHealth(exerciseDaysBack?: number) {
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
   const startOfYesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1).toISOString();
   const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).toISOString();
+  const rightNow = now.toISOString(); // For calories: only up to current moment (not projected)
   const sleepStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 20, 0).toISOString();
   // Default 36h window, or wider on first sync
   const exerciseStart = exerciseDaysBack
@@ -183,7 +184,7 @@ export async function syncTodayHealth(exerciseDaysBack?: number) {
   const [stepsToday, stepsYesterday, caloriesBurned, caloriesYesterday, sleep, weight, hrv, restingHR, bodyFat, exercises] = await Promise.all([
     getSteps(startOfToday, endOfToday),
     getSteps(startOfYesterday, startOfToday),
-    getCaloriesBurned(startOfToday, endOfToday),
+    getCaloriesBurned(startOfToday, rightNow),
     getCaloriesBurned(startOfYesterday, startOfToday),
     getSleep(sleepStart, startOfToday),
     getWeight(),

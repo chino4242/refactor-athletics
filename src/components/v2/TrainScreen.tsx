@@ -7,6 +7,9 @@ import PixelBox, { ScreenWrapper } from './PixelBox';
 import ActivityConfirmModal from './ActivityConfirmModal';
 import { TrainSkeleton } from './Skeletons';
 import DailyWorkoutReport from './DailyWorkoutReport';
+import TrainingGrounds from './TrainingGrounds';
+import TimedWorkoutActive from './TimedWorkoutActive';
+import EmomWorkoutActive from './EmomWorkoutActive';
 
 interface TrainScreenProps {
   userId: string;
@@ -106,6 +109,7 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
   const [yesterday, setYesterday] = useState<string | null>(null);
   const [tomorrow, setTomorrow] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [activeTimedWorkout, setActiveTimedWorkout] = useState<any>(null);
   const [sessionGroups, setSessionGroups] = useState<{ type: string; exercises: { id: string; name: string }[]; completed: number }[]>([]);
   const [todayXp, setTodayXp] = useState(0);
   const [allComplete, setAllComplete] = useState(false);
@@ -525,6 +529,80 @@ export default function TrainScreen({ userId }: TrainScreenProps) {
             setConfirmingActivity(null);
           }}
           onDismiss={() => setConfirmingActivity(null)}
+        />
+      )}
+
+      {/* Training Grounds */}
+      <div className="mb-4">
+        <TrainingGrounds userId={userId} onStartWorkout={(template) => setActiveTimedWorkout(template)} />
+      </div>
+
+      {/* Active Timed Workout Overlay */}
+      {activeTimedWorkout && activeTimedWorkout.format !== 'emom' && (
+        <TimedWorkoutActive
+          template={activeTimedWorkout}
+          userId={userId}
+          onComplete={async (result) => {
+            // Save results to workouts table
+            try {
+              const { createClient } = await import('@/utils/supabase/client');
+              const supabase = createClient();
+              const { awardXp } = await import('@/utils/xp-service');
+              const ts = Math.floor(Date.now() / 1000);
+              const date = new Date().toLocaleDateString('en-CA');
+              const durationMin = Math.round(result.totalSeconds / 60);
+              const xp = (durationMin * 10) + (result.rounds > 0 ? 50 : 0);
+              const value = result.format === 'amrap' ? `${result.rounds} rounds${result.partialReps > 0 ? ` + ${result.partialReps}` : ''}` : `${Math.floor(result.totalSeconds / 60)}:${String(result.totalSeconds % 60).padStart(2, '0')}`;
+              await supabase.from('workouts').insert({
+                user_id: userId,
+                exercise_id: `template_${activeTimedWorkout.id}`,
+                timestamp: ts,
+                date,
+                value,
+                raw_value: result.format === 'amrap' ? result.rounds : result.totalSeconds,
+                sets: [{ rounds: result.rounds, partialReps: result.partialReps, seconds: result.totalSeconds }],
+                xp,
+                level: 0,
+                rank_name: null,
+              });
+              await awardXp(supabase, userId, { type: 'workout', level: 0, volumeXp: xp } as any, activeTimedWorkout.name);
+            } catch (e) { console.error('[TrainingGrounds] Failed to save result:', e); }
+            setActiveTimedWorkout(null);
+            setRefreshKey(k => k + 1);
+          }}
+          onCancel={() => setActiveTimedWorkout(null)}
+        />
+      )}
+      {activeTimedWorkout && activeTimedWorkout.format === 'emom' && (
+        <EmomWorkoutActive
+          template={activeTimedWorkout}
+          userId={userId}
+          onComplete={async (result) => {
+            try {
+              const { createClient } = await import('@/utils/supabase/client');
+              const supabase = createClient();
+              const { awardXp } = await import('@/utils/xp-service');
+              const ts = Math.floor(Date.now() / 1000);
+              const date = new Date().toLocaleDateString('en-CA');
+              const xp = (result.minutesTotal * 8) + (result.roundsCompleted === result.minutesTotal ? 50 : 0);
+              await supabase.from('workouts').insert({
+                user_id: userId,
+                exercise_id: `template_${activeTimedWorkout.id}`,
+                timestamp: ts,
+                date,
+                value: `${result.minutesCompleted}/${result.minutesTotal} min`,
+                raw_value: result.roundsCompleted,
+                sets: [{ minutesCompleted: result.minutesCompleted, roundsCompleted: result.roundsCompleted, minutesTotal: result.minutesTotal }],
+                xp,
+                level: 0,
+                rank_name: null,
+              });
+              await awardXp(supabase, userId, { type: 'workout', level: 0, volumeXp: xp } as any, activeTimedWorkout.name);
+            } catch (e) { console.error('[TrainingGrounds] Failed to save result:', e); }
+            setActiveTimedWorkout(null);
+            setRefreshKey(k => k + 1);
+          }}
+          onCancel={() => setActiveTimedWorkout(null)}
         />
       )}
 

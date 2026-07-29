@@ -61,8 +61,8 @@ export default function FuelScreen({ userId }: Props) {
         const { getCaloriesBurned } = await import('@/services/nativeHealth');
         const now = new Date();
         const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-        const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).toISOString();
-        const nativeBurned = await getCaloriesBurned(startOfToday, endOfToday);
+        const rightNow = now.toISOString(); // Use current moment, not end-of-day
+        const nativeBurned = await getCaloriesBurned(startOfToday, rightNow);
         if (nativeBurned > burned) {
           burned = nativeBurned;
           // Write back to DB so desktop/web can see the latest burn data
