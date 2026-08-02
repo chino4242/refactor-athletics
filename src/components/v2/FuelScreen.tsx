@@ -33,6 +33,7 @@ export default function FuelScreen({ userId }: Props) {
   const [vibText, setVibText] = useState('');
   const [weeklyDots, setWeeklyDots] = useState<boolean[]>([]);
   const [showCoach, setShowCoach] = useState(false);
+  const [coachInitialMsg, setCoachInitialMsg] = useState<string | undefined>();
   const [deletingTs, setDeletingTs] = useState<number | null>(null);
   const [tierIndex, setTierIndex] = useState(0);
   const [selectedDate, setSelectedDate] = useState(new Date().toLocaleDateString('en-CA'));
@@ -258,7 +259,7 @@ export default function FuelScreen({ userId }: Props) {
             />
           </div>
         )}
-        {showCoach && <NutritionCoach userId={userId} onClose={() => { setShowCoach(false); setRefreshKey(k => k + 1); }} />}
+        {showCoach && <NutritionCoach userId={userId} onClose={() => { setShowCoach(false); setCoachInitialMsg(undefined); setRefreshKey(k => k + 1); }} initialMessage={coachInitialMsg} />}
         <input ref={fileRef} type="file" accept="image/*" onChange={vibHandlePhoto} className="hidden" />
         <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={vibHandlePhoto} className="hidden" />
         <FuelVibrant
@@ -291,6 +292,7 @@ export default function FuelScreen({ userId }: Props) {
           onNudgeTap={() => setShowCoach(true)}
           onNudgeDismiss={() => { setNudge(null); localStorage.setItem('coach_nudge_dismissed', String(Date.now() + 7 * 86400000)); }}
           onCoachOpen={() => setShowCoach(true)}
+          onCoachOpenWithMessage={(msg) => { setCoachInitialMsg(msg); setShowCoach(true); }}
           deletingTimestamp={deletingTs}
         />
       </ScreenWrapper>

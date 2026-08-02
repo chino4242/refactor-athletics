@@ -45,6 +45,7 @@ interface Props {
   onNudgeTap: () => void;
   onNudgeDismiss: () => void;
   onCoachOpen: () => void;
+  onCoachOpenWithMessage: (msg: string) => void;
   deletingTimestamp: number | null;
   selectedDate: string;
   isToday: boolean;
@@ -138,7 +139,7 @@ function getNarrative(theme: string, state: FuelState): string {
 
 // ─── Macro Ring ───────────────────────────────────────────────────────────────
 
-function MacroRing({ label, current, target, color }: { label: string; current: number; target: number; color: string; }) {
+function MacroRing({ label, current, target, color, onTap }: { label: string; current: number; target: number; color: string; onTap?: () => void; }) {
   const pct = Math.min(current / target, 1);
   const r = 26;
   const circ = 2 * Math.PI * r;
@@ -146,7 +147,7 @@ function MacroRing({ label, current, target, color }: { label: string; current: 
   const hit = current >= target;
 
   return (
-    <div className="flex flex-col items-center gap-1">
+    <button onClick={onTap} className="flex flex-col items-center gap-1 active:scale-95 transition-transform">
       <div className="relative w-16 h-16">
         <svg viewBox="0 0 64 64" className="w-full h-full -rotate-90">
           <circle cx="32" cy="32" r={r} fill="none" stroke="#27272a" strokeWidth="5" />
@@ -157,7 +158,7 @@ function MacroRing({ label, current, target, color }: { label: string; current: 
         </div>
       </div>
       <p className="text-xs text-zinc-400">{label} <span className="text-zinc-600">/ {target}g</span></p>
-    </div>
+    </button>
   );
 }
 
@@ -168,7 +169,7 @@ export default function FuelVibrant({
   mealTag, text, weeklyDots, tierIndex,
   onTextChange, onMealTagChange, onSubmit, onConfirm, onConfirmWithMultiplier, onDismiss,
   onPhotoCapture, onPhotoUpload, onFavoriteTap, onFavoriteLongPress,
-  onMealDelete, onNudgeTap, onNudgeDismiss, onCoachOpen,
+  onMealDelete, onNudgeTap, onNudgeDismiss, onCoachOpen, onCoachOpenWithMessage,
   deletingTimestamp, selectedDate, isToday, onDateChange, weightHistory,
 }: Props) {
   const { currentTheme } = useTheme();
@@ -288,10 +289,27 @@ export default function FuelVibrant({
 
         {/* ── MACRO RINGS ── */}
         <div className="flex items-start justify-around py-1">
-          <MacroRing label="Protein" current={totals.protein} target={targets.protein} color="#3b82f6" />
-          <MacroRing label="Carbs" current={totals.carbs} target={targets.carbs} color="#f97316" />
-          <MacroRing label="Fat" current={totals.fat} target={targets.fat} color="#eab308" />
+          <MacroRing label="Protein" current={totals.protein} target={targets.protein} color="#3b82f6" onTap={() => onCoachOpenWithMessage('I want to adjust my protein target')} />
+          <MacroRing label="Carbs" current={totals.carbs} target={targets.carbs} color="#f97316" onTap={() => onCoachOpenWithMessage('I want to adjust my carb target')} />
+          <MacroRing label="Fat" current={totals.fat} target={targets.fat} color="#eab308" onTap={() => onCoachOpenWithMessage('I want to adjust my fat target')} />
         </div>
+
+        {/* Adjust Macros button */}
+        <button onClick={onCoachOpen} className={`w-full py-2 rounded-lg bg-zinc-900/60 border border-zinc-800/40 text-xs font-medium text-zinc-400 hover:text-zinc-200 transition-colors`}>
+          🧠 Adjust Macro Targets
+        </button>
+
+        {/* First-time coach hint (shows if targets haven't been adjusted recently) */}
+        {totals.calsIn === 0 && isToday && !localStorage?.getItem('coach_hint_dismissed') && (
+          <button
+            onClick={() => { onCoachOpen(); if (typeof localStorage !== 'undefined') localStorage.setItem('coach_hint_dismissed', '1'); }}
+            className="w-full py-2.5 px-3 rounded-lg bg-zinc-800/40 border border-zinc-700/20 text-left flex items-center gap-2"
+          >
+            <span className="text-sm">🧠</span>
+            <span className="text-xs text-zinc-300">Macro targets feel off? Coach can help adjust them for your goals.</span>
+            <span onClick={(e) => { e.stopPropagation(); if (typeof localStorage !== 'undefined') localStorage.setItem('coach_hint_dismissed', '1'); }} className="text-zinc-600 text-xs ml-auto shrink-0">✕</span>
+          </button>
+        )}
 
         {/* Weekly dots (compact) */}
         {weeklyDots.length > 0 && (
