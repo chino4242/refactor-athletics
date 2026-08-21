@@ -224,6 +224,69 @@ describe('Power Level V2', () => {
     });
   });
 
+  describe('Window refresh on any log', () => {
+    it('recent lower-level log refreshes the decay window (not just best level date)', async () => {
+      const today = new Date();
+      const daysAgo = (n: number) => {
+        const d = new Date(today); d.setDate(d.getDate() - n);
+        return d.toLocaleDateString('en-CA');
+      };
+
+      // L3 logged 58 days ago (almost expired at 60d window)
+      // L2 logged 3 days ago (recent log should refresh window)
+      const workouts = [
+        { exercise_id: 'bench_press', level: 3, raw_value: 250, date: daysAgo(58), timestamp: 0 },
+        { exercise_id: 'bench_press', level: 2, raw_value: 200, date: daysAgo(3), timestamp: 0 },
+      ];
+      const catalog = [{ id: 'bench_press', name: 'Bench Press', standards: { brackets: {} } }];
+      const profile = { selected_path: 'hybrid', age: 28, sex: 'male', bodyweight: 180 };
+
+      setupMocks(workouts, catalog, profile);
+      const { getPowerLevelV2 } = await import('@/services/powerLevelV2');
+      const result = await getPowerLevelV2('user1');
+
+      const bench = result.exercises.find(e => e.exerciseId === 'bench_press');
+      // Best level is 3 (still within 60-day window from the L3 workout)
+      expect(bench?.level).toBe(3);
+      // BUT expiry should be calculated from the MOST RECENT log (3 days ago)
+      // Window for L3 = 60 days. So daysUntilExpiry ≈ 60 - 3 = 57 (±1 due to time-of-day rounding)
+      expect(bench?.daysUntilExpiry).toBeGreaterThanOrEqual(56);
+      expect(bench?.daysUntilExpiry).toBeLessThanOrEqual(58);
+      expect(bench?.expired).toBe(false);
+      // Should NOT be flagged as expiring (>14 days)
+      expect(result.expiringExercises.find(e => e.exerciseId === 'bench_press')).toBeUndefined();
+    });
+
+    it('level-0 log still refreshes the decay window', async () => {
+      const today = new Date();
+      const daysAgo = (n: number) => {
+        const d = new Date(today); d.setDate(d.getDate() - n);
+        return d.toLocaleDateString('en-CA');
+      };
+
+      // L3 logged 55 days ago
+      // Level 0 log 2 days ago (didn't pass threshold but still refreshes window)
+      const workouts = [
+        { exercise_id: 'bench_press', level: 3, raw_value: 250, date: daysAgo(55), timestamp: 0 },
+        { exercise_id: 'bench_press', level: 0, raw_value: 100, date: daysAgo(2), timestamp: 0 },
+      ];
+      const catalog = [{ id: 'bench_press', name: 'Bench Press', standards: { brackets: {} } }];
+      const profile = { selected_path: 'hybrid', age: 28, sex: 'male', bodyweight: 180 };
+
+      setupMocks(workouts, catalog, profile);
+      const { getPowerLevelV2 } = await import('@/services/powerLevelV2');
+      const result = await getPowerLevelV2('user1');
+
+      const bench = result.exercises.find(e => e.exerciseId === 'bench_press');
+      // Best level = 3 (still valid within 60-day window)
+      expect(bench?.level).toBe(3);
+      // Expiry from most recent log (2 days ago): 60 - 2 ≈ 58 (±1 due to time-of-day rounding)
+      expect(bench?.daysUntilExpiry).toBeGreaterThanOrEqual(57);
+      expect(bench?.daysUntilExpiry).toBeLessThanOrEqual(59);
+      expect(bench?.expired).toBe(false);
+    });
+  });
+
   describe('Path filtering', () => {
     it('only counts exercises for the selected path', async () => {
       const today = new Date();

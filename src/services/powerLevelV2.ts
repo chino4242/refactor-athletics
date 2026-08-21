@@ -60,9 +60,10 @@ export async function getPowerLevelV2(userId: string): Promise<PowerLevelV2Data>
     const name = catItem?.name || exId.replace(/_/g, ' ');
 
     // Get all workouts for this exercise (including variants that normalize to it)
+    // Include ALL logs (even level 0) because the window refreshes on ANY log per game design
     const exWorkouts = (workouts || []).filter((w: any) => {
       const effectiveId = variantToBase.get(w.exercise_id) || w.exercise_id;
-      return effectiveId === exId && w.level > 0;
+      return effectiveId === exId;
     });
 
     if (exWorkouts.length === 0) {
@@ -70,12 +71,24 @@ export async function getPowerLevelV2(userId: string): Promise<PowerLevelV2Data>
       continue;
     }
 
-    // Find best level and when it was achieved
+    // Find the most recent log date (ANY performance resets the window)
+    let mostRecentDate = '';
+    for (const w of exWorkouts) {
+      const wDate = w.date || new Date(w.timestamp * 1000).toLocaleDateString('en-CA');
+      if (wDate > mostRecentDate) mostRecentDate = wDate;
+    }
+
+    // Calculate the window from the most recent log date
+    const daysSinceLast = Math.floor((today.getTime() - new Date(mostRecentDate + 'T12:00:00').getTime()) / (1000 * 60 * 60 * 24));
+
+    // Find the best level achieved within the window (measured from most recent log)
+    // The window size is determined by the best level found
     let bestLevel = 0;
     let bestValue = 0;
-    let lastLoggedDate = '';
 
-    for (const w of exWorkouts) {
+    // Only ranked workouts (level > 0) contribute to Power Level
+    const rankedWorkouts = exWorkouts.filter((w: any) => w.level > 0);
+    for (const w of rankedWorkouts) {
       const wDate = w.date || new Date(w.timestamp * 1000).toLocaleDateString('en-CA');
       const windowDays = DECAY_WINDOWS_DAYS[w.level] || 90;
       const daysSince = Math.floor((today.getTime() - new Date(wDate + 'T12:00:00').getTime()) / (1000 * 60 * 60 * 24));
@@ -85,26 +98,21 @@ export async function getPowerLevelV2(userId: string): Promise<PowerLevelV2Data>
         if (w.level > bestLevel) {
           bestLevel = w.level;
           bestValue = w.raw_value || 0;
-          lastLoggedDate = wDate;
         }
       }
     }
 
-    // If no valid entries within window, find the most recent log date anyway (for "last logged" display)
-    if (bestLevel === 0) {
-      const sorted = exWorkouts.sort((a: any, b: any) => (b.timestamp || 0) - (a.timestamp || 0));
-      lastLoggedDate = sorted[0]?.date || '';
-    }
+    const lastLoggedDate = mostRecentDate;
 
-    // Calculate days until expiry for the current best level
+    // Calculate days until expiry using most recent log date + best level's window
     let daysUntilExpiry = 0;
     let expired = false;
-    if (bestLevel > 0 && lastLoggedDate) {
+    if (bestLevel > 0) {
       const windowDays = DECAY_WINDOWS_DAYS[bestLevel] || 90;
-      const daysSince = Math.floor((today.getTime() - new Date(lastLoggedDate + 'T12:00:00').getTime()) / (1000 * 60 * 60 * 24));
-      daysUntilExpiry = windowDays - daysSince;
+      daysUntilExpiry = windowDays - daysSinceLast;
       expired = daysUntilExpiry <= 0;
-    } else if (exWorkouts.length > 0 && bestLevel === 0) {
+    } else if (rankedWorkouts.length > 0) {
+      // Had ranked workouts but all expired their windows
       expired = true;
     }
 
