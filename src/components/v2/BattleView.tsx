@@ -15,6 +15,17 @@ import LiftingCard from './LiftingCard';
 import CardioCard from './CardioCard';
 import DurationCard from './DurationCard';
 
+// Barbell strength lifts that default to a 5x5 scheme when trained on their own
+// (e.g. tapping an exercise in the Bestiary → Train). Matched against the
+// normalized exercise ID (equipment/variant prefixes stripped).
+const FIVE_BY_FIVE_LIFTS = new Set([
+  'back_squat',
+  'deadlift',
+  'bench_press',
+  'overhead_press',
+  'barbell_row',
+]);
+
 interface BattleViewProps {
   userId: string;
   onComplete: () => void;
@@ -362,6 +373,9 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
           const flexCards: BattleCard[] = items.map((c: CatalogItem) => {
             const isHold = ['plank', 'dead_hang', 'l_sit', 'deep_squat_hold'].some(k => c.id.includes(k));
             const isRun = ['run_1_mile', 'run_400m', 'run_5k', 'run_2_mile'].some(k => c.id === k);
+            // 5x5 default for barbell strength lifts when trained solo from the Bestiary
+            const normalizedId = c.id.replace(/^(barbell|dumbbell|smith_machine|cable|machine|five_rm|one_rm|est_1rm)_/, '');
+            const isFiveByFive = !!singleExercise && FIVE_BY_FIVE_LIFTS.has(normalizedId);
 
             // Populate from history
             const exHistory = historyArr.filter((h: any) => (h.exercise_id || '').toLowerCase() === c.id.toLowerCase()).sort((a: any, b: any) => (b.timestamp || 0) - (a.timestamp || 0));
@@ -389,9 +403,9 @@ export default function BattleView({ userId, onComplete, flexibleMode, filter, s
             name: c.name || c.id.replace(/_/g, ' '),
             exerciseId: c.id,
             type: isHold ? 'duration' as const : 'lifting' as const,
-            totalSets: (isHold || isRun) ? 1 : 3,
+            totalSets: (isHold || isRun) ? 1 : (isFiveByFive ? 5 : 3),
             completedSets: 0,
-            targetReps: (isHold || isRun) ? 0 : 8,
+            targetReps: (isHold || isRun) ? 0 : (isFiveByFive ? 5 : 8),
             targetSeconds: isHold ? 60 : undefined,
             defeated: false,
             poofing: false,
