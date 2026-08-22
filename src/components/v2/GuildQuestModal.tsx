@@ -20,22 +20,27 @@ const METRICS: { key: ChallengeMetric; label: string; icon: string; unit: string
   { key: 'active_minutes', label: 'ACTIVE MIN', icon: '⏱', unit: 'min', defaultTarget: 300 },
 ];
 
-const DURATIONS = [
-  { label: '1 DAY', days: 1 },
-  { label: '3 DAYS', days: 3 },
-  { label: '5 DAYS', days: 5 },
-  { label: '7 DAYS', days: 7 },
-  { label: '14 DAYS', days: 14 },
-];
+// Local YYYY-MM-DD (matches app-wide date convention; avoids UTC shift)
+function toDateStr(d: Date): string {
+  return d.toLocaleDateString('en-CA');
+}
 
 export default function GuildQuestModal({ isOpen, groupId, userId, onClose, onCreated }: Props) {
   const { currentTheme } = useTheme();
   const colors = getV2Theme(currentTheme);
   const [metric, setMetric] = useState<ChallengeMetric>('volume');
   const [target, setTarget] = useState('20000');
-  const [durationDays, setDurationDays] = useState(7);
+  const [startDate, setStartDate] = useState(() => toDateStr(new Date()));
+  const [endDate, setEndDate] = useState(() => toDateStr(new Date(Date.now() + 6 * 24 * 60 * 60 * 1000)));
   const [memberCount, setMemberCount] = useState(1);
   const [loading, setLoading] = useState(false);
+
+  // Inclusive day count (start and end both count). Min 1.
+  const durationDays = Math.max(
+    1,
+    Math.round((new Date(endDate + 'T12:00:00').getTime() - new Date(startDate + 'T12:00:00').getTime()) / (24 * 60 * 60 * 1000)) + 1
+  );
+  const invalidRange = endDate < startDate;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -60,12 +65,9 @@ export default function GuildQuestModal({ isOpen, groupId, userId, onClose, onCr
   const handleCreate = async () => {
     const targetNum = Number(target);
     if (!targetNum || targetNum <= 0) return;
+    if (invalidRange) return;
 
     setLoading(true);
-    const today = new Date();
-    const startDate = today.toLocaleDateString('en-CA');
-    const end = new Date(today.getTime() + (durationDays - 1) * 24 * 60 * 60 * 1000);
-    const endDate = end.toLocaleDateString('en-CA');
 
     const result = await proposeChallenge({
       groupId,
@@ -142,21 +144,41 @@ export default function GuildQuestModal({ isOpen, groupId, userId, onClose, onCr
             </p>
           </div>
 
-          {/* Duration */}
+          {/* Duration — date range picker */}
           <div>
-            <p className="text-xs text-zinc-500 uppercase mb-2" style={{ fontFamily: "var(--font-pixel), monospace" }}>DURATION</p>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs text-zinc-500 uppercase" style={{ fontFamily: "var(--font-pixel), monospace" }}>DATES</p>
+              <p className={`text-xs ${invalidRange ? 'text-red-400' : colors.secondary}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
+                {invalidRange ? 'END BEFORE START' : `${durationDays} ${durationDays === 1 ? 'DAY' : 'DAYS'}`}
+              </p>
+            </div>
             <div className="flex gap-2">
-              {DURATIONS.map((d) => (
-                <button
-                  key={d.days}
-                  onClick={() => setDurationDays(d.days)}
-                  className={`flex-1 py-2 border text-center transition-colors ${durationDays === d.days ? `${colors.primary} bg-zinc-800` : 'border-zinc-700 bg-zinc-900 hover:bg-zinc-800'}`}
-                >
-                  <p className={`text-xs ${durationDays === d.days ? colors.secondary : 'text-zinc-400'}`} style={{ fontFamily: "var(--font-pixel), monospace" }}>
-                    {d.label}
-                  </p>
-                </button>
-              ))}
+              <label className="flex-1 min-w-0">
+                <span className="block text-xs text-zinc-600 mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>START</span>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={e => {
+                    const v = e.target.value;
+                    setStartDate(v);
+                    // Keep end on or after start
+                    if (endDate < v) setEndDate(v);
+                  }}
+                  className={`w-full min-w-0 box-border bg-zinc-800 border ${colors.border} px-1.5 py-2 text-white text-xs`}
+                  style={{ colorScheme: 'dark' }}
+                />
+              </label>
+              <label className="flex-1 min-w-0">
+                <span className="block text-xs text-zinc-600 mb-1" style={{ fontFamily: "var(--font-pixel), monospace" }}>END</span>
+                <input
+                  type="date"
+                  value={endDate}
+                  min={startDate}
+                  onChange={e => setEndDate(e.target.value)}
+                  className={`w-full min-w-0 box-border bg-zinc-800 border ${invalidRange ? 'border-red-500' : colors.border} px-1.5 py-2 text-white text-xs`}
+                  style={{ colorScheme: 'dark' }}
+                />
+              </label>
             </div>
           </div>
         </div>
@@ -165,7 +187,7 @@ export default function GuildQuestModal({ isOpen, groupId, userId, onClose, onCr
         <div className="p-4 border-t border-zinc-800">
           <button
             onClick={handleCreate}
-            disabled={loading || !Number(target)}
+            disabled={loading || !Number(target) || invalidRange}
             className={`w-full py-3 border-2 ${colors.primary} bg-zinc-800 text-white hover:bg-zinc-700 transition-colors disabled:opacity-50`}
             style={{ fontFamily: "var(--font-pixel), monospace" }}
           >

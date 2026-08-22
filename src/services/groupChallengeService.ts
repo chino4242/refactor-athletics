@@ -281,8 +281,14 @@ async function computeContributions(
       result[h.user_id] = (result[h.user_id] || 0) + (h.value || 0);
     }
   } else if (metric === 'xp') {
-    const startTs = new Date(startDate + 'T00:00:00').toISOString();
-    const endTs = new Date(endDate + 'T23:59:59').toISOString();
+    // xp_ledger only has created_at (UTC timestamp), no local-date column.
+    // The other metrics match on the `date` column (local calendar day per member),
+    // so to give XP the same "full local day in each member's timezone" behavior we
+    // widen the UTC window to cover all possible timezones (UTC-12 .. UTC+14).
+    // Earliest a local startDate can begin: 00:00 at UTC+14  => start - 14h in UTC
+    // Latest a local endDate can end:      23:59 at UTC-12  => end 23:59 + 12h in UTC
+    const startTs = new Date(new Date(startDate + 'T00:00:00Z').getTime() - 14 * 60 * 60 * 1000).toISOString();
+    const endTs = new Date(new Date(endDate + 'T23:59:59Z').getTime() + 12 * 60 * 60 * 1000).toISOString();
     const { data } = await supabase
       .from('xp_ledger')
       .select('user_id, amount')
