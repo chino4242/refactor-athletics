@@ -124,6 +124,25 @@ export default function TrainingGrounds({ userId, onStartWorkout }: TrainingGrou
   const [formatFilter, setFormatFilter] = useState<FormatFilter>('all');
   const [equipmentFilter, setEquipmentFilter] = useState<EquipmentFilter>('all');
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  // Collapsed by default; remembers the user's last choice.
+  const [collapsed, setCollapsed] = useState(true);
+
+  // ── Restore collapse preference ──
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const saved = localStorage.getItem('training_grounds_collapsed');
+    if (saved !== null) setCollapsed(saved === '1');
+  }, []);
+
+  const toggleCollapsed = () => {
+    setCollapsed(prev => {
+      const next = !prev;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('training_grounds_collapsed', next ? '1' : '0');
+      }
+      return next;
+    });
+  };
 
   // ── Fetch templates ──
   useEffect(() => {
@@ -155,17 +174,31 @@ export default function TrainingGrounds({ userId, onStartWorkout }: TrainingGrou
   // ── Render ──
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-lg font-bold text-white">Training Grounds</p>
-          <p className="text-xs text-zinc-500">Pick a workout. Get after it.</p>
+      {/* Header — tap to expand/collapse */}
+      <button
+        type="button"
+        onClick={toggleCollapsed}
+        aria-expanded={!collapsed}
+        className="w-full flex items-center justify-between text-left"
+      >
+        <div className="flex items-center gap-2">
+          <span className={`text-zinc-500 transition-transform duration-200 ${collapsed ? '' : 'rotate-90'}`}>
+            ▸
+          </span>
+          <div>
+            <p className="text-lg font-bold text-white">Training Grounds</p>
+            <p className="text-xs text-zinc-500">
+              {collapsed ? 'Tap to browse workouts' : 'Pick a workout. Get after it.'}
+            </p>
+          </div>
         </div>
         <span className={`text-xs font-bold ${accent.text} bg-zinc-800/60 px-2.5 py-1 rounded-lg`}>
           {templates.length} workouts
         </span>
-      </div>
+      </button>
 
+      {!collapsed && (
+        <>
       {/* Format filter pills */}
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
         {FORMAT_FILTERS.map(f => {
@@ -377,6 +410,8 @@ export default function TrainingGrounds({ userId, onStartWorkout }: TrainingGrou
             );
           })}
         </div>
+      )}
+        </>
       )}
     </div>
   );
